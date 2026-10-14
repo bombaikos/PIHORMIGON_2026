@@ -165,8 +165,6 @@ export function comprobar(x) {
     const s = Vu2SinArmadura(P);
     Object.assign(r, { Vu2: s.Vu2, VcuConc: s.VcuConc, VcuMin: s.VcuMin, minManda: s.minManda, Vsu: 0, Vcu: s.Vu2, beta: null, cotE: null, Vu: s.Vu2, mandaBiela: false });
     if (P.fck > 60) avisos.push({ clave: 'cor.av.fck60' });
-    // 44.2.3.4.1: en elementos lineales debe disponerse armadura transversal efectiva
-    avisos.push({ clave: 'cor.av.sinArm' });
   } else {
     const cotE = cotThetaE(P.fctm, P.NEd * 1000 / x.Ac, x.sigY ?? 0);
     const beta = coefBeta(cotT, cotE);

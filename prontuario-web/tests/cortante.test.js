@@ -192,3 +192,215 @@ test('Casos de analisis/cortante/casos-ehe31.csv: entradas leídas y calculadas 
     }
   }
 });
+
+// ---------- EC-2 2004 + AN ----------
+import * as ec2 from '../src/norma/cortante/ec2-2004.js';
+import { nucleo } from '../src/norma/cortante/index.js';
+
+test('EC-2: el despachador da EHE-08 (también para EHE-98), EC-2 2004 y EC-2 2023', () => {
+  assert.equal(nucleo('EHE-98').id, 'EHE-08');
+  assert.equal(nucleo('EC2-2004').id, 'EC2-2004');
+  assert.equal(nucleo('EC2-2023').id, 'EC2-2023');
+  assert.equal(nucleo('otra'), null);
+});
+
+test('EC-2: viga del plan §3 sin armadura: V_Rd,c = 91,3 kN (igual que la EHE-08)', () => {
+  const r = ec2.comprobar({ ...base, sinArmadura: true });
+  cerca(r.Vu, 91.3, 0.1);
+  assert.equal(r.minManda, false);
+  const bajo = ec2.comprobar({ ...base, Asl: 0.005 * 300 * 500, sinArmadura: true });
+  assert.equal(bajo.minManda, true);
+  cerca(bajo.Vu, 85.7, 0.1);
+});
+
+test('EC-2: con cercos solo suma la celosía (plan §3): cotθ 1 → 98, 1,5 → 148, 2 → 197 kN; biela 713 kN con ν1 = 0,528', () => {
+  const v = (c) => ec2.comprobar({ ...base, cotTheta: c });
+  cerca(v(1).VRds, 98.4, 0.1);
+  cerca(v(1.5).VRds, 147.5, 0.1);
+  cerca(v(2).VRds, 196.7, 0.1);
+  cerca(v(1).VRdMax, 712.8, 0.1);
+  assert.equal(v(1).Vcu, 0);
+  cerca(v(1).Vu, 98.4, 0.1);
+});
+
+test('EC-2: ν1 baja a 0,6 solo si la tensión de los cercos es menor que 0,8 fyk', () => {
+  assert.equal(ec2.nu1De(30, 434.8, 500).toFixed(3), '0.528');
+  assert.equal(ec2.nu1De(30, 300, 500), 0.6);
+  assert.equal(ec2.nu1De(70, 300, 500), 0.55);
+  // Con VEd pequeño la tensión pedida a los cercos baja de 400 MPa
+  const r = ec2.comprobar({ ...base, cotTheta: 2, VEd: 150 });
+  assert.equal(r.nu1, 0.6);
+});
+
+test('EC-2: armadura mínima ρw,mín = fctm/(7,5 fyk) del AN y separaciones como 9.2.2', () => {
+  const r = ec2.comprobar({ ...base, VEd: 100 });
+  cerca(r.minima.rhoWMin, (0.3 * Math.pow(30, 2 / 3)) / (7.5 * 500), 1e-6);
+  cerca(r.minima.AswSMin, r.minima.rhoWMin * 300, 1e-9);
+  assert.equal(r.sepTrans, 500);
+  assert.equal(r.sep, sepMaxima(100, r.VRdMax, 500, 90));
+});
+
+test('EC-2: ΔFtd = 0,5·VEd·(cotθ − cotα) y decalaje al = z(cotθ − cotα)/2; sin cercos al = d', () => {
+  const r = ec2.comprobar({ ...base, cotTheta: 2, VEd: 100 });
+  cerca(r.long.dT, 100, 1e-9);
+  cerca(r.long.sd, 450, 1e-9);
+  const s = ec2.comprobar({ ...base, sinArmadura: true, VEd: 50 });
+  assert.equal(s.long.sd, 500);
+});
+
+test('EC-2: dimensionar da la armadura de la celosía sin hormigón y una tabla Ø × s que cumple', () => {
+  const { AswS, ...sin } = base;
+  const r = ec2.dimensionar(sin, 250);
+  assert.equal(r.caso, 'calculo');
+  cerca(r.AswSNec, 250 / ((0.9 * 500 * (500 / 1.15)) / 1000), 1e-9);
+  for (const f of r.tabla.filter((t) => t.s)) assert.ok(f.Vu >= 250 - 1e-6 || f.Vu >= 249, `ø${f.fi} s=${f.s}`);
+  assert.equal(ec2.dimensionar(sin, 2000).caso, 'biela');
+});
+
+test('EC-2: el axil de compresión sube V_Rd,c y la tracción lo baja; σcp se limita a 0,2 fcd', () => {
+  const v = (N) => ec2.comprobar({ ...base, NEd: N, sinArmadura: true }).Vu;
+  assert.ok(v(300) > v(0) && v(-300) < v(0));
+  const big = ec2.comprobar({ ...base, NEd: 5000, sinArmadura: true });
+  assert.ok(big.avisos.some((a) => a.clave === 'cor.av.sigCp'));
+  cerca(big.P.sigCpLim, 0.2 * 20, 1e-9);
+});
+
+test('EC-2: cotθ óptimo es el que maximiza min(VRd,s; VRd,máx)', () => {
+  const c = ec2.cotOptimo({ ...base }, { VEd: 200 });
+  const v = (k) => ec2.comprobar({ ...base, cotTheta: k, VEd: 200 }).Vu;
+  for (const k of [0.5, 0.8, 1, 1.5, 2]) assert.ok(v(c) >= v(k) - 1e-6);
+});
+
+test('EC-2 y EHE-08 coinciden con cotθ = 2 y fyd igual (plan §3, lectura d)', () => {
+  const e = comprobar({ ...base, fykCercos: 400 * 1.15, cotTheta: 2 });
+  const c = ec2.comprobar({ ...base, fykCercos: 400 * 1.15, cotTheta: 2 });
+  cerca(c.VRds, e.Vsu, 1e-6);
+});
+
+// ---------- EC-2 2023 (esfuerzos, z = 0,9 d, ν = 0,5) ----------
+import * as e23 from '../src/norma/cortante/ec2-2023.js';
+
+const b23 = { ...base, ductilidad: 'B', Dlower: 20 };
+
+test('EC-2 2023: ddg = 16 + Dlower ≤ 40 mm; con fck > 60 se reduce por (60/fck)²', () => {
+  assert.equal(e23.ddgDe(30, 20), 36);
+  assert.equal(e23.ddgDe(30, 32), 40);
+  cerca(e23.ddgDe(80, 20), 16 + 20 * (60 / 80) ** 2, 1e-9);
+});
+
+test('EC-2 2023: viga del plan §3 sin armadura: V_Rd,c = 82,3 kN (manda τRd,c, no τRdc,min = 74,8)', () => {
+  const r = e23.comprobar({ ...b23, sinArmadura: true });
+  cerca(r.Vu, 82.3, 0.1);
+  assert.equal(r.minManda, false);
+  cerca(r.VRdcMin, 74.8, 0.1);
+  cerca(r.dEf, 500, 1e-9);
+});
+
+test('EC-2 2023: con ρl = 2 ‰ manda el mínimo τRdc,min', () => {
+  const r = e23.comprobar({ ...b23, Asl: 0.002 * 300 * 500, sinArmadura: true });
+  assert.equal(r.minManda, true);
+  cerca(r.Vu, 74.8, 0.1);
+});
+
+test('EC-2 2023: con armadura (fywd = 434,8, sin tope): V_Rd,s = 98 / 148 / 197 kN con cotθ 1 / 1,5 / 2', () => {
+  const v = (c) => e23.comprobar({ ...b23, cotTheta: c });
+  cerca(v(1).VRds, 98.3, 0.1);
+  cerca(v(1.5).VRds, 147.5, 0.1);
+  cerca(v(2).VRds, 196.7, 0.1);
+  assert.equal(v(1).Vcu, 0);
+});
+
+test('EC-2 2023: biela V_Rd,máx = 0,5 f_cd b_w z (cotθ + cotα)/(1 + cotθ²): 574 kN con cotθ = 1; manda si hay mucha armadura', () => {
+  const r = e23.comprobar({ ...b23, AswS: 3 });
+  cerca(r.VRdMax, 573.75, 0.01);
+  assert.equal(r.mandaBiela, true);
+  cerca(r.Vu, 573.75, 0.01);
+  cerca(e23.comprobar({ ...b23, cotTheta: 2.5 }).VRdMax, (0.5 * 17 * 300 * 450 * 2.5) / 7.25 / 1000, 0.01);
+});
+
+test('EC-2 2023: cotθ fuera de 1 a 2,5 da error; el rango baja con la tracción y con la clase A', () => {
+  assert.throws(() => e23.comprobar({ ...b23, cotTheta: 2.6 }));
+  assert.throws(() => e23.comprobar({ ...b23, cotTheta: 0.9 }));
+  assert.deepEqual(e23.rangoCot(b23, 100), { min: 1, max: 2.5 });
+  cerca(e23.rangoCot({ ...b23, NEd: -100 }, 100).max, 2.4, 1e-9);
+  cerca(e23.rangoCot({ ...b23, ductilidad: 'A' }, 100).max, 2.0, 1e-9);
+  cerca(e23.rangoCot({ ...b23, NEd: -1000 }, 100).max, 1.5, 1e-9);
+  cerca(e23.rangoCot({ ...b23, NEd: -3000 }, 100).max, 1, 1e-9);
+  cerca(e23.rangoCot({ ...b23, alfa: 60 }, 100).min, Math.tan(Math.PI / 6), 1e-9);
+});
+
+test('EC-2 2023: armadura mínima ρw,mín = 0,08 √fck/fyk con −10 % (B) y −20 % (C)', () => {
+  const m = (d) => e23.comprobar({ ...b23, ductilidad: d, AswS: 0.2 }).minima.AswSMin;
+  cerca(m('A'), (0.08 * Math.sqrt(30) / 500) * 300, 1e-9);
+  cerca(m('B'), 0.9 * (0.08 * Math.sqrt(30) / 500) * 300, 1e-9);
+  cerca(m('C'), 0.8 * (0.08 * Math.sqrt(30) / 500) * 300, 1e-9);
+  assert.equal(e23.comprobar({ ...b23, AswS: 0.2 }).minima.ok, false);
+});
+
+test('EC-2 2023: con MEd la esbeltez (av) y el axil (kvp) cambian V_Rd,c; sin MEd no se tienen en cuenta y se avisa', () => {
+  const sin = e23.comprobar({ ...b23, NEd: 300, VEd: 100, sinArmadura: true });
+  cerca(sin.Vu, 82.3, 0.1);
+  assert.ok(sin.avisos.some((a) => a.clave === 'cor.av.sinMEd'));
+  const av = Math.sqrt((1000 * 500) / 4);
+  const tau = (dEf) => (0.66 / 1.4) * Math.cbrt(30 * 36 / dEf);
+  const a = e23.comprobar({ ...b23, MEd: 100, VEd: 100, sinArmadura: true });
+  cerca(a.acs, 1000, 1e-9);
+  cerca(a.Vu, (tau(av) * 300 * 450) / 1000, 0.01);
+  const c = e23.comprobar({ ...b23, MEd: 100, NEd: 300, VEd: 100, sinArmadura: true });
+  cerca(c.kvp, 0.5, 1e-9);
+  cerca(c.Vu, (tau(av * 0.5) * 300 * 450) / 1000, 0.01);
+  assert.ok(c.Vu > a.Vu);
+  const t = e23.comprobar({ ...b23, MEd: 100, NEd: -300, VEd: 100, sinArmadura: true });
+  assert.ok(t.Vu < a.Vu);
+});
+
+test('EC-2 2023: acs ≥ 4d no reduce d (av = d); acs ≥ d aunque MEd/VEd sea menor', () => {
+  cerca(e23.comprobar({ ...b23, MEd: 1000, VEd: 100, sinArmadura: true }).Vu, 82.3, 0.1);
+  cerca(e23.comprobar({ ...b23, MEd: 10, VEd: 100, sinArmadura: true }).acs, 500, 1e-9);
+});
+
+test('EC-2 2023: armadura longitudinal N_Vd = V_Ed (cotθ − cotα), F_td con MEd y decalaje al = z (cotθ − cotα)/2', () => {
+  const r = e23.comprobar({ ...b23, cotTheta: 2, VEd: 100, MEd: 90, NEd: 0 });
+  cerca(r.long.dT, 200, 1e-9);
+  cerca(r.long.Ftd, (90 * 1000) / 450 + 100, 1e-9);
+  cerca(r.long.sd, 450, 1e-9);
+  const i = e23.comprobar({ ...b23, cotTheta: 2, alfa: 45, VEd: 100 });
+  cerca(i.long.dT, 100, 1e-9);
+  const sin = e23.comprobar({ ...b23, sinArmadura: true, VEd: 50 });
+  assert.equal(sin.long.sd, 500);
+});
+
+test('EC-2 2023: separaciones de la Tabla 12.1: s ≤ 0,75 d (1 + cotα), entre ramas ≤ 0,75 d y ≤ 600 mm', () => {
+  const r = e23.comprobar({ ...b23, VEd: 100 });
+  cerca(r.sep, 375, 1e-9);
+  cerca(r.sepTrans, 375, 1e-9);
+  cerca(e23.comprobar({ ...b23, alfa: 45, cotTheta: 1, VEd: 100 }).sep, 750, 1e-9);
+  assert.equal(e23.separaciones(1000).sepTrans, 600);
+});
+
+test('EC-2 2023: con cercos circulares la armadura cuenta × b_w/D_h', () => {
+  const a = e23.comprobar({ ...b23, circular: true, Dh: 400 });
+  const b = e23.comprobar({ ...b23 });
+  cerca(a.VRds, b.VRds * 0.75, 1e-9);
+  cerca(a.factorCirc, 0.75, 1e-12);
+});
+
+test('EC-2 2023: dimensionar y comprobar son coherentes; con cotθ = 2 la armadura necesaria es igual que en EC-2 2004', () => {
+  const x = { ...b23, cotTheta: 2 };
+  const d = e23.dimensionar(x, 150);
+  assert.equal(d.caso, 'calculo');
+  const c = e23.comprobar({ ...x, VEd: 150, AswS: d.AswSNec });
+  cerca(c.VRds, 150, 1e-6);
+  cerca(d.AswSNec, ec2.dimensionar(x, 150).AswSNec, 1e-9);
+  assert.ok(d.tabla.every((f) => !f.s || f.Vu >= 150 - 1e-6));
+  assert.equal(e23.dimensionar(x, 90).caso, 'minima');
+  assert.equal(e23.dimensionar(x, 500).caso, 'biela');
+});
+
+test('EC-2 2023: θ óptimo — comprobar: iguala cercos y biela; dimensionar: el mayor cotθ posible', () => {
+  const x = { ...b23, AswS: 0.5 };
+  const c = e23.cotOptimo(x, { VEd: 150 });
+  const v = (k) => e23.comprobar({ ...x, cotTheta: k, VEd: 150 }).Vu;
+  assert.ok(v(c) >= v(1) - 1e-9 && v(c) >= v(2.5) - 1e-9);
+  assert.equal(e23.cotOptimo(b23, { VEd: 150, dim: true }), 2.5);
+});
