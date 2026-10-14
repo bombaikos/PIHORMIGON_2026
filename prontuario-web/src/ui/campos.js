@@ -118,11 +118,11 @@ export function campoArmado({ id, etq, ref, texto, onCambio, soloBarras, capas }
 }
 
 /** Desplegable. opciones: [[valor, etiqueta(html)]] */
-export function selector({ id, etq, opciones, valor, onCambio, nota }) {
+export function selector({ id, etq, opciones, valor, onCambio, nota, linea = false }) {
   const s = h('select', { id }, ...opciones.map(([v, e]) => h('option', { value: v, selected: String(v) === String(valor), html: e })));
   s.addEventListener('change', () => onCambio(s.value));
   const c = marco(id, etq, null, h('div', { class: 'caja' }, s), nota).c;
-  c.classList.add('apilado'); // norma § 16: etiqueta arriba, desplegable a todo el ancho
+  if (!linea) c.classList.add('apilado'); // norma § 16: etiqueta arriba, desplegable a todo el ancho; en línea, como un campo numérico
   return c;
 }
 

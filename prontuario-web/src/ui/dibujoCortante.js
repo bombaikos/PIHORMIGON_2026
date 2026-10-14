@@ -42,12 +42,10 @@ export function dibujoCortante(geo, sec, c) {
   const xe = xd + 66;
   const cot = c.cotTheta;
   const cotA = c.alfa >= 90 ? 0 : 1 / Math.tan((c.alfa * Math.PI) / 180);
-  const zp = Math.min(Math.max(c.z * sc, 70), 120);
-  const p = zp * (cot + cotA);
-  const ancho = 3 * p + zp * cotA + 10;
-  const k = Math.min(1, 300 / ancho);
-  const zk = zp * k;
-  const pk = p * k;
+  // Ancho de la celosía constante: lo que cambie θ o α cambia su altura, no la de todo el dibujo
+  const ANCHO = 250;
+  const zk = ANCHO / (3 * cot + 4 * cotA);
+  const pk = zk * (cot + cotA);
   const yT = y0 + 18;
   const yB = yT + zk;
   out.push(`<text class="tit" x="${xe}" y="20">${t('cor.dib.celosia')}</text>`);
@@ -66,10 +64,10 @@ export function dibujoCortante(geo, sec, c) {
   const th = (Math.atan(1 / cot) * 180) / Math.PI;
   out.push(`<text x="${xe + pk - 22}" y="${yB - 6}" text-anchor="end">θ = ${fmt(th, 1)}°</text>`);
   if (!c.sinArmadura) out.push(`<text x="${xe + 4}" y="${yB + 16}">α = ${fmt(c.alfa, 0)}°</text>`);
-  const y2 = yB + 36;
+  const y2 = yT + 200;
   out.push(`<g><line class="biela" x1="${xe}" y1="${y2}" x2="${xe + 22}" y2="${y2}"/><text x="${xe + 28}" y="${y2 + 4}">${t('cor.dib.biela')}</text></g>`);
   if (!c.sinArmadura) out.push(`<g><line class="tirante" x1="${xe}" y1="${y2 + 18}" x2="${xe + 22}" y2="${y2 + 18}"/><text x="${xe + 28}" y="${y2 + 22}">${t('cor.dib.cercos')}</text></g>`);
-  const W = Math.max(xe + 3 * pk + zk * cotA + 90, xe + 150);
+  const W = xe + ANCHO + 90;
   const H = Math.max(y0 + hp + (sec.forma === 'T' ? 92 : 64), y2 + 36);
   return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${W.toFixed(0)} ${H.toFixed(0)}" role="img" aria-label="${t('cor.dib.aria', mm(c.b0), mm(c.d))}">${out.join('')}</svg>`;
 }
