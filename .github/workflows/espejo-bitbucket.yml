@@ -3,6 +3,7 @@
 # un "repository access token" de Bitbucket con permiso de escritura en el repositorio.
 # Si en su lugar se usa un app password, añadir también el secreto BITBUCKET_USER.
 # Guía: analisis/espejo-bitbucket.md
+# Bitbucket es una copia exacta de GitHub: se sobrescriben las ramas (push forzado).
 name: Espejo a Bitbucket
 
 on:
@@ -35,5 +36,5 @@ jobs:
           fi
           git remote add bitbucket "https://${BITBUCKET_USER}:${BITBUCKET_TOKEN}@bitbucket.org/ines_dev/pih_2026.git"
           # analisis/normativa está en .gitignore y por tanto nunca llega a GitHub ni a Bitbucket.
-          git push bitbucket "refs/remotes/origin/*:refs/heads/*" 2>&1 | sed "s/${BITBUCKET_TOKEN}/***/g"
+          git push --force bitbucket "refs/remotes/origin/*:refs/heads/*" 2>&1 | sed "s/${BITBUCKET_TOKEN}/***/g"
           git remote remove bitbucket
