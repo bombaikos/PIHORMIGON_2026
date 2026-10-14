@@ -53,5 +53,18 @@ Misma pantalla; la norma del proyecto elige el núcleo (`norma/cortante/index.js
 - Contrastado con el plan §3 (viga 30×50 d = 500): V_Rd,c = 91,3 kN; V_Rd,s = 98 / 148 / 197 kN con cotθ 1 / 1,5 / 2; V_Rd,máx = 713 kN (ν1 = 0,528); con cotθ = 2 y f_yd igual coincide con la EHE-08. Tests en `tests/cortante.test.js`.
 - No incluido (como en la EHE-08): carga próxima al apoyo (β = a_v/2d, 6.2.3(8)), pretensado, vainas, rasante alas-alma, torsión.
 
+## Fase 3: EC-2 2023 (14/10) — `src/norma/cortante/ec2-2023.js`
+Mismo contrato que los otros dos núcleos; todo en kN (las tensiones de 8.2 por `bw·z`, `z = 0,9 d`). Pensada para tener las tres normas a la vez y compararlas.
+- **Sin armadura** (8.20, 8.27): `VRd,c = τRd,c·bw·z ≥ τRdc,min·bw·z`, `τRd,c = 0,66/γV·(100ρl·fck·ddg/d)^(1/3)`, `τRdc,min = 11/γV·√(fck/fyd·ddg/d)`; γV = 1,4 (Tabla 4.3); `ddg = 16 + Dlower ≤ 40` (con fck > 60, `Dlower(60/fck)²`). **Dato nuevo `Dlower`** (árido grueso, 20 mm por defecto); solo se muestra sin armadura y al dimensionar.
+- **MEd opcional** (decisión 3 del plan): con él, `acs = MEd/VEd ≥ d`, `av = √(acs·d/4)` si `acs < 4d` y `kvp = 1 + NEd/|VEd|·d/(3acs) ≥ 0,1` (NEd tracción + en la norma; en la app compresión + y se convierte una vez); `d_ef = av·kvp` en el término `ddg/d` de τRd,c. Sin MEd se usa `d_ef = d` y se avisa. La compresión sin MEd queda del lado de la seguridad.
+- **Con armadura**: solo celosía, `VRd = mín(VRd,s; VRd,máx)`; `ν = 0,5` (8.2.3(6)), `fcd = ηcc·ktc·fck/γc` (ηcc = (40/fck)^(1/3) ≤ 1, ktc = 0,85; 17 MPa con fck 30), sin tope de 400 MPa. **No se implementa** el ν(εx) de 8.2.3(7) (fase 4).
+- **cotg θ** de 1 a `cotθmín`: 2,5; con tracción `2,5 − 0,1·NEd/|VEd| ≥ 1`; acero de clase A, −20 %; con cercos inclinados el mínimo es `tan(α/2)` (8.58). No se aplica el 3,0 con compresión alta (hace falta la profundidad x de la sección: aviso en las aclaraciones). El rango depende de VEd, del axil y de la ductilidad, y el deslizador y el campo θ lo siguen (el ángulo se recorta al rango al cambiar de norma o de dato). La ductilidad sale de la ficha del acero de los cercos (SD = clase C, resto B).
+- **Mínima** (12.4): `ρw,mín = 0,08√fck/fyk`, −10 % acero B, −20 % acero C; `Asw/s ≥ ρw,mín·bw·senα`.
+- **Separaciones** (Tabla 12.1): `sl,máx = 0,75d(1+cotα)`, entre ramas `0,75d ≤ 600 mm` (no dependen de VEd, a diferencia de EHE-08 y EC-2 2004).
+- **Longitudinal** (8.50-8.52, 12.5, 12.6): se da `NVd = |VEd|(cotθ − cotα)` y, con MEd, `Ftd = MEd/z + (NVd + NEd)/2`; decalaje `al = z(cotθ − cotα)/2` (`al = d` sin cercos).
+- **Circular**: casilla «Asw × bw/Dh» (8.2.3(9)), con `Dh ≈ D − 2r` (aproximación: el cerco queda por fuera de las barras); la norma pide además una z de sección inscrita, aquí z = 0,9 d. Sin 0,85 de la EHE-08.
+- Valores CEN sin Anejo Nacional (γV, γc…): el Anejo Nacional español de la 2023 aún no existe.
+- Pruebas: viga 30×50, d = 500, HA-30, ρl = 1 %: sin armadura 82,3 kN (τRdc,min = 74,8); VRd,s = 98 / 148 / 197 kN con cotθ 1 / 1,5 / 2; VRd,máx = 574 kN con cotθ = 1 (plan §3). Con cotθ = 2 la armadura necesaria coincide con la del EC-2 2004.
+
 ## Pendiente (fases del plan)
-EC-2 2023 (fase 3) con la misma pantalla; método general de θe y M_Ed (fase 4); cálculo de z con compresiones grandes; ancho efectivo y d de la circular que fije José Luis; resultados de EHE.exe para los 10 casos (comparar con `casos-ehe31-app.csv`); enlace con Vigas (V(x)); ayuda del módulo.
+Método general de θe y M_Ed (fase 4); cálculo de z con compresiones grandes; ancho efectivo y d de la circular que fije José Luis; resultados de EHE.exe para los 10 casos (comparar con `casos-ehe31-app.csv`); enlace con Vigas (V(x)); ayuda del módulo.

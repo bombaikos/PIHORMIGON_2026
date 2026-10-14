@@ -4060,7 +4060,7 @@ details.an-ce { margin-top: var(--e2); }
   var cortante_es_default = {
     "m.cortante": "Cortante",
     "cor.subtitulo": "Esfuerzo cortante de vigas, pilares y secciones circulares: agotamiento por compresi\xF3n oblicua y por tracci\xF3n en el alma",
-    "cor.pendiente": (n) => `El cortante con ${n} todav\xEDa no est\xE1 migrado a esta pantalla (por ahora, EHE-08 y EC-2 2004 + AN). Puedes cambiar la norma del proyecto.`,
+    "cor.pendiente": (n) => `El cortante con la norma ${n} no est\xE1 disponible en esta pantalla. Puedes cambiar la norma del proyecto.`,
     "cor.aEHE": "Pasar el proyecto a EHE-08",
     "cor.sinSec": "El proyecto no tiene secciones rectangulares, en T, de pilar ni circulares.",
     "cor.signo": "Momentos:",
@@ -4226,7 +4226,31 @@ details.an-ce { margin-top: var(--e2); }
     "cor.aEC2": "Pasar el proyecto a EC-2 2004 + AN",
     "cor.alcanceEC": "V<sub>Rd,m\xE1x</sub> (biela comprimida) y V<sub>Rd,s</sub> (cercos) con la celos\xEDa de 6.2.3, o V<sub>Rd,c</sub> sin cercos (6.2.2), con el Anejo Nacional: 0,5 \u2264 cotg \u03B8 \u2264 2,0, \u03BD<sub>m\xEDn</sub> con k<sup>3/2</sup>, \u03C1<sub>w,m\xEDn</sub> = f<sub>ctm</sub>/(7,5 f<sub>yk</sub>) y separaciones de 9.2.2. El cortante V<sub>Ed</sub> lo da el usuario. No incluye pretensado, cargas pr\xF3ximas al apoyo (\u03B2 = a<sub>v</sub>/2d), rasante alas-alma ni torsi\xF3n.",
     "cor.n.ec": "Criterios de esta pantalla",
-    "cor.ecNota": "Con cercos solo suma la celos\xEDa: el hormig\xF3n no aporta (a diferencia de la EHE-08). Sin tope de 400 MPa en f<sub>ywd</sub>. \u03B1<sub>cw</sub> = 1 (el axil no lo modifica). Con cercos circulares no hay reducci\xF3n de 0,85. b<sub>w</sub>, d y z = 0,9 d como en el resto del Prontuario."
+    "cor.ecNota": "Con cercos solo suma la celos\xEDa: el hormig\xF3n no aporta (a diferencia de la EHE-08). Sin tope de 400 MPa en f<sub>ywd</sub>. \u03B1<sub>cw</sub> = 1 (el axil no lo modifica). Con cercos circulares no hay reducci\xF3n de 0,85. b<sub>w</sub>, d y z = 0,9 d como en el resto del Prontuario.",
+    // EC-2 2023
+    "cor.MEd": sub5("M", "Ed"),
+    "cor.MEdAyuda": "Momento de c\xE1lculo en la misma secci\xF3n que V_Ed (valor absoluto). Opcional: con 0 no se usa. Da la esbeltez de cortante a_cs = M_Ed/V_Ed, que reduce d en V_Rd,c (8.2.2(3)), y la fuerza F_td del cord\xF3n (8.51)",
+    "cor.NEdNota23": "Compresi\xF3n +, tracci\xF3n \u2212.",
+    "cor.Dlower": sub5("D", "lower"),
+    "cor.DlowerAyuda": "Tama\xF1o del \xE1rido grueso en mm (8.2.1(4)): d_dg = 16 + D_lower \u2264 40 mm. Solo interviene en V_Rd,c, sin cercos",
+    "cor.circ23": "Cercos circulares: A<sub>sw</sub> \xD7 b<sub>w</sub>/D<sub>h</sub>",
+    "cor.cotAyuda23": (a, b, c, d) => `Entre ${a}\xB0 y ${b}\xB0, es decir cotg \u03B8 entre ${c} y ${d} (EC-2 2023, 8.2.3(4)). El m\xE1ximo baja a 2,0 con acero de clase A y con tracci\xF3n`,
+    "cor.errCotRango": (c, a, b) => `cotg \u03B8 = ${c} est\xE1 fuera de ${a} a ${b}`,
+    "cor.av.sinMEd": "Sin M<sub>Ed</sub> no se tiene en cuenta la esbeltez de cortante ni el axil en V<sub>Rd,c</sub> (resultado del lado de la seguridad con compresi\xF3n)",
+    "cor.av.circ2023": (f) => `La armadura de los cercos circulares se reduce en b<sub>w</sub>/D<sub>h</sub> = ${f} (8.2.3(9))`,
+    "cor.e3.c.nu": "\u03BD",
+    "cor.e3.clase": (c) => `acero clase ${c}`,
+    "cor.e3.f.vmax": "V<sub>Rd,m\xE1x</sub> = \u03BD\xB7f<sub>cd</sub>\xB7b<sub>w</sub>\xB7z\xB7(cotg \u03B8 + cotg \u03B1)/(1 + cotg\xB2\u03B8)",
+    "cor.e3.f.nu": "\u03BD = 0,5 con los \xE1ngulos de 8.2.3(4) \xB7 f<sub>cd</sub> = \u03B7<sub>cc</sub>\xB7k<sub>tc</sub>\xB7f<sub>ck</sub>/\u03B3<sub>c</sub> \xB7 z = 0,9 d",
+    "cor.e3.f.vs": "V<sub>Rd,s</sub> = (A<sub>sw</sub>/s)\xB7z\xB7f<sub>ywd</sub>\xB7(cotg \u03B8 + cotg \u03B1)\xB7sen \u03B1 (solo la celos\xEDa: el hormig\xF3n no suma)",
+    "cor.e3.f.vc": "V<sub>Rd,c</sub> = \u03C4<sub>Rd,c</sub>\xB7b<sub>w</sub>\xB7z \u2265 \u03C4<sub>Rdc,m\xEDn</sub>\xB7b<sub>w</sub>\xB7z",
+    "cor.e3.f.vcPar": "\u03C4<sub>Rd,c</sub> = 0,66/\u03B3<sub>V</sub>\xB7(100 \u03C1<sub>l</sub> f<sub>ck</sub> d<sub>dg</sub>/d<sub>ef</sub>)<sup>1/3</sup> \xB7 \u03C4<sub>Rdc,m\xEDn</sub> = 11/\u03B3<sub>V</sub>\xB7\u221A(f<sub>ck</sub>/f<sub>yd</sub>\xB7d<sub>dg</sub>/d) \xB7 d<sub>ef</sub> = a<sub>v</sub>\xB7k<sub>vp</sub>, a<sub>v</sub> = \u221A(a<sub>cs</sub> d/4) si a<sub>cs</sub> &lt; 4d, a<sub>cs</sub> = M<sub>Ed</sub>/V<sub>Ed</sub> \u2265 d, k<sub>vp</sub> = 1 + N<sub>Ed</sub>/V<sub>Ed</sub>\xB7d/(3 a<sub>cs</sub>) \u2265 0,1 (N<sub>Ed</sub> tracci\xF3n +)",
+    "cor.e3.f.min": "A<sub>sw</sub>/s \u2265 \u03C1<sub>w,m\xEDn</sub>\xB7b<sub>w</sub>\xB7sen \u03B1, con \u03C1<sub>w,m\xEDn</sub> = 0,08 \u221Af<sub>ck</sub>/f<sub>yk</sub>, reducido un 10 % (clase B) o un 20 % (clase C)",
+    "cor.e3.f.sep": "s<sub>l,m\xE1x</sub> \u2264 0,75 d (1 + cotg \u03B1) \xB7 entre ramas \u2264 0,75 d y \u2264 600 mm",
+    "cor.e3.f.long": "N<sub>Vd</sub> = V<sub>Ed</sub>\xB7(cotg \u03B8 \u2212 cotg \u03B1) \xB7 F<sub>td</sub> = M<sub>Ed</sub>/z + (N<sub>Vd</sub> + N<sub>Ed</sub>)/2 \xB7 decalaje a<sub>l</sub> = z(cotg \u03B8 \u2212 cotg \u03B1)/2; sin cercos a<sub>l</sub> = d",
+    "cor.alcance23": "V<sub>Rd,m\xE1x</sub> (biela comprimida) y V<sub>Rd,s</sub> (cercos) con la celos\xEDa de 8.2.3, o V<sub>Rd,c</sub> sin cercos (8.2.2), expresados en fuerzas (las tensiones de la norma por b<sub>w</sub>\xB7z con z = 0,9 d) y con \u03BD = 0,5. Lo da el usuario: V<sub>Ed</sub>. No incluye \u03BD(\u03B5<sub>x</sub>) de 8.2.3(7), pretensado, cargas cerca del apoyo (8.2.2(9), 8.2.3(12)) ni torsi\xF3n.",
+    "cor.nota23": "Con cercos solo suma la celos\xEDa; sin cercos, V<sub>Rd,c</sub>. cotg \u03B8 de 1 a 2,5 (2,0 con acero de clase A; baja con tracci\xF3n). \u03B3<sub>V</sub> = 1,4 y valores CEN sin Anejo Nacional. M<sub>Ed</sub> es opcional y no se pide la armadura longitudinal: se da N<sub>Vd</sub> y, con M<sub>Ed</sub>, F<sub>td</sub>. Cuant\xEDa m\xEDnima seg\xFAn la clase de ductilidad del acero de los cercos. Con compresi\xF3n alta (\u03C3 \u2265 3 MPa y x &lt; 0,25 d) la norma admite cotg \u03B8 hasta 3,0: aqu\xED no se aplica. El axil solo influye en V<sub>Rd,c</sub> (k<sub>vp</sub>, con M<sub>Ed</sub>: la compresi\xF3n lo aumenta y la tracci\xF3n lo reduce) y, en tracci\xF3n, baja el m\xE1ximo de cotg \u03B8.",
+    "cor.circNota23": "d = D/2 + (D/2 \u2212 r)\xB70,707 y b<sub>w</sub> = 0,866\xB7d. Con cercos circulares A<sub>sw</sub> se multiplica por b<sub>w</sub>/D<sub>h</sub> (8.2.3(9)), con D<sub>h</sub> \u2248 D \u2212 2r. La norma pide una z de secci\xF3n inscrita; aqu\xED z = 0,9 d."
   };
 
   // src/i18n/cortante.en.js
@@ -4234,7 +4258,7 @@ details.an-ce { margin-top: var(--e2); }
   var cortante_en_default = {
     "m.cortante": "Shear",
     "cor.subtitulo": "Shear in beams, columns and circular sections: web crushing and web tension failure",
-    "cor.pendiente": (n) => `Shear with ${n} is not migrated to this screen yet (only EHE-08 and EC-2 2004 + NA for now). You can switch the project code.`,
+    "cor.pendiente": (n) => `Shear with code ${n} is not available on this screen. You can switch the project code.`,
     "cor.aEHE": "Switch the project to EHE-08",
     "cor.sinSec": "The project has no rectangular, T, column or circular sections.",
     "cor.signo": "Moments:",
@@ -4351,7 +4375,31 @@ details.an-ce { margin-top: var(--e2); }
     "cor.aEC2": "Switch the project to EC-2 2004 + NA",
     "cor.alcanceEC": "V<sub>Rd,max</sub> (compression strut) and V<sub>Rd,s</sub> (stirrups) with the 6.2.3 truss, or V<sub>Rd,c</sub> without stirrups (6.2.2), with the National Annex: 0.5 \u2264 cotg \u03B8 \u2264 2.0, \u03BD<sub>min</sub> with k<sup>3/2</sup>, \u03C1<sub>w,min</sub> = f<sub>ctm</sub>/(7.5 f<sub>yk</sub>) and the 9.2.2 spacings. V<sub>Ed</sub> is typed by the user. Not included: prestressing, loads near the support (\u03B2 = a<sub>v</sub>/2d), flange-web shear, torsion.",
     "cor.n.ec": "Criteria used here",
-    "cor.ecNota": "With stirrups only the truss counts: the concrete adds nothing (unlike EHE-08). No 400 MPa cap on f<sub>ywd</sub>. \u03B1<sub>cw</sub> = 1 (the axial force does not change it). No 0.85 reduction for circular hoops. b<sub>w</sub>, d and z = 0.9 d as in the rest of the Prontuario."
+    "cor.ecNota": "With stirrups only the truss counts: the concrete adds nothing (unlike EHE-08). No 400 MPa cap on f<sub>ywd</sub>. \u03B1<sub>cw</sub> = 1 (the axial force does not change it). No 0.85 reduction for circular hoops. b<sub>w</sub>, d and z = 0.9 d as in the rest of the Prontuario.",
+    // EC-2 2023
+    "cor.MEd": sub6("M", "Ed"),
+    "cor.MEdAyuda": "Design moment at the same section as V_Ed (absolute value). Optional: 0 = not used. Gives the shear span a_cs = M_Ed/V_Ed, which reduces d in V_Rd,c (8.2.2(3)), and the chord force F_td (8.51)",
+    "cor.NEdNota23": "Compression +, tension \u2212.",
+    "cor.Dlower": sub6("D", "lower"),
+    "cor.DlowerAyuda": "Coarse aggregate size in mm (8.2.1(4)): d_dg = 16 + D_lower \u2264 40 mm. Only used in V_Rd,c, without stirrups",
+    "cor.circ23": "Circular hoops: A<sub>sw</sub> \xD7 b<sub>w</sub>/D<sub>h</sub>",
+    "cor.cotAyuda23": (a, b, c, d) => `Between ${a}\xB0 and ${b}\xB0, i.e. cotg \u03B8 between ${c} and ${d} (EC-2 2023, 8.2.3(4)). The maximum drops to 2.0 with class A steel and with tension`,
+    "cor.errCotRango": (c, a, b) => `cotg \u03B8 = ${c} is outside ${a} to ${b}`,
+    "cor.av.sinMEd": "Without M<sub>Ed</sub> the shear span and the axial force are not considered in V<sub>Rd,c</sub> (safe side with compression)",
+    "cor.av.circ2023": (f) => `The reinforcement of circular hoops is reduced by b<sub>w</sub>/D<sub>h</sub> = ${f} (8.2.3(9))`,
+    "cor.e3.c.nu": "\u03BD",
+    "cor.e3.clase": (c) => `class ${c} steel`,
+    "cor.e3.f.vmax": "V<sub>Rd,max</sub> = \u03BD\xB7f<sub>cd</sub>\xB7b<sub>w</sub>\xB7z\xB7(cotg \u03B8 + cotg \u03B1)/(1 + cotg\xB2\u03B8)",
+    "cor.e3.f.nu": "\u03BD = 0.5 with the angles of 8.2.3(4) \xB7 f<sub>cd</sub> = \u03B7<sub>cc</sub>\xB7k<sub>tc</sub>\xB7f<sub>ck</sub>/\u03B3<sub>c</sub> \xB7 z = 0.9 d",
+    "cor.e3.f.vs": "V<sub>Rd,s</sub> = (A<sub>sw</sub>/s)\xB7z\xB7f<sub>ywd</sub>\xB7(cotg \u03B8 + cotg \u03B1)\xB7sin \u03B1 (truss only: the concrete adds nothing)",
+    "cor.e3.f.vc": "V<sub>Rd,c</sub> = \u03C4<sub>Rd,c</sub>\xB7b<sub>w</sub>\xB7z \u2265 \u03C4<sub>Rdc,min</sub>\xB7b<sub>w</sub>\xB7z",
+    "cor.e3.f.vcPar": "\u03C4<sub>Rd,c</sub> = 0.66/\u03B3<sub>V</sub>\xB7(100 \u03C1<sub>l</sub> f<sub>ck</sub> d<sub>dg</sub>/d<sub>ef</sub>)<sup>1/3</sup> \xB7 \u03C4<sub>Rdc,min</sub> = 11/\u03B3<sub>V</sub>\xB7\u221A(f<sub>ck</sub>/f<sub>yd</sub>\xB7d<sub>dg</sub>/d) \xB7 d<sub>ef</sub> = a<sub>v</sub>\xB7k<sub>vp</sub>, a<sub>v</sub> = \u221A(a<sub>cs</sub> d/4) if a<sub>cs</sub> &lt; 4d, a<sub>cs</sub> = M<sub>Ed</sub>/V<sub>Ed</sub> \u2265 d, k<sub>vp</sub> = 1 + N<sub>Ed</sub>/V<sub>Ed</sub>\xB7d/(3 a<sub>cs</sub>) \u2265 0.1 (N<sub>Ed</sub> tension +)",
+    "cor.e3.f.min": "A<sub>sw</sub>/s \u2265 \u03C1<sub>w,min</sub>\xB7b<sub>w</sub>\xB7sin \u03B1, with \u03C1<sub>w,min</sub> = 0.08 \u221Af<sub>ck</sub>/f<sub>yk</sub>, reduced by 10 % (class B) or 20 % (class C)",
+    "cor.e3.f.sep": "s<sub>l,max</sub> \u2264 0.75 d (1 + cotg \u03B1) \xB7 between legs \u2264 0.75 d and \u2264 600 mm",
+    "cor.e3.f.long": "N<sub>Vd</sub> = V<sub>Ed</sub>\xB7(cotg \u03B8 \u2212 cotg \u03B1) \xB7 F<sub>td</sub> = M<sub>Ed</sub>/z + (N<sub>Vd</sub> + N<sub>Ed</sub>)/2 \xB7 shift a<sub>l</sub> = z(cotg \u03B8 \u2212 cotg \u03B1)/2; without stirrups a<sub>l</sub> = d",
+    "cor.alcance23": "V<sub>Rd,max</sub> (compression strut) and V<sub>Rd,s</sub> (stirrups) with the 8.2.3 truss, or V<sub>Rd,c</sub> without stirrups (8.2.2), expressed as forces (the code stresses times b<sub>w</sub>\xB7z with z = 0.9 d) and with \u03BD = 0.5. The user gives V<sub>Ed</sub>. Does not include \u03BD(\u03B5<sub>x</sub>) of 8.2.3(7), prestress, loads near the support (8.2.2(9), 8.2.3(12)) or torsion.",
+    "cor.nota23": "With stirrups only the truss counts; without stirrups, V<sub>Rd,c</sub>. cotg \u03B8 from 1 to 2.5 (2.0 with class A steel; lower with tension). \u03B3<sub>V</sub> = 1.4 and CEN values without a National Annex. M<sub>Ed</sub> is optional and the longitudinal reinforcement is not designed: N<sub>Vd</sub> is given and, with M<sub>Ed</sub>, F<sub>td</sub>. Minimum ratio by the ductility class of the stirrup steel. With high compression (\u03C3 \u2265 3 MPa and x &lt; 0.25 d) the code allows cotg \u03B8 up to 3.0: not applied here. The axial force only affects V<sub>Rd,c</sub> (k<sub>vp</sub>, with M<sub>Ed</sub>: compression raises it, tension lowers it) and, in tension, lowers the maximum cotg \u03B8.",
+    "cor.circNota23": "d = D/2 + (D/2 \u2212 r)\xB70.707 and b<sub>w</sub> = 0.866\xB7d. With circular hoops A<sub>sw</sub> is multiplied by b<sub>w</sub>/D<sub>h</sub> (8.2.3(9)), with D<sub>h</sub> \u2248 D \u2212 2r. The code asks for the z of an inscribed section; here z = 0.9 d."
   };
 
   // src/ui/i18n.js
@@ -11569,10 +11617,237 @@ details.an-ce { margin-top: var(--e2); }
     return mejor?.cotTheta ?? 1;
   }
 
+  // src/norma/cortante/ec2-2023.js
+  var ec2_2023_exports = {};
+  __export(ec2_2023_exports, {
+    AswSDe: () => AswSDe,
+    AswSMinima: () => AswSMinima3,
+    AswSNecesaria: () => AswSNecesaria3,
+    COT_MAX: () => COT_MAX2,
+    COT_MIN: () => COT_MIN2,
+    DLOWER_DEFECTO: () => DLOWER_DEFECTO,
+    ID: () => ID2,
+    NU: () => NU,
+    VRdMax: () => VRdMax2,
+    VRdcSinArmadura: () => VRdcSinArmadura2,
+    areaRama: () => areaRama,
+    comprobar: () => comprobar4,
+    cotOptimo: () => cotOptimo3,
+    dEfectivo: () => dEfectivo,
+    ddgDe: () => ddgDe,
+    dimensionar: () => dimensionar4,
+    longitudinal: () => longitudinal,
+    parametros: () => parametros3,
+    rangoCot: () => rangoCot,
+    rhoWMin: () => rhoWMin,
+    separaciones: () => separaciones,
+    thetaDe: () => thetaDe
+  });
+  var ID2 = "EC2-2023";
+  var COT_MIN2 = 1;
+  var COT_MAX2 = 2.5;
+  var NU = 0.5;
+  var DLOWER_DEFECTO = 20;
+  var rad3 = (g) => g * Math.PI / 180;
+  var cot3 = (g) => 1 / Math.tan(rad3(g));
+  function ddgDe(fck, Dlower = DLOWER_DEFECTO) {
+    return Math.min(40, fck <= 60 ? 16 + Dlower : 16 + Dlower * (60 / fck) ** 2);
+  }
+  var factorCercos = (x) => x.circular && x.Dh > 0 ? Math.min(1, x.b0 / x.Dh) : 1;
+  function parametros3(x) {
+    const { fck, fykCercos, b0, d } = x;
+    if (!(fck > 0) || !(b0 > 0) || !(d > 0) || !(x.Ac > 0)) throw new ErrorClave("cor.errDatos");
+    if (fck > EC2_2023.fckMax) throw new ErrorClave("cor.errFck", EC2_2023.fckMax);
+    const gc = EC2_2023.gammaC;
+    const gs = EC2_2023.gammaS;
+    const gv = EC2_2023.gammaV;
+    const fcd = EC2_2023.alfaCC(fck) * fck / gc;
+    const fctm = EC2_2023.fctm(fck);
+    const fyd = fykCercos / gs;
+    const fydLong = (x.fykLong ?? fykCercos) / gs;
+    const NEd = x.NEd ?? 0;
+    const NEdN = -NEd;
+    const ddg = ddgDe(fck, x.Dlower ?? DLOWER_DEFECTO);
+    const z = x.z ?? 0.9 * d;
+    const rho = (x.Asl ?? 0) / (b0 * d);
+    const MEd = Number.isFinite(x.MEd) && x.MEd > 0 ? x.MEd : null;
+    return { fck, fcd, fctm, fyk: fykCercos, fyd, fydLong, NEd, NEdN, gc, gv, ddg, z, rho, b0, d, MEd, ductilidad: x.ductilidad ?? "B", sigCp: NEd * 1e3 / x.Ac };
+  }
+  function rangoCot(x, VEd = NaN) {
+    const P = parametros3(x);
+    let max = 2.5;
+    const trac = P.NEdN > 0 && Number.isFinite(VEd) && Math.abs(VEd) > 0;
+    if (trac) max = Math.max(1, 2.5 - 0.1 * P.NEdN / Math.abs(VEd));
+    if (P.ductilidad === "A") max *= 0.8;
+    const alfa = x.alfa ?? 90;
+    const min = alfa >= 90 ? 1 : Math.tan(rad3(alfa) / 2);
+    return { min, max: Math.max(min, max) };
+  }
+  function dEfectivo(P, VEd) {
+    const base2 = { dEf: P.d, av: P.d, acs: null, kvp: 1, usado: false };
+    if (!P.MEd || !(Math.abs(VEd) > 0)) return base2;
+    const acs = Math.max(P.MEd * 1e3 / Math.abs(VEd), P.d);
+    const av = acs < 4 * P.d ? Math.sqrt(acs * P.d / 4) : P.d;
+    const kvp = Math.max(0.1, 1 + P.NEdN / Math.abs(VEd) * (P.d / (3 * acs)));
+    return { dEf: av * kvp, av, acs, kvp, usado: true };
+  }
+  function VRdcSinArmadura2(P, VEd = NaN) {
+    const e2 = dEfectivo(P, VEd);
+    const tauC = 0.66 / P.gv * Math.cbrt(100 * Math.max(P.rho, 0) * P.fck * (P.ddg / e2.dEf));
+    const tauMin = 11 / P.gv * Math.sqrt(P.fck / P.fydLong * (P.ddg / P.d));
+    const f = P.b0 * P.z / 1e3;
+    return { VRdc: Math.max(tauC, tauMin) * f, conc: tauC * f, min: tauMin * f, tauC, tauMin, minManda: tauMin > tauC, ...e2 };
+  }
+  function VRdMax2(P, cotT, cotA) {
+    return NU * P.fcd * P.b0 * P.z * (cotT + cotA) / (1 + cotT * cotT) / 1e3;
+  }
+  function rhoWMin(P) {
+    const k = P.ductilidad === "C" ? 0.8 : P.ductilidad === "B" ? 0.9 : 1;
+    return 0.08 * Math.sqrt(P.fck) * k / P.fyk;
+  }
+  var AswSMinima3 = (P, alfa = 90) => rhoWMin(P) * P.b0 * Math.sin(rad3(alfa));
+  function separaciones(d, alfa = 90) {
+    return { sep: 0.75 * d * (1 + (alfa >= 90 ? 0 : cot3(alfa))), sepTrans: Math.min(0.75 * d, 600) };
+  }
+  function longitudinal(P, VEd, cotT, cotA, sinArmadura = false) {
+    if (sinArmadura) return { dT: null, Ftd: null, sd: P.d };
+    const NVd = Math.abs(VEd) * (cotT - cotA);
+    const Ftd = P.MEd ? P.MEd * 1e3 / P.z + (NVd + P.NEdN) / 2 : null;
+    return { dT: NVd, Ftd, sd: Math.max(0, P.z * (cotT - cotA) / 2) };
+  }
+  function comprobar4(x) {
+    const P = parametros3(x);
+    const alfa = x.alfa ?? 90;
+    const cotT = x.cotTheta ?? 1;
+    const VEd = x.VEd ?? NaN;
+    const rg = rangoCot(x, VEd);
+    if (!(cotT >= rg.min - 1e-9 && cotT <= rg.max + 1e-9)) throw new ErrorClave("cor.errCotRango", fmt2(cotT), fmt2(rg.min), fmt2(rg.max));
+    if (!(alfa >= 45 && alfa <= 90)) throw new ErrorClave("cor.errAlfa");
+    const avisos = [];
+    const sin = x.sinArmadura || !((x.AswS ?? 0) > 0);
+    const cotA = cot3(alfa);
+    const r = { P, norma: ID2, alfa, cotTheta: cotT, theta: thetaDe(cotT), rango: rg, sinArmadura: sin, avisos, VEd, K: null, beta: null, cotE: null, reduc: 1 };
+    if (sin && !P.MEd) avisos.push({ clave: "cor.av.sinMEd" });
+    if (sin) {
+      const s = VRdcSinArmadura2(P, VEd);
+      Object.assign(r, {
+        VRdc: s.VRdc,
+        VRdcConc: s.conc,
+        VRdcMin: s.min,
+        tauC: s.tauC,
+        tauMin: s.tauMin,
+        minManda: s.minManda,
+        dEf: s.dEf,
+        av: s.av,
+        acs: s.acs,
+        kvp: s.kvp,
+        efecto: s.usado,
+        Vu: s.VRdc,
+        Vu2: s.VRdc,
+        Vu1: null,
+        Vcu: s.VRdc,
+        Vsu: 0,
+        mandaBiela: false
+      });
+    } else {
+      const fc = factorCercos(x);
+      const AswEf = x.AswS * fc;
+      const unidad = P.z * P.fyd * Math.sin(rad3(alfa)) * (cotT + cotA) / 1e3;
+      const VRds = AswEf * unidad;
+      const Vmax = VRdMax2(P, cotT, cotA);
+      Object.assign(r, { VRds, VRdMax: Vmax, nu: NU, factorCirc: fc, AswEf, Vu1: Vmax, Vu2: VRds, Vsu: VRds, Vcu: 0, Vu: Math.min(VRds, Vmax), mandaBiela: Vmax < VRds });
+      const mn = AswSMinima3(P, alfa);
+      r.minima = { AswSMin: mn, rhoW: AswEf / (P.b0 * Math.sin(rad3(alfa))), rhoWMin: rhoWMin(P), ok: AswEf >= mn - 1e-12 };
+      if (!r.minima.ok) avisos.push({ clave: "cor.av.minima", args: [(AswEf * 1e3).toFixed(0), (mn * 1e3).toFixed(0), "12.2(4)"] });
+      if (alfa < 90) avisos.push({ clave: "cor.av.tercioEC2" });
+      if (fc < 1) avisos.push({ clave: "cor.av.circ2023", args: [fc.toFixed(2)] });
+    }
+    if (Number.isFinite(VEd)) {
+      r.aprov = VEd / r.Vu;
+      const sp = separaciones(P.d, alfa);
+      r.sep = sp.sep;
+      r.sepTrans = sp.sepTrans;
+      r.long = longitudinal(P, VEd, cotT, cotA, sin);
+    }
+    return r;
+  }
+  var fmt2 = (v2) => (Math.round(v2 * 100) / 100).toString().replace(".", ",");
+  function AswSNecesaria3(x, VEd) {
+    const c = comprobar4({ ...x, VEd, AswS: 1e-6, sinArmadura: false });
+    const P = c.P;
+    const alfa = x.alfa ?? 90;
+    const unidad = P.z * P.fyd * Math.sin(rad3(alfa)) * (c.cotTheta + cot3(alfa)) / 1e3;
+    const nec = VEd / unidad / factorCercos(x);
+    const mn = AswSMinima3(P, alfa) / factorCercos(x);
+    const Vmax = VRdMax2(P, c.cotTheta, cot3(alfa));
+    return { c, nec, mn, usar: Math.max(nec, mn), manda: nec >= mn ? "calculo" : "minima", Vcu: 0, Vu1: Vmax };
+  }
+  function dimensionar4(x, VEd, { diametros = [8, 10, 12, 16, 20], ramas } = {}) {
+    if (!(VEd > 0)) throw new ErrorClave("cor.errVEd");
+    const n = AswSNecesaria3(x, VEd);
+    const P = n.c.P;
+    const alfa = x.alfa ?? 90;
+    const sin = VRdcSinArmadura2(P, VEd);
+    const r = { P, norma: ID2, VEd, Vu1: n.Vu1, Vcu: 0, AswSNec: n.nec, AswSMin: n.mn, AswS: n.usar, manda: n.manda, avisos: [...n.c.avisos.filter((a) => a.clave !== "cor.av.minima")] };
+    r.cotTheta = n.c.cotTheta;
+    r.theta = n.c.theta;
+    r.rango = n.c.rango;
+    r.beta = null;
+    r.cotE = null;
+    r.K = null;
+    r.alfa = alfa;
+    r.Vu2SinArm = sin.VRdc;
+    r.sinArm = sin;
+    if (VEd > n.Vu1) {
+      r.caso = "biela";
+      return r;
+    }
+    r.caso = n.manda === "minima" ? "minima" : "calculo";
+    r.sinArmaduraBasta = VEd <= sin.VRdc;
+    const sp = separaciones(P.d, alfa);
+    r.sMax = sp.sep;
+    const sTope = Math.floor(Math.min(r.sMax, S_TABLA_MAX) / S_TABLA_PASO) * S_TABLA_PASO;
+    const nr = ramas ?? (x.circular ? 2 : x.b0 < 500 ? 2 : 4);
+    r.ramas = nr;
+    r.tabla = diametros.map((fi) => {
+      const Ab = areaRama(fi);
+      const sOk = Math.floor(Math.min(sTope, nr * Ab / n.usar) / S_TABLA_PASO) * S_TABLA_PASO;
+      if (sOk < S_TABLA_PASO) return { fi, ramas: nr, s: null };
+      const AswS = AswSDe(fi, nr, sOk);
+      const v2 = comprobar4({ ...x, VEd, AswS, sinArmadura: false });
+      return { fi, ramas: nr, s: sOk, AswS, Vsu: v2.VRds, Vu2: v2.VRds, Vu: v2.Vu };
+    });
+    r.long = longitudinal(P, VEd, n.c.cotTheta, cot3(alfa));
+    return r;
+  }
+  function cotOptimo3(x, { VEd, dim = false } = {}) {
+    const { min, max } = rangoCot(x, VEd);
+    let mejor = null;
+    for (let c = Math.ceil(min * 100 - 1e-9); c <= Math.floor(max * 100 + 1e-9); c++) {
+      const cotTheta = c / 100;
+      let valor;
+      try {
+        if (dim) {
+          const n = AswSNecesaria3({ ...x, cotTheta }, VEd);
+          if (VEd > n.Vu1) continue;
+          valor = -n.usar;
+        } else {
+          valor = comprobar4({ ...x, cotTheta, VEd }).Vu;
+        }
+      } catch {
+        continue;
+      }
+      if (!mejor || valor > mejor.valor + 1e-9 || Math.abs(valor - mejor.valor) <= 1e-9 && Math.abs(cotTheta - 1) < Math.abs(mejor.cotTheta - 1)) mejor = { cotTheta, valor };
+    }
+    return mejor?.cotTheta ?? min;
+  }
+
   // src/norma/cortante/index.js
+  var rangoFijo = () => ({ min: COT_MIN, max: COT_MAX });
   function nucleo(normaId) {
-    if (normaId === "EHE-08" || normaId === "EHE-98") return { id: "EHE-08", ...ehe08_exports };
-    if (normaId === "EC2-2004") return { id: "EC2-2004", ...ec2_2004_exports };
+    if (normaId === "EHE-08" || normaId === "EHE-98") return { id: "EHE-08", rangoCot: rangoFijo, ...ehe08_exports };
+    if (normaId === "EC2-2004") return { id: "EC2-2004", rangoCot: rangoFijo, ...ec2_2004_exports };
+    if (normaId === "EC2-2023") return { id: "EC2-2023", ...ec2_2023_exports };
     return null;
   }
 
@@ -11602,11 +11877,11 @@ details.an-ce { margin-top: var(--e2); }
     out.push(`<line class="ref" x1="${x0 + bp}" y1="${Yc(c.d)}" x2="${xd + 4}" y2="${Yc(c.d)}"/>`);
     out.push(`<text class="fuerte" x="${xd + 6}" y="${(Yc(0) + Yc(c.d)) / 2 + 4}">d = ${mm2(c.d)}</text>`);
     const xe = xd + 66;
-    const cot3 = c.cotTheta;
+    const cot4 = c.cotTheta;
     const cotA = c.alfa >= 90 ? 0 : 1 / Math.tan(c.alfa * Math.PI / 180);
     const ANCHO = 250;
-    const zk = ANCHO / (3 * cot3 + 4 * cotA);
-    const pk = zk * (cot3 + cotA);
+    const zk = ANCHO / (3 * cot4 + 4 * cotA);
+    const pk = zk * (cot4 + cotA);
     const yT = y0 + 18;
     const yB = yT + zk;
     out.push(`<text class="tit" x="${xe}" y="20">${t("cor.dib.celosia")}</text>`);
@@ -11621,7 +11896,7 @@ details.an-ce { margin-top: var(--e2); }
     const xz = xe + 3 * pk + zk * cotA + 12;
     out.push(`<line class="cota" x1="${xz}" y1="${yT}" x2="${xz}" y2="${yB}" marker-start="url(#tic)" marker-end="url(#tic)"/>`);
     out.push(`<text class="fuerte" x="${xz + 6}" y="${(yT + yB) / 2 + 4}">z = ${mm2(c.z)}</text>`);
-    const th = Math.atan(1 / cot3) * 180 / Math.PI;
+    const th = Math.atan(1 / cot4) * 180 / Math.PI;
     out.push(`<text x="${xe + pk - 22}" y="${yB - 6}" text-anchor="end">\u03B8 = ${fmt(th, 1)}\xB0</text>`);
     if (!c.sinArmadura) out.push(`<text x="${xe + 4}" y="${yB + 16}">\u03B1 = ${fmt(c.alfa, 0)}\xB0</text>`);
     const y2 = yT + 200;
@@ -11640,6 +11915,8 @@ details.an-ce { margin-top: var(--e2); }
     dir: "h",
     VEd: 120,
     NEd: 0,
+    MEd: 0,
+    Dlower: 20,
     sigY: 0,
     cot: 1,
     alfa: 90,
@@ -11658,16 +11935,19 @@ details.an-ce { margin-top: var(--e2); }
     est5.aceroCercos = null;
   }
   var RAD = Math.PI / 180;
-  var thetaDe2 = (cot3) => Math.atan(1 / cot3) / RAD;
-  var THETA_MIN = +(Math.atan(1 / COT_MAX) / RAD).toFixed(1) + 0.1;
-  var THETA_MAX = +(Math.atan(1 / COT_MIN) / RAD).toFixed(1) - 0.1;
+  var thetaDe2 = (cot4) => Math.atan(1 / cot4) / RAD;
+  var limitesTheta = (rg) => ({
+    min: Math.ceil(+(Math.atan(1 / rg.max) / RAD).toFixed(6) * 10) / 10,
+    max: Math.floor(+(Math.atan(1 / rg.min) / RAD).toFixed(6) * 10) / 10
+  });
   var FORMAS2 = ["rectangular", "T", "pilar", "circular"];
   var secciones = (p) => p.secciones.map((s, i) => [s, i]).filter(([s]) => FORMAS2.includes(s.forma));
   var esViga2 = (s) => s.forma === "rectangular" || s.forma === "T";
   var diametrosEntrada = () => serieDiametros().filter((x) => x >= 6 && x <= 25);
   var diametrosTabla = () => serieDiametros().filter((x) => x >= 8 && x <= 20);
   var nuc = (p) => nucleo(p.norma);
-  var esEC2 = (p) => nuc(p)?.id === "EC2-2004";
+  var esEC2 = (p) => nuc(p)?.id === "EC2-2004" || nuc(p)?.id === "EC2-2023";
+  var es23 = (p) => nuc(p)?.id === "EC2-2023";
   function efectivos(p, s) {
     const sec = datosCortante(p, s, { signo: est5.signo, dir: est5.dir });
     const ef = {
@@ -11718,7 +11998,7 @@ details.an-ce { margin-top: var(--e2); }
     if (!nuc(p)) {
       return poner(
         form,
-        aviso(t("cor.pendiente", p.norma === "EC2-2023" ? "EN 1992-1-1:2023" : "EC-2 2004 + AN"), "info"),
+        aviso(t("cor.pendiente", p.norma), "info"),
         boton(t("cor.aEC2"), () => {
           p.norma = "EC2-2004";
           ctx2.cambio({ estructura: true });
@@ -11757,7 +12037,10 @@ details.an-ce { margin-top: var(--e2); }
     const rho0 = ef.Asl / (ef.b0 * ef.d);
     const pilarOCirc = !esViga2(s);
     const ec = esEC2(p);
-    const gauge = h("input", { type: "range", class: "desliza-sec", min: THETA_MIN, max: THETA_MAX, step: 0.1, value: thetaDe2(est5.cot), "aria-label": t("cor.theta") });
+    const e23 = es23(p);
+    const rg = ajustaCot(p, s, sec, ef);
+    const LT = limitesTheta(rg);
+    const gauge = h("input", { type: "range", class: "desliza-sec", min: LT.min, max: LT.max, step: 0.1, value: thetaDe2(est5.cot), "aria-label": t("cor.theta") });
     const refrescarGauge = () => {
       gauge.value = thetaDe2(est5.cot);
     };
@@ -11793,9 +12076,13 @@ details.an-ce { margin-top: var(--e2); }
           campoNum({ id: "c-ned", etq: t("cor.NEd"), ref: t("cor.NEdRef"), valor: est5.NEd, mag: "N", paso: 10, min: -1e6, max: 1e6, ayuda: t("cor.NEdNota"), onCambio: (v2) => {
             est5.NEd = v2;
             cambio();
-          } })
+          } }),
+          e23 ? campoNum({ id: "c-med", etq: t("cor.MEd"), valor: est5.MEd, mag: "M", paso: 10, min: 0, max: 1e7, ayuda: t("cor.MEdAyuda"), onCambio: (v2) => {
+            est5.MEd = v2;
+            cambio();
+          } }) : null
         ]),
-        h("p", { class: "nota-ned", html: t("cor.NEdNota") })
+        h("p", { class: "nota-ned", html: t(e23 ? "cor.NEdNota23" : "cor.NEdNota") })
       ),
       grupo(
         t("cor.datosCalc"),
@@ -11805,13 +12092,17 @@ details.an-ce { margin-top: var(--e2); }
           mostrar(campoNum({ id: "c-asl", etq: t("cor.Asl"), valor: ef.Asl, mag: "As", paso: 50, min: 0, max: 1, ayuda: t("cor.AslAyuda"), onCambio: nuevo2("Asl") }), ef.Asl * 1e6, 0),
           calculado(mostrar(campoNum({ id: "c-rho", etq: t("cor.rho"), valor: rho0, mag: "cuantia", paso: 1, min: 0, max: 1, ayuda: t("cor.rhoAyuda"), onCambio: () => {
           } }), rho0 * 1e3, 2)),
+          e23 && (!comp || est5.sin) ? campoNum({ id: "c-dlow", etq: t("cor.Dlower"), valor: est5.Dlower, mag: "diam", paso: 2, min: 4, max: 63, ayuda: t("cor.DlowerAyuda"), onCambio: (v2) => {
+            est5.Dlower = v2;
+            cambio();
+          } }) : null,
           ec ? null : campoNum({ id: "c-sigy", etq: t("cor.sigY"), ref: t("cor.sigYRef"), valor: est5.sigY, mag: "tension", paso: 0.5, min: -50, max: 50, ayuda: t("cor.sigYAyuda"), onCambio: (v2) => {
             est5.sigY = v2;
             cambio();
           } }),
           pilarOCirc && !ec ? mostrar(campoNum({ id: "c-asc", etq: t("cor.Asc"), valor: ef.Asc, mag: "As", paso: 50, min: 0, max: 1, ayuda: t("cor.AscAyuda"), onCambio: nuevo2("Asc") }), ef.Asc * 1e6, 0) : null
         ]),
-        sec.circular && !ec ? conEtq(t("cor.circ"), segmentado({ opciones: [["si", "\xD7 0,85"], ["no", t("cor.sinReduccion")]], valor: est5.circ ? "si" : "no", ancho: true, etiqueta: t("cor.circ"), onCambio: (v2) => {
+        sec.circular && (!ec || e23) ? conEtq(t(e23 ? "cor.circ23" : "cor.circ"), segmentado({ opciones: [["si", e23 ? "b<sub>w</sub>/D<sub>h</sub>" : "\xD7 0,85"], ["no", t("cor.sinReduccion")]], valor: est5.circ ? "si" : "no", ancho: true, etiqueta: t("cor.circ"), onCambio: (v2) => {
           est5.circ = v2 === "si";
           ctx2.pintar();
         } })) : null
@@ -11843,7 +12134,7 @@ details.an-ce { margin-top: var(--e2); }
             est5.alfa = v2;
             cambio();
           } }) : null,
-          campoNum({ id: "c-theta", etq: t("cor.theta"), valor: thetaDe2(est5.cot), mag: "ang1", paso: 1, min: THETA_MIN, max: THETA_MAX, ayuda: t("cor.cotAyuda"), onCambio: (v2) => {
+          campoNum({ id: "c-theta", etq: t("cor.theta"), valor: thetaDe2(est5.cot), mag: "ang1", paso: 1, min: LT.min, max: LT.max, ayuda: t("cor.cotAyuda"), onCambio: (v2) => {
             est5.cot = 1 / Math.tan(v2 * RAD);
             cambio();
             refrescarGauge();
@@ -11879,8 +12170,18 @@ details.an-ce { margin-top: var(--e2); }
       sigY: est5.sigY,
       cotTheta: est5.cot,
       alfa: est5.alfa,
-      circular: sec.circular && est5.circ
+      circular: sec.circular && est5.circ,
+      MEd: est5.MEd,
+      Dlower: est5.Dlower,
+      ductilidad: acero2.ductilidad ?? aceroTipificado(acero2.nombre)?.ductilidad ?? "B",
+      Dh: sec.circular ? (sec.h - 2 * (sec.r ?? 0)) * 1e3 : null
     };
+  }
+  function ajustaCot(p, s, sec, ef) {
+    const rg = nuc(p).rangoCot(entrada2(p, s, sec, ef), est5.VEd);
+    if (est5.cot < rg.min) est5.cot = rg.min;
+    if (est5.cot > rg.max) est5.cot = rg.max;
+    return rg;
   }
   var mostrar = (c, v2, d) => {
     const i = c.querySelector("input");
@@ -11909,8 +12210,10 @@ details.an-ce { margin-top: var(--e2); }
     if (!s || !FORMAS2.includes(s.forma)) return;
     const N = nuc(p);
     const ec = esEC2(p);
-    refNorma = ec ? "EC-2 + AN" : "EHE-08";
+    const e23 = es23(p);
+    refNorma = e23 ? "EC-2 2023" : ec ? "EC-2 + AN" : "EHE-08";
     const { sec, ef } = efectivos(p, s);
+    ajustaCot(p, s, sec, ef);
     const x = entrada2(p, s, sec, ef);
     const comp = est5.modo === "comprobar";
     const AswS = comp && !est5.sin ? AswSDe(est5.fi, est5.ramas, est5.s) : 0;
@@ -11933,7 +12236,7 @@ details.an-ce { margin-top: var(--e2); }
       const sepOk = r.sinArmadura || est5.s <= r.sep + 1e-9;
       const minOk = r.sinArmadura || r.minima.ok;
       const detalles = ok && (!sepOk || !minOk);
-      if (!r.sinArmadura && !sepOk) avisos.push(aviso(t("cor.avs.sep", fmt(est5.s, 0), fmt(r.sep, 0), ec ? "9.2.2(6)" : "44.2.3.4.1")));
+      if (!r.sinArmadura && !sepOk) avisos.push(aviso(t("cor.avs.sep", fmt(est5.s, 0), fmt(r.sep, 0), e23 ? "Tabla 12.1" : ec ? "9.2.2(6)" : "44.2.3.4.1")));
       const P0 = ec ? "cor.ec.manda." : "cor.manda.";
       const manda = r.sinArmadura ? t(`${P0}sin`) : r.mandaBiela ? t(`${P0}biela`) : t(`${P0}arm`);
       res.append(veredicto(
@@ -11958,7 +12261,7 @@ details.an-ce { margin-top: var(--e2); }
     if (avisos.length) res.append(h("div", { class: "avisos" }, ...avisos));
     const geo = geometriaDe(p, s);
     const lienzo = h("div", { class: "lienzo", html: dibujoCortante(geo, s, { b0: ef.b0, d: ef.d, z: P.z / 1e3, cotTheta: est5.cot, alfa: est5.alfa, neg: esViga2(s) && est5.signo < 0, sinArmadura: comp && est5.sin }) });
-    poner(centro, h("h2", {}, t("cor.t.dibujo")), lienzo, notas(sec.circular, P, ec));
+    poner(centro, h("h2", {}, t("cor.t.dibujo")), lienzo, notas(sec.circular, P, e23 ? "e23" : ec));
     const cif = ec ? cifrasEC2(r, comp, P) : comp ? r.sinArmadura ? [[t("cor.c.Vu2"), qh(r.Vu2, "F")], [t("cor.rho"), `${fmt(P.rho * 1e3, 1)}<span class="u">${ESP}\u2030</span>`]] : [[t("cor.c.Vu1"), qh(r.Vu1, "F")], [t("cor.c.Vu2"), qh(r.Vu2, "F")], [`${t("cor.c.Vcu")} + ${t("cor.c.Vsu")}`, `${fmt(r.Vcu, 0)} + ${fmt(r.Vsu, 0)}<span class="u">${ESP}kN</span>`], [`\u03B8 \xB7 \u03B2`, `${fmt(r.theta, 1)}\xB0 \xB7 ${fmt(r.beta, 2)}`]] : [[t("cor.c.Vu1"), qh(r.Vu1, "F")], [t("cor.c.Vcu"), qh(r.Vcu, "F")], [t("cor.armNec"), qh(r.AswSNec, "AswS")], [t("cor.c.Asw") + " m\xEDn.", qh(r.AswSMin, "AswS")]];
     poner(dcha, h("h2", {}, t("cor.t.res")), cifras(cif));
     if (!comp && r.tabla) {
@@ -11981,7 +12284,7 @@ details.an-ce { margin-top: var(--e2); }
     const kN = (v2) => qh(v2, "F");
     if (!comp) return [[t("cor.ec.c.vmax"), kN(r.Vu1)], [t("cor.ec.c.vc"), kN(r.Vu2SinArm)], [t("cor.armNec"), qh(r.AswSNec, "AswS")], [t("cor.c.Asw") + " m\xEDn.", qh(r.AswSMin, "AswS")]];
     if (r.sinArmadura) return [[t("cor.ec.c.vc"), kN(r.Vu)], [t("cor.rho"), `${fmt(P.rho * 1e3, 1)}<span class="u">${ESP}\u2030</span>`]];
-    return [[t("cor.ec.c.vmax"), kN(r.VRdMax)], [t("cor.ec.c.vs"), kN(r.VRds)], [t("cor.ec.c.nu1"), fmt(r.nu1, 3)], ["\u03B8", `${fmt(r.theta, 1)}\xB0`]];
+    return [[t("cor.ec.c.vmax"), kN(r.VRdMax)], [t("cor.ec.c.vs"), kN(r.VRds)], r.nu != null ? [t("cor.e3.c.nu"), fmt(r.nu, 2)] : [t("cor.ec.c.nu1"), fmt(r.nu1, 3)], ["\u03B8", `${fmt(r.theta, 1)}\xB0`]];
   }
   function trazasEC2(r, x, comp) {
     const P = r.P;
@@ -12040,8 +12343,68 @@ details.an-ce { margin-top: var(--e2); }
     }
     return f;
   }
+  function trazasEC2023(r, x, comp) {
+    const P = r.P;
+    const n1 = (v2, d = 2) => fmt(v2, d);
+    const f = [];
+    const cotA = r.alfa >= 90 ? 0 : 1 / Math.tan(r.alfa * Math.PI / 180);
+    if (!comp || !r.sinArmadura) {
+      f.push(fila2(
+        "vu1",
+        t("cor.ec.r.vmax"),
+        q(comp ? r.VRdMax : r.Vu1, "F"),
+        `<span class="f">${t("cor.e3.f.vmax")}</span><span class="n">${t("cor.e3.f.nu")}</span><span class="n">\u03BD = 0,5 \xB7 b<sub>w</sub> = ${n1(P.b0, 0)} \xB7 z = ${n1(P.z, 0)} mm \xB7 f<sub>cd</sub> = ${n1(P.fcd, 1)} MPa \xB7 (cotg \u03B8 + cotg \u03B1)/(1 + cotg\xB2\u03B8) = ${n1((r.cotTheta + cotA) / (1 + r.cotTheta ** 2), 3)}</span>${art3("8.2.3(5), (6)")}`
+      ));
+    }
+    const dsin = comp && r.sinArmadura ? r : !comp ? VRdcDe(r) : null;
+    if (dsin) {
+      f.push(fila2(
+        "vcu",
+        t("cor.ec.r.vc"),
+        q(dsin.Vu, "F"),
+        `<span class="f">${t("cor.e3.f.vc")}</span><span class="n">${t("cor.e3.f.vcPar")}</span><span class="n">\u03C1<sub>l</sub> = ${n1(P.rho * 1e3, 2)} \u2030 \xB7 d<sub>dg</sub> = ${n1(P.ddg, 0)} mm \xB7 \u03B3<sub>V</sub> = ${n1(P.gv, 1)} \xB7 d = ${n1(P.d, 0)}${dsin.efecto ? ` \xB7 a<sub>cs</sub> = ${n1(dsin.acs, 0)} mm \xB7 a<sub>v</sub> = ${n1(dsin.av, 0)} mm \xB7 k<sub>vp</sub> = ${n1(dsin.kvp, 2)} \u2192 d<sub>ef</sub> = ${n1(dsin.dEf, 0)} mm` : ""}</span><span class="n">\u03C4<sub>Rd,c</sub> = ${n1(dsin.tauC, 3)} MPa \xB7 \u03C4<sub>Rdc,m\xEDn</sub> = ${n1(dsin.tauMin, 3)} MPa</span><span class="n">${t("cor.v.concMin", n1(dsin.VRdcConc, 1), n1(dsin.VRdcMin, 1))}</span>${art3("8.2.1(4), 8.2.2(2)-(4)")}`
+      ));
+    }
+    if (comp && !r.sinArmadura) {
+      f.push(fila2(
+        "vsu",
+        t("cor.ec.r.vs"),
+        q(r.VRds, "F"),
+        `<span class="f">${t("cor.e3.f.vs")}</span><span class="n">z = ${n1(P.z, 0)} mm \xB7 A<sub>sw</sub>/s = ${n1(x.AswS, 3)} mm\xB2/mm${r.factorCirc < 1 ? ` \xD7 b<sub>w</sub>/D<sub>h</sub> (${n1(r.factorCirc, 2)})` : ""} \xB7 f<sub>ywd</sub> = ${n1(P.fyd, 1)} MPa</span>${art3("8.2.3(5), (13)")}`
+      ));
+      f.push(fila2(
+        "min",
+        t("cor.r.min"),
+        r.minima.ok ? t("cor.ok") : t("cor.noOk"),
+        `<span class="f">${t("cor.e3.f.min")}</span><span class="n">\u03C1<sub>w,m\xEDn</sub> = ${n1(r.minima.rhoWMin * 1e3, 2)} \u2030 (${t("cor.e3.clase", P.ductilidad)}) \xB7 ${t("cor.r.minVal", n1(r.AswEf * 1e3, 0), n1(r.minima.AswSMin * 1e3, 0))}</span>${art3("12.2(4)")}`
+      ));
+    }
+    if (comp) {
+      f.push(fila2(
+        "sep",
+        t("cor.r.sep"),
+        r.sinArmadura ? "\u2014" : `${fmt(est5.s, 0)} \u2264 ${fmt(r.sep, 0)} mm`,
+        `<span class="f">${t("cor.e3.f.sep")}</span><span class="n">s<sub>l,m\xE1x</sub> \u2264 ${n1(r.sep, 0)} mm \xB7 ${t("cor.avs.trans", n1(r.sepTrans, 0))}</span>${art3("Tabla 12.1")}`
+      ));
+      f.push(longitudinal23(r));
+    } else if (r.caso !== "biela") {
+      f.push(fila2("min", t("cor.r.min"), q(r.AswSMin, "AswS"), `<span class="f">${t("cor.e3.f.min")}</span><span class="n">${n1(r.AswSMin * 1e3, 0)} mm\xB2/m</span>${art3("12.2(4)")}`));
+      f.push(fila2("sep", t("cor.r.sep"), `\u2264 ${fmt(r.sMax, 0)} mm`, `<span class="f">${t("cor.e3.f.sep")}</span>${art3("Tabla 12.1")}`));
+      f.push(longitudinal23(r));
+    }
+    return f;
+  }
+  var VRdcDe = (r) => r.sinArm ? { Vu: r.sinArm.VRdc, VRdcConc: r.sinArm.conc, VRdcMin: r.sinArm.min, tauC: r.sinArm.tauC, tauMin: r.sinArm.tauMin, efecto: r.sinArm.usado, acs: r.sinArm.acs, av: r.sinArm.av, kvp: r.sinArm.kvp, dEf: r.sinArm.dEf } : null;
+  function longitudinal23(r) {
+    const n1 = (v2, d = 2) => fmt(v2, d);
+    const l = r.long;
+    const val = l.dT == null ? `a<sub>l</sub> ${q(l.sd, "long")}` : `N<sub>Vd</sub> ${q(l.dT, "F")}`;
+    const cuenta = `${l.dT == null ? "" : `N<sub>Vd</sub> = ${n1(l.dT, 1)} kN \xB7 `}${l.Ftd != null ? `F<sub>td</sub> = ${n1(l.Ftd, 1)} kN \xB7 ` : ""}a<sub>l</sub> = ${n1(l.sd, 0)} mm`;
+    return fila2("long", t("cor.ec.r.long"), val, `<span class="f">${t("cor.e3.f.long")}</span><span class="n">${cuenta}</span>${art3("8.2.3(8); 12.3.2(1)")}`);
+  }
   function trazas(p, r, x, comp, ef) {
     if (r.norma === "EC2-2004") return trazasEC2(r, x, comp);
+    if (r.norma === "EC2-2023") return trazasEC2023(r, x, comp);
     const P = r.P;
     const f = [];
     const n1 = (v2, d = 2) => fmt(v2, d);
@@ -12098,7 +12461,7 @@ details.an-ce { margin-top: var(--e2); }
     return f;
   }
   function notas(circular, P, ec) {
-    const claves = ec ? [["cor.n.alcance", "cor.alcanceEC"], ["cor.n.ec", "cor.ecNota"]] : [["cor.n.alcance", "cor.alcance"], ["cor.n.fyd", "cor.fydNota"], ...circular ? [["cor.n.circ", "cor.circNota"]] : []];
+    const claves = ec === "e23" ? [["cor.n.alcance", "cor.alcance23"], ["cor.n.ec", "cor.nota23"], ...circular ? [["cor.n.circ", "cor.circNota23"]] : []] : ec ? [["cor.n.alcance", "cor.alcanceEC"], ["cor.n.ec", "cor.ecNota"]] : [["cor.n.alcance", "cor.alcance"], ["cor.n.fyd", "cor.fydNota"], ...circular ? [["cor.n.circ", "cor.circNota"]] : []];
     return h(
       "div",
       { class: "cor-notas" },
