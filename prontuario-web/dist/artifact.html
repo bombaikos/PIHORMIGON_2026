@@ -809,6 +809,34 @@ details.an-ce { margin-top: var(--e2); }
 .dib .biela { fill: none; stroke: var(--compr); stroke-width: 2.2; }
 .dib .tirante { fill: none; stroke: var(--acero); stroke-width: 1.6; }
 .cor-notas { display: flex; flex-direction: column; gap: 2px; order: 3; }
+
+/* Cortante · etiqueta delante de un segmentado, campo calculado, cotg θ con su botón y aclaraciones junto al dibujo */
+.fu-campo.en-linea { flex-direction: row; align-items: center; gap: 8px; }
+.fu-campo.en-linea > .etq-grupo { flex: 0 0 auto; font-size: var(--t-s); color: var(--tinta-2); }
+.fu-campo.en-linea > .seg { flex: 1; }
+.campo.calculado .caja { background: transparent; border-style: dashed; }
+.fila-optimo { display: flex; align-items: center; gap: 8px; }
+.fila-optimo > .campo { flex: 1; min-width: 0; }
+.fila-optimo > .boton { flex: 0 0 auto; }
+.tarjeta .lienzo:has(+ .cor-notas) { flex: 0 0 auto; }
+.par2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--hueco-campos) 10px; }
+:root:not([data-densidad="comoda"]) .par2 .campo:not(.columna) > label { flex: 0 0 auto; max-width: 45%; }
+:root:not([data-densidad="comoda"]) .par2 .campo:not(.columna) .caja { flex: 1 1 0; width: auto; margin-left: 0; min-width: 0; }
+.nota-ned { margin: 0; font-size: var(--t-xs); color: var(--tinta-3); line-height: 1.35; }
+
+/* Gráficas sin color: las series se distinguen solo por el trazo (14/10, José Luis); referencias en el mismo trazo, más tenues */
+.graf .serie.s1, .graf .serie.s2, .graf .serie.s3, .graf .serie.s4, .graf .serie.s5,
+.graf .punto.s1, .graf .punto.s2, .graf .punto.s3, .graf .punto.s4, .graf .punto.s5,
+.graf .serie.ref.s1, .graf .serie.ref.s2, .graf .serie.ref.s3, .graf .serie.ref.s4, .graf .serie.ref.s5 { stroke: var(--tinta); }
+.graf-tabla th.s1, .graf-tabla th.s2, .graf-tabla th.s3, .graf-tabla th.s4, .graf-tabla th.s5 { color: var(--tinta-2); }
+.graf-tip i.s1, .marca-serie.s1 { background: var(--tinta); }
+.graf-tip i.s2, .marca-serie.s2 { background: repeating-linear-gradient(90deg, var(--tinta) 0 9px, transparent 9px 14px); }
+.graf-tip i.s3, .marca-serie.s3 { background: repeating-linear-gradient(90deg, var(--tinta) 0 2px, transparent 2px 6px); }
+.graf-tip i.s4, .marca-serie.s4 { background: repeating-linear-gradient(90deg, var(--tinta) 0 12px, transparent 12px 16px, var(--tinta) 16px 18px, transparent 18px 22px); }
+.graf-tip i.s5, .marca-serie.s5 { background: repeating-linear-gradient(90deg, var(--tinta) 0 5px, transparent 5px 8px); }
+.datos .campo:not(.apilado) select { text-align: right; text-align-last: right; }
+.datos .desliza-sec { margin: 2px 0 4px; }
+:root:not([data-densidad="comoda"]) .par2 .campo:not(.columna) > label { flex: 0 0 44px; max-width: 44px; overflow: hidden; }
 </style>
 
 <header class="barra">
@@ -4028,7 +4056,7 @@ details.an-ce { margin-top: var(--e2); }
     "cor.pendiente": (n) => `El cortante con ${n} todav\xEDa no est\xE1 migrado a esta pantalla (por ahora solo la EHE-08). Puedes cambiar la norma del proyecto a EHE-08.`,
     "cor.aEHE": "Pasar el proyecto a EHE-08",
     "cor.sinSec": "El proyecto no tiene secciones rectangulares, en T, de pilar ni circulares.",
-    "cor.signo": "Momento (armadura traccionada)",
+    "cor.signo": "Momentos:",
     "cor.dir": "Cortante paralelo al lado",
     "cor.dirH": "h (canto)",
     "cor.dirB": "b (ancho)",
@@ -4051,7 +4079,7 @@ details.an-ce { margin-top: var(--e2); }
     "cor.rhoAyuda": "\u03C1_l = A_sl/(b\u2080\xB7d). Las f\xF3rmulas de V_cu lo limitan a 20 \u2030",
     "cor.AscAyuda": "Armadura comprimida que descuenta del axil en \u03C3'cd = (N \u2212 A's\xB7fyd)/Ac. En pilares y circulares, toda la armadura de la secci\xF3n",
     "cor.sigYAyuda": "Tensi\xF3n normal vertical a nivel del c.d.g. (solo para \u03B8e simplificado)",
-    "cor.cercosAcero": "Acero de los cercos",
+    "cor.cercosAcero": "Acero",
     "cor.cercos": "Armadura transversal",
     "cor.conArm": "Con cercos",
     "cor.sinArm": "Sin armadura",
@@ -4063,8 +4091,8 @@ details.an-ce { margin-top: var(--e2); }
     "cor.angulo": "\xC1ngulo de las bielas",
     "cor.cot": "cotg \u03B8",
     "cor.theta": "\u03B8",
-    "cor.optimo": "cotg \u03B8 \xF3ptimo",
-    "cor.cotAyuda": "Entre 0,5 y 2,0 (EHE-08, 44.2.3.1). El mismo valor valdr\xE1 luego para la torsi\xF3n",
+    "cor.optimo": "\u03B8 \xF3ptimo",
+    "cor.cotAyuda": "Entre 26,6\xB0 y 63,4\xB0, es decir cotg \u03B8 entre 0,5 y 2,0 (EHE-08, 44.2.3.1). El mismo valor valdr\xE1 luego para la torsi\xF3n",
     "cor.circ": "Cercos circulares: V<sub>su</sub> \xD7 0,85",
     "cor.circAyuda": "EHE-08, 44.2.3.2.2: p\xE9rdida de eficacia de las ramas por su inclinaci\xF3n transversal. Tambi\xE9n para octogonales y hexagonales (comentarios)",
     "cor.optimoPuesto": (c) => `cotg \u03B8 = ${c}`,
@@ -4150,16 +4178,14 @@ details.an-ce { margin-top: var(--e2); }
     "cor.dib.aria": (b0, d) => `Secci\xF3n con b0 = ${b0} mm y d = ${d} mm, y celos\xEDa de M\xF6rsch con bielas y cercos`,
     // Aclaraciones
     "cor.notas": "Aclaraciones",
-    "cor.n.alcance": "Qu\xE9 comprueba",
+    "cor.n.alcance": "Comprobaciones",
     "cor.alcance": "Vu1 (compresi\xF3n oblicua del alma, en el borde del apoyo) y Vu2 = Vcu + Vsu (tracci\xF3n en el alma, a un canto \xFAtil del borde del apoyo), EHE-08 44.2.3. Sin cortante omitido: el cortante de c\xE1lculo V_Ed lo da el usuario ya en la secci\xF3n que corresponda. No incluye pretensado, regiones no fisuradas, rasante entre alas y alma, torsi\xF3n ni cargas colgadas.",
-    "cor.n.dif": "Diferencias con el Prontuario 3.1",
-    "cor.dif": "EHE-08 a\xF1ade el m\xEDnimo de V_cu, sin \u03B2 (\u2248 10 % m\xE1s con \u03B2 = 1 y poca cuant\xEDa; con \u03B8 lejos de \u03B8e sigue aportando hormig\xF3n), el K por tramos del axil, \u03C3'cd neto de la armadura comprimida, \u03BE \u2264 2, la armadura m\xEDnima f_ct,m/7,5\xB7b\u2080 y las separaciones de 44.2.3.4.1. El tope de f_y\u03B1,d de 400 MPa se mantiene.",
-    "cor.n.verif": "Verificaciones con la norma",
-    "cor.verif": "Confirmado por Jos\xE9 Luis (14/10) contra la EHE-08: \u03C3'cd \u2264 0,30 f_cd \u2264 12 MPa; el m\xEDnimo de V_cu no lleva \u03B2; \u0394T = V_rd\xB7cotg \u03B8 \u2212 (V_su/2)(cotg \u03B8 + cotg \u03B1); z = 0,9 d; el tope de 400 MPa en f_y\u03B1,d viene del comentario a 40.2 (deformaci\xF3n del tirante limitada a 2 \u2030, \u03C3_s = 400 MPa).",
+    "cor.datosCalc": "Datos de c\xE1lculo",
+    "cor.NEdNota": "Compresi\xF3n +, tracci\xF3n \u2212.",
+    "cor.n.fyd": "Tope de f<sub>y\u03B1,d</sub>",
+    "cor.fydNota": (f) => `f<sub>y\u03B1,d</sub> se limita a 400 MPa en los cercos (40.2): el comentario limita la deformaci\xF3n del tirante a 2 \u2030, con lo que \u03C3<sub>s</sub> = 400 MPa. Con el acero elegido dar\xEDa ${f} MPa.`,
     "cor.n.circ": "Secci\xF3n circular",
     "cor.circNota": "d = D/2 + (D/2 \u2212 r)\xB70,707 y b\u2080 = 0,866\xB7d (cuerda a d/4 del centro). Con cercos circulares V_su se multiplica por 0,85 (44.2.3.2.2). z = 0,9 d.",
-    "cor.n.axil": "Axil y flexi\xF3n",
-    "cor.axilNota": "El brazo z se toma 0,9 d, sirve en flexi\xF3n simple; con compresiones grandes la EHE-08 recomienda un c\xE1lculo preciso (44.2.3.2.2). M_Ed no interviene en la EHE-08 simplificada; se pedir\xE1 cuando entren el m\xE9todo general de \u03B8e, el EC-2 2004 y el EC-2 2023.",
     "cor.errDatos": "Faltan datos: b0, d, A_c y f_ck deben ser positivos",
     "cor.errFck": (m) => `La EHE-08 admite f_ck hasta ${m} MPa`,
     "cor.errCot": (c) => `cotg \u03B8 = ${c} est\xE1 fuera de 0,5 a 2,0`,
@@ -4175,7 +4201,7 @@ details.an-ce { margin-top: var(--e2); }
     "cor.pendiente": (n) => `Shear with ${n} is not migrated to this screen yet (only EHE-08 for now). You can switch the project code to EHE-08.`,
     "cor.aEHE": "Switch the project to EHE-08",
     "cor.sinSec": "The project has no rectangular, T, column or circular sections.",
-    "cor.signo": "Moment (tension reinforcement)",
+    "cor.signo": "Moments:",
     "cor.dir": "Shear parallel to side",
     "cor.dirH": "h (depth)",
     "cor.dirB": "b (width)",
@@ -4190,14 +4216,14 @@ details.an-ce { margin-top: var(--e2); }
     "cor.rhoAyuda": "\u03C1_l = A_sl/(b\u2080\xB7d). The V_cu formulas cap it at 20 \u2030",
     "cor.AscAyuda": "Compression reinforcement deducted from the axial force in \u03C3'cd = (N \u2212 A's\xB7fyd)/Ac. Columns and circular: all the section reinforcement",
     "cor.sigYAyuda": "Vertical normal stress at the centroid (only for simplified \u03B8e)",
-    "cor.cercosAcero": "Stirrup steel",
+    "cor.cercosAcero": "Steel",
     "cor.cercos": "Transverse reinforcement",
     "cor.conArm": "With stirrups",
     "cor.sinArm": "No reinforcement",
     "cor.ramas": "Legs",
     "cor.alfaRef": "stirrups",
     "cor.angulo": "Strut angle",
-    "cor.optimo": "Optimum cotg \u03B8",
+    "cor.optimo": "Optimal \u03B8",
     "cor.cotAyuda": "Between 0.5 and 2.0 (EHE-08, 44.2.3.1). The same value will apply to torsion later",
     "cor.circ": "Circular hoops: V<sub>su</sub> \xD7 0.85",
     "cor.circAyuda": "EHE-08, 44.2.3.2.2: legs lose efficiency because of their transverse inclination. Also for octagonal and hexagonal (commentary)",
@@ -4246,16 +4272,14 @@ details.an-ce { margin-top: var(--e2); }
     "cor.dib.cercos": "stirrups (ties)",
     "cor.dib.aria": (b0, d) => `Section with b0 = ${b0} mm and d = ${d} mm, and M\xF6rsch truss with struts and stirrups`,
     "cor.notas": "Clarifications",
-    "cor.n.alcance": "What is checked",
+    "cor.n.alcance": "Checks",
     "cor.alcance": "Vu1 (web crushing, at the support edge) and Vu2 = Vcu + Vsu (web tension, one effective depth from the support edge), EHE-08 44.2.3. The design shear V_Ed is typed by the user at the relevant section. Not included: prestressing, uncracked regions, flange-web shear, torsion, hanging loads.",
-    "cor.n.dif": "Differences from Prontuario 3.1",
-    "cor.dif": "EHE-08 adds the V_cu minimum, without \u03B2 (\u2248 10 % more with \u03B2 = 1 and low reinforcement ratio), the stepwise axial K, \u03C3'cd net of compression steel, \u03BE \u2264 2, the minimum reinforcement f_ct,m/7.5\xB7b\u2080 and the spacings of 44.2.3.4.1. The 400 MPa cap on f_y\u03B1,d stays.",
+    "cor.datosCalc": "Design data",
+    "cor.NEdNota": "Compression +, tension \u2212.",
+    "cor.n.fyd": "Cap on f<sub>y\u03B1,d</sub>",
+    "cor.fydNota": (f) => `f<sub>y\u03B1,d</sub> is capped at 400 MPa for stirrups (40.2): the commentary limits tie strain to 2 \u2030, so \u03C3<sub>s</sub> = 400 MPa. The chosen steel alone would give ${f} MPa.`,
     "cor.n.circ": "Circular section",
     "cor.circNota": "d = D/2 + (D/2 \u2212 r)\xB70.707 and b\u2080 = 0.866\xB7d (chord at d/4 from the centre). With circular hoops V_su is multiplied by 0.85 (44.2.3.2.2). z = 0.9 d.",
-    "cor.n.axil": "Axial force and bending",
-    "cor.axilNota": "The lever arm is z = 0.9 d, fine for simple bending; with large compression EHE-08 recommends an accurate z (44.2.3.2.2). M_Ed does not enter the simplified EHE-08 method; it will be asked for when the general \u03B8e method, EC-2 2004 and EC-2 2023 arrive.",
-    "cor.n.verif": "Checks against the code",
-    "cor.verif": "Confirmed by Jos\xE9 Luis (14/10) against EHE-08: \u03C3'cd \u2264 0.30 f_cd \u2264 12 MPa; the V_cu minimum has no \u03B2; \u0394T = V_rd\xB7cotg \u03B8 \u2212 (V_su/2)(cotg \u03B8 + cotg \u03B1); z = 0.9 d; the 400 MPa cap on f_y\u03B1,d comes from the commentary to 40.2 (tie strain limited to 2 \u2030, \u03C3_s = 400 MPa).",
     "cor.cmdComprobar": "Shear: check",
     "cor.cmdDimensionar": "Shear: design",
     "cor.errDatos": "Missing data: b0, d, A_c and f_ck must be positive",
@@ -4366,6 +4390,7 @@ details.an-ce { margin-top: var(--e2); }
     ac: { ud: "", f: 1, d: 2 },
     dosis: { ud: "kg/m\xB3", f: 1, d: 0 },
     pct: { ud: "%", f: 1, d: 1 },
+    ang1: { ud: "\xB0", f: 1, d: 1 },
     ang: { ud: "\xB0", f: 1, d: 0 },
     // ángulos en grados
     AswS: { ud: "cm\xB2/m", f: 10, d: 2 }
@@ -4517,11 +4542,11 @@ details.an-ce { margin-top: var(--e2); }
     queueMicrotask(() => leer(false));
     return c;
   }
-  function selector({ id, etq, opciones, valor, onCambio, nota }) {
+  function selector({ id, etq, opciones, valor, onCambio, nota, linea = false }) {
     const s = h("select", { id }, ...opciones.map(([v2, e2]) => h("option", { value: v2, selected: String(v2) === String(valor), html: e2 })));
     s.addEventListener("change", () => onCambio(s.value));
     const c = marco(id, etq, null, h("div", { class: "caja" }, s), nota).c;
-    c.classList.add("apilado");
+    if (!linea) c.classList.add("apilado");
     return c;
   }
   function segmentado({ opciones, valor, onCambio, ancho = false, etiqueta }) {
@@ -4563,14 +4588,14 @@ details.an-ce { margin-top: var(--e2); }
   var par = (...hijos) => h("div", { class: "par" }, ...hijos);
   var boton = (texto, onclick, clase = "secundario") => h("button", { type: "button", class: `boton ${clase}`, onclick, html: texto });
   var aviso = (texto, tipo = "") => h("p", { class: `aviso ${tipo}`, html: texto });
-  function pestanas({ lista, activa, onCambio }) {
+  function pestanas({ lista, activa: activa2, onCambio }) {
     return h(
       "div",
       { class: "pestanas", role: "tablist" },
       ...lista.map(([k, e2, o = {}]) => h("button", {
         type: "button",
         role: "tab",
-        "aria-selected": String(k === activa),
+        "aria-selected": String(k === activa2),
         "aria-disabled": o.deshabilitada ? "true" : void 0,
         title: o.deshabilitada ? t("pendiente") : void 0,
         html: e2,
@@ -6710,6 +6735,7 @@ details.an-ce { margin-top: var(--e2); }
     modo: () => modo,
     reiniciar: () => reiniciar3,
     resultados: () => resultados4,
+    selectorSecciones: () => selectorSecciones,
     sincronizar: () => sincronizar2
   });
 
@@ -7988,10 +8014,41 @@ details.an-ce { margin-top: var(--e2); }
     fila3.append(h("button", { type: "button", class: "mas", title: t("sec.nuevaDe", t(`forma.${est3.forma}`)), onclick: () => elegir2(ctx2, est3.forma, null) }, `+ ${t("sec.nueva")}`));
     el.append(fila3);
   }
+  function selectorSecciones(ctx2, el, { formas, activa: activa2, alElegir }) {
+    ctxCab2 = ctx2;
+    const fila3 = h("div", { class: "selsec", role: "group", "aria-label": t("seccion") });
+    for (const f of formas) {
+      const delTipo = ctx2.p.secciones.filter((x) => x.forma === f);
+      const act = activa2?.forma === f;
+      const titulo = act ? `${t(`forma.${f}`)}<span class="sep">\xB7</span><b>${activa2.nombre}</b>` : t(`forma.${f}`);
+      const caja = h(
+        "div",
+        { class: `desp${act ? " activo" : ""}` },
+        h("button", {
+          type: "button",
+          "aria-haspopup": "listbox",
+          "aria-expanded": String(abierto === f),
+          title: t(`forma.${f}`),
+          html: `${icono2(f)}<span class="nom">${titulo}</span><span class="cnt">${delTipo.length}</span><span class="car">\u25BE</span>`,
+          onclick: (e2) => {
+            e2.stopPropagation();
+            abierto = abierto === f ? null : f;
+            ctx2.pintar();
+          }
+        })
+      );
+      if (abierto === f) caja.append(listaSecciones(ctx2, f, delTipo, act ? activa2.nombre : void 0, (n) => {
+        abierto = null;
+        alElegir(n);
+      }, false));
+      fila3.append(caja);
+    }
+    el.append(fila3);
+  }
   function modo(k) {
     est3.pestana = k;
   }
-  function listaSecciones(ctx2, f, delTipo, activa) {
+  function listaSecciones(ctx2, f, delTipo, activa2, alElegir = (nombre) => elegir2(ctx2, f, nombre), conAlta = true) {
     const m = h("div", { class: "menu-sec", role: "listbox", onclick: (e2) => e2.stopPropagation() });
     const filas = h("div", { class: "filas" });
     const q2 = delTipo.length > 8 ? h("input", { class: "buscar", placeholder: t("sec.buscarEntre", delTipo.length), autocomplete: "off" }) : null;
@@ -8000,9 +8057,9 @@ details.an-ce { margin-top: var(--e2); }
       filas.replaceChildren(...delTipo.filter((s) => !x || s.nombre.toLowerCase().includes(x)).map((s) => h("button", {
         type: "button",
         role: "option",
-        "aria-current": s.nombre === activa ? "true" : void 0,
+        "aria-current": s.nombre === activa2 ? "true" : void 0,
         html: `${icono2(f)}${s.nombre}<span class="nombre-sec">${resumenForma(s)}</span>`,
-        onclick: () => elegir2(ctx2, f, s.nombre)
+        onclick: () => alElegir(s.nombre)
       })));
       if (!filas.children.length) filas.append(h("span", { class: "vacio" }, delTipo.length ? t("sec.ningunaCoincide") : t("sec.ningunaTipo")));
     };
@@ -8018,7 +8075,8 @@ details.an-ce { margin-top: var(--e2); }
       m.append(q2);
       queueMicrotask(() => q2.focus());
     }
-    m.append(filas, h("button", { type: "button", class: "alta", onclick: () => elegir2(ctx2, f, null) }, `+ ${t("sec.nuevaDe", t(`forma.${f}`))}`));
+    m.append(filas);
+    if (conAlta) m.append(h("button", { type: "button", class: "alta", onclick: () => alElegir(null) }, `+ ${t("sec.nuevaDe", t(`forma.${f}`))}`));
     queueMicrotask(() => filas.querySelector("[aria-current]")?.scrollIntoView({ block: "nearest" }));
     return m;
   }
@@ -8884,11 +8942,11 @@ details.an-ce { margin-top: var(--e2); }
   }
   function chipsClases(D, grupoClases, no, onClick) {
     return h("div", { class: "chips", role: "group" }, ...grupoClases.map((c) => {
-      const activa = D.clasesEHE.includes(c);
+      const activa2 = D.clasesEHE.includes(c);
       return h("button", {
         type: "button",
         class: "chip-sel chip-clase",
-        "aria-pressed": String(activa),
+        "aria-pressed": String(activa2),
         disabled: no.has(c) || void 0,
         title: no.has(c) ? t("eh.noCompatible") : t(`eh.desc.${c}`),
         html: `${c}<span class="ce">${EQUIV_CE[c]}</span>`,
@@ -9095,11 +9153,11 @@ details.an-ce { margin-top: var(--e2); }
   }
   function chips(D, lista, no, onClick) {
     return h("div", { class: "chips", role: "group" }, ...lista.map((c) => {
-      const activa = D.clasesEC.includes(c);
+      const activa2 = D.clasesEC.includes(c);
       return h("button", {
         type: "button",
         class: "chip-sel chip-clase",
-        "aria-pressed": String(activa),
+        "aria-pressed": String(activa2),
         disabled: no.has(c) || void 0,
         title: no.has(c) ? t("eh.noCompatible") : t(`ec.desc.${c}`),
         html: `${c}<span class="ce">${t(`ec.tag.${c}`)}</span>`,
@@ -11036,6 +11094,7 @@ details.an-ce { margin-top: var(--e2); }
   // src/ui/vistas/cortante.js
   var cortante_exports = {};
   __export(cortante_exports, {
+    cabeza: () => cabeza3,
     comandos: () => comandos8,
     datos: () => datos11,
     reiniciar: () => reiniciar5,
@@ -11265,12 +11324,9 @@ details.an-ce { margin-top: var(--e2); }
     const xe = xd + 66;
     const cot2 = c.cotTheta;
     const cotA = c.alfa >= 90 ? 0 : 1 / Math.tan(c.alfa * Math.PI / 180);
-    const zp = Math.min(Math.max(c.z * sc, 70), 120);
-    const p = zp * (cot2 + cotA);
-    const ancho = 3 * p + zp * cotA + 10;
-    const k = Math.min(1, 300 / ancho);
-    const zk = zp * k;
-    const pk = p * k;
+    const ANCHO = 250;
+    const zk = ANCHO / (3 * cot2 + 4 * cotA);
+    const pk = zk * (cot2 + cotA);
     const yT = y0 + 18;
     const yB = yT + zk;
     out.push(`<text class="tit" x="${xe}" y="20">${t("cor.dib.celosia")}</text>`);
@@ -11288,10 +11344,10 @@ details.an-ce { margin-top: var(--e2); }
     const th = Math.atan(1 / cot2) * 180 / Math.PI;
     out.push(`<text x="${xe + pk - 22}" y="${yB - 6}" text-anchor="end">\u03B8 = ${fmt(th, 1)}\xB0</text>`);
     if (!c.sinArmadura) out.push(`<text x="${xe + 4}" y="${yB + 16}">\u03B1 = ${fmt(c.alfa, 0)}\xB0</text>`);
-    const y2 = yB + 36;
+    const y2 = yT + 200;
     out.push(`<g><line class="biela" x1="${xe}" y1="${y2}" x2="${xe + 22}" y2="${y2}"/><text x="${xe + 28}" y="${y2 + 4}">${t("cor.dib.biela")}</text></g>`);
     if (!c.sinArmadura) out.push(`<g><line class="tirante" x1="${xe}" y1="${y2 + 18}" x2="${xe + 22}" y2="${y2 + 18}"/><text x="${xe + 28}" y="${y2 + 22}">${t("cor.dib.cercos")}</text></g>`);
-    const W = Math.max(xe + 3 * pk + zk * cotA + 90, xe + 150);
+    const W = xe + ANCHO + 90;
     const H = Math.max(y0 + hp + (sec.forma === "T" ? 92 : 64), y2 + 36);
     return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${W.toFixed(0)} ${H.toFixed(0)}" role="img" aria-label="${t("cor.dib.aria", mm2(c.b0), mm2(c.d))}">${out.join("")}</svg>`;
   }
@@ -11321,6 +11377,10 @@ details.an-ce { margin-top: var(--e2); }
     est5.ov = { b0: null, d: null, Asl: null, Asc: null };
     est5.aceroCercos = null;
   }
+  var RAD = Math.PI / 180;
+  var thetaDe = (cot2) => Math.atan(1 / cot2) / RAD;
+  var THETA_MIN = +(Math.atan(1 / COT_MAX) / RAD).toFixed(1) + 0.1;
+  var THETA_MAX = +(Math.atan(1 / COT_MIN) / RAD).toFixed(1) - 0.1;
   var FORMAS2 = ["rectangular", "T", "pilar", "circular"];
   var secciones = (p) => p.secciones.map((s, i) => [s, i]).filter(([s]) => FORMAS2.includes(s.forma));
   var esViga2 = (s) => s.forma === "rectangular" || s.forma === "T";
@@ -11342,9 +11402,38 @@ details.an-ce { margin-top: var(--e2); }
     est5.aceroCercos = null;
     ctx2.pintar();
   }
+  function calculado(c) {
+    const i = c.querySelector("input");
+    i.disabled = true;
+    i.tabIndex = -1;
+    c.classList.add("calculado");
+    return c;
+  }
+  function activa(p) {
+    const R = secciones(p);
+    if (!R.length) return null;
+    if (!R.some(([, i]) => i === est5.i)) {
+      est5.i = R[0][1];
+      est5.ov = { b0: null, d: null, Asl: null, Asc: null };
+    }
+    return p.secciones[est5.i];
+  }
+  function cabeza3(ctx2, el) {
+    const p = ctx2.p;
+    if (!ehe(p)) return;
+    const s = activa(p);
+    if (!s) return;
+    selectorSecciones(ctx2, el, { formas: FORMAS2, activa: s, alElegir: (nombre) => {
+      const i = p.secciones.findIndex((x) => x.nombre === nombre);
+      if (i >= 0) {
+        est5.i = i;
+        cambiaSeccion(ctx2);
+      }
+    } });
+  }
   function datos11(ctx2, form) {
     const p = ctx2.p;
-    poner(form, h("div", { class: "cab" }, h("h1", {}, t("m.cortante")), h("p", {}, t("cor.subtitulo"))));
+    poner(form, h("div", { class: "cab" }, h("h1", {}, t("m.cortante"))));
     if (!ehe(p)) {
       return poner(
         form,
@@ -11357,11 +11446,7 @@ details.an-ce { margin-top: var(--e2); }
     }
     const R = secciones(p);
     if (!R.length) return poner(form, aviso(t("cor.sinSec"), "info"));
-    if (!R.some(([, i]) => i === est5.i)) {
-      est5.i = R[0][1];
-      est5.ov = { b0: null, d: null, Asl: null, Asc: null };
-    }
-    const s = p.secciones[est5.i];
+    const s = activa(p);
     let ef;
     let sec;
     try {
@@ -11374,101 +11459,76 @@ details.an-ce { margin-top: var(--e2); }
     const refrescar = () => {
       const rho = ef.Asl / (ef.b0 * ef.d);
       const a = document.getElementById("c-rho");
-      if (a && document.activeElement !== a) a.value = paraCampo(rho, "cuantia");
+      if (a && document.activeElement !== a) a.value = String(+(rho * 1e3).toFixed(2));
       const b = document.getElementById("c-asl");
-      if (b && document.activeElement !== b) b.value = paraCampo(ef.Asl, "As");
-      const r = document.getElementById("c-resumen");
-      if (r) r.innerHTML = t("cor.resumen", fmt(ef.b0 * 1e3, 0), fmt(ef.d * 1e3, 0), fmt(rho * 1e3, 1));
+      if (b && document.activeElement !== b) b.value = String(Math.round(ef.Asl * 1e6));
     };
     const nuevo2 = (k) => (v2) => {
       est5.ov[k] = v2;
+      ef[k] = v2;
       refrescar();
       cambio();
     };
     const rho0 = ef.Asl / (ef.b0 * ef.d);
     const pilarOCirc = !esViga2(s);
+    const gauge = h("input", { type: "range", class: "desliza-sec", min: THETA_MIN, max: THETA_MAX, step: 0.1, value: thetaDe(est5.cot), "aria-label": t("cor.theta") });
+    const refrescarGauge = () => {
+      gauge.value = thetaDe(est5.cot);
+    };
+    gauge.addEventListener("input", () => {
+      const v2 = Number(gauge.value);
+      est5.cot = 1 / Math.tan(v2 * RAD);
+      const c = document.getElementById("c-theta");
+      if (c) c.value = String(+v2.toFixed(1));
+      cambio();
+    });
+    const conEtq = (etq, c) => h("div", { class: "fu-campo" }, h("span", { class: "etq-grupo", html: etq }), c);
     poner(
       form,
       segmentado({ ancho: true, etiqueta: t("flex.modo"), opciones: [["comprobar", t("comprobar")], ["dimensionar", t("dimensionar")]], valor: est5.modo, onCambio: (m) => {
         est5.modo = m;
         ctx2.pintar();
       } }),
-      esViga2(s) ? segmentado({ ancho: true, etiqueta: t("cor.signo"), opciones: [["1", t("flex.positivo")], ["-1", t("flex.negativo")]], valor: String(est5.signo), onCambio: (v2) => {
+      esViga2(s) ? conEtq(t("cor.signo"), segmentado({ ancho: true, etiqueta: t("cor.signo"), opciones: [["1", t("flex.positivo")], ["-1", t("flex.negativo")]], valor: String(est5.signo), onCambio: (v2) => {
         est5.signo = Number(v2);
         cambiaSeccion(ctx2);
-      } }) : null,
-      s.forma === "pilar" ? segmentado({ ancho: true, etiqueta: t("cor.dir"), opciones: [["h", t("cor.dirH")], ["b", t("cor.dirB")]], valor: est5.dir, onCambio: (v2) => {
+      } })) : null,
+      s.forma === "pilar" ? conEtq(t("cor.dir"), segmentado({ ancho: true, etiqueta: t("cor.dir"), opciones: [["h", t("cor.dirH")], ["b", t("cor.dirB")]], valor: est5.dir, onCambio: (v2) => {
         est5.dir = v2;
         cambiaSeccion(ctx2);
-      } }) : null,
+      } })) : null,
       grupo(
-        t("g.seccion"),
-        selector({ id: "c-sec", etq: t("seccion"), opciones: R.map(([x, i]) => [String(i), `${x.nombre} \xB7 ${x.hormigon}`]), valor: String(est5.i), onCambio: (v2) => {
-          est5.i = Number(v2);
-          cambiaSeccion(ctx2);
-        } })
-      ),
-      grupo(t("g.esfuerzo"), par(
-        campoNum({ id: "c-ved", etq: t("cor.VEd"), valor: est5.VEd, mag: "F", paso: 10, min: 0.01, max: 1e6, nombre: t("cor.VEdNombre"), onCambio: (v2) => {
-          est5.VEd = v2;
-          cambio();
-        } }),
-        campoNum({ id: "c-ned", etq: t("cor.NEd"), ref: t("cor.NEdRef"), valor: est5.NEd, mag: "N", paso: 10, min: -1e6, max: 1e6, onCambio: (v2) => {
-          est5.NEd = v2;
-          cambio();
-        } })
-      )),
-      h(
-        "details",
-        { class: "pleg" },
-        h("summary", {}, h("span", { id: "c-resumen", html: t("cor.resumen", fmt(ef.b0 * 1e3, 0), fmt(ef.d * 1e3, 0), fmt(rho0 * 1e3, 1)) })),
-        h(
-          "div",
-          { class: "cuenta" },
-          par(
-            campoNum({ id: "c-b0", etq: t("cor.b0"), valor: ef.b0, mag: "long", paso: 5, min: 0.01, max: 20, ayuda: t("cor.b0Ayuda"), onCambio: nuevo2("b0") }),
-            campoNum({ id: "c-d", etq: t("cor.d"), valor: ef.d, mag: "long", paso: 5, min: 0.01, max: 20, ayuda: t("cor.dAyuda"), onCambio: nuevo2("d") })
-          ),
-          par(
-            campoNum({ id: "c-asl", etq: t("cor.Asl"), valor: ef.Asl, mag: "As", paso: 50, min: 0, max: 1, ayuda: t("cor.AslAyuda"), onCambio: nuevo2("Asl") }),
-            campoNum({
-              id: "c-rho",
-              etq: t("cor.rho"),
-              valor: rho0,
-              mag: "cuantia",
-              paso: 1,
-              min: 0,
-              max: 0.2,
-              ayuda: t("cor.rhoAyuda"),
-              onCambio: (v2) => {
-                est5.ov.Asl = v2 * ef.b0 * ef.d;
-                ef.Asl = est5.ov.Asl;
-                refrescar();
-                cambio();
-              }
-            })
-          ),
-          par(
-            pilarOCirc ? campoNum({ id: "c-asc", etq: t("cor.Asc"), valor: ef.Asc, mag: "As", paso: 50, min: 0, max: 1, ayuda: t("cor.AscAyuda"), onCambio: nuevo2("Asc") }) : null,
-            campoNum({ id: "c-sigy", etq: t("cor.sigY"), ref: t("cor.sigYRef"), valor: est5.sigY, mag: "tension", paso: 0.5, min: -50, max: 50, ayuda: t("cor.sigYAyuda"), onCambio: (v2) => {
-              est5.sigY = v2;
-              cambio();
-            } })
-          ),
-          selector({ id: "c-acero", etq: t("cor.cercosAcero"), opciones: p.aceros.map((m) => [m.nombre, m.nombre]), valor: est5.aceroCercos ?? s.acero, onCambio: (v2) => {
-            est5.aceroCercos = v2;
+        t("g.esfuerzo"),
+        ...parejas([
+          campoNum({ id: "c-ved", etq: t("cor.VEd"), valor: est5.VEd, mag: "F", paso: 10, min: 0.01, max: 1e6, nombre: t("cor.VEdNombre"), onCambio: (v2) => {
+            est5.VEd = v2;
             cambio();
           } }),
-          sec.circular ? h(
-            "div",
-            { class: "fu-campo", title: t("cor.circAyuda") },
-            h("span", { class: "etq-grupo", html: t("cor.circ") }),
-            segmentado({ opciones: [["si", "\xD7 0,85"], ["no", t("cor.sinReduccion")]], valor: est5.circ ? "si" : "no", ancho: true, etiqueta: t("cor.circ"), onCambio: (v2) => {
-              est5.circ = v2 === "si";
-              ctx2.pintar();
-            } })
-          ) : null
-        )
+          campoNum({ id: "c-ned", etq: t("cor.NEd"), ref: t("cor.NEdRef"), valor: est5.NEd, mag: "N", paso: 10, min: -1e6, max: 1e6, ayuda: t("cor.NEdNota"), onCambio: (v2) => {
+            est5.NEd = v2;
+            cambio();
+          } })
+        ]),
+        h("p", { class: "nota-ned", html: t("cor.NEdNota") })
+      ),
+      grupo(
+        t("cor.datosCalc"),
+        ...parejas([
+          campoNum({ id: "c-b0", etq: t("cor.b0"), valor: ef.b0, mag: "long", paso: 5, min: 0.01, max: 20, ayuda: t("cor.b0Ayuda"), onCambio: nuevo2("b0") }),
+          campoNum({ id: "c-d", etq: t("cor.d"), valor: ef.d, mag: "long", paso: 5, min: 0.01, max: 20, ayuda: t("cor.dAyuda"), onCambio: nuevo2("d") }),
+          mostrar(campoNum({ id: "c-asl", etq: t("cor.Asl"), valor: ef.Asl, mag: "As", paso: 50, min: 0, max: 1, ayuda: t("cor.AslAyuda"), onCambio: nuevo2("Asl") }), ef.Asl * 1e6, 0),
+          calculado(mostrar(campoNum({ id: "c-rho", etq: t("cor.rho"), valor: rho0, mag: "cuantia", paso: 1, min: 0, max: 1, ayuda: t("cor.rhoAyuda"), onCambio: () => {
+          } }), rho0 * 1e3, 2)),
+          campoNum({ id: "c-sigy", etq: t("cor.sigY"), ref: t("cor.sigYRef"), valor: est5.sigY, mag: "tension", paso: 0.5, min: -50, max: 50, ayuda: t("cor.sigYAyuda"), onCambio: (v2) => {
+            est5.sigY = v2;
+            cambio();
+          } }),
+          pilarOCirc ? mostrar(campoNum({ id: "c-asc", etq: t("cor.Asc"), valor: ef.Asc, mag: "As", paso: 50, min: 0, max: 1, ayuda: t("cor.AscAyuda"), onCambio: nuevo2("Asc") }), ef.Asc * 1e6, 0) : null
+        ]),
+        sec.circular ? conEtq(t("cor.circ"), segmentado({ opciones: [["si", "\xD7 0,85"], ["no", t("cor.sinReduccion")]], valor: est5.circ ? "si" : "no", ancho: true, etiqueta: t("cor.circ"), onCambio: (v2) => {
+          est5.circ = v2 === "si";
+          ctx2.pintar();
+        } })) : null
       ),
       grupo(
         t("cor.cercos"),
@@ -11476,17 +11536,19 @@ details.an-ce { margin-top: var(--e2); }
           est5.sin = v2 === "sin";
           ctx2.pintar();
         } }) : null,
-        comp && !est5.sin ? par(
-          selector({ id: "c-fi", etq: t("cor.fi"), opciones: diametrosEntrada().map((x) => [String(x), `\xF8${x}`]), valor: String(est5.fi), onCambio: (v2) => {
-            est5.fi = Number(v2);
+        ...parejas([
+          selector({ id: "c-acero", etq: t("cor.cercosAcero"), linea: true, opciones: p.aceros.map((m) => [m.nombre, m.nombre]), valor: est5.aceroCercos ?? s.acero, onCambio: (v2) => {
+            est5.aceroCercos = v2;
             cambio();
           } }),
-          selector({ id: "c-ramas", etq: t("cor.ramas"), opciones: [2, 3, 4, 6].map((x) => [String(x), String(x)]), valor: String(est5.ramas), onCambio: (v2) => {
+          comp && !est5.sin ? selector({ id: "c-fi", etq: t("cor.fi"), linea: true, opciones: diametrosEntrada().map((x) => [String(x), `\xF8${x}`]), valor: String(est5.fi), onCambio: (v2) => {
+            est5.fi = Number(v2);
+            cambio();
+          } }) : null,
+          comp && !est5.sin ? selector({ id: "c-ramas", etq: t("cor.ramas"), linea: true, opciones: [2, 3, 4, 6].map((x) => [String(x), String(x)]), valor: String(est5.ramas), onCambio: (v2) => {
             est5.ramas = Number(v2);
             cambio();
-          } })
-        ) : null,
-        par(
+          } }) : null,
           comp && !est5.sin ? campoNum({ id: "c-s", etq: t("cor.s"), valor: est5.s, mag: "diam", paso: 25, min: 25, max: 1e3, onCambio: (v2) => {
             est5.s = v2;
             cambio();
@@ -11494,26 +11556,26 @@ details.an-ce { margin-top: var(--e2); }
           !est5.sin ? campoNum({ id: "c-alfa", etq: t("cor.alfa"), ref: t("cor.alfaRef"), valor: est5.alfa, mag: "ang", paso: 5, min: 45, max: 90, onCambio: (v2) => {
             est5.alfa = v2;
             cambio();
-          } }) : null
-        )
-      ),
-      grupo(t("cor.angulo"), par(
-        campoNum({ id: "c-cot", etq: t("cor.cot"), valor: est5.cot, mag: "ratio", paso: 0.05, min: COT_MIN, max: COT_MAX, ayuda: t("cor.cotAyuda"), onCambio: (v2) => {
-          est5.cot = v2;
-          cambio();
-        } }),
+          } }) : null,
+          campoNum({ id: "c-theta", etq: t("cor.theta"), valor: thetaDe(est5.cot), mag: "ang1", paso: 1, min: THETA_MIN, max: THETA_MAX, ayuda: t("cor.cotAyuda"), onCambio: (v2) => {
+            est5.cot = 1 / Math.tan(v2 * RAD);
+            cambio();
+            refrescarGauge();
+          } })
+        ]),
+        gauge,
         boton(t("cor.optimo"), () => {
           try {
             const { sec: s2, ef: e2 } = efectivos(p, s);
             const base2 = entrada2(p, s, s2, e2);
             est5.cot = cotOptimo(base2, { VEd: est5.VEd, dim: !comp });
             ctx2.pintar();
-            ctx2.avisar(t("cor.optimoPuesto", fmt(est5.cot, 2)));
+            ctx2.avisar(t("cor.optimoPuesto", fmt(thetaDe(est5.cot), 1)));
           } catch (e2) {
             ctx2.avisar(String(e2.message ?? e2));
           }
         }, "secundario pequeno")
-      ))
+      )
     );
   }
   function entrada2(p, s, sec, ef) {
@@ -11534,6 +11596,17 @@ details.an-ce { margin-top: var(--e2); }
       circular: sec.circular && est5.circ
     };
   }
+  var mostrar = (c, v2, d) => {
+    const i = c.querySelector("input");
+    i.value = String(+v2.toFixed(d));
+    return c;
+  };
+  var parejas = (campos) => {
+    const c = campos.filter(Boolean);
+    const filas = [];
+    for (let i = 0; i < c.length; i += 2) filas.push(h("div", { class: "par2" }, ...c.slice(i, i + 2)));
+    return filas;
+  };
   var fila2 = (id, nom, val, cuenta) => ({ id, nom, val, cuenta });
   var art3 = (a) => `<span class="art">EHE-08 \xB7 ${a}</span>`;
   function resultados11(ctx2, res) {
@@ -11553,7 +11626,7 @@ details.an-ce { margin-top: var(--e2); }
     const AswS = comp && !est5.sin ? AswSDe(est5.fi, est5.ramas, est5.s) : 0;
     const r = comp ? comprobar2({ ...x, AswS, sinArmadura: est5.sin, VEd: est5.VEd }) : dimensionar2(x, est5.VEd, { diametros: diametrosTabla() });
     const P = r.P;
-    const avisos = r.avisos.map((a) => aviso(t(a.clave, ...a.args ?? [])));
+    const avisos = r.avisos.filter((a) => a.clave !== "cor.av.fyd400").map((a) => aviso(t(a.clave, ...a.args ?? [])));
     (_a = p.calculos).cortante ?? (_a.cortante = {});
     p.calculos.cortante[s.nombre] = {
       modo: est5.modo,
@@ -11594,16 +11667,12 @@ details.an-ce { margin-top: var(--e2); }
     if (avisos.length) res.append(h("div", { class: "avisos" }, ...avisos));
     const geo = geometriaDe(p, s);
     const lienzo = h("div", { class: "lienzo", html: dibujoCortante(geo, s, { b0: ef.b0, d: ef.d, z: P.z / 1e3, cotTheta: est5.cot, alfa: est5.alfa, neg: esViga2(s) && est5.signo < 0, sinArmadura: comp && est5.sin }) });
-    poner(centro, h("h2", {}, t("cor.t.dibujo")), lienzo, notas());
+    poner(centro, h("h2", {}, t("cor.t.dibujo")), lienzo, notas(sec.circular, P));
     const cif = comp ? r.sinArmadura ? [[t("cor.c.Vu2"), qh(r.Vu2, "F")], [t("cor.rho"), `${fmt(P.rho * 1e3, 1)}<span class="u">${ESP}\u2030</span>`]] : [[t("cor.c.Vu1"), qh(r.Vu1, "F")], [t("cor.c.Vu2"), qh(r.Vu2, "F")], [`${t("cor.c.Vcu")} + ${t("cor.c.Vsu")}`, `${fmt(r.Vcu, 0)} + ${fmt(r.Vsu, 0)}<span class="u">${ESP}kN</span>`], [`\u03B8 \xB7 \u03B2`, `${fmt(r.theta, 1)}\xB0 \xB7 ${fmt(r.beta, 2)}`]] : [[t("cor.c.Vu1"), qh(r.Vu1, "F")], [t("cor.c.Vcu"), qh(r.Vcu, "F")], [t("cor.armNec"), qh(r.AswSNec, "AswS")], [t("cor.c.Asw") + " m\xEDn.", qh(r.AswSMin, "AswS")]];
     poner(dcha, h("h2", {}, t("cor.t.res")), cifras(cif));
     if (!comp && r.tabla) {
       const filas = r.tabla.map((f) => f.s ? [`\xF8${f.fi}`, String(f.ramas), fmt(f.s, 0), fmt(f.AswS * 10, 2), fmt(f.Vu, 0)] : [`\xF8${f.fi}`, String(f.ramas), "\u2014", "\u2014", "\u2014"]);
-      poner(
-        dcha,
-        tabla(filas, { cabecera: [t("cor.tabla.fi"), t("cor.tabla.ramas"), t("cor.tabla.s"), t("cor.tabla.asw"), t("cor.tabla.vu")] }),
-        h("p", { class: "nota", html: t("cor.tabla.nota", Math.floor(Math.min(r.sMax, 300) / 50) * 50) })
-      );
+      poner(dcha, tabla(filas, { cabecera: [t("cor.tabla.fi"), t("cor.tabla.ramas"), t("cor.tabla.s"), t("cor.tabla.asw"), t("cor.tabla.vu")] }));
     }
     poner(dcha, h("div", { class: "traza" }, ...trazas(p, r, x, comp, ef).map((f) => {
       const det = h(
@@ -11673,13 +11742,13 @@ details.an-ce { margin-top: var(--e2); }
     }
     return f;
   }
-  function notas() {
-    const claves = [["cor.n.alcance", "cor.alcance"], ["cor.n.dif", "cor.dif"], ["cor.n.circ", "cor.circNota"], ["cor.n.axil", "cor.axilNota"], ["cor.n.verif", "cor.verif"]];
+  function notas(circular, P) {
+    const claves = [["cor.n.alcance", "cor.alcance"], ["cor.n.fyd", "cor.fydNota"], ...circular ? [["cor.n.circ", "cor.circNota"]] : []];
     return h(
       "div",
       { class: "cor-notas" },
       h("h3", {}, t("cor.notas")),
-      ...claves.map(([k, v2]) => h("details", { class: "pleg" }, h("summary", {}, t(k)), h("div", { class: "cuenta" }, h("p", { class: "nota", html: t(v2) }))))
+      ...claves.map(([k, v2]) => h("details", { class: "pleg" }, h("summary", {}, h("span", { html: t(k) })), h("div", { class: "cuenta" }, h("p", { class: "nota", html: t(v2, fmt(P.fydLibre, 1)) }))))
     );
   }
   function comandos8(ctx2) {
