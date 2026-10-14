@@ -1,0 +1,39 @@
+# Espeja este repositorio en Bitbucket (ines_dev/pih_2026) en cada push.
+# Requiere el secreto BITBUCKET_TOKEN (Settings > Secrets and variables > Actions):
+# un "repository access token" de Bitbucket con permiso de escritura en el repositorio.
+# Si en su lugar se usa un app password, añadir también el secreto BITBUCKET_USER.
+# Guía: analisis/espejo-bitbucket.md
+name: Espejo a Bitbucket
+
+on:
+  push:
+    branches: ['**']
+  workflow_dispatch:
+
+concurrency:
+  group: espejo-bitbucket
+  cancel-in-progress: false
+
+jobs:
+  espejo:
+    runs-on: ubuntu-latest
+    if: github.repository == 'bombaikos/pihormigon_2026'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Subir main y ramas a Bitbucket
+        env:
+          BITBUCKET_TOKEN: ${{ secrets.BITBUCKET_TOKEN }}
+          BITBUCKET_USER: ${{ secrets.BITBUCKET_USER || 'x-token-auth' }}
+        run: |
+          set -euo pipefail
+          if [ -z "$BITBUCKET_TOKEN" ]; then
+            echo "::error::Falta el secreto BITBUCKET_TOKEN (ver analisis/espejo-bitbucket.md)"
+            exit 1
+          fi
+          git remote add bitbucket "https://${BITBUCKET_USER}:${BITBUCKET_TOKEN}@bitbucket.org/ines_dev/pih_2026.git"
+          # analisis/normativa está en .gitignore y por tanto nunca llega a GitHub ni a Bitbucket.
+          git push bitbucket "refs/remotes/origin/*:refs/heads/*" 2>&1 | sed "s/${BITBUCKET_TOKEN}/***/g"
+          git remote remove bitbucket
