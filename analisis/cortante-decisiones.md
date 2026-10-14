@@ -40,5 +40,18 @@ Una pantalla que cambia con la norma · tope fyd 400 MPa solo en EHE-08 · M_Ed 
 - cotθe del método simplificado: coincide con la ecuación que pegó (entre 0,5 y 2,0).
 - Circular: b₀ = 2·√((d/2)² − (d/4)²) = 0,866·d.
 
+## Fase 2: EC-2 2004 + AN (14/10) — `src/norma/cortante/ec2-2004.js`
+Misma pantalla; la norma del proyecto elige el núcleo (`norma/cortante/index.js`). EC-2 2023 sigue sin migrar (aviso con botones para pasar a EC-2 2004 o a EHE-08).
+- **Sin cercos**: V_Rd,c = [0,18/γc·k·(100ρl·fck)^(1/3) + 0,15σcp]·bw·d con mínimo del AN (ν_mín = 0,075/γc·k^(3/2)·fck^(1/2), fck ≤ 60), k ≤ 2, ρl ≤ 0,02, σcp ≤ 0,2 fcd (6.2.2(1), AN).
+- **Con cercos**: solo celosía, **sin aporte del hormigón**: V_Rd,s = (A_sw/s)·z·f_ywd·(cotθ+cotα)·senα; V_Rd,máx = α_cw·bw·z·ν1·fcd·(cotθ+cotα)/(1+cot²θ); z = 0,9d; 0,5 ≤ cotθ ≤ 2,0 (AN). Sin tope de 400 MPa en f_ywd (ese tope es solo de la EHE-08).
+- **ν1** (AN 6.2.3(3)): 0,6(1 − fck/250); si la tensión de cálculo de los cercos es < 0,8 fyk, 0,6 (fck ≤ 60) o 0,9 − fck/200 ≥ 0,5. Con B 500 S a plena carga (434,8 MPa > 400) vale 0,528 en HA-30; con cortante pequeño los cercos trabajan menos y vale 0,6. La comprobación usa la tensión que pide V_Ed; el dimensionado sube la armadura si hace falta para entrar en 0,6.
+- **α_cw = 1** siempre (no pretensado); el axil no lo modifica. *Criterio mío, a confirmar con José Luis*: la nota 3 de 6.2.3(3) define α_cw también con σcp de «la fuerza axil de cálculo» (1 + σcp/fcd hasta 1,25); usar 1 es conservador.
+- **Mínima**: ρw,mín = fctm/(7,5·fyk) (AN 9.2.2(5)); en cercos inclinados, el 33 % de la armadura en cercos (AN 9.2.2(4)), solo aviso.
+- **Separaciones** s_l,máx como la EHE-08 pero con V_Rd,máx (AN 9.2.2(6)); entre ramas ≤ d y ≤ 500 mm (AN 9.2.2(8)).
+- **Armadura longitudinal**: ΔF_td = 0,5·V_Ed·(cotθ − cotα) (6.18) y decalaje a_l = z(cotθ − cotα)/2 (9.2.1.3(2)); sin cercos a_l = d.
+- Se ocultan los datos que el EC-2 no usa: σy (θe) y A's, y la reducción ×0,85 de cercos circulares. b_w, d y z se calculan como en la EHE-08 (circular incluida, criterio del Prontuario).
+- Contrastado con el plan §3 (viga 30×50 d = 500): V_Rd,c = 91,3 kN; V_Rd,s = 98 / 148 / 197 kN con cotθ 1 / 1,5 / 2; V_Rd,máx = 713 kN (ν1 = 0,528); con cotθ = 2 y f_yd igual coincide con la EHE-08. Tests en `tests/cortante.test.js`.
+- No incluido (como en la EHE-08): carga próxima al apoyo (β = a_v/2d, 6.2.3(8)), pretensado, vainas, rasante alas-alma, torsión.
+
 ## Pendiente (fases del plan)
-EC-2 2004+AN (fase 2) y EC-2 2023 (fase 3) con la misma pantalla; método general de θe y M_Ed (fase 4); cálculo de z con compresiones grandes; ancho efectivo y d de la circular que fije José Luis; resultados de EHE.exe para los 10 casos (comparar con `casos-ehe31-app.csv`); enlace con Vigas (V(x)); ayuda del módulo.
+EC-2 2023 (fase 3) con la misma pantalla; método general de θe y M_Ed (fase 4); cálculo de z con compresiones grandes; ancho efectivo y d de la circular que fije José Luis; resultados de EHE.exe para los 10 casos (comparar con `casos-ehe31-app.csv`); enlace con Vigas (V(x)); ayuda del módulo.

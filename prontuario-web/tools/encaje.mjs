@@ -6,8 +6,9 @@ import { chromium } from 'playwright';
 const url = new URL('../dist/prontuario.html', import.meta.url).href;
 const TAMANOS = [[1536, 730], [1366, 657]];
 // Módulo y, si hace falta, acciones para llegar a cada pantalla
-// Con la norma por defecto (EC-2 2004) Cortante aún no está migrado: la primera acción pasa el proyecto a EHE-08
-const aEHE = (p) => p.click('.datos .boton');
+// Cortante con cada norma: el chip de norma abre una lista (1 EC-2 2004 + AN, que es la del proyecto, 2 EHE-08, 3 EC-2 2023)
+const norma = (k) => async (p) => { await p.click('.chip-ajuste'); await p.click(`#menu-norma button:nth-child(${k})`); };
+const SEC = (k) => async (p) => { await p.click(`.selsec .desp:nth-child(${k}) > button`); await p.click('.menu-sec button[role=option]'); };
 const PANTALLAS = [
   ['Proyecto', 'proyecto', []],
   ['Materiales · hormigón', 'materiales', []],
@@ -28,13 +29,19 @@ const PANTALLAS = [
   ['Anclaje y solapo · compresión', 'anclaje', [(p) => p.click('.datos .seg button:nth-child(2)')]],
   ['Análisis · vigas de un vano', 'vigas1vano', []],
   ['Análisis · apoyo empotrado', 'vigas1vano', [(p) => p.selectOption('#v-izq', { index: 1 })]],
-  ['Cortante · comprobar', 'cortante', [aEHE]],
-  ['Cortante · dimensionar', 'cortante', [aEHE, (p) => p.click('.datos .seg >> nth=0 >> button >> nth=1')]],
-  ['Cortante · sin armadura', 'cortante', [aEHE, (p) => p.click('.datos .seg >> nth=2 >> button >> nth=1')]],
-  ['Cortante · T momento negativo', 'cortante', [aEHE, async (p) => { await p.click('.selsec .desp:nth-child(2) > button'); await p.click('.menu-sec button[role=option]'); }, (p) => p.click('.datos .seg >> nth=1 >> button >> nth=1')]],
-  ['Cortante · pilar', 'cortante', [aEHE, async (p) => { await p.click('.selsec .desp:nth-child(3) > button'); await p.click('.menu-sec button[role=option]'); }]],
-  ['Cortante · circular dimensionar', 'cortante', [aEHE, async (p) => { await p.click('.selsec .desp:nth-child(4) > button'); await p.click('.menu-sec button[role=option]'); }, (p) => p.click('.datos .seg >> nth=0 >> button >> nth=1')]],
-  ['Cortante · norma sin migrar', 'cortante', []],
+  ['Cortante · EC-2 comprobar', 'cortante', []],
+  ['Cortante · EC-2 dimensionar', 'cortante', [(p) => p.click('.datos .seg >> nth=0 >> button >> nth=1')]],
+  ['Cortante · EC-2 sin armadura', 'cortante', [(p) => p.click('.datos .seg >> nth=2 >> button >> nth=1')]],
+  ['Cortante · EC-2 T momento negativo', 'cortante', [SEC(2), (p) => p.click('.datos .seg >> nth=1 >> button >> nth=1')]],
+  ['Cortante · EC-2 pilar', 'cortante', [SEC(3)]],
+  ['Cortante · EC-2 circular dimensionar', 'cortante', [SEC(4), (p) => p.click('.datos .seg >> nth=0 >> button >> nth=1')]],
+  ['Cortante · EHE-08 comprobar', 'cortante', [norma(2)]],
+  ['Cortante · EHE-08 dimensionar', 'cortante', [norma(2), (p) => p.click('.datos .seg >> nth=0 >> button >> nth=1')]],
+  ['Cortante · EHE-08 sin armadura', 'cortante', [norma(2), (p) => p.click('.datos .seg >> nth=2 >> button >> nth=1')]],
+  ['Cortante · EHE-08 T momento negativo', 'cortante', [norma(2), SEC(2), (p) => p.click('.datos .seg >> nth=1 >> button >> nth=1')]],
+  ['Cortante · EHE-08 pilar', 'cortante', [norma(2), SEC(3)]],
+  ['Cortante · EHE-08 circular dimensionar', 'cortante', [norma(2), SEC(4), (p) => p.click('.datos .seg >> nth=0 >> button >> nth=1')]],
+  ['Cortante · norma sin migrar', 'cortante', [norma(3)]],
   ['Flexión · comprobar', 'flexion', []],
   ['Flexión · dimensionar', 'flexion', [(p) => p.click('.datos .seg >> nth=1 >> button >> nth=1')]],
   ['Flexión · T momento negativo', 'flexion', [(p) => p.selectOption('#f-sec', { label: 'ejemplo_3' }), (p) => p.click('.datos .seg >> nth=0 >> button >> nth=1')]],

@@ -1,9 +1,10 @@
 // Cortante de vigas (rectangulares y en T), pilares y secciones circulares (módulo TT1 del Prontuario 3.1).
-// Una sola pantalla que cambia con la norma del proyecto; hoy solo está migrada la EHE-08 (norma/cortante/ehe08.js).
+// Una sola pantalla que cambia con la norma del proyecto; migradas EHE-08 y EC-2 2004 + AN (norma/cortante/).
 // La sección (geometría y armadura longitudinal) viene de Secciones y aquí no se toca: ρl, A_sl, d y b0 se pueden
 // cambiar en el módulo sin modificar la sección. El cortante de cálculo lo escribe el usuario.
 
-import { comprobar, dimensionar, cotOptimo, AswSDe, COT_MIN, COT_MAX } from '../../norma/cortante/ehe08.js';
+import { nucleo } from '../../norma/cortante/index.js';
+import { AswSDe, COT_MIN, COT_MAX } from '../../norma/cortante/ehe08.js';
 import { datosCortante, geometriaDe } from '../../io/proyecto.js';
 import { t } from '../i18n.js';
 import { fmt, q, qh, ESP, serieDiametros, paraCampo } from '../formato.js';
@@ -30,7 +31,8 @@ const secciones = (p) => p.secciones.map((s, i) => [s, i]).filter(([s]) => FORMA
 const esViga = (s) => s.forma === 'rectangular' || s.forma === 'T';
 const diametrosEntrada = () => serieDiametros().filter((x) => x >= 6 && x <= 25);
 const diametrosTabla = () => serieDiametros().filter((x) => x >= 8 && x <= 20);
-const ehe = (p) => p.norma === 'EHE-08' || p.norma === 'EHE-98';
+const nuc = (p) => nucleo(p.norma);
+const esEC2 = (p) => nuc(p)?.id === 'EC2-2004';
 
 /** Datos de la sección activa en m y m², con los cambios hechos en este módulo. */
 function efectivos(p, s) {
@@ -70,7 +72,7 @@ function activa(p) {
 /** Mismo selector de sección que el módulo Secciones (un desplegable por tipo). */
 export function cabeza(ctx, el) {
   const p = ctx.p;
-  if (!ehe(p)) return;
+  if (!nuc(p)) return;
   const s = activa(p);
   if (!s) return;
   selectorSecciones(ctx, el, { formas: FORMAS, activa: s, alElegir: (nombre) => {
@@ -82,8 +84,9 @@ export function cabeza(ctx, el) {
 export function datos(ctx, form) {
   const p = ctx.p;
   poner(form, h('div', { class: 'cab' }, h('h1', {}, t('m.cortante'))));
-  if (!ehe(p)) {
+  if (!nuc(p)) {
     return poner(form, aviso(t('cor.pendiente', p.norma === 'EC2-2023' ? 'EN 1992-1-1:2023' : 'EC-2 2004 + AN'), 'info'),
+      boton(t('cor.aEC2'), () => { p.norma = 'EC2-2004'; ctx.cambio({ estructura: true }); }),
       boton(t('cor.aEHE'), () => { p.norma = 'EHE-08'; ctx.cambio({ estructura: true }); }));
   }
   const R = secciones(p);
@@ -105,6 +108,7 @@ export function datos(ctx, form) {
   const nuevo = (k) => (v) => { est.ov[k] = v; ef[k] = v; refrescar(); cambio(); };
   const rho0 = ef.Asl / (ef.b0 * ef.d);
   const pilarOCirc = !esViga(s);
+  const ec = esEC2(p);
 
   // Ángulo de las bielas: campo en grados y deslizador (el cotg θ queda dentro del cálculo)
   const gauge = h('input', { type: 'range', class: 'desliza-sec', min: THETA_MIN, max: THETA_MAX, step: 0.1, value: thetaDe(est.cot), 'aria-label': t('cor.theta') });
@@ -133,10 +137,10 @@ export function datos(ctx, form) {
         campoNum({ id: 'c-d', etq: t('cor.d'), valor: ef.d, mag: 'long', paso: 5, min: 0.01, max: 20, ayuda: t('cor.dAyuda'), onCambio: nuevo('d') }),
         mostrar(campoNum({ id: 'c-asl', etq: t('cor.Asl'), valor: ef.Asl, mag: 'As', paso: 50, min: 0, max: 1, ayuda: t('cor.AslAyuda'), onCambio: nuevo('Asl') }), ef.Asl * 1e6, 0),
         calculado(mostrar(campoNum({ id: 'c-rho', etq: t('cor.rho'), valor: rho0, mag: 'cuantia', paso: 1, min: 0, max: 1, ayuda: t('cor.rhoAyuda'), onCambio: () => {} }), rho0 * 1000, 2)),
-        campoNum({ id: 'c-sigy', etq: t('cor.sigY'), ref: t('cor.sigYRef'), valor: est.sigY, mag: 'tension', paso: 0.5, min: -50, max: 50, ayuda: t('cor.sigYAyuda'), onCambio: (v) => { est.sigY = v; cambio(); } }),
-        pilarOCirc ? mostrar(campoNum({ id: 'c-asc', etq: t('cor.Asc'), valor: ef.Asc, mag: 'As', paso: 50, min: 0, max: 1, ayuda: t('cor.AscAyuda'), onCambio: nuevo('Asc') }), ef.Asc * 1e6, 0) : null,
+        ec ? null : campoNum({ id: 'c-sigy', etq: t('cor.sigY'), ref: t('cor.sigYRef'), valor: est.sigY, mag: 'tension', paso: 0.5, min: -50, max: 50, ayuda: t('cor.sigYAyuda'), onCambio: (v) => { est.sigY = v; cambio(); } }),
+        pilarOCirc && !ec ? mostrar(campoNum({ id: 'c-asc', etq: t('cor.Asc'), valor: ef.Asc, mag: 'As', paso: 50, min: 0, max: 1, ayuda: t('cor.AscAyuda'), onCambio: nuevo('Asc') }), ef.Asc * 1e6, 0) : null,
       ]),
-      sec.circular ? conEtq(t('cor.circ'), segmentado({ opciones: [['si', '× 0,85'], ['no', t('cor.sinReduccion')]], valor: est.circ ? 'si' : 'no', ancho: true, etiqueta: t('cor.circ'), onCambio: (v) => { est.circ = v === 'si'; ctx.pintar(); } })) : null),
+      sec.circular && !ec ? conEtq(t('cor.circ'), segmentado({ opciones: [['si', '× 0,85'], ['no', t('cor.sinReduccion')]], valor: est.circ ? 'si' : 'no', ancho: true, etiqueta: t('cor.circ'), onCambio: (v) => { est.circ = v === 'si'; ctx.pintar(); } })) : null),
     grupo(t('cor.cercos'),
       comp ? segmentado({ ancho: true, etiqueta: t('cor.cercos'), opciones: [['con', t('cor.conArm')], ['sin', t('cor.sinArm')]], valor: est.sin ? 'sin' : 'con', onCambio: (v) => { est.sin = v === 'sin'; ctx.pintar(); } }) : null,
       ...parejas([
@@ -152,7 +156,7 @@ export function datos(ctx, form) {
         try {
           const { sec: s2, ef: e2 } = efectivos(p, s);
           const base = entrada(p, s, s2, e2);
-          est.cot = cotOptimo(base, { VEd: est.VEd, dim: !comp });
+          est.cot = nuc(p).cotOptimo(base, { VEd: est.VEd, dim: !comp });
           ctx.pintar();
           ctx.avisar(t('cor.optimoPuesto', fmt(thetaDe(est.cot), 1)));
         } catch (e) { ctx.avisar(String(e.message ?? e)); }
@@ -179,20 +183,24 @@ const parejas = (campos) => {
   return filas;
 };
 const fila = (id, nom, val, cuenta) => ({ id, nom, val, cuenta });
-const art = (a) => `<span class="art">EHE-08 · ${a}</span>`;
+let refNorma = 'EHE-08';
+const art = (a) => `<span class="art">${refNorma} · ${a}</span>`;
 
 export function resultados(ctx, res) {
   const p = ctx.p;
   const centro = h('article', { class: 'panel tarjeta' });
   const dcha = h('article', { class: 'panel tarjeta' });
-  if (!ehe(p) || !secciones(p).length) { res.append(h('div', { class: 'cuerpo' }, centro, dcha)); return; }
+  if (!nuc(p) || !secciones(p).length) { res.append(h('div', { class: 'cuerpo' }, centro, dcha)); return; }
   const s = p.secciones[est.i];
   if (!s || !FORMAS.includes(s.forma)) return;
+  const N = nuc(p);
+  const ec = esEC2(p);
+  refNorma = ec ? 'EC-2 + AN' : 'EHE-08';
   const { sec, ef } = efectivos(p, s);
   const x = entrada(p, s, sec, ef);
   const comp = est.modo === 'comprobar';
   const AswS = comp && !est.sin ? AswSDe(est.fi, est.ramas, est.s) : 0;
-  const r = comp ? comprobar({ ...x, AswS, sinArmadura: est.sin, VEd: est.VEd }) : dimensionar(x, est.VEd, { diametros: diametrosTabla() });
+  const r = comp ? N.comprobar({ ...x, AswS, sinArmadura: est.sin, VEd: est.VEd }) : N.dimensionar(x, est.VEd, { diametros: diametrosTabla() });
   const P = r.P;
   const avisos = r.avisos.filter((a) => a.clave !== 'cor.av.fyd400').map((a) => aviso(t(a.clave, ...(a.args ?? []))));
 
@@ -207,25 +215,26 @@ export function resultados(ctx, res) {
     const sepOk = r.sinArmadura || est.s <= r.sep + 1e-9;
     const minOk = r.sinArmadura || r.minima.ok;
     const detalles = ok && (!sepOk || !minOk);
-    if (!r.sinArmadura && !sepOk) avisos.push(aviso(t('cor.avs.sep', fmt(est.s, 0), fmt(r.sep, 0))));
-    const manda = r.sinArmadura ? t('cor.manda.sin') : r.mandaBiela ? t('cor.manda.biela') : t('cor.manda.arm');
+    if (!r.sinArmadura && !sepOk) avisos.push(aviso(t('cor.avs.sep', fmt(est.s, 0), fmt(r.sep, 0), ec ? '9.2.2(6)' : '44.2.3.4.1')));
+    const P0 = ec ? 'cor.ec.manda.' : 'cor.manda.';
+    const manda = r.sinArmadura ? t(`${P0}sin`) : r.mandaBiela ? t(`${P0}biela`) : t(`${P0}arm`);
     res.append(veredicto(!ok ? 'nocumple' : detalles ? 'atencion' : 'cumple', !ok ? t('cor.ver.no') : detalles ? t('cor.ver.revisar') : t('cor.ver.cumple'),
-      t('aprovechamiento'), fmt(r.aprov, 2), t('cor.ver.ecu', q(est.VEd, 'F'), q(r.Vu, 'F'), ok, manda), Math.min(r.aprov / 1.25, 1)));
+      t('aprovechamiento'), fmt(r.aprov, 2), t(ec ? 'cor.ec.ver.ecu' : 'cor.ver.ecu', q(est.VEd, 'F'), q(r.Vu, 'F'), ok, manda), Math.min(r.aprov / 1.25, 1)));
   } else if (r.caso === 'biela') {
-    res.append(veredicto('nocumple', t('cor.ver.aum'), t('cor.armNec'), '—', t('cor.ver.necAum', q(est.VEd, 'F'), q(r.Vu1, 'F'))));
+    res.append(veredicto('nocumple', t('cor.ver.aum'), t('cor.armNec'), '—', t(ec ? 'cor.ec.ver.necAum' : 'cor.ver.necAum', q(est.VEd, 'F'), q(r.Vu1, 'F'))));
   } else {
     res.append(veredicto(r.caso === 'minima' ? 'atencion' : 'cumple', r.caso === 'minima' ? t('cor.ver.min') : t('cor.ver.valida'), t('cor.armNec'), qh(r.AswS, 'AswS'),
-      t('cor.ver.nec', q(est.VEd, 'F'), q(r.Vu1, 'F'))));
+      t(ec ? 'cor.ec.ver.nec' : 'cor.ver.nec', q(est.VEd, 'F'), q(r.Vu1, 'F'))));
   }
   if (avisos.length) res.append(h('div', { class: 'avisos' }, ...avisos));
 
   // Centro: sección y celosía
   const geo = geometriaDe(p, s);
   const lienzo = h('div', { class: 'lienzo', html: dibujoCortante(geo, s, { b0: ef.b0, d: ef.d, z: P.z / 1000, cotTheta: est.cot, alfa: est.alfa, neg: esViga(s) && est.signo < 0, sinArmadura: comp && est.sin }) });
-  poner(centro, h('h2', {}, t('cor.t.dibujo')), lienzo, notas(sec.circular, P));
+  poner(centro, h('h2', {}, t('cor.t.dibujo')), lienzo, notas(sec.circular, P, ec));
 
   // Derecha: cifras, tabla (al dimensionar) y filas desplegables
-  const cif = comp
+  const cif = ec ? cifrasEC2(r, comp, P) : comp
     ? (r.sinArmadura ? [[t('cor.c.Vu2'), qh(r.Vu2, 'F')], [t('cor.rho'), `${fmt(P.rho * 1000, 1)}<span class="u">${ESP}‰</span>`]]
       : [[t('cor.c.Vu1'), qh(r.Vu1, 'F')], [t('cor.c.Vu2'), qh(r.Vu2, 'F')], [`${t('cor.c.Vcu')} + ${t('cor.c.Vsu')}`, `${fmt(r.Vcu, 0)} + ${fmt(r.Vsu, 0)}<span class="u">${ESP}kN</span>`], [`θ · β`, `${fmt(r.theta, 1)}° · ${fmt(r.beta, 2)}`]])
     : [[t('cor.c.Vu1'), qh(r.Vu1, 'F')], [t('cor.c.Vcu'), qh(r.Vcu, 'F')], [t('cor.armNec'), qh(r.AswSNec, 'AswS')], [t('cor.c.Asw') + ' mín.', qh(r.AswSMin, 'AswS')]];
@@ -234,7 +243,7 @@ export function resultados(ctx, res) {
     const filas = r.tabla.map((f) => (f.s ? [`ø${f.fi}`, String(f.ramas), fmt(f.s, 0), fmt(f.AswS * 10, 2), fmt(f.Vu, 0)] : [`ø${f.fi}`, String(f.ramas), '—', '—', '—']));
     poner(dcha, tabla(filas, { cabecera: [t('cor.tabla.fi'), t('cor.tabla.ramas'), t('cor.tabla.s'), t('cor.tabla.asw'), t('cor.tabla.vu')] }));
   }
-  poner(dcha, h('div', { class: 'traza' }, ...trazas(p, r, x, comp, ef).map((f) => {
+  poner(dcha, h('div', { class: 'traza' }, ...trazas(p, r, { ...x, AswS }, comp, ef).map((f) => {
     const det = h('details', { 'data-ref': f.id, open: est.abiertos.has(f.id) },
       h('summary', {}, h('span', { class: 'nom', html: f.nom }), h('span', { class: 'val', html: f.val })),
       h('div', { class: 'cuenta', html: f.cuenta }));
@@ -244,8 +253,55 @@ export function resultados(ctx, res) {
   res.append(h('div', { class: 'cuerpo' }, centro, dcha));
 }
 
+/** Cifras de la columna de resultados con el EC-2 2004 + AN. */
+function cifrasEC2(r, comp, P) {
+  const kN = (v) => qh(v, 'F');
+  if (!comp) return [[t('cor.ec.c.vmax'), kN(r.Vu1)], [t('cor.ec.c.vc'), kN(r.Vu2SinArm)], [t('cor.armNec'), qh(r.AswSNec, 'AswS')], [t('cor.c.Asw') + ' mín.', qh(r.AswSMin, 'AswS')]];
+  if (r.sinArmadura) return [[t('cor.ec.c.vc'), kN(r.Vu)], [t('cor.rho'), `${fmt(P.rho * 1000, 1)}<span class="u">${ESP}‰</span>`]];
+  return [[t('cor.ec.c.vmax'), kN(r.VRdMax)], [t('cor.ec.c.vs'), kN(r.VRds)], [t('cor.ec.c.nu1'), fmt(r.nu1, 3)], ['θ', `${fmt(r.theta, 1)}°`]];
+}
+
+/** Filas desplegables con el cálculo del EC-2 2004 + AN (fórmula, valores y artículo). */
+function trazasEC2(r, x, comp) {
+  const P = r.P;
+  const n1 = (v, d = 2) => fmt(v, d);
+  const f = [];
+  const cotA = r.alfa >= 90 ? 0 : 1 / Math.tan((r.alfa * Math.PI) / 180);
+  if (!comp || !r.sinArmadura) {
+    const Vmax = comp ? r.VRdMax : r.Vu1;
+    const nu = comp ? r.nu1 : null;
+    f.push(fila('vu1', t('cor.ec.r.vmax'), q(Vmax, 'F'),
+      `<span class="f">${t('cor.ec.f.vmax')}</span><span class="n">${t('cor.ec.f.nu1')}</span>`
+      + `<span class="n">${nu == null ? '' : `ν<sub>1</sub> = ${n1(nu, 3)} · `}α<sub>cw</sub> = 1 · b<sub>w</sub> = ${n1(P.b0, 0)} · z = ${n1(P.z, 0)} mm · f<sub>cd</sub> = ${n1(P.fcd, 1)} MPa · (cotg θ + cotg α)/(1 + cotg²θ) = ${n1((r.cotTheta + cotA) / (1 + r.cotTheta ** 2), 3)}</span>${art('6.2.3(3), AN')}`));
+  }
+  if (comp && r.sinArmadura) {
+    f.push(fila('vcu', t('cor.ec.r.vc'), q(r.Vu, 'F'),
+      `<span class="f">${t('cor.ec.f.vc')}</span><span class="n">${t('cor.ec.f.vcPar')}</span>`
+      + `<span class="n">k = ${n1(P.k, 3)} · ρ<sub>l</sub> = ${n1(P.rho * 1000, 2)} ‰ · σ<sub>cp</sub> = ${n1(P.sigCpLim)} MPa · ν<sub>mín</sub> = ${n1(r.nuMin, 3)} MPa</span>`
+      + `<span class="n">${t('cor.v.concMin', n1(r.VRdcConc, 1), n1(r.VRdcMin, 1))}</span>${art('6.2.2(1), AN')}`));
+  }
+  if (comp && !r.sinArmadura) {
+    f.push(fila('vsu', t('cor.ec.r.vs'), q(r.VRds, 'F'),
+      `<span class="f">${t('cor.ec.f.vs')}</span><span class="n">z = ${n1(P.z, 0)} mm · A<sub>sw</sub>/s = ${n1(x.AswS, 3)} mm²/mm · f<sub>ywd</sub> = ${n1(P.fyd, 1)} MPa</span>${art('6.2.3(3), (4)')}`));
+    f.push(fila('min', t('cor.r.min'), r.minima.ok ? t('cor.ok') : t('cor.noOk'),
+      `<span class="f">${t('cor.ec.f.min')}</span><span class="n">${t('cor.r.minVal', n1(x.AswS * 1000, 0), n1(r.minima.AswSMin * 1000, 0))}</span>${art('AN 9.2.2(5)')}`));
+  }
+  if (comp) {
+    f.push(fila('sep', t('cor.r.sep'), r.sinArmadura ? '—' : `${fmt(est.s, 0)} ≤ ${fmt(r.sep, 0)} mm`,
+      `<span class="f">${t('cor.ec.f.sep')}</span><span class="n">V<sub>Ed</sub> = ${n1(est.VEd, 1)} kN → s<sub>l,máx</sub> ≤ ${n1(r.sep, 0)} mm · ${t('cor.avs.trans', n1(r.sepTrans, 0))}</span>${art('AN 9.2.2(6), (8)')}`));
+    f.push(fila('long', t('cor.ec.r.long'), r.long.dT == null ? `a<sub>l</sub> ${q(r.long.sd, 'long')}` : `ΔF<sub>td</sub> ${q(r.long.dT, 'F')}`,
+      `<span class="f">${t('cor.ec.f.long')}</span><span class="n">${r.long.dT == null ? '' : `ΔF<sub>td</sub> = ${n1(r.long.dT, 1)} kN · `}a<sub>l</sub> = ${n1(r.long.sd, 0)} mm</span>${art('6.2.3(7); 9.2.1.3(2)')}`));
+  } else if (r.caso !== 'biela') {
+    f.push(fila('min', t('cor.r.min'), q(r.AswSMin, 'AswS'), `<span class="f">${t('cor.ec.f.min')}</span><span class="n">${n1(r.AswSMin * 1000, 0)} mm²/m</span>${art('AN 9.2.2(5)')}`));
+    f.push(fila('sep', t('cor.r.sep'), `≤ ${fmt(r.sMax, 0)} mm`, `<span class="f">${t('cor.ec.f.sep')}</span>${art('AN 9.2.2(6), (8)')}`));
+    f.push(fila('long', t('cor.ec.r.long'), `ΔF<sub>td</sub> ${q(r.long.dT, 'F')}`, `<span class="f">${t('cor.ec.f.long')}</span><span class="n">ΔF<sub>td</sub> = ${n1(r.long.dT, 1)} kN · a<sub>l</sub> = ${n1(r.long.sd, 0)} mm</span>${art('6.2.3(7); 9.2.1.3(2)')}`));
+  }
+  return f;
+}
+
 /** Filas desplegables con el cálculo (fórmula, valores y artículo). */
 function trazas(p, r, x, comp, ef) {
+  if (r.norma === 'EC2-2004') return trazasEC2(r, x, comp);
   const P = r.P;
   const f = [];
   const n1 = (v, d = 2) => fmt(v, d);
@@ -282,8 +338,9 @@ function trazas(p, r, x, comp, ef) {
 }
 
 /** Aclaraciones plegadas (guía § 14.9). */
-function notas(circular, P) {
-  const claves = [['cor.n.alcance', 'cor.alcance'], ['cor.n.fyd', 'cor.fydNota'], ...(circular ? [['cor.n.circ', 'cor.circNota']] : [])];
+function notas(circular, P, ec) {
+  const claves = ec ? [['cor.n.alcance', 'cor.alcanceEC'], ['cor.n.ec', 'cor.ecNota']]
+    : [['cor.n.alcance', 'cor.alcance'], ['cor.n.fyd', 'cor.fydNota'], ...(circular ? [['cor.n.circ', 'cor.circNota']] : [])];
   return h('div', { class: 'cor-notas' }, h('h3', {}, t('cor.notas')),
     ...claves.map(([k, v]) => h('details', { class: 'pleg' }, h('summary', {}, h('span', { html: t(k) })), h('div', { class: 'cuenta' }, h('p', { class: 'nota', html: t(v, fmt(P.fydLibre, 1)) })))));
 }

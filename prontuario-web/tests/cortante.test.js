@@ -192,3 +192,86 @@ test('Casos de analisis/cortante/casos-ehe31.csv: entradas leídas y calculadas 
     }
   }
 });
+
+// ---------- EC-2 2004 + AN ----------
+import * as ec2 from '../src/norma/cortante/ec2-2004.js';
+import { nucleo } from '../src/norma/cortante/index.js';
+
+test('EC-2: el despachador da EHE-08 (también para EHE-98), EC-2 2004 y nada para EC-2 2023', () => {
+  assert.equal(nucleo('EHE-98').id, 'EHE-08');
+  assert.equal(nucleo('EC2-2004').id, 'EC2-2004');
+  assert.equal(nucleo('EC2-2023'), null);
+});
+
+test('EC-2: viga del plan §3 sin armadura: V_Rd,c = 91,3 kN (igual que la EHE-08)', () => {
+  const r = ec2.comprobar({ ...base, sinArmadura: true });
+  cerca(r.Vu, 91.3, 0.1);
+  assert.equal(r.minManda, false);
+  const bajo = ec2.comprobar({ ...base, Asl: 0.005 * 300 * 500, sinArmadura: true });
+  assert.equal(bajo.minManda, true);
+  cerca(bajo.Vu, 85.7, 0.1);
+});
+
+test('EC-2: con cercos solo suma la celosía (plan §3): cotθ 1 → 98, 1,5 → 148, 2 → 197 kN; biela 713 kN con ν1 = 0,528', () => {
+  const v = (c) => ec2.comprobar({ ...base, cotTheta: c });
+  cerca(v(1).VRds, 98.4, 0.1);
+  cerca(v(1.5).VRds, 147.5, 0.1);
+  cerca(v(2).VRds, 196.7, 0.1);
+  cerca(v(1).VRdMax, 712.8, 0.1);
+  assert.equal(v(1).Vcu, 0);
+  cerca(v(1).Vu, 98.4, 0.1);
+});
+
+test('EC-2: ν1 baja a 0,6 solo si la tensión de los cercos es menor que 0,8 fyk', () => {
+  assert.equal(ec2.nu1De(30, 434.8, 500).toFixed(3), '0.528');
+  assert.equal(ec2.nu1De(30, 300, 500), 0.6);
+  assert.equal(ec2.nu1De(70, 300, 500), 0.55);
+  // Con VEd pequeño la tensión pedida a los cercos baja de 400 MPa
+  const r = ec2.comprobar({ ...base, cotTheta: 2, VEd: 150 });
+  assert.equal(r.nu1, 0.6);
+});
+
+test('EC-2: armadura mínima ρw,mín = fctm/(7,5 fyk) del AN y separaciones como 9.2.2', () => {
+  const r = ec2.comprobar({ ...base, VEd: 100 });
+  cerca(r.minima.rhoWMin, (0.3 * Math.pow(30, 2 / 3)) / (7.5 * 500), 1e-6);
+  cerca(r.minima.AswSMin, r.minima.rhoWMin * 300, 1e-9);
+  assert.equal(r.sepTrans, 500);
+  assert.equal(r.sep, sepMaxima(100, r.VRdMax, 500, 90));
+});
+
+test('EC-2: ΔFtd = 0,5·VEd·(cotθ − cotα) y decalaje al = z(cotθ − cotα)/2; sin cercos al = d', () => {
+  const r = ec2.comprobar({ ...base, cotTheta: 2, VEd: 100 });
+  cerca(r.long.dT, 100, 1e-9);
+  cerca(r.long.sd, 450, 1e-9);
+  const s = ec2.comprobar({ ...base, sinArmadura: true, VEd: 50 });
+  assert.equal(s.long.sd, 500);
+});
+
+test('EC-2: dimensionar da la armadura de la celosía sin hormigón y una tabla Ø × s que cumple', () => {
+  const { AswS, ...sin } = base;
+  const r = ec2.dimensionar(sin, 250);
+  assert.equal(r.caso, 'calculo');
+  cerca(r.AswSNec, 250 / ((0.9 * 500 * (500 / 1.15)) / 1000), 1e-9);
+  for (const f of r.tabla.filter((t) => t.s)) assert.ok(f.Vu >= 250 - 1e-6 || f.Vu >= 249, `ø${f.fi} s=${f.s}`);
+  assert.equal(ec2.dimensionar(sin, 2000).caso, 'biela');
+});
+
+test('EC-2: el axil de compresión sube V_Rd,c y la tracción lo baja; σcp se limita a 0,2 fcd', () => {
+  const v = (N) => ec2.comprobar({ ...base, NEd: N, sinArmadura: true }).Vu;
+  assert.ok(v(300) > v(0) && v(-300) < v(0));
+  const big = ec2.comprobar({ ...base, NEd: 5000, sinArmadura: true });
+  assert.ok(big.avisos.some((a) => a.clave === 'cor.av.sigCp'));
+  cerca(big.P.sigCpLim, 0.2 * 20, 1e-9);
+});
+
+test('EC-2: cotθ óptimo es el que maximiza min(VRd,s; VRd,máx)', () => {
+  const c = ec2.cotOptimo({ ...base }, { VEd: 200 });
+  const v = (k) => ec2.comprobar({ ...base, cotTheta: k, VEd: 200 }).Vu;
+  for (const k of [0.5, 0.8, 1, 1.5, 2]) assert.ok(v(c) >= v(k) - 1e-6);
+});
+
+test('EC-2 y EHE-08 coinciden con cotθ = 2 y fyd igual (plan §3, lectura d)', () => {
+  const e = comprobar({ ...base, fykCercos: 400 * 1.15, cotTheta: 2 });
+  const c = ec2.comprobar({ ...base, fykCercos: 400 * 1.15, cotTheta: 2 });
+  cerca(c.VRds, e.Vsu, 1e-6);
+});
