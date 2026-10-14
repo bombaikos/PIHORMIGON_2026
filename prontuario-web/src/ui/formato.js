@@ -59,6 +59,7 @@ export const MAG = {
   ac: { ud: '', f: 1, d: 2 },
   dosis: { ud: 'kg/m³', f: 1, d: 0 },
   pct: { ud: '%', f: 1, d: 1 },
+  ang1: { ud: '°', f: 1, d: 1 },
   ang: { ud: '°', f: 1, d: 0 },                // ángulos en grados
   AswS: { ud: 'cm²/m', f: 10, d: 2 },          // armadura transversal por unidad de longitud (valor interno en mm²/mm)
 };

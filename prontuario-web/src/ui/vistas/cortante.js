@@ -7,6 +7,7 @@ import { comprobar, dimensionar, cotOptimo, AswSDe, COT_MIN, COT_MAX } from '../
 import { datosCortante, geometriaDe } from '../../io/proyecto.js';
 import { t } from '../i18n.js';
 import { fmt, q, qh, ESP, serieDiametros, paraCampo } from '../formato.js';
+import { selectorSecciones } from './secciones.js';
 import { h, poner, campoNum, selector, segmentado, grupo, par, aviso, cifras, tabla, boton } from '../campos.js';
 import { veredicto } from './flexion.js';
 import { dibujoCortante } from '../dibujoCortante.js';
@@ -19,6 +20,10 @@ const est = {
 };
 export function reiniciar() { est.i = null; est.ov = { b0: null, d: null, Asl: null, Asc: null }; est.aceroCercos = null; }
 
+const RAD = Math.PI / 180;
+const thetaDe = (cot) => (Math.atan(1 / cot) / RAD);
+const THETA_MIN = +(Math.atan(1 / COT_MAX) / RAD).toFixed(1) + 0.1;
+const THETA_MAX = +(Math.atan(1 / COT_MIN) / RAD).toFixed(1) - 0.1;
 const sub = (a, b) => `${a}<sub>${b}</sub>`;
 const FORMAS = ['rectangular', 'T', 'pilar', 'circular'];
 const secciones = (p) => p.secciones.map((s, i) => [s, i]).filter(([s]) => FORMAS.includes(s.forma));
@@ -45,17 +50,45 @@ function cambiaSeccion(ctx) {
   ctx.pintar();
 }
 
+/** Campo de solo lectura (se calcula a partir de otros): caja atenuada, no editable. */
+function calculado(c) {
+  const i = c.querySelector('input');
+  i.disabled = true;
+  i.tabIndex = -1;
+  c.classList.add('calculado');
+  return c;
+}
+
+/** Sección activa; si la elegida ya no existe o no sirve, la primera válida. */
+function activa(p) {
+  const R = secciones(p);
+  if (!R.length) return null;
+  if (!R.some(([, i]) => i === est.i)) { est.i = R[0][1]; est.ov = { b0: null, d: null, Asl: null, Asc: null }; }
+  return p.secciones[est.i];
+}
+
+/** Mismo selector de sección que el módulo Secciones (un desplegable por tipo). */
+export function cabeza(ctx, el) {
+  const p = ctx.p;
+  if (!ehe(p)) return;
+  const s = activa(p);
+  if (!s) return;
+  selectorSecciones(ctx, el, { formas: FORMAS, activa: s, alElegir: (nombre) => {
+    const i = p.secciones.findIndex((x) => x.nombre === nombre);
+    if (i >= 0) { est.i = i; cambiaSeccion(ctx); }
+  } });
+}
+
 export function datos(ctx, form) {
   const p = ctx.p;
-  poner(form, h('div', { class: 'cab' }, h('h1', {}, t('m.cortante')), h('p', {}, t('cor.subtitulo'))));
+  poner(form, h('div', { class: 'cab' }, h('h1', {}, t('m.cortante'))));
   if (!ehe(p)) {
     return poner(form, aviso(t('cor.pendiente', p.norma === 'EC2-2023' ? 'EN 1992-1-1:2023' : 'EC-2 2004 + AN'), 'info'),
       boton(t('cor.aEHE'), () => { p.norma = 'EHE-08'; ctx.cambio({ estructura: true }); }));
   }
   const R = secciones(p);
   if (!R.length) return poner(form, aviso(t('cor.sinSec'), 'info'));
-  if (!R.some(([, i]) => i === est.i)) { est.i = R[0][1]; est.ov = { b0: null, d: null, Asl: null, Asc: null }; }
-  const s = p.secciones[est.i];
+  const s = activa(p);
   let ef;
   let sec;
   try { ({ sec, ef } = efectivos(p, s)); } catch (e) { return poner(form, aviso(String(e.message ?? e), 'error')); }
@@ -65,60 +98,65 @@ export function datos(ctx, form) {
     // ρl y A_sl se mantienen enlazados; el resumen del plegable se actualiza sin repintar el panel
     const rho = ef.Asl / (ef.b0 * ef.d);
     const a = document.getElementById('c-rho');
-    if (a && document.activeElement !== a) a.value = paraCampo(rho, 'cuantia');
+    if (a && document.activeElement !== a) a.value = String(+(rho * 1000).toFixed(2));
     const b = document.getElementById('c-asl');
-    if (b && document.activeElement !== b) b.value = paraCampo(ef.Asl, 'As');
-    const r = document.getElementById('c-resumen');
-    if (r) r.innerHTML = t('cor.resumen', fmt(ef.b0 * 1000, 0), fmt(ef.d * 1000, 0), fmt(rho * 1000, 1));
+    if (b && document.activeElement !== b) b.value = String(Math.round(ef.Asl * 1e6));
   };
-  const nuevo = (k) => (v) => { est.ov[k] = v; refrescar(); cambio(); };
+  const nuevo = (k) => (v) => { est.ov[k] = v; ef[k] = v; refrescar(); cambio(); };
   const rho0 = ef.Asl / (ef.b0 * ef.d);
   const pilarOCirc = !esViga(s);
 
+  // Ángulo de las bielas: campo en grados y deslizador (el cotg θ queda dentro del cálculo)
+  const gauge = h('input', { type: 'range', class: 'desliza-sec', min: THETA_MIN, max: THETA_MAX, step: 0.1, value: thetaDe(est.cot), 'aria-label': t('cor.theta') });
+  const refrescarGauge = () => { gauge.value = thetaDe(est.cot); };
+  gauge.addEventListener('input', () => {
+    const v = Number(gauge.value);
+    est.cot = 1 / Math.tan(v * RAD);
+    const c = document.getElementById('c-theta');
+    if (c) c.value = String(+v.toFixed(1));
+    cambio();
+  });
+  const conEtq = (etq, c) => h('div', { class: 'fu-campo' }, h('span', { class: 'etq-grupo', html: etq }), c);
   poner(form,
     segmentado({ ancho: true, etiqueta: t('flex.modo'), opciones: [['comprobar', t('comprobar')], ['dimensionar', t('dimensionar')]], valor: est.modo, onCambio: (m) => { est.modo = m; ctx.pintar(); } }),
-    esViga(s) ? segmentado({ ancho: true, etiqueta: t('cor.signo'), opciones: [['1', t('flex.positivo')], ['-1', t('flex.negativo')]], valor: String(est.signo), onCambio: (v) => { est.signo = Number(v); cambiaSeccion(ctx); } }) : null,
-    s.forma === 'pilar' ? segmentado({ ancho: true, etiqueta: t('cor.dir'), opciones: [['h', t('cor.dirH')], ['b', t('cor.dirB')]], valor: est.dir, onCambio: (v) => { est.dir = v; cambiaSeccion(ctx); } }) : null,
-    grupo(t('g.seccion'),
-      selector({ id: 'c-sec', etq: t('seccion'), opciones: R.map(([x, i]) => [String(i), `${x.nombre} · ${x.hormigon}`]), valor: String(est.i), onCambio: (v) => { est.i = Number(v); cambiaSeccion(ctx); } })),
-    grupo(t('g.esfuerzo'), par(
-      campoNum({ id: 'c-ved', etq: t('cor.VEd'), valor: est.VEd, mag: 'F', paso: 10, min: 0.01, max: 1e6, nombre: t('cor.VEdNombre'), onCambio: (v) => { est.VEd = v; cambio(); } }),
-      campoNum({ id: 'c-ned', etq: t('cor.NEd'), ref: t('cor.NEdRef'), valor: est.NEd, mag: 'N', paso: 10, min: -1e6, max: 1e6, onCambio: (v) => { est.NEd = v; cambio(); } }))),
-    h('details', { class: 'pleg' },
-      h('summary', {}, h('span', { id: 'c-resumen', html: t('cor.resumen', fmt(ef.b0 * 1000, 0), fmt(ef.d * 1000, 0), fmt(rho0 * 1000, 1)) })),
-      h('div', { class: 'cuenta' },
-        par(
-          campoNum({ id: 'c-b0', etq: t('cor.b0'), valor: ef.b0, mag: 'long', paso: 5, min: 0.01, max: 20, ayuda: t('cor.b0Ayuda'), onCambio: nuevo('b0') }),
-          campoNum({ id: 'c-d', etq: t('cor.d'), valor: ef.d, mag: 'long', paso: 5, min: 0.01, max: 20, ayuda: t('cor.dAyuda'), onCambio: nuevo('d') })),
-        par(
-          campoNum({ id: 'c-asl', etq: t('cor.Asl'), valor: ef.Asl, mag: 'As', paso: 50, min: 0, max: 1, ayuda: t('cor.AslAyuda'), onCambio: nuevo('Asl') }),
-          campoNum({ id: 'c-rho', etq: t('cor.rho'), valor: rho0, mag: 'cuantia', paso: 1, min: 0, max: 0.2, ayuda: t('cor.rhoAyuda'),
-            onCambio: (v) => { est.ov.Asl = v * ef.b0 * ef.d; ef.Asl = est.ov.Asl; refrescar(); cambio(); } })),
-        par(
-          pilarOCirc ? campoNum({ id: 'c-asc', etq: t('cor.Asc'), valor: ef.Asc, mag: 'As', paso: 50, min: 0, max: 1, ayuda: t('cor.AscAyuda'), onCambio: nuevo('Asc') }) : null,
-          campoNum({ id: 'c-sigy', etq: t('cor.sigY'), ref: t('cor.sigYRef'), valor: est.sigY, mag: 'tension', paso: 0.5, min: -50, max: 50, ayuda: t('cor.sigYAyuda'), onCambio: (v) => { est.sigY = v; cambio(); } })),
-        selector({ id: 'c-acero', etq: t('cor.cercosAcero'), opciones: p.aceros.map((m) => [m.nombre, m.nombre]), valor: est.aceroCercos ?? s.acero, onCambio: (v) => { est.aceroCercos = v; cambio(); } }),
-        sec.circular ? h('div', { class: 'fu-campo', title: t('cor.circAyuda') }, h('span', { class: 'etq-grupo', html: t('cor.circ') }),
-          segmentado({ opciones: [['si', '× 0,85'], ['no', t('cor.sinReduccion')]], valor: est.circ ? 'si' : 'no', ancho: true, etiqueta: t('cor.circ'), onCambio: (v) => { est.circ = v === 'si'; ctx.pintar(); } })) : null)),
+    esViga(s) ? conEtq(t('cor.signo'), segmentado({ ancho: true, etiqueta: t('cor.signo'), opciones: [['1', t('flex.positivo')], ['-1', t('flex.negativo')]], valor: String(est.signo), onCambio: (v) => { est.signo = Number(v); cambiaSeccion(ctx); } })) : null,
+    s.forma === 'pilar' ? conEtq(t('cor.dir'), segmentado({ ancho: true, etiqueta: t('cor.dir'), opciones: [['h', t('cor.dirH')], ['b', t('cor.dirB')]], valor: est.dir, onCambio: (v) => { est.dir = v; cambiaSeccion(ctx); } })) : null,
+    grupo(t('g.esfuerzo'),
+      ...parejas([
+        campoNum({ id: 'c-ved', etq: t('cor.VEd'), valor: est.VEd, mag: 'F', paso: 10, min: 0.01, max: 1e6, nombre: t('cor.VEdNombre'), onCambio: (v) => { est.VEd = v; cambio(); } }),
+        campoNum({ id: 'c-ned', etq: t('cor.NEd'), ref: t('cor.NEdRef'), valor: est.NEd, mag: 'N', paso: 10, min: -1e6, max: 1e6, ayuda: t('cor.NEdNota'), onCambio: (v) => { est.NEd = v; cambio(); } }),
+      ]),
+      h('p', { class: 'nota-ned', html: t('cor.NEdNota') })),
+    grupo(t('cor.datosCalc'),
+      ...parejas([
+        campoNum({ id: 'c-b0', etq: t('cor.b0'), valor: ef.b0, mag: 'long', paso: 5, min: 0.01, max: 20, ayuda: t('cor.b0Ayuda'), onCambio: nuevo('b0') }),
+        campoNum({ id: 'c-d', etq: t('cor.d'), valor: ef.d, mag: 'long', paso: 5, min: 0.01, max: 20, ayuda: t('cor.dAyuda'), onCambio: nuevo('d') }),
+        mostrar(campoNum({ id: 'c-asl', etq: t('cor.Asl'), valor: ef.Asl, mag: 'As', paso: 50, min: 0, max: 1, ayuda: t('cor.AslAyuda'), onCambio: nuevo('Asl') }), ef.Asl * 1e6, 0),
+        calculado(mostrar(campoNum({ id: 'c-rho', etq: t('cor.rho'), valor: rho0, mag: 'cuantia', paso: 1, min: 0, max: 1, ayuda: t('cor.rhoAyuda'), onCambio: () => {} }), rho0 * 1000, 2)),
+        campoNum({ id: 'c-sigy', etq: t('cor.sigY'), ref: t('cor.sigYRef'), valor: est.sigY, mag: 'tension', paso: 0.5, min: -50, max: 50, ayuda: t('cor.sigYAyuda'), onCambio: (v) => { est.sigY = v; cambio(); } }),
+        pilarOCirc ? mostrar(campoNum({ id: 'c-asc', etq: t('cor.Asc'), valor: ef.Asc, mag: 'As', paso: 50, min: 0, max: 1, ayuda: t('cor.AscAyuda'), onCambio: nuevo('Asc') }), ef.Asc * 1e6, 0) : null,
+      ]),
+      sec.circular ? conEtq(t('cor.circ'), segmentado({ opciones: [['si', '× 0,85'], ['no', t('cor.sinReduccion')]], valor: est.circ ? 'si' : 'no', ancho: true, etiqueta: t('cor.circ'), onCambio: (v) => { est.circ = v === 'si'; ctx.pintar(); } })) : null),
     grupo(t('cor.cercos'),
       comp ? segmentado({ ancho: true, etiqueta: t('cor.cercos'), opciones: [['con', t('cor.conArm')], ['sin', t('cor.sinArm')]], valor: est.sin ? 'sin' : 'con', onCambio: (v) => { est.sin = v === 'sin'; ctx.pintar(); } }) : null,
-      comp && !est.sin ? par(
-        selector({ id: 'c-fi', etq: t('cor.fi'), opciones: diametrosEntrada().map((x) => [String(x), `ø${x}`]), valor: String(est.fi), onCambio: (v) => { est.fi = Number(v); cambio(); } }),
-        selector({ id: 'c-ramas', etq: t('cor.ramas'), opciones: [2, 3, 4, 6].map((x) => [String(x), String(x)]), valor: String(est.ramas), onCambio: (v) => { est.ramas = Number(v); cambio(); } })) : null,
-      par(
+      ...parejas([
+        selector({ id: 'c-acero', etq: t('cor.cercosAcero'), linea: true, opciones: p.aceros.map((m) => [m.nombre, m.nombre]), valor: est.aceroCercos ?? s.acero, onCambio: (v) => { est.aceroCercos = v; cambio(); } }),
+        comp && !est.sin ? selector({ id: 'c-fi', etq: t('cor.fi'), linea: true, opciones: diametrosEntrada().map((x) => [String(x), `ø${x}`]), valor: String(est.fi), onCambio: (v) => { est.fi = Number(v); cambio(); } }) : null,
+        comp && !est.sin ? selector({ id: 'c-ramas', etq: t('cor.ramas'), linea: true, opciones: [2, 3, 4, 6].map((x) => [String(x), String(x)]), valor: String(est.ramas), onCambio: (v) => { est.ramas = Number(v); cambio(); } }) : null,
         comp && !est.sin ? campoNum({ id: 'c-s', etq: t('cor.s'), valor: est.s, mag: 'diam', paso: 25, min: 25, max: 1000, onCambio: (v) => { est.s = v; cambio(); } }) : null,
-        !est.sin ? campoNum({ id: 'c-alfa', etq: t('cor.alfa'), ref: t('cor.alfaRef'), valor: est.alfa, mag: 'ang', paso: 5, min: 45, max: 90, onCambio: (v) => { est.alfa = v; cambio(); } }) : null)),
-    grupo(t('cor.angulo'), par(
-      campoNum({ id: 'c-cot', etq: t('cor.cot'), valor: est.cot, mag: 'ratio', paso: 0.05, min: COT_MIN, max: COT_MAX, ayuda: t('cor.cotAyuda'), onCambio: (v) => { est.cot = v; cambio(); } }),
+        !est.sin ? campoNum({ id: 'c-alfa', etq: t('cor.alfa'), ref: t('cor.alfaRef'), valor: est.alfa, mag: 'ang', paso: 5, min: 45, max: 90, onCambio: (v) => { est.alfa = v; cambio(); } }) : null,
+        campoNum({ id: 'c-theta', etq: t('cor.theta'), valor: thetaDe(est.cot), mag: 'ang1', paso: 1, min: THETA_MIN, max: THETA_MAX, ayuda: t('cor.cotAyuda'), onCambio: (v) => { est.cot = 1 / Math.tan(v * RAD); cambio(); refrescarGauge(); } }),
+      ]),
+      gauge,
       boton(t('cor.optimo'), () => {
         try {
           const { sec: s2, ef: e2 } = efectivos(p, s);
           const base = entrada(p, s, s2, e2);
           est.cot = cotOptimo(base, { VEd: est.VEd, dim: !comp });
           ctx.pintar();
-          ctx.avisar(t('cor.optimoPuesto', fmt(est.cot, 2)));
+          ctx.avisar(t('cor.optimoPuesto', fmt(thetaDe(est.cot), 1)));
         } catch (e) { ctx.avisar(String(e.message ?? e)); }
-      }, 'secundario pequeno'))));
+      }, 'secundario pequeno')));
 }
 
 /** Entrada común del núcleo en MPa, mm y kN. */
@@ -131,6 +169,15 @@ function entrada(p, s, sec, ef) {
   };
 }
 
+/** Valor mostrado con la precisión fija de la guía (§ 1): mm² sin decimales, ‰ con dos. */
+const mostrar = (c, v, d) => { const i = c.querySelector('input'); i.value = String(+v.toFixed(d)); return c; };
+/** Campos en dos columnas de igual ancho (la caja de cada uno mide lo mismo y va alineada). */
+const parejas = (campos) => {
+  const c = campos.filter(Boolean);
+  const filas = [];
+  for (let i = 0; i < c.length; i += 2) filas.push(h('div', { class: 'par2' }, ...c.slice(i, i + 2)));
+  return filas;
+};
 const fila = (id, nom, val, cuenta) => ({ id, nom, val, cuenta });
 const art = (a) => `<span class="art">EHE-08 · ${a}</span>`;
 
@@ -147,7 +194,7 @@ export function resultados(ctx, res) {
   const AswS = comp && !est.sin ? AswSDe(est.fi, est.ramas, est.s) : 0;
   const r = comp ? comprobar({ ...x, AswS, sinArmadura: est.sin, VEd: est.VEd }) : dimensionar(x, est.VEd, { diametros: diametrosTabla() });
   const P = r.P;
-  const avisos = r.avisos.map((a) => aviso(t(a.clave, ...(a.args ?? []))));
+  const avisos = r.avisos.filter((a) => a.clave !== 'cor.av.fyd400').map((a) => aviso(t(a.clave, ...(a.args ?? []))));
 
   p.calculos.cortante ??= {};
   p.calculos.cortante[s.nombre] = {
@@ -175,7 +222,7 @@ export function resultados(ctx, res) {
   // Centro: sección y celosía
   const geo = geometriaDe(p, s);
   const lienzo = h('div', { class: 'lienzo', html: dibujoCortante(geo, s, { b0: ef.b0, d: ef.d, z: P.z / 1000, cotTheta: est.cot, alfa: est.alfa, neg: esViga(s) && est.signo < 0, sinArmadura: comp && est.sin }) });
-  poner(centro, h('h2', {}, t('cor.t.dibujo')), lienzo, notas());
+  poner(centro, h('h2', {}, t('cor.t.dibujo')), lienzo, notas(sec.circular, P));
 
   // Derecha: cifras, tabla (al dimensionar) y filas desplegables
   const cif = comp
@@ -185,8 +232,7 @@ export function resultados(ctx, res) {
   poner(dcha, h('h2', {}, t('cor.t.res')), cifras(cif));
   if (!comp && r.tabla) {
     const filas = r.tabla.map((f) => (f.s ? [`ø${f.fi}`, String(f.ramas), fmt(f.s, 0), fmt(f.AswS * 10, 2), fmt(f.Vu, 0)] : [`ø${f.fi}`, String(f.ramas), '—', '—', '—']));
-    poner(dcha, tabla(filas, { cabecera: [t('cor.tabla.fi'), t('cor.tabla.ramas'), t('cor.tabla.s'), t('cor.tabla.asw'), t('cor.tabla.vu')] }),
-      h('p', { class: 'nota', html: t('cor.tabla.nota', Math.floor(Math.min(r.sMax, 300) / 50) * 50) }));
+    poner(dcha, tabla(filas, { cabecera: [t('cor.tabla.fi'), t('cor.tabla.ramas'), t('cor.tabla.s'), t('cor.tabla.asw'), t('cor.tabla.vu')] }));
   }
   poner(dcha, h('div', { class: 'traza' }, ...trazas(p, r, x, comp, ef).map((f) => {
     const det = h('details', { 'data-ref': f.id, open: est.abiertos.has(f.id) },
@@ -236,10 +282,10 @@ function trazas(p, r, x, comp, ef) {
 }
 
 /** Aclaraciones plegadas (guía § 14.9). */
-function notas() {
-  const claves = [['cor.n.alcance', 'cor.alcance'], ['cor.n.dif', 'cor.dif'], ['cor.n.circ', 'cor.circNota'], ['cor.n.axil', 'cor.axilNota'], ['cor.n.verif', 'cor.verif']];
+function notas(circular, P) {
+  const claves = [['cor.n.alcance', 'cor.alcance'], ['cor.n.fyd', 'cor.fydNota'], ...(circular ? [['cor.n.circ', 'cor.circNota']] : [])];
   return h('div', { class: 'cor-notas' }, h('h3', {}, t('cor.notas')),
-    ...claves.map(([k, v]) => h('details', { class: 'pleg' }, h('summary', {}, t(k)), h('div', { class: 'cuenta' }, h('p', { class: 'nota', html: t(v) })))));
+    ...claves.map(([k, v]) => h('details', { class: 'pleg' }, h('summary', {}, h('span', { html: t(k) })), h('div', { class: 'cuenta' }, h('p', { class: 'nota', html: t(v, fmt(P.fydLibre, 1)) })))));
 }
 
 export function comandos(ctx) {

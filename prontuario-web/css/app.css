@@ -832,3 +832,6 @@ details.an-ce { margin-top: var(--e2); }
 .graf-tip i.s3, .marca-serie.s3 { background: repeating-linear-gradient(90deg, var(--tinta) 0 2px, transparent 2px 6px); }
 .graf-tip i.s4, .marca-serie.s4 { background: repeating-linear-gradient(90deg, var(--tinta) 0 12px, transparent 12px 16px, var(--tinta) 16px 18px, transparent 18px 22px); }
 .graf-tip i.s5, .marca-serie.s5 { background: repeating-linear-gradient(90deg, var(--tinta) 0 5px, transparent 5px 8px); }
+.datos .campo:not(.apilado) select { text-align: right; text-align-last: right; }
+.datos .desliza-sec { margin: 2px 0 4px; }
+:root:not([data-densidad="comoda"]) .par2 .campo:not(.columna) > label { flex: 0 0 44px; max-width: 44px; overflow: hidden; }

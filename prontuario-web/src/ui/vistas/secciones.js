@@ -262,13 +262,34 @@ export function cabeza(ctx, el) {
 }
 
 /**
+ * El mismo selector de secciones para otros módulos (Cortante): un desplegable por tipo de la lista `formas`,
+ * con la sección activa `activa` (objeto de la sección) en el tipo que le corresponde; sin «+ Nueva».
+ */
+export function selectorSecciones(ctx, el, { formas, activa, alElegir }) {
+  ctxCab = ctx;
+  const fila = h('div', { class: 'selsec', role: 'group', 'aria-label': t('seccion') });
+  for (const f of formas) {
+    const delTipo = ctx.p.secciones.filter((x) => x.forma === f);
+    const act = activa?.forma === f;
+    const titulo = act ? `${t(`forma.${f}`)}<span class="sep">·</span><b>${activa.nombre}</b>` : t(`forma.${f}`);
+    const caja = h('div', { class: `desp${act ? ' activo' : ''}` },
+      h('button', { type: 'button', 'aria-haspopup': 'listbox', 'aria-expanded': String(abierto === f), title: t(`forma.${f}`),
+        html: `${icono(f)}<span class="nom">${titulo}</span><span class="cnt">${delTipo.length}</span><span class="car">▾</span>`,
+        onclick: (e) => { e.stopPropagation(); abierto = abierto === f ? null : f; ctx.pintar(); } }));
+    if (abierto === f) caja.append(listaSecciones(ctx, f, delTipo, act ? activa.nombre : undefined, (n) => { abierto = null; alElegir(n); }, false));
+    fila.append(caja);
+  }
+  el.append(fila);
+}
+
+/**
  * Qué muestra el módulo: 'seccion' (Crear y editar) o 'mk' (Diagramas). Son dos entradas del
  * menú Secciones que comparten la sección activa; app.js lo fija antes de pintar cada una.
  */
 export function modo(k) { est.pestana = k; }
 
 /** Lista del desplegable: 10 a la vista con scroll, buscador a partir de 9 y «+ Nueva …» fija al pie. */
-function listaSecciones(ctx, f, delTipo, activa) {
+function listaSecciones(ctx, f, delTipo, activa, alElegir = (nombre) => elegir(ctx, f, nombre), conAlta = true) {
   const m = h('div', { class: 'menu-sec', role: 'listbox', onclick: (e) => e.stopPropagation() });
   const filas = h('div', { class: 'filas' });
   const q = delTipo.length > 8 ? h('input', { class: 'buscar', placeholder: t('sec.buscarEntre', delTipo.length), autocomplete: 'off' }) : null;
@@ -277,7 +298,7 @@ function listaSecciones(ctx, f, delTipo, activa) {
     filas.replaceChildren(...delTipo.filter((s) => !x || s.nombre.toLowerCase().includes(x)).map((s) => h('button', {
       type: 'button', role: 'option', 'aria-current': s.nombre === activa ? 'true' : undefined,
       html: `${icono(f)}${s.nombre}<span class="nombre-sec">${resumenForma(s)}</span>`,
-      onclick: () => elegir(ctx, f, s.nombre) })));
+      onclick: () => alElegir(s.nombre) })));
     if (!filas.children.length) filas.append(h('span', { class: 'vacio' }, delTipo.length ? t('sec.ningunaCoincide') : t('sec.ningunaTipo')));
   };
   llenar();
@@ -287,7 +308,8 @@ function listaSecciones(ctx, f, delTipo, activa) {
     m.append(q);
     queueMicrotask(() => q.focus());
   }
-  m.append(filas, h('button', { type: 'button', class: 'alta', onclick: () => elegir(ctx, f, null) }, `+ ${t('sec.nuevaDe', t(`forma.${f}`))}`));
+  m.append(filas);
+  if (conAlta) m.append(h('button', { type: 'button', class: 'alta', onclick: () => alElegir(null) }, `+ ${t('sec.nuevaDe', t(`forma.${f}`))}`));
   queueMicrotask(() => filas.querySelector('[aria-current]')?.scrollIntoView({ block: 'nearest' }));
   return m;
 }
