@@ -816,6 +816,31 @@ details.an-ce { margin-top: var(--e2); }
 .dib .biela { fill: none; stroke: var(--compr); stroke-width: 2.2; }
 .dib .tirante { fill: none; stroke: var(--acero); stroke-width: 1.6; }
 .cor-notas { display: flex; flex-direction: column; gap: 2px; order: 3; }
+
+/* Cortante · etiqueta delante de un segmentado, campo calculado, cotg θ con su botón y aclaraciones junto al dibujo */
+.fu-campo.en-linea { flex-direction: row; align-items: center; gap: 8px; }
+.fu-campo.en-linea > .etq-grupo { flex: 0 0 auto; font-size: var(--t-s); color: var(--tinta-2); }
+.fu-campo.en-linea > .seg { flex: 1; }
+.campo.calculado .caja { background: transparent; border-style: dashed; }
+.fila-optimo { display: flex; align-items: center; gap: 8px; }
+.fila-optimo > .campo { flex: 1; min-width: 0; }
+.fila-optimo > .boton { flex: 0 0 auto; }
+.tarjeta .lienzo:has(+ .cor-notas) { flex: 0 0 auto; }
+.par2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--hueco-campos) 10px; }
+:root:not([data-densidad="comoda"]) .par2 .campo:not(.columna) > label { flex: 0 0 auto; max-width: 45%; }
+:root:not([data-densidad="comoda"]) .par2 .campo:not(.columna) .caja { flex: 1 1 0; width: auto; margin-left: 0; min-width: 0; }
+.nota-ned { margin: 0; font-size: var(--t-xs); color: var(--tinta-3); line-height: 1.35; }
+
+/* Gráficas sin color: las series se distinguen solo por el trazo (14/10, José Luis); referencias en el mismo trazo, más tenues */
+.graf .serie.s1, .graf .serie.s2, .graf .serie.s3, .graf .serie.s4, .graf .serie.s5,
+.graf .punto.s1, .graf .punto.s2, .graf .punto.s3, .graf .punto.s4, .graf .punto.s5,
+.graf .serie.ref.s1, .graf .serie.ref.s2, .graf .serie.ref.s3, .graf .serie.ref.s4, .graf .serie.ref.s5 { stroke: var(--tinta); }
+.graf-tabla th.s1, .graf-tabla th.s2, .graf-tabla th.s3, .graf-tabla th.s4, .graf-tabla th.s5 { color: var(--tinta-2); }
+.graf-tip i.s1, .marca-serie.s1 { background: var(--tinta); }
+.graf-tip i.s2, .marca-serie.s2 { background: repeating-linear-gradient(90deg, var(--tinta) 0 9px, transparent 9px 14px); }
+.graf-tip i.s3, .marca-serie.s3 { background: repeating-linear-gradient(90deg, var(--tinta) 0 2px, transparent 2px 6px); }
+.graf-tip i.s4, .marca-serie.s4 { background: repeating-linear-gradient(90deg, var(--tinta) 0 12px, transparent 12px 16px, var(--tinta) 16px 18px, transparent 18px 22px); }
+.graf-tip i.s5, .marca-serie.s5 { background: repeating-linear-gradient(90deg, var(--tinta) 0 5px, transparent 5px 8px); }
 </style>
 
 <header class="barra">
