@@ -1,0 +1,246 @@
+<title>Fuego con ayuda gráfica</title>
+<style>
+/* Propuesta para el módulo Fuego: etiqueta en una línea y opciones en la siguiente, y dibujo acotado de la sección.
+   Tokens de la guía de estilo. */
+:root {
+  --suelo: oklch(96.4% 0.005 240); --hoja: oklch(99.6% 0.002 240); --hundido: oklch(95.2% 0.006 240);
+  --tinta: oklch(24% 0.02 248); --tinta-2: oklch(44% 0.02 248); --tinta-3: oklch(57% 0.016 248);
+  --linea: oklch(90% 0.008 240); --linea-fuerte: oklch(80% 0.012 240);
+  --acento: oklch(47% 0.13 252); --acento-suave: oklch(93.5% 0.03 252);
+  --hormigon: oklch(90% 0.006 85); --hormigon-borde: oklch(60% 0.01 85); --acero: oklch(30% 0.012 250);
+  --nota: oklch(94.8% 0.014 78); --nota-borde: oklch(85.5% 0.024 75);
+  --f: system-ui, 'Segoe UI Variable Text', 'Segoe UI', -apple-system, Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --suelo: oklch(17% 0.012 245); --hoja: oklch(21% 0.014 245); --hundido: oklch(18.5% 0.012 245);
+  --tinta: oklch(93% 0.008 240); --tinta-2: oklch(78% 0.012 240); --tinta-3: oklch(66% 0.014 240);
+  --linea: oklch(29% 0.014 245); --linea-fuerte: oklch(38% 0.016 245);
+  --acento: oklch(74% 0.11 250); --acento-suave: oklch(30% 0.05 252);
+  --hormigon: oklch(33% 0.008 85); --hormigon-borde: oklch(58% 0.01 85); --acero: oklch(88% 0.008 250);
+  --nota: oklch(25.5% 0.014 72); --nota-borde: oklch(36% 0.022 70); color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --suelo: oklch(17% 0.012 245); --hoja: oklch(21% 0.014 245); --hundido: oklch(18.5% 0.012 245);
+  --tinta: oklch(93% 0.008 240); --tinta-2: oklch(78% 0.012 240); --tinta-3: oklch(66% 0.014 240);
+  --linea: oklch(29% 0.014 245); --linea-fuerte: oklch(38% 0.016 245);
+  --acento: oklch(74% 0.11 250); --acento-suave: oklch(30% 0.05 252);
+  --hormigon: oklch(33% 0.008 85); --hormigon-borde: oklch(58% 0.01 85); --acero: oklch(88% 0.008 250);
+  --nota: oklch(25.5% 0.014 72); --nota-borde: oklch(36% 0.022 70); color-scheme: dark; }
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--suelo); color: var(--tinta); font: 12px/1.4 var(--f); font-variant-numeric: tabular-nums; }
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--acento); outline-offset: 1px; }
+sub { font-size: .75em; }
+.app { height: 100%; display: grid; grid-template-rows: 40px 1fr; }
+.barra { display: flex; align-items: center; gap: 12px; padding: 0 16px; background: var(--hoja); border-bottom: 1px solid var(--linea); min-width: 0; }
+.marca-app { font-weight: 700; font-size: 14px; white-space: nowrap; }
+.menu { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; min-width: 0; }
+.menu a { padding: 3px 12px; border-radius: 999px; color: var(--tinta-2); font-size: 16px; white-space: nowrap; text-decoration: none; }
+.menu a[aria-current] { background: var(--acento-suave); color: var(--acento); font-weight: 600; }
+.hueco { flex: 1; }
+.chip { padding: 2px 8px; border: 1px solid var(--linea); border-radius: 4px; color: var(--tinta-2); white-space: nowrap; }
+.tema { height: 24px; padding: 0 8px; border: 1px solid var(--linea-fuerte); border-radius: 6px; background: var(--hoja); }
+
+.cols { display: grid; grid-template-columns: minmax(260px, 320px) minmax(0, 1fr) minmax(220px, 280px); gap: 12px; padding: 12px 16px; min-height: 0; align-items: start; }
+.panel { background: var(--hoja); border: 1px solid var(--linea); border-radius: 10px; padding: 10px 12px; min-width: 0; }
+.grupo { display: grid; gap: 10px; }
+.grupo + .grupo { margin-top: 14px; }
+.grupo h3 { margin: 0; font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--tinta-3); font-weight: 600; }
+
+/* Etiqueta en una línea y opciones en la siguiente, a todo el ancho del panel */
+.campo-opc { display: grid; gap: 4px; }
+.campo-opc > label { color: var(--tinta-2); }
+.seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; border: 1px solid var(--linea-fuerte); border-radius: 6px; overflow: hidden; height: 26px; }
+.seg button { border: 0; background: none; padding: 0 4px; color: var(--tinta-2); white-space: nowrap; min-width: 0; }
+.seg button + button { border-left: 1px solid var(--linea-fuerte); }
+.seg button[aria-checked="true"] { color: var(--acento); font-weight: 600; box-shadow: inset 0 -2px 0 var(--acento); }
+.seg button:hover:not([aria-checked="true"]) { background: var(--suelo); }
+.par { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.dibujo { display: grid; gap: 8px; min-width: 0; }
+.dibujo svg { display: block; width: 100%; height: clamp(260px, calc(100vh - 220px), 460px); }
+.dibujo text { fill: var(--tinta-2); font-family: var(--f); font-size: calc(12px / var(--k, 1)); }
+.dibujo .cota text { fill: var(--tinta); font-weight: 600; }
+.dibujo .peq { font-size: calc(10px / var(--k, 1)); fill: var(--tinta-3); font-weight: 400; }
+.dibujo .cota line, .dibujo .cota path { stroke: var(--tinta-2); stroke-width: 1; fill: none; vector-effect: non-scaling-stroke; }
+.dibujo .hor { fill: var(--hormigon); stroke: var(--hormigon-borde); stroke-width: 1.2; vector-effect: non-scaling-stroke; }
+.dibujo .barra-ac { fill: var(--acero); }
+.dibujo .cerco { fill: none; stroke: var(--acero); stroke-width: 1.2; vector-effect: non-scaling-stroke; }
+.dibujo .fuego { fill: none; stroke: var(--tinta); stroke-width: 3; stroke-dasharray: 2 4; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.dibujo .ayuda { stroke: var(--tinta-3); stroke-dasharray: 3 3; stroke-width: 1; vector-effect: non-scaling-stroke; fill: none; }
+.leyenda { display: flex; flex-wrap: wrap; gap: 4px 14px; color: var(--tinta-3); font-size: 10px; }
+.leyenda b { color: var(--tinta); font-weight: 600; }
+
+.res .fila { display: flex; justify-content: space-between; align-items: center; gap: 8px; min-height: 26px; border-bottom: 1px solid var(--linea); }
+.res .fila:last-child { border-bottom: 0; }
+.res .v { font-weight: 600; white-space: nowrap; }
+.u { color: var(--tinta-3); }
+.cartel { padding: 8px 12px; border: 1px solid var(--linea-fuerte); border-radius: 10px; background: var(--hoja); margin-bottom: 10px; }
+.cartel .t { font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--tinta-3); font-weight: 600; }
+.cartel .n { font-size: 26px; font-weight: 700; line-height: 1.2; }
+.nota { margin-top: 10px; border: 1px solid var(--nota-borde); border-radius: 6px; background: var(--nota); color: var(--tinta-2); padding: 4px 8px; }
+.sub { color: var(--tinta-3); font-size: 10px; }
+
+@media (max-width: 1099px), (max-height: 599px) {
+  html, body { height: auto; }
+  .app { display: block; }
+  .cols { grid-template-columns: 1fr; }
+  .barra { flex-wrap: wrap; padding: 8px 16px; }
+  .menu { flex-basis: 100%; order: 3; }
+}
+</style>
+
+<div class="app">
+  <header class="barra">
+    <span class="marca-app">Prontuario</span>
+    <nav class="menu" aria-label="Módulos"><a href="#">Proyecto</a><a href="#">Materiales</a><a href="#">Secciones</a><a href="#">Flexión</a><a href="#" aria-current="page">Fuego</a><a href="#">Bielas</a></nav>
+    <span class="hueco"></span>
+    <span class="chip">Norma: EC-2 2004 + AN</span>
+    <button class="tema" type="button" id="tema">Tema</button>
+  </header>
+
+  <div class="cols">
+    <section class="panel" aria-label="Datos">
+      <div class="grupo">
+        <h3>Elemento</h3>
+        <div class="campo-opc">
+          <label id="l-el">Tipo de elemento</label>
+          <div class="seg" role="radiogroup" aria-labelledby="l-el" id="s-el"></div>
+        </div>
+        <div class="campo-opc" id="c-caras">
+          <label id="l-caras">Caras expuestas</label>
+          <div class="seg" role="radiogroup" aria-labelledby="l-caras" id="s-caras"></div>
+        </div>
+        <div class="campo-opc" id="c-met">
+          <label id="l-met">Método (pilares, EC-2)</label>
+          <div class="seg" role="radiogroup" aria-labelledby="l-met" id="s-met"></div>
+        </div>
+        <div class="par" id="c-nw">
+          <div class="campo-opc"><label id="l-n">Nivel de carga n</label><div class="seg" role="radiogroup" aria-labelledby="l-n" id="s-n"></div></div>
+          <div class="campo-opc"><label id="l-w">Cuantía mecánica ω</label><div class="seg" role="radiogroup" aria-labelledby="l-w" id="s-w"></div></div>
+        </div>
+      </div>
+      <div class="grupo">
+        <h3>Exposición</h3>
+        <div class="campo-opc">
+          <label id="l-r">Resistencia al fuego exigida</label>
+          <div class="seg" role="radiogroup" aria-labelledby="l-r" id="s-r"></div>
+        </div>
+        <div class="campo-opc">
+          <label id="l-ar">Árido del hormigón</label>
+          <div class="seg" role="radiogroup" aria-labelledby="l-ar" id="s-ar"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="dibujo" aria-label="Dibujo">
+      <div class="panel"><svg id="svg" viewBox="0 0 420 380" preserveAspectRatio="xMinYMin meet" role="img" aria-label="Sección del elemento con cotas"></svg></div>
+      <div class="leyenda"><span><b>- - -</b> cara expuesta al fuego</span><span><b>a</b> distancia al eje de la armadura</span><span id="l-extra"></span></div>
+    </section>
+
+    <section class="res" aria-label="Resultado">
+      <div class="cartel"><div class="t" id="rt">Dimensión mínima</div><div class="n" id="rn">b<sub>min</sub> = 300 <span class="u" style="font-size:14px;font-weight:400">mm</span></div></div>
+      <div class="panel">
+        <div id="filas"></div>
+        <details class="nota"><summary>Condiciones que acompañan a la tabla</summary><div style="padding:4px 0 2px 14px">Valores ilustrativos de la maqueta. La app da los de la tabla de la norma activa.</div></details>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const NS = 'http://www.w3.org/2000/svg';
+const st = { el: 'pilar', caras: 4, met: 'B', n: '0,5', w: '0,5', r: 'R 90', ar: 'Silíceo' };
+
+function seg(id, opciones, clave, hecho) {
+  const d = $(id); d.innerHTML = '';
+  opciones.forEach(([v, txt]) => {
+    const b = document.createElement('button'); b.type = 'button'; b.setAttribute('role', 'radio');
+    b.setAttribute('aria-checked', String(st[clave] === v)); b.textContent = txt;
+    b.onclick = () => { st[clave] = v; hecho(); }; d.appendChild(b);
+  });
+}
+const CARAS = { pilar: [[4, '4 caras'], [3, '3 caras'], [2, '2 caras'], [1, '1 cara']], muro: [[2, 'Dos caras'], [1, 'Una cara']], viga: [[3, 'Tres caras'], [4, 'Cuatro caras']], losa: [[1, 'Cara inferior']] };
+function pintarControles() {
+  seg('#s-el', [['pilar', 'Pilar'], ['muro', 'Muro'], ['viga', 'Viga'], ['losa', 'Losa']], 'el', () => { st.caras = CARAS[st.el][0][0]; pintar(); });
+  seg('#s-caras', CARAS[st.el], 'caras', pintar);
+  $('#c-met').hidden = $('#c-nw').hidden = st.el !== 'pilar';
+  seg('#s-met', [['A', 'A · nivel de carga'], ['B', 'B · n y ω']], 'met', pintar);
+  seg('#s-n', ['0,15', '0,3', '0,5', '0,7'].map((x) => [x, x]), 'n', pintar);
+  seg('#s-w', ['0,1', '0,5', '1'].map((x) => [x, x]), 'w', pintar);
+  seg('#s-r', ['R 30', 'R 60', 'R 90', 'R 120', 'R 180', 'R 240'].map((x) => [x, x]), 'r', pintar);
+  seg('#s-ar', [['Silíceo', 'Silíceo'], ['Calizo', 'Calizo']], 'ar', pintar);
+}
+
+/* Dibujo acotado: cada elemento con sus cotas y las caras expuestas marcadas con trazo de puntos */
+function dibujar() {
+  const svg = $('#svg'); svg.textContent = '';
+  const el = (t, a, txt) => { const e = document.createElementNS(NS, t); for (const k in a) e.setAttribute(k, a[k]); if (txt != null) e.textContent = txt; return e; };
+  const g = (cls) => { const e = el('g', { class: cls }); svg.appendChild(e); return e; };
+  const cotaH = (gr, x1, x2, y, txt, dy = 0) => { gr.append(el('line', { x1, y1: y, x2, y2: y }), el('line', { x1, y1: y - 5, x2: x1, y2: y + 5 }), el('line', { x1: x2, y1: y - 5, x2, y2: y + 5 }), el('text', { x: (x1 + x2) / 2, y: y - 6 + dy, 'text-anchor': 'middle' }, txt)); };
+  const cotaV = (gr, x, y1, y2, txt) => { gr.append(el('line', { x1: x, y1, x2: x, y2 }), el('line', { x1: x - 5, y1, x2: x + 5, y2: y1 }), el('line', { x1: x - 5, y1: y2, x2: x + 5, y2 }), el('text', { x: x - 7, y: (y1 + y2) / 2, 'text-anchor': 'middle', transform: `rotate(-90 ${x - 7} ${(y1 + y2) / 2})` }, txt)); };
+  const bar = (x, y, r = 6) => svg.appendChild(el('circle', { cx: x, cy: y, r, class: 'barra-ac' }));
+  const cot = g('cota');
+  const E = st.el;
+  let x0 = 90, y0 = 30, W, H;
+  if (E === 'pilar') {
+    W = 220; H = 220; const a = 44, c = 22;
+    svg.insertBefore(el('rect', { x: x0, y: y0, width: W, height: H, class: 'hor' }), cot);
+    svg.insertBefore(el('rect', { x: x0 + c - 6, y: y0 + c - 6, width: W - 2 * c + 12, height: H - 2 * c + 12, class: 'cerco', rx: 3 }), cot);
+    [[x0 + a, y0 + a], [x0 + W - a, y0 + a], [x0 + a, y0 + H - a], [x0 + W - a, y0 + H - a], [x0 + W / 2, y0 + a], [x0 + W / 2, y0 + H - a], [x0 + a, y0 + H / 2], [x0 + W - a, y0 + H / 2]].forEach(([x, y]) => bar(x, y));
+    const cara = { sup: [x0, y0, x0 + W, y0], der: [x0 + W, y0, x0 + W, y0 + H], inf: [x0, y0 + H, x0 + W, y0 + H], izq: [x0, y0, x0, y0 + H] };
+    const ord = { 4: ['sup', 'der', 'inf', 'izq'], 3: ['izq', 'inf', 'der'], 2: ['inf', 'izq'], 1: ['izq'] }[st.caras];
+    ord.forEach((k) => { const [a1, b1, a2, b2] = cara[k]; svg.appendChild(el('line', { x1: a1, y1: b1, x2: a2, y2: b2, class: 'fuego' })); });
+    cotaH(cot, x0, x0 + W, y0 + H + 34, 'b = 300'); cotaV(cot, x0 + W + 34, y0, y0 + H, 'h = 300');
+    cotaH(cot, x0, x0 + a, y0 + H + 6, 'a', 22); svg.appendChild(el('line', { x1: x0 + a, y1: y0 + H - a, x2: x0 + a, y2: y0 + H + 10, class: 'ayuda' }));
+    $('#l-extra').innerHTML = '<b>b</b> lado menor de la sección';
+  } else if (E === 'muro') {
+    W = 300; H = 90; y0 = 90; const a = 34;
+    svg.insertBefore(el('rect', { x: x0 - 20, y: y0, width: W, height: H, class: 'hor' }), cot);
+    for (let i = 0; i < 7; i++) { bar(x0 + i * 40 + 5, y0 + a); if (st.caras === 2) bar(x0 + i * 40 + 5, y0 + H - a); }
+    svg.appendChild(el('line', { x1: x0 - 20, y1: y0, x2: x0 + W - 20, y2: y0, class: 'fuego' }));
+    if (st.caras === 2) svg.appendChild(el('line', { x1: x0 - 20, y1: y0 + H, x2: x0 + W - 20, y2: y0 + H, class: 'fuego' }));
+    svg.appendChild(el('path', { d: `M${x0 - 20} ${y0 - 14} l-8 0 M${x0 - 20 + W} ${y0 - 14} l8 0`, class: 'ayuda' }));
+    cotaV(cot, x0 - 44, y0, y0 + H, 'e = 200'); cotaV(cot, x0 + W - 20 + 34, y0, y0 + a, 'a');
+    cotaH(cot, x0 - 20, x0 + 20, y0 + H + 28, 'ancho ≥ 1 m', -2);
+    $('#l-extra').innerHTML = '<b>e</b> espesor del muro, tramo de 1 m dibujado';
+  } else if (E === 'viga') {
+    W = 160; H = 240; x0 = 120; const a = 42, asd = 54;
+    svg.insertBefore(el('rect', { x: x0, y: y0, width: W, height: H, class: 'hor' }), cot);
+    svg.insertBefore(el('rect', { x: x0 + 16, y: y0 + 16, width: W - 32, height: H - 32, class: 'cerco', rx: 3 }), cot);
+    [[x0 + asd, y0 + H - a], [x0 + W / 2, y0 + H - a], [x0 + W - asd, y0 + H - a], [x0 + asd, y0 + a], [x0 + W - asd, y0 + a]].forEach(([x, y]) => bar(x, y));
+    svg.appendChild(el('path', { d: `M${x0} ${y0 + H} H${x0 + W} M${x0} ${y0} V${y0 + H} M${x0 + W} ${y0} V${y0 + H}`, class: 'fuego' }));
+    if (st.caras === 4) svg.appendChild(el('line', { x1: x0, y1: y0, x2: x0 + W, y2: y0, class: 'fuego' }));
+    cotaH(cot, x0, x0 + W, y0 + H + 34, 'b = 200'); cotaV(cot, x0 - 34, y0, y0 + H, 'h = 400');
+    cotaV(cot, x0 + W + 34, y0 + H - a, y0 + H, 'a'); cotaH(cot, x0, x0 + asd, y0 + H + 6, 'a', 22);
+    svg.appendChild(el('line', { x1: x0 + asd, y1: y0 + H - a, x2: x0 + asd, y2: y0 + H + 10, class: 'ayuda' }));
+    $('#l-extra').innerHTML = '<b>a<sub>sd</sub></b> distancia lateral al eje de la barra de esquina';
+  } else {
+    W = 320; H = 70; y0 = 120; x0 = 60; const a = 30;
+    svg.insertBefore(el('rect', { x: x0, y: y0, width: W, height: H, class: 'hor' }), cot);
+    for (let i = 0; i < 9; i++) bar(x0 + 16 + i * 36, y0 + H - a, 5);
+    svg.appendChild(el('line', { x1: x0, y1: y0 + H, x2: x0 + W, y2: y0 + H, class: 'fuego' }));
+    cotaV(cot, x0 - 20, y0, y0 + H, 'h = 150'); cotaV(cot, x0 + W + 30, y0 + H - a, y0 + H, 'a');
+    svg.appendChild(el('line', { x1: x0 + W - 20, y1: y0 + H - a, x2: x0 + W + 36, y2: y0 + H - a, class: 'ayuda' }));
+    cot.append(el('text', { x: x0 + W / 2, y: y0 - 18, 'text-anchor': 'middle', class: 'peq' }, 'tramo de losa de 1 m'));
+    $('#l-extra').innerHTML = '<b>h</b> canto de la losa';
+  }
+}
+
+function pintarRes() {
+  const f = (k, v, u) => `<div class="fila"><span>${k}</span><span class="v">${v} <span class="u">${u}</span></span></div>`;
+  const E = st.el, r = st.r;
+  const m = { pilar: [['b<sub>min</sub>', 300, 'mm'], ['a', 45, 'mm']], muro: [['e<sub>min</sub>', 200, 'mm'], ['a', 35, 'mm']], viga: [['b<sub>min</sub>', 200, 'mm'], ['a', 45, 'mm'], ['a<sub>sd</sub>', 55, 'mm']], losa: [['h<sub>s,min</sub>', 150, 'mm'], ['a', 30, 'mm']] }[E];
+  $('#rt').textContent = 'Dimensión mínima · ' + r;
+  $('#rn').innerHTML = `${m[0][0]} = ${m[0][1]} <span class="u" style="font-size:14px;font-weight:400">mm</span>`;
+  $('#filas').innerHTML = m.slice(1).map(([k, v, u]) => f(k, v, u)).join('') + f('Árido', st.ar.toLowerCase(), '') + f('Caras expuestas', st.caras, '');
+}
+function pintar() { pintarControles(); dibujar(); pintarRes(); }
+
+new ResizeObserver(() => { const s = $('#svg'); const k = Math.min(s.clientWidth / 420, s.clientHeight / 380); if (k > 0) s.style.setProperty('--k', k); }).observe($('#svg'));
+$('#tema').onclick = () => { const r = document.documentElement; const os = matchMedia('(prefers-color-scheme: dark)').matches; r.dataset.theme = (r.dataset.theme || (os ? 'dark' : 'light')) === 'dark' ? 'light' : 'dark'; };
+pintar();
+</script>

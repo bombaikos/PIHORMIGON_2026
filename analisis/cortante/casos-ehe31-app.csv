@@ -1,0 +1,11 @@
+﻿caso;modo;seccion;b0_m;h_m;d_m;hormigon;fck_MPa;acero;ro_permil;Nd_kN_compresion_positiva;sy_MPa;teta_deg;alfa_deg;fi_mm;s_m;ramas;Vd_kN;;sigma_cd_MPa;teta_e_deg;Vu1_kN;Vcu_kN;Vsu_kN;Vu2_kN;Vu_kN;Astrans_cm2_m;mensajes_y_tabla_dimensionamiento
+1;comprobacion;Rec 0.30x0.55;0.3;0.55;0.5;HA-30;30;B500S;10;0;0;45;90;8;0.2;2;;;0.00;45.0;900.0;85.7;90.5;176.2;176.2;;fyd limitado a 400 MPa
+2;comprobacion;Rec 0.30x0.55;0.3;0.55;0.5;HA-30;30;B500S;10;0;0;30;90;8;0.2;2;;;0.00;45.0;779.4;85.7;156.7;242.4;242.4;;fyd limitado a 400 MPa
+3;comprobacion;Rec 0.30x0.55;0.3;0.55;0.5;HA-30;30;B500S;10;0;0;63;90;8;0.2;2;;;0.00;45.0;728.1;85.7;46.1;131.8;131.8;;fyd limitado a 400 MPa
+4;comprobacion sin armadura;Rec 0.30x0.55;0.3;0.55;0.5;HA-30;30;B500S;5;0;0;45;90;;;;;;0.00;;;85.7;0.0;85.7;85.7;;fyd limitado a 400 MPa · sin cercos
+5;comprobacion;Rec 0.30x0.55;0.3;0.55;0.5;HA-30;30;B500S;10;300;0;45;90;8;0.2;2;;;1.82;38.1;981.8;126.6;90.5;217.1;217.1;;fyd limitado a 400 MPa
+6;comprobacion;Rec 0.30x0.55;0.3;0.55;0.5;HA-30;30;B500S;10;0;1.0;45;90;8;0.2;2;;;0.00;39.0;900.0;85.7;90.5;176.2;176.2;;fyd limitado a 400 MPa
+7;comprobacion;Rec 0.30x0.55;0.3;0.55;0.5;HA-30;30;B500S;10;0;0;45;60;8;0.2;2;;;0.00;45.0;1419.6;85.7;123.6;209.3;209.3;;fyd limitado a 400 MPa · cercos inclinados: 1/3 a 90°
+8;dimensionamiento;Rec 0.30x0.55;0.3;0.55;0.5;HA-30;30;B500S;10;0;0;45;90;;;;250;;0.00;45.0;900.0;85.7;;;;9.129;Armadura calculada · necesaria 9.129 · mínima 2.896 cm²/m · ø8: 2R a 100 mm | ø10: 2R a 150 mm | ø12: 2R a 200 mm | ø16: 2R a 300 mm | ø20: 2R a 300 mm
+9;dimensionamiento;Rec 0.30x0.55;0.3;0.55;0.5;HA-30;30;B500S;10;0;0;30;90;;;;250;;0.00;45.0;779.4;85.7;;;;5.271;Armadura calculada · necesaria 5.271 · mínima 2.896 cm²/m · ø8: 2R a 150 mm | ø10: 2R a 250 mm | ø12: 2R a 300 mm | ø16: 2R a 300 mm | ø20: 2R a 300 mm
+10;dimensionamiento;Rec 0.30x0.55;0.3;0.55;0.5;HA-30;30;B500S;10;0;0;45;90;;;;100;;0.00;45.0;900.0;85.7;;;;2.896;Cuantía mínima · necesaria 0.796 · mínima 2.896 cm²/m · ø8: 2R a 300 mm | ø10: 2R a 300 mm | ø12: 2R a 300 mm | ø16: 2R a 300 mm | ø20: 2R a 300 mm

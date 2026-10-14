@@ -1,0 +1,416 @@
+<title>Jerarquía de Secciones</title>
+<style>
+/* Maqueta de jerarquía visual: barra (módulo) · cinco desplegables de sección · pestañas de vista · datos | dibujo | resultados.
+   Tokens copiados de prontuario-web/css/app.css. */
+:root {
+  --suelo: oklch(96.4% 0.005 240); --hoja: oklch(99.6% 0.002 240); --hundido: oklch(95.2% 0.006 240);
+  --tinta: oklch(24% 0.02 248); --tinta-2: oklch(44% 0.02 248); --tinta-3: oklch(57% 0.016 248);
+  --linea: oklch(90% 0.008 240); --linea-fuerte: oklch(80% 0.012 240);
+  --acento: oklch(47% 0.13 252); --acento-suave: oklch(93.5% 0.03 252); --sobre-acento: oklch(99% 0 0);
+  --hormigon: oklch(90% 0.006 85); --hormigon-borde: oklch(60% 0.01 85); --acero: oklch(30% 0.012 250);
+  --marca: oklch(62% 0.17 330); --marca-tinta: oklch(99% 0 0);
+  --nota: oklch(94.8% 0.014 78); --nota-borde: oklch(85.5% 0.024 75); --atencion-fondo: oklch(96% 0.05 90); --atencion: oklch(50% 0.1 75);
+  --f: system-ui, 'Segoe UI Variable Text', 'Segoe UI', -apple-system, Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --t-xs: 10px; --t-s: 12px; --t-m: 14px; --t-xxl: 28px;
+  --r-panel: 10px; --r-campo: 6px; --r-chip: 4px; --alto: 24px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --suelo: oklch(17% 0.012 245); --hoja: oklch(21% 0.014 245); --hundido: oklch(18.5% 0.012 245);
+  --tinta: oklch(93% 0.008 240); --tinta-2: oklch(78% 0.012 240); --tinta-3: oklch(66% 0.014 240);
+  --linea: oklch(29% 0.014 245); --linea-fuerte: oklch(38% 0.016 245);
+  --acento: oklch(74% 0.11 250); --acento-suave: oklch(30% 0.05 252); --sobre-acento: oklch(18% 0.02 250);
+  --hormigon: oklch(33% 0.008 85); --hormigon-borde: oklch(58% 0.01 85); --acero: oklch(88% 0.008 250);
+  --marca: oklch(72% 0.15 330); --marca-tinta: oklch(18% 0.02 330); --nota: oklch(25.5% 0.014 72); --nota-borde: oklch(36% 0.022 70); --atencion-fondo: oklch(30% 0.05 85); --atencion: oklch(80% 0.11 85); color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --suelo: oklch(17% 0.012 245); --hoja: oklch(21% 0.014 245); --hundido: oklch(18.5% 0.012 245);
+  --tinta: oklch(93% 0.008 240); --tinta-2: oklch(78% 0.012 240); --tinta-3: oklch(66% 0.014 240);
+  --linea: oklch(29% 0.014 245); --linea-fuerte: oklch(38% 0.016 245);
+  --acento: oklch(74% 0.11 250); --acento-suave: oklch(30% 0.05 252); --sobre-acento: oklch(18% 0.02 250);
+  --hormigon: oklch(33% 0.008 85); --hormigon-borde: oklch(58% 0.01 85); --acero: oklch(88% 0.008 250);
+  --marca: oklch(72% 0.15 330); --marca-tinta: oklch(18% 0.02 330); --nota: oklch(25.5% 0.014 72); --nota-borde: oklch(36% 0.022 70); --atencion-fondo: oklch(30% 0.05 85); --atencion: oklch(80% 0.11 85); color-scheme: dark; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--suelo); color: var(--tinta); font: var(--t-s)/1.4 var(--f); font-variant-numeric: tabular-nums; }
+button, input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--acento); outline-offset: 1px; }
+sub { font-size: .75em; }
+.app { height: 100%; display: grid; grid-template-rows: 40px 1fr; }
+
+/* 1 · Módulo: texto plano en la barra; el activo, píldora azul */
+.barra { display: flex; align-items: center; gap: 12px; padding: 0 16px; background: var(--hoja); border-bottom: 1px solid var(--linea); min-width: 0; }
+.marca-app { font-weight: 700; font-size: var(--t-m); white-space: nowrap; }
+.proyecto { color: var(--tinta-3); white-space: nowrap; }
+.menu { display: flex; gap: 2px; overflow-x: auto; min-width: 0; scrollbar-width: none; }
+.menu a { padding: 4px 10px; border-radius: 999px; color: var(--tinta-2); text-decoration: none; white-space: nowrap; font-size: var(--t-m); }
+.menu a:hover { color: var(--tinta); }
+.menu a[aria-current] { background: var(--acento-suave); color: var(--acento); font-weight: 600; }
+.hueco { flex: 1; }
+/* 6 · Ajuste global: chip con su nombre delante */
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 2px 8px; border-radius: var(--r-chip); border: 1px solid var(--linea); color: var(--tinta-2); white-space: nowrap; background: none; cursor: pointer; }
+.chip b { color: var(--tinta); font-weight: 600; }
+.tecla { color: var(--tinta-3); border: 1px solid var(--linea); border-radius: var(--r-chip); padding: 0 5px; font-size: var(--t-xs); white-space: nowrap; }
+
+.cuerpo { display: grid; grid-template-columns: 1fr; min-height: 0; }
+
+/* 2 · Qué sección: cinco desplegables fijos, uno por tipo, cada uno con su icono.
+   Botón de barra de herramientas: sin fondo gris; el del tipo activo, en azul y con el nombre de la sección */
+.selsec { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.desp { position: relative; }
+.desp > button { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 8px; border: 1px solid var(--linea); border-radius: var(--r-campo); background: var(--hoja); color: var(--tinta-2); cursor: pointer; white-space: nowrap; }
+.desp > button:hover { border-color: var(--linea-fuerte); color: var(--tinta); }
+.desp > button .cnt { color: var(--tinta-3); font-size: var(--t-xs); }
+.desp > button .car { color: var(--tinta-3); font-size: var(--t-xs); }
+.desp.activo > button { border-color: var(--acento); color: var(--acento); background: var(--acento-suave); }
+.desp .sep { margin: 0 4px; opacity: .6; }
+.desp b { font-weight: 600; }
+.desp.activo > button .cnt, .desp.activo > button .car { color: var(--acento); font-weight: 400; }
+.ico { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.4; flex: none; }
+.menu-sec { position: absolute; top: calc(100% + 4px); left: 0; z-index: 5; min-width: 190px; padding: 4px; border: 1px solid var(--linea-fuerte); border-radius: var(--r-campo); background: var(--hoja); box-shadow: 0 6px 20px oklch(30% 0.02 250 / .14); display: grid; gap: 1px; }
+.menu-sec { grid-template-rows: auto minmax(0, auto) auto; }
+.menu-sec .filas { display: grid; gap: 1px; max-height: calc(10 * 27px); overflow-y: auto; overscroll-behavior: contain; }
+.menu-sec .buscar { height: var(--alto); margin: 2px 2px 4px; padding: 0 6px; border: 1px solid var(--linea); border-radius: var(--r-chip); background: var(--hundido); }
+.menu-sec .vacio { padding: 5px 8px; color: var(--tinta-3); }
+.menu-sec button { display: flex; align-items: center; gap: 8px; border: 0; background: none; text-align: left; padding: 5px 8px; border-radius: var(--r-chip); cursor: pointer; white-space: nowrap; }
+.menu-sec button:hover { background: var(--suelo); }
+.menu-sec button[aria-current] { color: var(--acento); font-weight: 600; }
+.menu-sec .alta { color: var(--acento); border-top: 1px solid var(--linea); border-radius: 0; margin-top: 3px; padding-top: 7px; }
+.mas { height: 28px; padding: 0 10px; border: 1px dashed var(--linea-fuerte); border-radius: var(--r-campo); background: none; color: var(--tinta-2); cursor: pointer; white-space: nowrap; }
+.mas:hover { color: var(--acento); border-color: var(--acento); }
+.nombre-sec { margin-left: 6px; color: var(--tinta-3); }
+
+/* Tarjetón de la sección activa: el único cartel grande de la pantalla de datos */
+.col1 { display: grid; gap: 10px; min-width: 0; }
+.tarjeta { padding: 8px 14px 10px; border: 1px solid var(--linea-fuerte); border-radius: var(--r-panel); background: var(--hoja); color: var(--tinta-2); }
+.t-tipo { display: flex; align-items: center; gap: 6px; font-size: var(--t-xs); text-transform: uppercase; letter-spacing: .06em; font-weight: 600; }
+.t-nom { font-size: var(--t-xxl); font-weight: 700; line-height: 1.15; color: var(--tinta); overflow-wrap: anywhere; }
+.t-res { color: var(--tinta-2); }
+
+/* Aclaraciones plegadas: fondo chocolate muy claro; ni gris de dato, ni azul de selección, ni ámbar de aviso */
+.fila-d { border-radius: var(--r-campo); position: relative; }
+.fila-d summary { list-style: none; cursor: pointer; padding: 0 4px; margin: 0 -4px; border-radius: var(--r-campo); }
+.fila-d summary::-webkit-details-marker { display: none; }
+.fila-d summary > span:first-child::before { content: '▸'; font-size: 10px; color: var(--tinta-3); margin-right: 5px; }
+.fila-d[open] summary > span:first-child::before { content: '▾'; }
+.fila-d:hover summary { background: var(--suelo); }
+.fila-d[open] { background: var(--nota); border: 1px solid var(--nota-borde); padding: 0 4px 6px; margin: 0 -5px; color: var(--tinta-2); }
+.fila-d[open] summary { margin: 0; padding: 0; }
+.fila-d[open]:hover summary { background: none; }
+.fila-d .cuerpo-nota { padding: 2px 0 0 15px; display: grid; gap: 4px; }
+.fila-d code, .fila-d .v { font-family: inherit; color: var(--tinta); }
+.aviso { display: flex; gap: 6px; padding: 4px 8px; border: 1px solid var(--atencion); border-radius: var(--r-campo); background: var(--atencion-fondo); color: var(--tinta); }
+.aviso::before { content: '⚠'; color: var(--atencion); }
+
+/* Botones: contorno o azul relleno */
+.acciones .btn { width: 100%; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 28px; padding: 0 12px; border-radius: var(--r-campo); border: 1px solid var(--linea-fuerte); background: var(--hoja); cursor: pointer; white-space: nowrap; }
+.btn.primario { background: var(--acento); border-color: var(--acento); color: var(--sobre-acento); font-weight: 600; }
+
+.trabajo { display: grid; grid-template-rows: auto 1fr; min-height: 0; min-width: 0; }
+.cabeza { padding: 10px 16px 0; background: var(--hoja); border-bottom: 1px solid var(--linea); }
+.titulo { display: flex; align-items: baseline; gap: 10px; }
+.titulo h1 { margin: 0; font-size: var(--t-m); }
+.titulo .tipo { color: var(--tinta-3); }
+
+/* 3 · Vista de la sección: pestañas subrayadas, pegadas a lo que controlan */
+.pestanas { display: inline-flex; gap: 4px; margin-top: 4px; }
+.pestanas button { border: 0; background: none; padding: 6px 8px; cursor: pointer; color: var(--tinta-2); border-bottom: 2px solid transparent; margin-bottom: -1px; font-size: var(--t-m); white-space: nowrap; }
+.pestanas button[aria-selected="true"] { color: var(--acento); border-bottom-color: var(--acento); font-weight: 600; }
+
+.cols { display: grid; grid-template-columns: minmax(250px, 300px) minmax(0, 1fr) minmax(220px, 280px); gap: 12px; padding: 12px 16px; min-height: 0; align-items: start; }
+.panel { background: var(--hoja); border: 1px solid var(--linea); border-radius: var(--r-panel); padding: 10px 12px; min-width: 0; }
+.grupo { display: grid; gap: 4px; }
+.grupo + .grupo { margin-top: 12px; }
+.grupo h3 { margin: 0 0 2px; font-size: var(--t-xs); text-transform: uppercase; letter-spacing: .06em; color: var(--tinta-3); font-weight: 600; }
+.fila { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: var(--alto); }
+.fila label { color: var(--tinta-2); flex: 0 1 auto; max-width: 50%; }
+.u { color: var(--tinta-3); }
+
+/* 4 · Dato editable: la única caja gris */
+.campo { height: var(--alto); width: 130px; padding: 0 6px; border: 1px solid var(--linea); border-radius: var(--r-campo); background: var(--hundido); text-align: right; }
+select.campo { text-align: left; }
+.campo:hover { border-color: var(--linea-fuerte); }
+
+/* 5 · Opción excluyente: contorno, sin relleno gris */
+.opc { display: inline-flex; border: 1px solid var(--linea-fuerte); border-radius: var(--r-campo); overflow: hidden; height: var(--alto); }
+.opc button { border: 0; background: none; padding: 0 10px; cursor: pointer; color: var(--tinta-2); }
+.opc button + button { border-left: 1px solid var(--linea-fuerte); }
+.opc button[aria-checked="true"] { color: var(--acento); font-weight: 600; box-shadow: inset 0 -2px 0 var(--acento); }
+
+.acciones { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
+
+.dibujo svg { display: block; width: 100%; height: clamp(220px, calc(100vh - 440px), 330px); }
+.dibujo text { fill: var(--tinta-2); font-family: var(--f); font-size: calc(12px / var(--k, 1)); }
+.res .fila { border-bottom: 1px solid var(--linea); }
+.res .fila:last-child { border-bottom: 0; }
+.res .v { font-weight: 600; white-space: nowrap; }
+
+/* Regla de niveles (solo en la maqueta) */
+.regla { margin-top: 12px; }
+.regla h3 { margin: 0 0 6px; font-size: var(--t-m); }
+.regla ol { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 6px 16px; }
+.regla li { display: grid; grid-template-columns: 18px 1fr; gap: 8px; align-items: start; }
+.regla li b { font-weight: 600; }
+.regla p { margin: 8px 0 0; color: var(--tinta-3); }
+.nv { position: relative; }
+.n { display: none; position: absolute; top: -7px; right: -7px; width: 16px; height: 16px; border-radius: 50%; background: var(--marca); color: var(--marca-tinta); font-size: var(--t-xs); font-weight: 700; line-height: 16px; text-align: center; z-index: 2; pointer-events: none; }
+.regla .n { position: static; display: inline-block; }
+.marcas .n { display: block; }
+.marcas .regla .n { display: inline-block; }
+
+
+@media (max-width: 1099px), (max-height: 599px) {
+  html, body { height: auto; }
+  .app { display: block; }
+  .barra { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 3; flex-wrap: wrap; gap: 6px 10px; padding: 8px 16px; }
+  .menu { order: 3; flex-basis: 100%; }
+  .proyecto, .tecla { display: none; }
+  .cuerpo { display: block; }
+  .cols { grid-template-columns: 1fr; }
+  
+  .campo { width: 150px; }
+}
+@media (min-width: 1100px) and (min-height: 600px) {
+  .dibujo { display: flex; flex-direction: column; gap: 12px; height: calc(100vh - 155px); min-height: 0; }
+  .dibujo .regla { margin-top: 0; flex: 1; min-height: 0; overflow-y: auto; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="app marcas" id="app">
+  <header class="barra">
+    <span class="marca-app">Prontuario</span>
+    <span class="proyecto">Edificio Calle Mayor</span>
+    <span class="nv" style="min-width:0;display:flex"><nav class="menu" aria-label="Módulos">
+      <a href="#">Proyecto</a><a href="#">Materiales</a><a href="#" aria-current="page">Secciones</a><a href="#">Durabilidad</a><a href="#">Flexión</a><a href="#">Cortante</a><a href="#">Pilares</a>
+    </nav><span class="n" style="right:-4px">1</span></span>
+    <span class="hueco"></span>
+    <button class="chip nv" type="button" id="norma">Norma <b>EHE-98</b><span class="n">6</span></button>
+    <button class="chip" type="button" id="verNiveles" aria-pressed="true">Niveles</button>
+    <span class="tecla">Ctrl+K</span>
+  </header>
+
+  <div class="cuerpo">
+
+    <main class="trabajo">
+      <div class="cabeza">
+        <div class="selsec nv" id="selsec" aria-label="Sección"><span class="n" style="left:-7px;right:auto">2</span></div>
+        <div class="pestanas nv" role="tablist" id="pestanas">
+          <button role="tab" aria-selected="true" type="button">Sección</button>
+          <button role="tab" aria-selected="false" type="button">Diagramas M-κ</button>
+          <span class="n">3</span>
+        </div>
+      </div>
+
+      <div class="cols">
+        <div class="col1">
+        <div class="tarjeta nv" aria-live="polite">
+          <div class="t-tipo" id="tTipo"></div>
+          <div class="t-nom" id="tNom">V-1</div>
+          <div class="t-res" id="tRes"></div>
+          <span class="n">8</span>
+        </div>
+        <section class="panel" aria-label="Datos">
+          <div class="grupo">
+            <h3>Materiales</h3>
+            <div class="fila"><label for="hor">Hormigón</label><select class="campo" id="hor"><option>HA-25</option><option>HA-30</option></select></div>
+            <div class="fila"><label for="ace">Acero</label><select class="campo" id="ace"><option>B 500 S</option><option>B 400 S</option></select></div>
+          </div>
+          <div class="grupo">
+            <h3>Geometría <span class="u">(mm)</span></h3>
+            <div class="fila"><label for="b">b</label><span class="nv"><input class="campo" id="b" value="300"><span class="n">4</span></span></div>
+            <div class="fila"><label for="h">h</label><input class="campo" id="h" value="500"></div>
+          </div>
+          <div class="grupo">
+            <h3>Armadura</h3>
+            <div class="fila"><label for="ai">Inferior</label><input class="campo" id="ai" value="4D20"></div>
+            <div class="fila"><label for="as">Superior</label><input class="campo" id="as" value="2D12"></div>
+            <div class="fila"><label for="rec">Recubrimiento <span class="u">(mm)</span></label><input class="campo" id="rec" value="30"></div>
+            <div class="fila"><label>Recubrimiento a</label>
+              <span class="nv"><span class="opc" role="radiogroup" id="opc"><button type="button" role="radio" aria-checked="true">Cerco</button><button type="button" role="radio" aria-checked="false">Barra</button></span><span class="n">5</span></span>
+            </div>
+          </div>
+          <div class="acciones nv">
+            <button class="btn" type="button">Borrar</button>
+            <button class="btn primario" type="button">Guardar</button>
+            <span class="n">7</span>
+          </div>
+        </section>
+        </div>
+
+        <section class="dibujo" aria-label="Dibujo">
+          <div class="panel">
+            <svg id="svg" viewBox="0 0 300 330" preserveAspectRatio="xMinYMin meet" role="img" aria-label="Sección rectangular"></svg>
+          </div>
+          <div class="panel regla" id="regla">
+            <h3>Una forma por nivel</h3>
+            <ol>
+              <li><span class="n">1</span><span><b>Módulo</b>: texto en la barra de arriba; el activo, en píldora azul.</span></li>
+              <li><span class="n">2</span><span><b>Qué sección</b>: un desplegable por tipo, con su nombre escrito, el número de secciones y un icono de apoyo. El activo, en azul y con el nombre de la sección.</span></li>
+              <li><span class="n">3</span><span><b>Qué vista</b>: pestañas subrayadas, justo encima de lo que cambian.</span></li>
+              <li><span class="n">4</span><span><b>Dato</b>: caja gris. Solo los datos editables son grises.</span></li>
+              <li><span class="n">5</span><span><b>Opción a elegir</b>: botones con contorno, sin fondo gris.</span></li>
+              <li><span class="n">6</span><span><b>Ajuste de todo el proyecto</b>: chip arriba a la derecha (norma).</span></li>
+              <li><span class="n">7</span><span><b>Acción</b>: botón; azul relleno solo la principal.</span></li>
+              <li><span class="n">9</span><span><b>Aclaración plegada</b>: se despliega la propia fila del resultado (clic en la fila), sin títulos tipo «Cómo se calcula»; al abrirse, la fila y su explicación toman el fondo chocolate claro con borde fino. Distinto de los datos (gris), de lo seleccionado (azul) y de los avisos (ámbar con borde marcado).</span></li>
+              <li><span class="n">8</span><span><b>Sección activa</b>: tarjetón con el nombre en grande, bajo los selectores.</span></li>
+            </ol>
+            <p>Durabilidad pasa al menú como módulo propio.</p>
+          </div>
+        </section>
+
+        <section class="panel res" aria-label="Propiedades">
+          <div class="grupo">
+            <h3>Propiedades brutas</h3>
+            <div class="fila"><span>A<sub>c</sub></span><span class="v" id="ac">150 000 <span class="u">mm²</span></span></div>
+            <div class="fila"><span>I<sub>c</sub></span><span class="v" id="ic">3.13·10⁹ <span class="u">mm⁴</span></span></div>
+            <div class="fila"><span>y<sub>G</sub></span><span class="v" id="yg">250 <span class="u">mm</span></span></div>
+          </div>
+          <div class="grupo">
+            <h3>Armadura</h3>
+            <div class="fila"><span>A<sub>s1</sub></span><span class="v">1257 <span class="u">mm²</span></span></div>
+            <div class="fila"><span>A<sub>s2</sub></span><span class="v">226 <span class="u">mm²</span></span></div>
+            <div class="fila"><span>d</span><span class="v" id="dd">452 <span class="u">mm</span></span></div>
+            <details class="fila-d nv"><summary class="fila"><span>ρ<sub>inf</sub></span><span class="v" id="ri">0.93 <span class="u">%</span></span></summary>
+              <div class="cuerpo-nota"><span><code>ρ = A<sub>s1</sub> / (b·d)</code></span><span>1257 / (300·452) = 0.93 %</span><span class="u">EHE-08, art. 42.3.5</span></div>
+              <span class="n" style="top:-9px;right:-12px">9</span>
+            </details>
+            <div class="fila"><span>ρ<sub>sup</sub></span><span class="v" id="rs">0.15 <span class="u">%</span></span></div>
+          </div>
+          <div class="grupo">
+            <div class="aviso"><span>A<sub>s1</sub> inferior a A<sub>s,min</sub></span></div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+(() => {
+  const $ = (s) => document.querySelector(s);
+  const app = $('#app');
+  let listo = false;
+  const NS = 'http://www.w3.org/2000/svg';
+
+  function dibujar(b, h) {
+    const svg = $('#svg'); svg.textContent = '';
+    const k = Math.min(220 / b, 280 / h), W = b * k, H = h * k, x0 = 50, y0 = 10;
+    const el = (t, a, txt) => { const e = document.createElementNS(NS, t); for (const n in a) e.setAttribute(n, a[n]); if (txt) e.textContent = txt; svg.appendChild(e); return e; };
+    el('rect', { x: x0, y: y0, width: W, height: H, fill: 'var(--hormigon)', stroke: 'var(--hormigon-borde)' });
+    const r = 30 * k + 6 * k;
+    [[4, 10, y0 + H - r - 10 * k], [2, 6, y0 + r + 6 * k]].forEach(([n, d, y]) => {
+      for (let i = 0; i < n; i++) el('circle', { cx: x0 + r + 10 * k + i * (W - 2 * r - 20 * k) / (n - 1), cy: y, r: d * k, fill: 'var(--acero)' });
+    });
+    el('line', { x1: x0, y1: y0 + H + 14, x2: x0 + W, y2: y0 + H + 14, stroke: 'var(--tinta-3)' });
+    el('text', { x: x0 + W / 2, y: y0 + H + 28, 'text-anchor': 'middle' }, 'b = ' + b);
+    el('line', { x1: x0 - 14, y1: y0, x2: x0 - 14, y2: y0 + H, stroke: 'var(--tinta-3)' });
+    el('text', { x: x0 - 20, y: y0 + H / 2, 'text-anchor': 'middle', transform: `rotate(-90 ${x0 - 20} ${y0 + H / 2})` }, 'h = ' + h);
+  }
+  function recalcular() {
+    const b = +$('#b').value || 300, h = +$('#h').value || 500, d = h - 48;
+    dibujar(b, h);
+    if (listo) pintarTarjeta();
+    const f = (x, n = 0) => x.toFixed(n).replace(/\B(?=(\d{3})+(?!\d))/g, x >= 10000 ? ' ' : '');
+    $('#ac').firstChild.textContent = f(b * h) + ' ';
+    $('#ic').firstChild.textContent = (b * h ** 3 / 12 / 1e9).toFixed(2) + '·10⁹ ';
+    $('#yg').firstChild.textContent = f(h / 2) + ' ';
+    $('#dd').firstChild.textContent = f(d) + ' ';
+    $('#ri').firstChild.textContent = (100 * 1257 / (b * d)).toFixed(2) + ' ';
+    $('#rs').firstChild.textContent = (100 * 226 / (b * d)).toFixed(2) + ' ';
+  }
+  ['#b', '#h', '#ai', '#as', '#hor'].forEach((s) => $(s).addEventListener('input', recalcular));
+  document.querySelectorAll('.campo').forEach((c) => c.addEventListener('focus', () => c.select && c.select()));
+
+  const ICO = {
+    viga: '<rect x="4" y="2" width="8" height="12"/><circle cx="6" cy="12" r=".8"/><circle cx="10" cy="12" r=".8"/>',
+    pilar: '<rect x="3" y="3" width="10" height="10"/><circle cx="5" cy="5" r=".8"/><circle cx="11" cy="5" r=".8"/><circle cx="5" cy="11" r=".8"/><circle cx="11" cy="11" r=".8"/>',
+    t: '<path d="M2 3h12v3H10v8H6V6H2z"/>',
+    circ: '<circle cx="8" cy="8" r="6"/>',
+    gen: '<path d="M2 13 4 3h8l2 10z"/>' };
+  const ico = (k) => `<svg class="ico" viewBox="0 0 16 16" aria-hidden="true">${ICO[k]}</svg>`;
+  const TIPOS = [
+    { k: 'viga', nom: 'Rec viga', secs: [['V-1', 300, 500], ['V-2 zuncho', 400, 300], ['V-3 voladizo', 300, 600], ['V-4', 250, 450]].concat(Array.from({ length: 21 }, (_, i) => ['V-' + (i + 5) + (i % 4 === 0 ? ' planta ' + (1 + i / 4) : ''), [250, 300, 350, 400][i % 4], [400, 450, 500, 600][(i + 1) % 4]])) },
+    { k: 'pilar', nom: 'Rec pilar', secs: [['P-1', 400, 400], ['P-2 planta baja', 450, 450]] },
+    { k: 't', nom: 'En T', secs: [['VT-1', 300, 600]] },
+    { k: 'circ', nom: 'Circular', secs: [['PC-1', 400, 400]] },
+    { k: 'gen', nom: 'Genérica', secs: [['Muro M-1', 1000, 300]] } ];
+  const sel = { tipo: 0, i: 0, abierto: -1 };
+  function pintarSel() {
+    const bar = $('#selsec'), badge = bar.querySelector('.n');
+    bar.innerHTML = '';
+    TIPOS.forEach((t, ti) => {
+      const act = ti === sel.tipo, d = document.createElement('div');
+      d.className = 'desp' + (act ? ' activo' : '');
+      const titulo = act ? `${t.nom}<span class="sep">·</span><b>${t.secs[sel.i][0]}</b>` : t.nom;
+      d.innerHTML = `<button type="button" aria-haspopup="listbox" aria-expanded="${sel.abierto === ti}" title="${t.nom}">${ico(t.k)}<span class="nom">${titulo}</span><span class="cnt">${t.secs.length}</span><span class="car">▾</span></button>`;
+      if (sel.abierto === ti) {
+        const m = document.createElement('div'); m.className = 'menu-sec'; m.setAttribute('role', 'listbox');
+        m.onclick = (e) => e.stopPropagation();
+        let q = null;
+        if (t.secs.length > 8) {
+          q = document.createElement('input'); q.className = 'buscar'; q.id = 'buscar-' + t.k; q.placeholder = 'Buscar entre ' + t.secs.length;
+          m.appendChild(q);
+        }
+        const filas = document.createElement('div'); filas.className = 'filas'; m.appendChild(filas);
+        const llenar = () => {
+          filas.textContent = ''; const f = (q?.value || '').toLowerCase();
+          t.secs.forEach((x, i) => {
+            if (f && !x[0].toLowerCase().includes(f)) return;
+            const b = document.createElement('button'); b.type = 'button'; b.innerHTML = ico(t.k) + x[0] + `<span class="nombre-sec">${x[1]}×${x[2]}</span>`;
+            if (act && i === sel.i) b.setAttribute('aria-current', 'true');
+            b.onclick = () => elegir(ti, i); filas.appendChild(b);
+          });
+          if (!filas.children.length) filas.innerHTML = '<span class="vacio">Ninguna coincide</span>';
+        };
+        llenar();
+        if (q) { q.oninput = llenar; q.onkeydown = (e) => { if (e.key === 'Enter') filas.querySelector('button')?.click(); }; setTimeout(() => q.focus()); }
+        if (act) setTimeout(() => filas.querySelector('[aria-current]')?.scrollIntoView({ block: 'nearest' }));
+        const n = document.createElement('button'); n.type = 'button'; n.className = 'alta'; n.textContent = '+ Nueva ' + t.nom;
+        n.onclick = () => nueva(ti); m.appendChild(n);
+        d.appendChild(m);
+      }
+      d.firstChild.onclick = (e) => { e.stopPropagation(); sel.abierto = sel.abierto === ti ? -1 : ti; pintarSel(); };
+      bar.appendChild(d);
+    });
+    const mas = document.createElement('button'); mas.type = 'button'; mas.className = 'mas';
+    mas.textContent = '+ Nueva'; mas.title = 'Nueva sección ' + TIPOS[sel.tipo].nom;
+    mas.onclick = () => nueva(sel.tipo); bar.appendChild(mas);
+    bar.appendChild(badge);
+  }
+  function elegir(ti, i) {
+    Object.assign(sel, { tipo: ti, i, abierto: -1 });
+    const x = TIPOS[ti].secs[i]; $('#b').value = x[1]; $('#h').value = x[2];
+    pintarSel(); recalcular();
+  }
+  function pintarTarjeta() {
+    const t = TIPOS[sel.tipo], x = t.secs[sel.i];
+    $('#tTipo').innerHTML = ico(t.k) + t.nom; $('#tNom').textContent = x[0];
+    $('#tRes').textContent = `${$('#b').value} × ${$('#h').value} mm · ${$('#hor').value} · ${$('#ai').value} / ${$('#as').value}`;
+  }
+  function nueva(ti) {
+    const t = TIPOS[ti], pre = { viga: 'V', pilar: 'P', t: 'VT', circ: 'PC', gen: 'G' }[t.k];
+    t.secs.push([pre + '-' + (t.secs.length + 1), 300, 500]);
+    elegir(ti, t.secs.length - 1);
+  }
+  document.addEventListener('click', () => { if (sel.abierto >= 0) { sel.abierto = -1; pintarSel(); } });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && sel.abierto >= 0) { sel.abierto = -1; pintarSel(); } });
+  pintarSel();
+  $('#pestanas').addEventListener('click', (e) => {
+    const bt = e.target.closest('button'); if (!bt) return;
+    document.querySelectorAll('#pestanas button').forEach((x) => x.setAttribute('aria-selected', x === bt));
+  });
+  $('#opc').addEventListener('click', (e) => {
+    const bt = e.target.closest('button'); if (!bt) return;
+    document.querySelectorAll('#opc button').forEach((x) => x.setAttribute('aria-checked', x === bt));
+  });
+  $('#verNiveles').addEventListener('click', (e) => {
+    const on = app.classList.toggle('marcas');
+    e.currentTarget.setAttribute('aria-pressed', on);
+    $('#regla').hidden = !on;
+  });
+  const svg = $('#svg');
+  new ResizeObserver(() => { const k = Math.min(svg.clientWidth / 300, svg.clientHeight / 330); if (k > 0) svg.style.setProperty('--k', k); }).observe(svg);
+  listo = true; recalcular();
+})();
+</script>

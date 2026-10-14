@@ -1,0 +1,11 @@
+﻿caso;modo;seccion;b0_m;h_m;d_m;hormigon;fck_MPa;acero;ro_permil;Nd_kN_compresion_positiva;sy_MPa;teta_deg;alfa_deg;fi_mm;s_m;ramas;Vd_kN;;sigma_cd_MPa;teta_e_deg;Vu1_kN;Vcu_kN;Vsu_kN;Vu2_kN;Vu_kN;Astrans_cm2_m;mensajes_y_tabla_dimensionamiento
+1;comprobacion;Rec 0.30x0.55;0.3;0.55;0.5;HA-30;30;B500S;10;0;0;45;90;8;0.2;2;;;;;;;;;;;
+2;comprobacion;Rec 0.30x0.55;0.3;0.55;0.5;HA-30;30;B500S;10;0;0;30;90;8;0.2;2;;;;;;;;;;;
+3;comprobacion;Rec 0.30x0.55;0.3;0.55;0.5;HA-30;30;B500S;10;0;0;63;90;8;0.2;2;;;;;;;;;;;
+4;comprobacion sin armadura;Rec 0.30x0.55;0.3;0.55;0.5;HA-30;30;B500S;5;0;0;45;90;;;;;;;;;;;;;;
+5;comprobacion;Rec 0.30x0.55;0.3;0.55;0.5;HA-30;30;B500S;10;300;0;45;90;8;0.2;2;;;;;;;;;;;
+6;comprobacion;Rec 0.30x0.55;0.3;0.55;0.5;HA-30;30;B500S;10;0;1.0;45;90;8;0.2;2;;;;;;;;;;;
+7;comprobacion;Rec 0.30x0.55;0.3;0.55;0.5;HA-30;30;B500S;10;0;0;45;60;8;0.2;2;;;;;;;;;;;
+8;dimensionamiento;Rec 0.30x0.55;0.3;0.55;0.5;HA-30;30;B500S;10;0;0;45;90;;;;250;;;;;;;;;;
+9;dimensionamiento;Rec 0.30x0.55;0.3;0.55;0.5;HA-30;30;B500S;10;0;0;30;90;;;;250;;;;;;;;;;
+10;dimensionamiento;Rec 0.30x0.55;0.3;0.55;0.5;HA-30;30;B500S;10;0;0;45;90;;;;100;;;;;;;;;;

@@ -1,0 +1,30 @@
+// Texts of the Anchorage and lap splices module (merged into en.js in ui/i18n.js).
+const sub = (a, b) => `${a}<sub>${b}</sub>`;
+
+export default {
+  'm.anclaje': 'Anchorage and lap splices',
+  'an.subtitulo': 'Anchorage and lap lengths of ribbed bars for a given concrete and steel, in good and poor bond conditions',
+  'an.materiales': 'Materials', 'an.hormigon': 'Concrete', 'an.acero': 'Steel',
+  'an.esfuerzo': 'Bar force', 'an.traccion': 'Tension', 'an.compresion': 'Compression',
+  'an.armado': 'Reinforcement and cover',
+  'an.rAyuda': 'Required reinforcement divided by the provided one at the section the bar is anchored from (100 % if fully used)',
+  'an.cd': 'Cover c<sub>d</sub>', 'an.cdAyuda': 'Design cover (EC-2: smaller of a/2, side and bottom cover). 0 = no length reduction',
+  'an.via': 'Bond certified by', 'an.viaViga': 'Beam test', 'an.viaCorr': 'Rib geometry',
+  'an.solapo': 'Lap splice', 'an.pct': '% of bars lapped in the section', 'an.pctAyuda': 'Percentage of the section reinforcement lapped in the same zone',
+  'an.dist': 'Distance a between laps',
+  'an.titulo': 'Lengths in mm', 'an.sub': (art) => `${art}. Rounded up to 5 mm.`,
+  'an.col.anclaje': (e) => `Anchorage ${sub('l', 'bd')} (${e})`, 'an.col.solapo': (e) => `Lap ${sub('l', 's')} (${e})`,
+  'an.col.I': 'Position I', 'an.col.II': 'Position II', 'an.col.recta': 'straight', 'an.col.patilla': 'hook, bend or U',
+  'an.favorable': 'good bond', 'an.desfavorable': 'poor bond',
+  'an.leyenda': '* code minimum governs · est. = only with a special study · † ø > 32 mm: additional rules (EC-2 8.8)',
+  'an.ficha': (h, a, e, r, cd, pct, extra) => `${h} · ${a} · ${e} · A<sub>s,req</sub>/A<sub>s,prov</sub> = ${r} % · ${cd} · ${pct} % of bars lapped${extra}`,
+  'an.cdSin': 'no reduction for c<sub>d</sub>', 'an.cdVal': (v) => `c<sub>d</sub> = ${v} mm`,
+  'an.fichaTit': 'Note for drawings',
+  'an.dib.aria': 'Sketch of straight anchorage, hooked anchorage and lap splice',
+  'an.dib.anclaje': 'Anchorage', 'an.dib.solapo': 'Lap', 'an.dib.gancho': 'Hook',
+  'an.notas': 'Clarifications',
+  'an.n.pos': 'Bond position I and II', 'an.n.min': 'Minimum values applied', 'an.n.transv': 'Transverse reinforcement and staggering', 'an.n.falta': 'Not included',
+  'an.ce.tit': 'Check against the Spanish Structural Code (art. 49.5)',
+  'an.ce.igual': 'CE 49.5 never exceeds EC-2 with these data.',
+  'an.sinAcero': 'There is no steel in the project',
+};

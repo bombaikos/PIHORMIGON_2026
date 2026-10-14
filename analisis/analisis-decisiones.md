@@ -1,0 +1,16 @@
+# Módulo Análisis · Vigas de un vano: decisiones (José Luis, 11/10/2026)
+
+- Alcance: **solo vigas de un vano**, un prontuario de esfuerzos, giros y flechas en vigas elásticas. Sin combinaciones de acciones: las cargas se dan tal cual. Continuas y vigas sobre terreno quedan fuera por ahora.
+- Rigidez: se da solo **EI en kN·m²** (un único campo). Elegir una sección lo rellena con EI bruta = Ec·I (Ec del hormigón de la sección según la norma activa); al editarlo, la sección pasa a «Personalizada».
+- Extremos: apoyo, empotramiento o libre (apoyo–libre y libre–libre se rechazan por inestables).
+- Cargas: puntuales, distribuidas lineales (q₁→q₂ entre a y b) y momentos aplicados, en rejillas (pestañas). Luz y posiciones en m.
+- Convenios: cargas hacia abajo +, momento aplicado + horario, M + si tracciona la fibra inferior, flecha + hacia abajo, giro + si baja hacia la derecha.
+- Código: `src/core/vigas.js` (motor, EI constante, 4 incógnitas en el extremo izquierdo), `src/ui/vistas/vigas.js`; tests en `tests/vigas.test.js` (casos clásicos: biapoyada, empotradas, ménsula, trapecial, momento).
+- Estado en `p.calculos.vigas1vano`.
+- Diagrama de M siempre sobre la parte traccionada: M positivo (tracciona la fibra inferior) se dibuja hacia abajo (eje y invertido en `grafica.js`, opción `invertirY`). Posiciones y luz en m (confirmado 11/10).
+- Pantalla (11/10): datos a la izquierda con las tres tablas de cargas siempre visibles (sin pestañas) y, a todo el ancho, un único dibujo (`src/ui/vigaLeyes.js`): esquema de cargas con la viga, apoyos y reacciones escritas, y debajo las leyes de M, V, giro y flecha con la misma escala horizontal y la viga (con sus apoyos) como línea de referencia en cada una. M y V con área rayada; giro y flecha solo línea. Sin eje y: se rotulan los valores notables y, con el cursor, se leen los cuatro en cada abscisa. M, giro y flecha positivos hacia abajo; V positivo hacia arriba.
+- Colores (hilo de diseño, guía § 9, 11/10): tokens --serie-m azul, --serie-v violeta, --serie-giro verde azulado, --serie-flecha siena, con variante oscura. Ámbar, verde y rojo no son series (aviso, Cumple, No cumple).
+- Exportar y tabla (11/10): como en todas las gráficas, Copiar / PNG / SVG y selector Gráfico/Tabla con todos los valores (x, M, V, θ, δ; dos renglones donde hay saltos). Lo común está en `src/ui/exportarSvg.js` (usado también por `grafica.js`).
+- Cargas sin color (11/10): distribuidas con trama gris de rayas verticales, P con flecha gris más gruesa y más alta que las distribuidas (rótulos a distinta altura); momentos aplicados también en gris, para no parecerse a ningún diagrama de resultados.
+- Decimales (José Luis, 12/10): un decimal en las fuerzas externas (cargas y reacciones); los esfuerzos (M, V) siguen la guía, sin decimales; giro (mrad) y flecha (mm) con uno. Color de V: verde oliva (--serie-v, oklch 52% 0.11 125; oscuro 76% 0.11 125, elegido por José Luis) en lugar del violeta.
+- Series de la gráfica común (12/10, pedido por el hilo de diseño, guía § 15): sin marcadores, trazo distinto por serie (s1 continua 2,4 px; s2 rayas largas; s3 puntos; s4 raya-punto; s5 rayas cortas) y color --acento, --serie-v, --serie-giro, --serie-flecha, --serie-5; etiqueta directa al final de cada curva. Aplicado en `grafica.js` y `css/app.css`; exportarSvg conserva el stroke-linecap.

@@ -1,0 +1,151 @@
+<title>Iconos de materiales</title>
+<style>
+/* Propuesta de iconos hormigón y acero: trazo 1.4 en rejilla de 16, currentColor, sin color propio (guía § 14). */
+:root {
+  --suelo: oklch(96.4% 0.005 240); --hoja: oklch(99.6% 0.002 240); --hundido: oklch(95.2% 0.006 240);
+  --tinta: oklch(24% 0.02 248); --tinta-2: oklch(44% 0.02 248); --tinta-3: oklch(57% 0.016 248);
+  --linea: oklch(90% 0.008 240); --linea-fuerte: oklch(80% 0.012 240);
+  --acento: oklch(47% 0.13 252); --acento-suave: oklch(93.5% 0.03 252);
+  --f: system-ui, 'Segoe UI Variable Text', 'Segoe UI', -apple-system, Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --suelo: oklch(17% 0.012 245); --hoja: oklch(21% 0.014 245); --hundido: oklch(18.5% 0.012 245);
+  --tinta: oklch(93% 0.008 240); --tinta-2: oklch(78% 0.012 240); --tinta-3: oklch(66% 0.014 240);
+  --linea: oklch(29% 0.014 245); --linea-fuerte: oklch(38% 0.016 245);
+  --acento: oklch(74% 0.11 250); --acento-suave: oklch(30% 0.05 252); color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --suelo: oklch(17% 0.012 245); --hoja: oklch(21% 0.014 245); --hundido: oklch(18.5% 0.012 245);
+  --tinta: oklch(93% 0.008 240); --tinta-2: oklch(78% 0.012 240); --tinta-3: oklch(66% 0.014 240);
+  --linea: oklch(29% 0.014 245); --linea-fuerte: oklch(38% 0.016 245);
+  --acento: oklch(74% 0.11 250); --acento-suave: oklch(30% 0.05 252); color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--suelo); color: var(--tinta); font: 12px/1.4 var(--f); padding-block: 20px; padding-inline: 16px; }
+main { max-width: 980px; margin: 0 auto; display: grid; gap: 16px; }
+h1 { margin: 0; font-size: 16px; }
+h2 { margin: 0 0 8px; font-size: 14px; }
+p { margin: 0; color: var(--tinta-2); }
+.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+button { font: inherit; color: inherit; cursor: pointer; }
+.tema { height: 28px; padding: 0 10px; border: 1px solid var(--linea-fuerte); border-radius: 6px; background: var(--hoja); }
+.panel { background: var(--hoja); border: 1px solid var(--linea); border-radius: 10px; padding: 12px; min-width: 0; }
+.fila { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+.opc { border: 1px solid var(--linea); border-radius: 10px; padding: 10px; display: grid; gap: 8px; background: var(--hoja); min-width: 0; }
+.opc.rec { border-color: var(--acento); }
+.opc h3 { margin: 0; font-size: 12px; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.opc h3 em { font-style: normal; font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--acento); font-weight: 600; }
+.opc p { font-size: 12px; }
+.tams { display: flex; align-items: flex-end; gap: 14px; color: var(--tinta); }
+.tams .g { color: var(--tinta); }
+.ico { stroke: currentColor; fill: none; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.s16 { width: 16px; height: 16px; } .s20 { width: 20px; height: 20px; } .s64 { width: 64px; height: 64px; stroke-width: 1.4; }
+.tams small { display: block; color: var(--tinta-3); font-size: 10px; text-align: center; margin-top: 2px; }
+/* en contexto: desplegable de Materiales como el de Secciones */
+.selmat { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 8px; }
+.desp { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 8px; border: 1px solid var(--linea); border-radius: 6px; background: var(--hoja); color: var(--tinta-2); white-space: nowrap; }
+.desp.activo { border-color: var(--acento); color: var(--acento); background: var(--acento-suave); }
+.desp .cnt { font-size: 10px; color: inherit; opacity: .75; }
+.tarjeta { display: inline-grid; gap: 2px; padding: 8px 14px 10px; border: 1px solid var(--linea-fuerte); border-radius: 10px; background: var(--hoja); color: var(--tinta-2); min-width: 190px; }
+.tarjeta .t { display: flex; align-items: center; gap: 6px; font-size: 10px; text-transform: uppercase; letter-spacing: .06em; font-weight: 600; }
+.tarjeta .n { font-size: 26px; font-weight: 700; line-height: 1.15; color: var(--tinta); }
+.ctx { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+.ctx .sub { color: var(--tinta-3); font-size: 10px; text-transform: uppercase; letter-spacing: .06em; font-weight: 600; margin-bottom: 6px; }
+.resumen { margin: 0; padding-left: 16px; color: var(--tinta-2); display: grid; gap: 4px; }
+</style>
+
+<main>
+  <div class="top">
+    <h1>Iconos de hormigón y acero</h1>
+    <button class="tema" type="button" id="tema">Cambiar tema claro/oscuro</button>
+  </div>
+  <p>Todos van en trazo de 1.4 sobre rejilla de 16, con el color del texto que los rodea. No llevan color propio, así que respetan la regla de que el azul es solo para lo seleccionado.</p>
+
+  <section class="panel">
+    <h2>Hormigón</h2>
+    <div class="fila" id="hor"></div>
+  </section>
+
+  <section class="panel">
+    <h2>Acero</h2>
+    <div class="fila" id="ace"></div>
+  </section>
+
+  <section class="panel">
+    <h2>En contexto, con mi recomendación</h2>
+    <div class="ctx">
+      <div>
+        <div class="sub">Selector de tipo, como el de Secciones</div>
+        <div class="selmat">
+          <span class="desp activo" id="d1"></span>
+          <span class="desp" id="d2"></span>
+        </div>
+        <div class="selmat">
+          <span class="desp" id="d3"></span>
+          <span class="desp activo" id="d4"></span>
+        </div>
+      </div>
+      <div>
+        <div class="sub">Tarjetón del material activo</div>
+        <div class="selmat" style="align-items: stretch">
+          <span class="tarjeta" id="t1"></span>
+          <span class="tarjeta" id="t2"></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Mi recomendación</h2>
+    <ul class="resumen">
+      <li><b>Hormigón: bloque con áridos (C4).</b> Remite al hormigón visto en sección, con piedras y arenilla. El primer intento (C2, con triángulos) se parecía al icono genérico de imagen, y la probeta (C1) y el cubo (C3) se parecen a «base de datos» y «paquete».</li>
+      <li><b>Acero: barra corrugada (S1).</b> Se ve la barra con sus resaltos inclinados, que es lo que identifica el acero de armar, el de B 500 S.</li>
+      <li>Si prefieres un objeto en vez de un símbolo de plano, la probeta cilíndrica (C1) sirve, aunque recuerda a una base de datos. El perfil en I (S2) no lo recomiendo: es acero estructural, no de armar, y puede confundir.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+const H = [
+  { id: 'C1', nom: 'Probeta cilíndrica', txt: 'El cilindro de ensayo del que sale f_ck. Un objeto reconocible, pero solo para quien ha visto un ensayo.',
+    d: '<ellipse cx="8" cy="3.8" rx="5" ry="1.9"/><path d="M3 3.8v8.4c0 1 2.2 2 5 2s5-1 5-2V3.8"/><circle cx="6.2" cy="8.3" r=".5"/><circle cx="9.8" cy="9.8" r=".5"/><circle cx="8.2" cy="6.9" r=".5"/>' },
+  { id: 'C2', nom: 'Rayado de hormigón', txt: 'Bloque con triángulos y puntos de árido. A 16 px se parece al icono genérico de «imagen», así que lo descarto.',
+    d: '<rect x="2" y="2.5" width="12" height="11" rx="1.2"/><path d="M4 7.6 5.6 4.9 7.2 7.6z"/><path d="M8.8 12.2 10.4 9.5 12 12.2z"/><circle cx="10.6" cy="5.4" r=".6"/><circle cx="4.9" cy="10.6" r=".6"/>' },
+  { id: 'C4', nom: 'Bloque con áridos', rec: true, txt: 'Un bloque de esquinas rectas con piedras irregulares y arenilla, como el árido visto en una sección. Sin triángulo ni «sol», así que no se confunde con una imagen.',
+    d: '<rect x="2" y="2.5" width="12" height="11"/><path d="M4.2 5.4 6.4 4.4 7.6 6.2 6.2 7.8 4.3 7.2z"/><path d="M9 9.6 11.4 8.8 12.2 10.8 10.6 12 8.8 11.4z"/><circle cx="10.4" cy="5.2" r=".55"/><circle cx="4.8" cy="10.8" r=".55"/><circle cx="7.8" cy="9.6" r=".45"/>' },
+  { id: 'C3', nom: 'Cubo', txt: 'La probeta cúbica, en perspectiva. Se lee como un bloque, pero también como «caja» o «cubo de datos».',
+    d: '<path d="M8 1.8 14 5v6L8 14.2 2 11V5z"/><path d="M2 5l6 3.2L14 5"/><path d="M8 8.2v6"/>' },
+];
+const A = [
+  { id: 'S1', nom: 'Barra corrugada', rec: true, txt: 'La barra de armar vista de lado, con sus resaltos inclinados. Dos resaltos bastan para que se lea a 16 px.',
+    d: '<rect x="1.5" y="5.5" width="13" height="5" rx="1.4"/><path d="M6.4 5.5 5.4 10.5M10.6 5.5 9.6 10.5"/>' },
+  { id: 'S2', nom: 'Perfil en I', txt: 'El perfil metálico clásico. Dice «acero», pero estructural, no el de armar.',
+    d: '<path d="M2.5 3h11M2.5 13h11M8 3v10"/>' },
+  { id: 'S3', nom: 'Sección de barra', txt: 'La barra cortada, con los dos resaltos laterales. Más abstracta y se parece al icono actual.',
+    d: '<circle cx="8" cy="8" r="3.6"/><path d="M3 6.6v2.8M13 6.6v2.8"/><path d="M8 1.8v2.6M8 11.6v2.6"/>' },
+];
+const svg = (d, c) => `<svg class="ico ${c}" viewBox="0 0 16 16" aria-hidden="true">${d}</svg>`;
+function pintar(id, lista) {
+  document.getElementById(id).innerHTML = lista.map((o) => `
+    <div class="opc${o.rec ? ' rec' : ''}">
+      <h3>${o.id} · ${o.nom}${o.rec ? ' <em>Recomendado</em>' : ''}</h3>
+      <div class="tams">
+        <div>${svg(o.d, 's64')}</div>
+        <div>${svg(o.d, 's20')}<small>20 px</small></div>
+        <div>${svg(o.d, 's16')}<small>16 px</small></div>
+      </div>
+      <p>${o.txt}</p>
+    </div>`).join('');
+}
+pintar('hor', H); pintar('ace', A);
+const c2 = H[2].d, s1 = A[0].d;
+document.getElementById('d1').innerHTML = svg(c2, 's16') + 'Hormigones <span class="cnt">12</span>';
+document.getElementById('d2').innerHTML = svg(s1, 's16') + 'Aceros <span class="cnt">4</span>';
+document.getElementById('d3').innerHTML = svg(c2, 's16') + 'Hormigones <span class="cnt">12</span>';
+document.getElementById('d4').innerHTML = svg(s1, 's16') + 'Aceros <span class="cnt">4</span>';
+document.getElementById('t1').innerHTML = `<span class="t">${svg(c2, 's16')}Hormigón</span><span class="n">HA-30</span>`;
+document.getElementById('t2').innerHTML = `<span class="t">${svg(s1, 's16')}Acero</span><span class="n">B 500 S</span>`;
+document.getElementById('tema').addEventListener('click', () => {
+  const r = document.documentElement, osOscuro = matchMedia('(prefers-color-scheme: dark)').matches;
+  const act = r.dataset.theme || (osOscuro ? 'dark' : 'light');
+  r.dataset.theme = act === 'dark' ? 'light' : 'dark';
+});
+</script>

@@ -1,0 +1,63 @@
+<title>Colores de las leyes</title>
+<style>
+/* Alternativas al violeta para la serie V; M, giro y flecha no cambian. */
+:root { --suelo: oklch(96.4% 0.005 240); --hoja: oklch(99.6% 0.002 240); --tinta: oklch(24% 0.02 248); --tinta-2: oklch(44% 0.02 248); --tinta-3: oklch(57% 0.016 248); --linea: oklch(90% 0.008 240); --linea-fuerte: oklch(80% 0.012 240);
+  --m: oklch(47% 0.13 252); --giro: oklch(52% 0.09 195); --flecha: oklch(50% 0.10 55);
+  --v-a: oklch(52% 0.11 125); --v-b: oklch(50% 0.13 355); --v-c: oklch(42% 0.04 250);
+  --f: system-ui, 'Segoe UI Variable Text', 'Segoe UI', -apple-system, Roboto, Arial, sans-serif; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --suelo: oklch(17% 0.012 245); --hoja: oklch(21% 0.014 245); --tinta: oklch(93% 0.008 240); --tinta-2: oklch(78% 0.012 240); --tinta-3: oklch(66% 0.014 240); --linea: oklch(29% 0.014 245); --linea-fuerte: oklch(38% 0.016 245);
+  --m: oklch(74% 0.11 250); --giro: oklch(76% 0.09 195); --flecha: oklch(76% 0.10 60); --v-a: oklch(76% 0.11 125); --v-b: oklch(74% 0.11 355); --v-c: oklch(78% 0.04 250); color-scheme: dark; } }
+:root[data-theme="dark"] { --suelo: oklch(17% 0.012 245); --hoja: oklch(21% 0.014 245); --tinta: oklch(93% 0.008 240); --tinta-2: oklch(78% 0.012 240); --tinta-3: oklch(66% 0.014 240); --linea: oklch(29% 0.014 245); --linea-fuerte: oklch(38% 0.016 245);
+  --m: oklch(74% 0.11 250); --giro: oklch(76% 0.09 195); --flecha: oklch(76% 0.10 60); --v-a: oklch(76% 0.11 125); --v-b: oklch(74% 0.11 355); --v-c: oklch(78% 0.04 250); color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--suelo); color: var(--tinta); font: 12px/1.4 var(--f); padding-block: 16px; padding-inline: 16px; }
+main { max-width: 900px; margin: 0 auto; display: grid; gap: 12px; }
+h1 { margin: 0; font-size: 16px; } h2 { margin: 0; font-size: 14px; }
+p { margin: 0; color: var(--tinta-2); }
+.top { display: flex; justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap; }
+button { font: inherit; color: inherit; height: 26px; padding: 0 10px; border: 1px solid var(--linea-fuerte); border-radius: 6px; background: var(--hoja); cursor: pointer; }
+.op { background: var(--hoja); border: 1px solid var(--linea); border-radius: 10px; padding: 10px 12px; display: grid; gap: 6px; min-width: 0; }
+.op.rec { border-color: var(--tinta-3); }
+.op svg { width: 100%; height: auto; display: block; }
+.op text { font: 12px var(--f); fill: var(--tinta-2); }
+.op .t { font-weight: 600; }
+.sw { display: flex; gap: 12px; flex-wrap: wrap; color: var(--tinta-3); font-size: 10px; }
+.sw i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; vertical-align: -1px; }
+</style>
+<main>
+  <div class="top"><h1>Alternativas al violeta de la serie V</h1><button id="tema" type="button">Tema</button></div>
+  <p>Las cuatro leyes de una viga de ejemplo con cada alternativa. M, giro y flecha no cambian.</p>
+  <div id="ops"></div>
+</main>
+<script>
+const OPS = [
+  { id: 'A', nom: 'Verde oliva', css: 'var(--v-a)', claro: 'oklch(52% 0.11 125)', osc: 'oklch(76% 0.11 125)', txt: 'Hue 125, entre el amarillo y el verde. Se distingue del verde de «Cumple» (hue 152, más saturado y oscuro), pero con daltonismo puede acercarse a la siena de la flecha.' },
+  { id: 'B', nom: 'Rosa burdeos', css: 'var(--v-b)', claro: 'oklch(50% 0.13 355)', osc: 'oklch(74% 0.11 355)', txt: 'Hue 355, rosa frío. Queda lejos del violeta y del azul, y del rojo de «No cumple» (hue 27) por el matiz; en gráficas no aparece ese rojo.' },
+  { id: 'C', nom: 'Gris pizarra', css: 'var(--v-c)', claro: 'oklch(42% 0.04 250)', osc: 'oklch(78% 0.04 250)', txt: 'Casi neutro, azulado. Es el más sobrio y no choca con ningún estado, pero se parece a las cargas (que van en gris).' },
+];
+const NS = 'http://www.w3.org/2000/svg';
+function svgLeyes(v) {
+  const W = 760, H = 330, x0 = 40, x1 = 720, L = x1 - x0;
+  const bands = [
+    { y: 14, h: 70, c: 'var(--m)', t: 'M (kN·m)', fn: (u) => 4 * u * (1 - u), rayado: true, abajo: true },
+    { y: 96, h: 70, c: v, t: 'V (kN)', fn: (u) => 1 - 2 * u, rayado: true, abajo: false },
+    { y: 178, h: 70, c: 'var(--giro)', t: 'θ (mrad)', fn: (u) => 0.9 * Math.sin(2 * Math.PI * u) * (1 - u) * 1.6, rayado: false, abajo: true },
+    { y: 260, h: 60, c: 'var(--flecha)', t: 'δ (mm)', fn: (u) => 16 * u * (1 - u) * (1 - u + 0.8 * u * u) * 0.9, rayado: false, abajo: true },
+  ];
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Cuatro leyes de esfuerzos"><defs>`;
+  bands.forEach((b, i) => { s += `<pattern id="p${i}${v.replace(/\W/g, '')}" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="5" stroke="${b.c}" stroke-width="1.4"/></pattern>`; });
+  s += '</defs>';
+  bands.forEach((b, i) => {
+    const cy = b.y + b.h / 2, A = b.h / 2 - 6, n = 80, pts = [];
+    for (let k = 0; k <= n; k++) { const u = k / n; pts.push([x0 + u * L, cy + (b.abajo ? 1 : -1) * A * b.fn(u)]); }
+    const d = pts.map((p, k) => (k ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join('');
+    if (b.rayado) s += `<path d="${d}L${x1} ${cy}L${x0} ${cy}Z" fill="url(#p${i}${v.replace(/\W/g, '')})" opacity=".9"/>`;
+    s += `<line x1="${x0}" y1="${cy}" x2="${x1}" y2="${cy}" stroke="var(--tinta-3)" stroke-width="1"/><path d="${d}" fill="none" stroke="${b.c}" stroke-width="2" stroke-linejoin="round"/>`;
+    s += `<text x="${x0}" y="${b.y + 8}" class="t" style="fill:${b.c}">${b.t}</text>`;
+  });
+  return s + '</svg>';
+}
+document.getElementById('ops').style.cssText = 'display:grid;gap:12px';
+document.getElementById('ops').innerHTML = OPS.map((o) => `<section class="op"><h2>${o.id} · ${o.nom}</h2>${svgLeyes(o.css)}<div class="sw"><span><i style="background:var(--m)"></i>M</span><span><i style="background:${o.css}"></i>V · claro ${o.claro}, oscuro ${o.osc}</span><span><i style="background:var(--giro)"></i>giro</span><span><i style="background:var(--flecha)"></i>flecha</span></div><p>${o.txt}</p></section>`).join('');
+document.getElementById('tema').onclick = () => { const r = document.documentElement, os = matchMedia('(prefers-color-scheme: dark)').matches; r.dataset.theme = (r.dataset.theme || (os ? 'dark' : 'light')) === 'dark' ? 'light' : 'dark'; };
+</script>

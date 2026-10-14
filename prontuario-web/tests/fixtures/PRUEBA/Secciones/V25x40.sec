@@ -1,0 +1,27 @@
+PRONTUARIO INFORMÁTICO DEL HORMIGÓN 3.0
+**SECCION 
+V25x40
+Rec1
+4                        numero de partes
+T 0.00                   tipo_sec y_sup (T:seccion definida por trapecios)
+1                        n_trapecios
+0.2500 0.2500 0.4000                b_sup[1] b_inf[1] h_trap[1]
+0 0                      predeformaciones
+HA-30                 Hormigón de la sección
+T   0.358000
+1
+0.15000000 0.15000000 0.00400000
+0 0
+B400S
+T   0.04000000
+1
+0.15000000 0.15000000 0.00000000
+0 0
+B400S
+f    1.00000000000000E-0003
+1
+0 0.1714
+0 0
+ficticio
+ 1.00000000000000E-0001   1.33333333333333E-0003   0.00000000000000E+0000   0.00000000000000E+0000   0.00000000000000E+0000   0.00000000000000E+0000   0.00000000000000E+0000
+1 1 0 0 0 0 0 0  3.00000000000000E-0002

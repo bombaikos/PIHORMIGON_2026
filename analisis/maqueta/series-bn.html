@@ -1,0 +1,25 @@
+<title>Series en blanco y negro</title>
+<style>
+:root{--hoja:oklch(99.6% .002 240);--tinta:oklch(24% .02 248);--t2:oklch(44% .02 248);--linea:oklch(90% .008 240);--s1:oklch(47% .13 252);--s2:oklch(52% .11 125);--s3:oklch(52% .09 195);--s4:oklch(50% .10 55);--s5:oklch(42% .04 250);--f:system-ui,'Segoe UI',Roboto,Arial,sans-serif}
+@media(prefers-color-scheme:dark){:root{--hoja:oklch(21% .014 245);--tinta:oklch(93% .008 240);--t2:oklch(78% .012 240);--linea:oklch(29% .014 245);--s1:oklch(74% .11 250);--s2:oklch(76% .11 125);--s3:oklch(76% .09 195);--s4:oklch(76% .10 60);--s5:oklch(78% .04 250)}}
+body{margin:0;padding:16px;background:var(--hoja);color:var(--tinta);font:12px/1.4 var(--f)}
+main{max-width:860px;margin:auto;display:grid;gap:12px}h1{font-size:16px;margin:0}p{margin:0;color:var(--t2)}
+section{border:1px solid var(--linea);border-radius:10px;padding:10px 12px;display:grid;gap:6px}h2{font-size:14px;margin:0}
+svg{width:100%;height:auto}text{font:12px var(--f);fill:var(--t2)}
+.g{fill:none;stroke-linecap:butt}
+.a1{stroke-width:2.4}.a2{stroke-width:2;stroke-dasharray:9 5}.a3{stroke-width:2;stroke-dasharray:2 4;stroke-linecap:round}.a4{stroke-width:2;stroke-dasharray:12 4 2 4}.a5{stroke-width:2;stroke-dasharray:5 3}
+</style>
+<main><h1>Secuencia de series sin marcadores</h1>
+<p>Cinco trazos distintos, legibles en blanco y negro; el color solo refuerza.</p>
+<section><h2>En color</h2><svg id="c" viewBox="0 0 760 190"></svg></section>
+<section><h2>En escala de grises</h2><svg id="b" viewBox="0 0 760 190" style="filter:grayscale(1)"></svg></section>
+<p>1 continua gruesa · 2 discontinua larga · 3 punteada · 4 raya-punto · 5 discontinua corta. Etiqueta directa al final de cada curva, sin leyenda con marcadores.</p></main>
+<script>
+const C=['s1','s2','s3','s4','s5'],N=['Serie 1','Serie 2','Serie 3','Serie 4','Serie 5'];
+function dib(id){let s='';for(let i=0;i<5;i++){const k=.35+i*.17,pts=[];for(let j=0;j<=60;j++){const u=j/60;pts.push(`${j?'L':'M'}${50+u*600} ${170-((150-i*28)*(1-Math.exp(-u*(2.2+i*.5)))).toFixed(1)}`)}
+s+=`<path class="g a${i+1}" stroke="var(--${C[i]})" d="${pts.join('')}"/>`;}
+s+=`<line x1="50" y1="170" x2="650" y2="170" stroke="var(--linea)"/>`;
+for(let i=0;i<5;i++){const y=170-((150-i*28)*(1-Math.exp(-(2.2+i*.5))));s+=`<text x="656" y="${(y+4).toFixed(0)}" style="fill:var(--${C[i]})">${N[i]}</text>`}
+document.getElementById(id).innerHTML=s}
+dib('c');dib('b');
+</script>
