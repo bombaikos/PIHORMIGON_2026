@@ -132,7 +132,7 @@ export function resultados(ctx, res) {
       t('fcr.kArm', fmt(c.k, 2), q(c.As0, 'As'), fmt(est.gamma, 2))));
   } else {
     const ok = gmin >= 1 - 1e-6;
-    res.append(veredicto(ok ? 'cumple' : 'nocumple', ok ? t('cumple') : t('noCumple'), t('fcr.coefSeg'), sigla(gmin),
+    res.append(veredicto(ok ? 'cumple' : 'nocumple', ok ? t('cumple') : t('noCumple'), 'γ = |OQ|/|OP|', sigla(gmin),
       `${t('fcr.puntos')} <b>${gam.filter((x) => x.g >= 1 - 1e-6).length}</b> / ${gam.length} ${t('fcr.dentro')}`, Math.min(1 / Math.max(gmin, 1e-9) / 1.25, 1)));
   }
 
