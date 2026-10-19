@@ -471,6 +471,9 @@ table.rejilla tr.foco td { background: var(--acento-suave); }
 .graf text { fill: var(--tinta-2); font: calc(12px + var(--mas)) var(--f); font-variant-numeric: tabular-nums; }
 .graf .tit-eje { fill: var(--tinta-2); font-weight: 600; }
 .graf .etq-punto { fill: var(--tinta); font-weight: 600; }
+.graf .punto-calculo { fill: var(--hoja); stroke: var(--tinta); stroke-width: 2; }
+.graf .punto-calculo.ok { fill: var(--ok); stroke: var(--hoja); }
+.graf .punto-calculo.no { fill: var(--no); stroke: var(--hoja); }
 .graf .rej { stroke: var(--linea); stroke-width: 1; }
 .graf .rej2 { stroke: var(--linea); stroke-width: 1; opacity: .6; }
 .graf .marco { fill: none; stroke: var(--linea-fuerte); stroke-width: 1; }
@@ -839,3 +842,9 @@ details.an-ce { margin-top: var(--e2); }
 .datos .campo:not(.apilado) select { text-align: right; text-align-last: right; }
 .datos .desliza-sec { margin: 2px 0 4px; }
 :root:not([data-densidad="comoda"]) .par2 .campo:not(.columna) > label { flex: 0 0 calc(44px + var(--mas) * 3); max-width: calc(44px + var(--mas) * 3); overflow: hidden; }
+
+/* Flexión compuesta recta: resultados plegados bajo el diagrama, que ocupa todo el ancho */
+.plegable-res { order: 9; border-top: 1px solid var(--linea); padding-top: var(--e2); }
+.plegable-res > summary { cursor: pointer; font-size: var(--t-s); color: var(--tinta-2); font-weight: 600; }
+.plegable-res[open] { display: flex; flex-direction: column; gap: var(--e2); }
+.plegable-res .res-plegado { display: flex; flex-direction: column; gap: var(--e3); }

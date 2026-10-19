@@ -200,6 +200,15 @@ export default {
   'prop.formulaIfis': `Hormigón sin resistencia a tracción y acero elástico: ${sub('I', 'fis')} = M / (κ·${sub('E', 'c')})`,
 
   // Flexión
+  'fcr.deSecciones': 'La sección viene de Secciones (solo lectura).', 'fcr.rayo': 'Origen–contorno', 'fcr.esfuerzos': 'Esfuerzos', 'fcr.gammaReq': 'γ requerido', 'fcr.sinArmadura': 'La sección no tiene armadura: defínela en Secciones para dimensionar.', 'fcr.sinEsfuerzos': 'Escribe al menos un par N, M en la tabla.',
+  'fcr.noBasta': 'Ni multiplicando por 40 la armadura de Secciones caben los esfuerzos.', 'fcr.sinArm': 'Basta el hormigón', 'fcr.kArm': (k, a, g) => `Armadura de Secciones × <b>${k}</b> (${a}) para γ ≥ ${g}.`,
+  'fcr.coefSeg': 'Coeficiente de seguridad', 'fcr.puntos': 'Esfuerzos', 'fcr.dentro': 'dentro del diagrama', 'fcr.dentroSello': 'Dentro', 'fcr.fueraSello': 'Fuera', 'fcr.hormigon': 'Hormigón solo', 'fcr.contorno': 'Contorno N-M', 'fcr.puntosCont': 'puntos',
+  'fcr.f.env': 'Misma sección sin armadura: resistencia del hormigón solo (sin tracción), para ver cuánto aporta el acero.',
+  'fcr.pista': 'Compresión +, tracción −. Armadura simétrica: solo M ≥ 0 (el signo de M no importa). γ = |OQ|/|OP| a excentricidad constante (verde ≥ 1, rojo < 1).',
+  'fcr.resumenRes': (n, g) => `Resultados y esfuerzos (${n} · γ mín. ${g})`, 'fcr.subtitulo': 'Diagrama de interacción N-M en rotura', 'fcr.sinSec': 'Crea una sección en el módulo Secciones.', 'fcr.compPos': 'compresión +', 'fcr.mSigno': '+ comprime la cara superior', 'fcr.axil': 'El axil',
+  'fcr.fueraAxil': (l) => `El axil supera la capacidad de la sección (límite ${l}).`, 'fcr.diagrama': 'Diagrama de interacción', 'fcr.diagramaSub': 'Contorno N-M en rotura con los diagramas de cálculo; M respecto al c.d.g. del hormigón',
+  'fcr.f.contorno': 'M<sub>Rd</sub> del contorno con el axil N<sub>Ed</sub> (estado último: máxima curvatura con plano admisible que equilibra N<sub>Ed</sub>)', 'fcr.f.ref': (y) => `Momentos respecto al c.d.g. del hormigón bruto, a ${y} de la cara superior.`,
+  'fcr.f.nrd': 'Compresión centrada: toda la sección a ε = −ε<sub>c2</sub>', 'fcr.f.rayo': 'γ = |OQ| / |OP| a excentricidad constante: P = (N<sub>Ed</sub>, M<sub>Ed</sub>); Q = corte con el contorno de la recta que une el origen con P',
   'flex.subtitulo': 'Viga rectangular o en T en ELU (módulo TN1)', 'flex.modo': 'Tipo de cálculo', 'flex.momento': 'El momento',
   'flex.sinRect': 'No hay vigas (Rec viga o T) en el proyecto. Créalas en Secciones.',
   'flex.signo': 'Momento', 'flex.positivo': 'Positivo (inf.)', 'flex.negativo': 'Negativo (sup.)',
