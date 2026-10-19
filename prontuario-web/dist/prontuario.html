@@ -4482,8 +4482,8 @@ details.an-ce { margin-top: var(--e2); }
     I: { ud: "m\u2074", f: 1, sig: 4 },
     // inercias, en notación científica
     N: { ud: "kN", f: 1, d: 0 },
-    F: { ud: "kN", f: 1, d: 1 },
-    // fuerzas y reacciones en vigas
+    F: { ud: "kN", f: 1, d: 0 },
+    // fuerzas y reacciones en vigas (sin decimales, José Luis 19/10)
     m: { ud: "m", f: 1, d: 2 },
     // luces y posiciones en vigas
     Imm: { ud: "mm\u2074", f: 1e12, d: 0 },
@@ -12671,8 +12671,8 @@ details.an-ce { margin-top: var(--e2); }
   var NS3 = "http://www.w3.org/2000/svg";
   var PAD = 44;
   var BANDAS = [
-    { k: "M", f: 1, d: 0, ud: "kN\xB7m", abajo: true, rayado: true, fuente: "diagrama", peso: 1.35 },
-    { k: "V", f: 1, d: 0, ud: "kN", abajo: false, rayado: true, fuente: "diagrama", peso: 1.1 },
+    { k: "M", f: 1, d: MAG.M.d, ud: "kN\xB7m", abajo: true, rayado: true, fuente: "diagrama", peso: 1.35 },
+    { k: "V", f: 1, d: MAG.N.d, ud: "kN", abajo: false, rayado: true, fuente: "diagrama", peso: 1.1 },
     { k: "giro", f: 1e3, d: 1, ud: "mrad", abajo: true, rayado: false, fuente: "puntos", peso: 1 },
     { k: "flecha", f: 1e3, d: 1, ud: "mm", abajo: true, rayado: false, fuente: "puntos", peso: 1.1 }
   ];
@@ -12721,13 +12721,13 @@ details.an-ce { margin-top: var(--e2); }
     for (const c of D.cargas.filter((z) => z.tipo === "puntual")) {
       const x = X(c.a), s = c.P >= 0 ? 1 : -1;
       g.append(e("path", { d: `M${x} ${yv - 3 - s * palto} V${yv - 3} m-4.5 ${-8 * s} l4.5 ${8 * s} l4.5 ${-8 * s}`, class: "vl-carga puntual" }));
-      g.append(e("text", { x, y: s > 0 ? yv - palto - 8 : yv + palto + 12, "text-anchor": "middle", class: "vl-num carga" }, `${fmt(c.P, 1)} kN`));
+      g.append(e("text", { x, y: s > 0 ? yv - palto - 8 : yv + palto + 12, "text-anchor": "middle", class: "vl-num carga" }, `${fmt(c.P, MAG.F.d)} kN`));
     }
     for (const c of D.cargas.filter((z) => z.tipo === "momento")) {
       const x = X(c.a), s = c.C >= 0 ? 1 : -1;
       const r2 = 17, cy = yv - 8;
       g.append(e("path", { d: `M${x - r2 * s} ${cy} a${r2} ${r2} 0 1 1 ${2 * r2 * s} 0 m${-4 * s} ${-5} l${4 * s} 5 l${-5 * s} 2`, class: "vl-carga", fill: "none" }));
-      g.append(e("text", { x, y: yv - 3 - alto - 18, "text-anchor": "middle", class: "vl-num carga" }, `${fmt(c.C, 1)} kN\xB7m`));
+      g.append(e("text", { x, y: yv - 3 - alto - 18, "text-anchor": "middle", class: "vl-num carga" }, `${fmt(c.C, MAG.M.d)} kN\xB7m`));
     }
     g.append(e("path", { d: `M${X(0)} ${yv} H${X(D.L)}`, class: "vl-viga" }));
     apoyo(g, X(0), yv, D.izq);
@@ -12737,8 +12737,8 @@ details.an-ce { margin-top: var(--e2); }
       const R = r.reacciones[lado];
       const anc = x < W / 2 ? "start" : "end";
       const xt = anc === "start" ? x - 8 : x + 8;
-      g.append(e("text", { x: xt, y: yv + 30, "text-anchor": anc, class: "vl-num rea" }, `R = ${fmt(R.R, 1)} kN`));
-      if (tp === "empotramiento") g.append(e("text", { x: xt, y: yv + 44, "text-anchor": anc, class: "vl-num rea" }, `M = ${fmt(R.M, 1)} kN\xB7m`));
+      g.append(e("text", { x: xt, y: yv + 30, "text-anchor": anc, class: "vl-num rea" }, `R = ${fmt(R.R, MAG.F.d)} kN`));
+      if (tp === "empotramiento") g.append(e("text", { x: xt, y: yv + 44, "text-anchor": anc, class: "vl-num rea" }, `M = ${fmt(R.M, MAG.M.d)} kN\xB7m`));
     }
   }
   function etiquetas(dat, claves, ymap, W, f, d) {
@@ -12971,7 +12971,7 @@ details.an-ce { margin-top: var(--e2); }
       )
     );
   }
-  var COLS = [["x", "x (m)", 3, 1], ["M", "M (kN\xB7m)", 0, 1], ["V", "V (kN)", 0, 1], ["giro", "\u03B8 (mrad)", 1, 1e3], ["flecha", "\u03B4 (mm)", 1, 1e3]];
+  var COLS = [["x", "x (m)", 3, 1], ["M", "M (kN\xB7m)", MAG.M.d, 1], ["V", "V (kN)", MAG.N.d, 1], ["giro", "\u03B8 (mrad)", 1, 1e3], ["flecha", "\u03B4 (mm)", 1, 1e3]];
   var est6 = { tabla: false };
   function reiniciar6() {
     est6.tabla = false;

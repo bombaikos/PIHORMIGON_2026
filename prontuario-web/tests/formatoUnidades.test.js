@@ -8,8 +8,8 @@ import { MAG } from '../src/ui/formato.js';
 
 const raiz = new URL('../src/ui/', import.meta.url).pathname;
 const ficheros = (d) => readdirSync(d).flatMap((f) => (statSync(join(d, f)).isDirectory() ? ficheros(join(d, f)) : f.endsWith('.js') ? [join(d, f)] : []));
-// Cargas y reacciones de vigas llevan un decimal (§ 15, decidido el 12/10); es la única excepción.
-const EXENTOS = ['formato.js', 'vigaLeyes.js'];
+// Sin excepciones: también las cargas puntuales y reacciones de vigas (José Luis, 19/10). Solo kN/m va con un decimal.
+const EXENTOS = ['formato.js'];
 
 test('la tabla de precisiones: esfuerzos sin decimales', () => {
   assert.equal(MAG.N.d, 0);
@@ -21,7 +21,7 @@ test('ninguna vista fija decimales en cifras de kN o kN·m', () => {
   for (const f of ficheros(raiz)) {
     if (EXENTOS.some((e) => f.endsWith(e))) continue;
     readFileSync(f, 'utf8').split('\n').forEach((l, i) => {
-      if (/fmt\([^()]*(\([^()]*\))?[^()]*,\s*[1-9]\)[^`'"\n]{0,40}(kN|ESP\}kN)/.test(l) || /n1\([^()]*,\s*[1-9]\)[^`'"\n]{0,12}\s*kN/.test(l)) malos.push(`${f.replace(raiz, '')}:${i + 1}`);
+      if (/fmt\([^()]*(\([^()]*\))?[^()]*,\s*[1-9]\)[^`'"\n]{0,40}(kN|ESP\}kN)(?!\/m)/.test(l) || /n1\([^()]*,\s*[1-9]\)[^`'"\n]{0,12}\s*kN/.test(l)) malos.push(`${f.replace(raiz, '')}:${i + 1}`);
       if (/eje[XY]: \{.*(kN|MAG\.(M|N)\.ud).*d: [1-9]/.test(l)) malos.push(`${f.replace(raiz, '')}:${i + 1} (eje)`);
     });
   }

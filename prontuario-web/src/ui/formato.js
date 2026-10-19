@@ -42,7 +42,7 @@ export const MAG = {
   Ac: { ud: 'm²', f: 1, d: 4 },               // áreas de hormigón
   I: { ud: 'm⁴', f: 1, sig: 4 },              // inercias, en notación científica
   N: { ud: 'kN', f: 1, d: 0 },
-  F: { ud: 'kN', f: 1, d: 1 },                  // fuerzas y reacciones en vigas
+  F: { ud: 'kN', f: 1, d: 0 },                  // fuerzas y reacciones en vigas (sin decimales, José Luis 19/10)
   m: { ud: 'm', f: 1, d: 2 },                  // luces y posiciones en vigas
   Imm: { ud: 'mm⁴', f: 1e12, d: 0 },           // inercia en mm⁴ (valor interno en m⁴)
   EI: { ud: 'kN·m²', f: 1, d: 0 },
