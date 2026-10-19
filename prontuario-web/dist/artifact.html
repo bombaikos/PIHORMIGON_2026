@@ -4521,7 +4521,10 @@ details.an-ce { margin-top: var(--e2); }
     if (e2 >= -1 && e2 <= 3) return fmt(x, Math.max(0, sig - 1 - e2));
     return `${fmt(m, sig - 1)} \xD7 10${String(e2).split("").map((c) => SUP[c]).join("")}`;
   }
-  var eje = (mag, nombre) => ({ titulo: nombre ? `${nombre} (${MAG[mag].ud})` : `(${MAG[mag].ud})`, d: MAG[mag].d ?? 0 });
+  var eje = (mag, nombre) => {
+    const d = MAG[mag].d ?? 0;
+    return { titulo: nombre ? `${nombre} (${MAG[mag].ud})` : `(${MAG[mag].ud})`, d, dt: d === 0 && /^kN/.test(MAG[mag].ud) ? 0 : d + 1 };
+  };
   function cifra(x, mag) {
     const m = MAG[mag];
     return m.sig ? cientifico(x * m.f, m.sig) : fmt(x * m.f, m.d);
