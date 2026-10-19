@@ -200,7 +200,7 @@ export default {
   'prop.formulaIfis': `Hormigón sin resistencia a tracción y acero elástico: ${sub('I', 'fis')} = M / (κ·${sub('E', 'c')})`,
 
   // Flexión
-  'fcr.rayo': 'Origen–contorno', 'fcr.subtitulo': 'Diagrama de interacción N-M en rotura', 'fcr.sinSec': 'Crea una sección en el módulo Secciones.', 'fcr.compPos': 'compresión +', 'fcr.mSigno': '+ comprime la cara superior', 'fcr.axil': 'El axil',
+  'fcr.pista': 'Compresión +, tracción −. M + comprime la cara superior.', 'fcr.deSecciones': 'La sección viene de Secciones (solo lectura).', 'fcr.rayo': 'Origen–contorno', 'fcr.subtitulo': 'Diagrama de interacción N-M en rotura', 'fcr.sinSec': 'Crea una sección en el módulo Secciones.', 'fcr.compPos': 'compresión +', 'fcr.mSigno': '+ comprime la cara superior', 'fcr.axil': 'El axil',
   'fcr.fueraAxil': (l) => `El axil supera la capacidad de la sección (límite ${l}).`, 'fcr.diagrama': 'Diagrama de interacción', 'fcr.diagramaSub': 'Contorno N-M en rotura con los diagramas de cálculo; M respecto al c.d.g. del hormigón',
   'fcr.f.contorno': 'M<sub>Rd</sub> del contorno con el axil N<sub>Ed</sub> (estado último: máxima curvatura con plano admisible que equilibra N<sub>Ed</sub>)', 'fcr.f.ref': (y) => `Momentos respecto al c.d.g. del hormigón bruto, a ${y} de la cara superior.`,
   'fcr.f.nrd': 'Compresión centrada: toda la sección a ε = −ε<sub>c2</sub>', 'fcr.f.rayo': 'Aprovechamiento = |OP| / |OQ|: P = (N<sub>Ed</sub>, M<sub>Ed</sub>); Q = corte con el contorno de la recta que une el origen con P',

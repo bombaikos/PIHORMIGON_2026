@@ -469,6 +469,7 @@ table.rejilla tr.foco td { background: var(--acento-suave); }
 .graf text { fill: var(--tinta-2); font: 12px var(--f); font-variant-numeric: tabular-nums; }
 .graf .tit-eje { fill: var(--tinta-2); font-weight: 600; }
 .graf .etq-punto { fill: var(--tinta); font-weight: 600; }
+.graf .punto-calculo { fill: var(--hoja, white); stroke: var(--tinta); stroke-width: 2; }
 .graf .rej { stroke: var(--linea); stroke-width: 1; }
 .graf .rej2 { stroke: var(--linea); stroke-width: 1; opacity: .6; }
 .graf .marco { fill: none; stroke: var(--linea-fuerte); stroke-width: 1; }

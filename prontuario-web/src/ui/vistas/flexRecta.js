@@ -57,7 +57,8 @@ export function datos(ctx, form) {
     grupo(t('g.esfuerzo'),
       campoNum({ id: 'fr-n', etq: sub('N', 'Ed'), ref: t('fcr.compPos'), valor: est.NEd, mag: 'N', paso: 10, min: -1e6, max: 1e6, nombre: t('fcr.axil'), onCambio: (v) => { est.NEd = v; cambio(); } }),
       campoNum({ id: 'fr-m', etq: sub('M', 'Ed'), ref: t('fcr.mSigno'), valor: est.MEd, mag: 'M', paso: 5, min: -1e6, max: 1e6, nombre: t('flex.momento'), onCambio: (v) => { est.MEd = v; cambio(); } })),
-    grupo(t('g.seccion'), h('p', { class: 'calculada', html: `${resumenSeccion(ctx.p, s)}<br>${t('flex.deSecciones')}` })));
+    h('p', { style: 'margin:0;font-size:var(--t-s);color:var(--tinta-3)', html: t('fcr.pista') }),
+    grupo(t('g.seccion'), h('p', { style: 'margin:0;font-size:var(--t-s);color:var(--tinta-2);line-height:1.5', html: `${resumenSeccion(ctx.p, s)}<br>${t('fcr.deSecciones')}` })));
 }
 
 // El diagrama de una sección circular o genérica tarda: se guarda el último y solo se repite si cambian los datos
@@ -125,8 +126,8 @@ function graficoNM(ctx, d, s, r) {
   ];
   // La recta del origen al contorno pasa por el punto de cálculo: su cociente es el aprovechamiento
   if (r.Q) series.push({ nombre: t('fcr.rayo'), clase: 'ref', cruz: false, xy: [[0, 0], r.Q].sort((a, b) => a[0] - b[0]) });
-  const puntos = [{ x: est.NEd, y: est.MEd, etq: `${ind('N', 'Ed')}, ${ind('M', 'Ed')}`, clase: 'ref' }];
-  return h('div', { class: 'grafica-flex' }, grafica({
+  const puntos = [{ x: est.NEd, y: est.MEd, etq: `${ind('N', 'Ed')}, ${ind('M', 'Ed')}`, clase: 'ref', marca: true }];
+  return h('div', { class: 'lienzo' }, grafica({
     series, puntos,
     ejeX: { titulo: `N (${'kN'}), ${t('fcr.compPos')}`, d: 0 },
     ejeY: { titulo: `M (${'kN·m'})`, d: 0 },
