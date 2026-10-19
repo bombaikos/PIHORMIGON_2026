@@ -172,8 +172,8 @@ function graficoNM(ctx, d, dH, gam, s) {
   const puntos = gam.map((x) => ({ x: x.N, y: x.M, etq: String(x.i + 1), marca: x.g >= 1 - 1e-6 ? 'ok' : 'no' }));
   return h('div', { class: 'lienzo' }, grafica({
     series, puntos,
-    ejeX: { titulo: `N (kN), ${t('fcr.compPos')}`, d: 0 },
-    ejeY: { titulo: 'M (kN·m)', d: 0 },
+    ejeX: { titulo: `N (kN), ${t('fcr.compPos')}`, d: 0, dt: 0 },
+    ejeY: { titulo: 'M (kN·m)', d: 0, dt: 0 },
     archivo: `N-M ${s.nombre}`,
     avisar: ctx.avisar,
   }));

@@ -45,7 +45,7 @@ function interpolar(xy, x) {
  * @param {Object} o
  * @param {{nombre:string, xy:number[][], clase?:string, cruz?:boolean}[]} o.series  clase: s1, s2, ref; cruz:false la deja fuera de la cruz
  * @param {{x:number, y:number, etq:string, clase?:string, abajo?:boolean}[]} [o.puntos]  puntos marcados con su rótulo (abajo: bajo el punto) (SVG: subíndices con <tspan class="ind">)
- * @param {{titulo:string, d?:number}} o.ejeX  d: decimales en la cruz
+ * @param {{titulo:string, d?:number, dt?:number}} o.ejeX  d: decimales en la cruz; dt: decimales en la tabla (por defecto d + 1)
  * @param {{titulo:string, d?:number}} o.ejeY
  * @param {{x?:number, y?:number}} [o.rejillaSec]  rejilla secundaria (sin números) cada x e y; solo si es más fina que la principal
  * @param {boolean} [o.invertirY]  el eje y crece hacia abajo (momentos flectores: positivos debajo)
@@ -90,7 +90,7 @@ export function grafica({ series, puntos = [], ejeX, ejeY, archivo = 'grafica', 
   const celda = (s, i, j, d) => (s.xy[i] ? fmt(s.xy[i][j], d) : '');
   tabla.innerHTML = `<table><thead>${enCuadro.length > 1 ? `<tr>${enCuadro.map((s) => `<th colspan="2" class="${s.clase ?? 's1'}">${s.nombre}</th>`).join('')}</tr>` : ''}`
     + `<tr>${enCuadro.map(() => `<th>${ejeX.titulo}</th><th>${ejeY.titulo}</th>`).join('')}</tr></thead><tbody>`
-    + Array.from({ length: filasT }, (_, i) => `<tr>${enCuadro.map((s) => `<td>${celda(s, i, 0, (ejeX.d ?? 2) + 1)}</td><td>${celda(s, i, 1, (ejeY.d ?? 1) + 1)}</td>`).join('')}</tr>`).join('')
+    + Array.from({ length: filasT }, (_, i) => `<tr>${enCuadro.map((s) => `<td>${celda(s, i, 0, ejeX.dt ?? (ejeX.d ?? 2) + 1)}</td><td>${celda(s, i, 1, ejeY.dt ?? (ejeY.d ?? 1) + 1)}</td>`).join('')}</tr>`).join('')
     + '</tbody></table>';
 
   // Selector Gráfico/Tabla debajo de la gráfica
