@@ -67,3 +67,11 @@ test('N-M: con simetrica = true la rama M− es el espejo de la M+ y coincide co
   const b = diagramaNM(sec, { n: 30, simetrica: true });
   b.pos.forEach((p, i) => { cerca(p.M, a.pos[i].M, 1e-6); cerca(b.neg[i].M, a.neg[i].M, 0.05); });
 });
+
+test('N-M: el refinamiento adaptativo añade puntos y el contorno sigue equilibrado', () => {
+  const sec = rect(603e-6, 603e-6);
+  const a = diagramaNM(sec, { n: 30, simetrica: true });
+  const b = diagramaNM(sec, { n: 30, simetrica: true, tol: 1e-4 });
+  assert.ok(b.pos.length > a.pos.length);
+  for (let i = 1; i < b.pos.length; i++) assert.ok(b.pos[i].N < b.pos[i - 1].N, 'N decrece');
+});

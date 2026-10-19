@@ -25,7 +25,7 @@ const FORMAS = ['pilar', 'circular'];
 const est = {
   i: null, modo: 'comprobar', gamma: 1,
   filas: [['500', '150'], ['1500', '100'], ['-150', '60'], ['2500', '200']],
-  abiertos: new Set(['coef']), pestana: 'resultados',
+  abiertos: new Set(['coef']), pestana: 'resultados', resAbierto: false,
 };
 export function reiniciar() { est.i = null; }
 
@@ -78,11 +78,13 @@ function calculo(p, s) {
     k = dimensionarNM(sec, ps.map((x) => [x.N, x.M]), { gamma: est.gamma, simetrica: true });
   }
   const dibujada = Number.isFinite(k) ? escalarArmadura(sec, k) : escalarArmadura(sec, 1);
-  const c = { geo, sec, As0, k, d: diagramaNM(dibujada, { n: 60, simetrica: true }), dH: diagramaNM(soloHormigon(sec), { n: 60, simetrica: true }) };
+  const c = { geo, sec, As0, k, d: diagramaNM(dibujada, { n: 60, simetrica: true, tol: TOL }), dH: diagramaNM(soloHormigon(sec), { n: 60, simetrica: true, tol: TOL }) };
   memo = { clave, c };
   return c;
 }
 
+// Resolución del contorno: la recta entre puntos no se separa de la curva más de 0,01 % del M máximo
+const TOL = 1e-4;
 const sigla = (g) => (g === Infinity ? '∞' : fmt(g, 2));
 
 export function datos(ctx, form) {
@@ -146,13 +148,16 @@ export function resultados(ctx, res) {
     [`${sub('M', 'Rd,máx')} (N = ${fmt(mp.N, MAG.N.d)})`, qh(mp.M, 'M')],
     [`${sub('N', 'Rd,hormigón')}`, qh(dH.Ncomp, 'N')],
   ];
-  const tarjetaGraf = h('article', { class: 'panel tarjeta' }, h('h2', {}, t('fcr.diagrama')), h('p', { class: 'sub' }, t('fcr.diagramaSub')), graficoNM(ctx, d, dH, gam, s));
-  const tarjetaRes = h('article', { class: 'panel tarjeta' });
+  // El diagrama ocupa todo el ancho; resultados, tabla de esfuerzos y sección van plegados debajo (por defecto cerrados)
+  const tarjetaRes = h('div', { class: 'res-plegado' });
   tarjetaRes.append(pestanas({ lista: [['resultados', t('t.resultados')], ['esfuerzos', t('fcr.esfuerzos')], ['seccion', t('g.seccion')]], activa: est.pestana, onCambio: (k) => { est.pestana = k; ctx.pintar(); } }));
   if (est.pestana === 'seccion') tarjetaRes.append(h('div', { class: 'lienzo', html: dibujoSeccion(geo, s, { ancho: 360, alto: 300 }) }));
   else if (est.pestana === 'esfuerzos') tarjetaRes.append(tablaEsfuerzos(gam));
   else tarjetaRes.append(cifras(cif), h('p', { class: 'sub', style: 'margin:0' }, t('t.desplegar')), traza(p, d, dH, gmin));
-  res.append(h('div', { class: 'cuerpo dib-ancho' }, tarjetaGraf, tarjetaRes));
+  const plegable = h('details', { class: 'plegable-res', open: est.resAbierto },
+    h('summary', {}, t('fcr.resumenRes', fmt(gam.length, 0), sigla(gmin))), tarjetaRes);
+  plegable.addEventListener('toggle', () => { est.resAbierto = plegable.open; });
+  res.append(h('article', { class: 'panel tarjeta' }, h('h2', {}, t('fcr.diagrama')), h('p', { class: 'sub' }, t('fcr.diagramaSub')), graficoNM(ctx, d, dH, gam, s), plegable));
 }
 
 function tablaEsfuerzos(gam) {

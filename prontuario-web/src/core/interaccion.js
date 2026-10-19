@@ -31,9 +31,10 @@ export function axilesLimite(sec) {
  * en el convenio del Prontuario, ordenados de compresión máxima a tracción máxima. M se toma respecto
  * al c.d.g. del hormigón bruto (yref).
  * @param {import('./seccion.js').Seccion} sec
- * @param {{n?: number, yref?: number, simetrica?: boolean}} [opc]  n = puntos por rama; simetrica: solo se calcula M+
+ * @param {{n?: number, yref?: number, simetrica?: boolean, tol?: number}} [opc]  n = puntos por rama; simetrica: solo se calcula M+;
+ *   tol > 0: refinamiento adaptativo, se parte cada tramo hasta que la recta no se separe de la curva más de tol·M_máx
  */
-export function diagramaNM(sec, { n = 60, yref = centroBruto(sec), simetrica = false } = {}) {
+export function diagramaNM(sec, { n = 60, yref = centroBruto(sec), simetrica = false, tol = 0 } = {}) {
   const { Ncomp, Ntrac } = axilesLimite(sec); // Ncomp > 0, Ntrac < 0
   const rama = (signo) => {
     // Extremos: compresión centrada y tracción pura (curvatura nula, sin estado último con κ ≠ 0)
@@ -49,7 +50,23 @@ export function diagramaNM(sec, { n = 60, yref = centroBruto(sec), simetrica = f
       pts.push({ N: -e.N, M: e.M, x: e.x, epsSup: e.epsSup, epsInf: e.epsInf, kappa: e.kappa });
     }
     pts.push(extremo(hi));
-    return pts;
+    if (!(tol > 0)) return pts;
+    // Refinamiento adaptativo: se añade el punto medio de cada tramo (en N) mientras se separe de la cuerda
+    const lim = tol * Math.max(...pts.map((v) => Math.abs(v.M)), 1e-9);
+    const medio = (a, b) => {
+      const N = (a.N + b.N) / 2;
+      const e = estadoUltimo(sec, -N, { signo, yref });
+      return e.converge ? { N: -e.N, M: e.M, x: e.x, epsSup: e.epsSup, epsInf: e.epsInf, kappa: e.kappa } : null;
+    };
+    const afinar = (a, b, prof) => {
+      if (prof >= 9 || Math.abs(a.N - b.N) < 1e-3) return [];
+      const m = medio(a, b);
+      if (!m || Math.abs(m.M - (a.M + b.M) / 2) <= lim) return [];
+      return [...afinar(a, m, prof + 1), m, ...afinar(m, b, prof + 1)];
+    };
+    const out = [pts[0]];
+    for (let i = 1; i < pts.length; i++) out.push(...afinar(pts[i - 1], pts[i], 0), pts[i]);
+    return out;
   };
   const pos = rama(1);
   // Con armadura simétrica respecto al eje de flexión la rama M− es la M+ cambiada de signo

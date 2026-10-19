@@ -838,3 +838,9 @@ details.an-ce { margin-top: var(--e2); }
 .datos .campo:not(.apilado) select { text-align: right; text-align-last: right; }
 .datos .desliza-sec { margin: 2px 0 4px; }
 :root:not([data-densidad="comoda"]) .par2 .campo:not(.columna) > label { flex: 0 0 44px; max-width: 44px; overflow: hidden; }
+
+/* Flexión compuesta recta: resultados plegados bajo el diagrama, que ocupa todo el ancho */
+.plegable-res { order: 9; border-top: 1px solid var(--linea); padding-top: var(--e2); }
+.plegable-res > summary { cursor: pointer; font-size: var(--t-s); color: var(--tinta-2); font-weight: 600; }
+.plegable-res[open] { display: flex; flex-direction: column; gap: var(--e2); }
+.plegable-res .res-plegado { display: flex; flex-direction: column; gap: var(--e3); }
