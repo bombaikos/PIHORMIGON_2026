@@ -10809,8 +10809,6 @@ details.an-ce { margin-top: var(--e2); }
     });
     poner(
       centro,
-      h("div", { class: "fu-dib", html: dibujoFuego({ elemento: D.elemento, caras: entrada(p, D).caras, nCaras: entrada(p, D).nCaras, portante: D.portante, dimEtq: r.dimEtq }, r.opciones[0]) }),
-      h("p", { class: "fu-leyenda" }, t("fu.leyenda")),
       h("h2", { html: t("fu.tablaTitulo") }),
       h("p", { class: "nota", html: t("fu.tablaSub", art4) }),
       tb,
@@ -10822,10 +10820,11 @@ details.an-ce { margin-top: var(--e2); }
       `${sub16(r.dimEtq, "min")} = <b>${fmt(x.d, 0)}</b>${x.a == null ? "" : `, ${sub16("a", "min")} = <b>${fmt(x.a, 0)}</b>`}${ESP}mm${x.geom ? ` <span class="nota">(${t("fu.geom")})</span>` : ""}${x.barras8 ? ` <span class="nota">(${t("fu.barras8")})</span>` : ""}`
     ]);
     const ex = r.extra.map(([k, v2, u = "mm"]) => [t(k), `${v2}${ESP}${u}`]);
+    poner(centro, h("h2", {}, t("fu.requisitos", `${r.crit} ${D.R}`)), sinValor ? h("p", { class: "nota" }, t("fu.sinValor")) : tabla([...lista, ...ex]));
     poner(
       dcha,
-      h("h2", {}, t("fu.requisitos", `${r.crit} ${D.R}`)),
-      sinValor ? h("p", { class: "nota" }, t("fu.sinValor")) : tabla([...lista, ...ex]),
+      h("div", { class: "fu-dib", html: dibujoFuego({ elemento: D.elemento, caras: entrada(p, D).caras, nCaras: entrada(p, D).nCaras, portante: D.portante, dimEtq: r.dimEtq }, r.opciones[0]) }),
+      h("p", { class: "fu-leyenda" }, t("fu.leyenda")),
       h("h3", {}, t("fu.condiciones")),
       filasPlegables(tabla([...r.notas.map((n) => [t(`${n}.t`)]), [t("fu.amT")]]), [...r.notas.map((n) => t(n)), t("fu.am")].map((x) => `<span>${x}</span>`))
     );

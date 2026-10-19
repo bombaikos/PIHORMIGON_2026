@@ -109,16 +109,16 @@ export function resultados(ctx, res) {
   });
   const tb = tabla(filas, { cabecera: ['', ...r.cab.map((c) => c)], clase: 'tabla-dur' });
   tb.querySelectorAll('tbody tr').forEach((tr, i) => { if (r.filas[i].activa) tr.classList.add('activa'); });
-  poner(centro, h('div', { class: 'fu-dib', html: dibujoFuego({ elemento: D.elemento, caras: entrada(p, D).caras, nCaras: entrada(p, D).nCaras, portante: D.portante, dimEtq: r.dimEtq }, r.opciones[0]) }),
-    h('p', { class: 'fu-leyenda' }, t('fu.leyenda')),
-    h('h2', { html: t('fu.tablaTitulo') }), h('p', { class: 'nota', html: t('fu.tablaSub', art) }), tb,
+  poner(centro, h('h2', { html: t('fu.tablaTitulo') }), h('p', { class: 'nota', html: t('fu.tablaSub', art) }), tb,
     h('p', { class: 'nota', html: t('fu.unidades') }));
 
   const dcha = h('article', { class: 'panel tarjeta' });
   const lista = r.opciones.map((x, i) => [r.opciones.length > 1 ? `${t('fu.combinacion')} ${i + 1}` : t('fu.minimos'),
     `${sub(r.dimEtq, 'min')} = <b>${fmt(x.d, 0)}</b>${x.a == null ? '' : `, ${sub('a', 'min')} = <b>${fmt(x.a, 0)}</b>`}${ESP}mm${x.geom ? ` <span class="nota">(${t('fu.geom')})</span>` : ''}${x.barras8 ? ` <span class="nota">(${t('fu.barras8')})</span>` : ''}`]);
   const ex = r.extra.map(([k, v, u = 'mm']) => [t(k), `${v}${ESP}${u}`]);
-  poner(dcha, h('h2', {}, t('fu.requisitos', `${r.crit} ${D.R}`)), sinValor ? h('p', { class: 'nota' }, t('fu.sinValor')) : tabla([...lista, ...ex]),
+  poner(centro, h('h2', {}, t('fu.requisitos', `${r.crit} ${D.R}`)), sinValor ? h('p', { class: 'nota' }, t('fu.sinValor')) : tabla([...lista, ...ex]));
+  poner(dcha, h('div', { class: 'fu-dib', html: dibujoFuego({ elemento: D.elemento, caras: entrada(p, D).caras, nCaras: entrada(p, D).nCaras, portante: D.portante, dimEtq: r.dimEtq }, r.opciones[0]) }),
+    h('p', { class: 'fu-leyenda' }, t('fu.leyenda')),
     h('h3', {}, t('fu.condiciones')),
     filasPlegables(tabla([...r.notas.map((n) => [t(`${n}.t`)]), [t('fu.amT')]]), [...r.notas.map((n) => t(n)), t('fu.am')].map((x) => `<span>${x}</span>`)));
   res.append(h('div', { class: 'cuerpo' }, centro, dcha));
