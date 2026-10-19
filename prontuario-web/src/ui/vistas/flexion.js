@@ -7,7 +7,7 @@ import { geometria } from '../../core/geometria.js';
 import { NORMAS } from '../../norma/normas.js';
 import { datosViga, geometriaDe } from '../../io/proyecto.js';
 import { t } from '../i18n.js';
-import { fmt, q, qh, ESP, MAG, serieDiametros } from '../formato.js';
+import { eje, fmt, q, qh, ESP, MAG, serieDiametros } from '../formato.js';
 import { h, poner, campoNum, campoArmado, selector, segmentado, grupo, par, aviso, cifras, tabla, pestanas } from '../campos.js';
 import { grafica } from '../grafica.js';
 import { DEFS, encuadre, capasSeccion } from '../dibujoSeccion.js';
@@ -173,8 +173,8 @@ function graficoMRd(ctx, d, r, dim) {
   if (est.modo === 'comprobar' && Number.isFinite(c.Amin)) puntos.push({ x: c.Amin * KA, y: curvaPunto(d, c.Amin), etq: `${ind('A', 's,min')}`, clase: 'ref', abajo: true });
   return h('div', { class: 'grafica-flex' }, grafica({
     series, puntos,
-    ejeX: { titulo: `${ind('A', 's1')} (${MAG.As.ud})`, d: 0 },
-    ejeY: { titulo: `${ind('M', 'Rd')} (${MAG.M.ud})`, d: 1 },
+    ejeX: eje('As', ind('A', 's1')),
+    ejeY: eje('M', ind('M', 'Rd')),
     archivo: `MRd-As ${ctx.p.secciones[est.i].nombre}${est.signo < 0 ? ' M-' : ' M+'}`,
     avisar: ctx.avisar,
   }), h('p', { class: 'nota', html: t('g.nota', q(c.Alim, 'As')) }));

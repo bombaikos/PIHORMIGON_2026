@@ -4521,6 +4521,7 @@ details.an-ce { margin-top: var(--e2); }
     if (e2 >= -1 && e2 <= 3) return fmt(x, Math.max(0, sig - 1 - e2));
     return `${fmt(m, sig - 1)} \xD7 10${String(e2).split("").map((c) => SUP[c]).join("")}`;
   }
+  var eje = (mag, nombre) => ({ titulo: nombre ? `${nombre} (${MAG[mag].ud})` : `(${MAG[mag].ud})`, d: MAG[mag].d ?? 0 });
   function cifra(x, mag) {
     const m = MAG[mag];
     return m.sig ? cientifico(x * m.f, m.sig) : fmt(x * m.f, m.d);
@@ -6555,7 +6556,7 @@ details.an-ce { margin-top: var(--e2); }
         { x: -eu * 1e3, y: -su / 1e3, etq: tag("\u03B5", "ud") }
       );
     }
-    return grafica({ series, puntos, ejeX: { titulo: "\u03B5 (\u2030)", d: 2 }, ejeY: { titulo: "\u03C3 (MPa)", d: 1 }, archivo: `sigma-epsilon-${mat.nombre}`, rejillaSec: { x: 0.5, y: mat.tipo === "acero" ? 25 : 2.5 }, avisar: ctx2.avisar });
+    return grafica({ series, puntos, ejeX: eje("def", "\u03B5"), ejeY: eje("tension", "\u03C3"), archivo: `sigma-epsilon-${mat.nombre}`, rejillaSec: { x: 0.5, y: mat.tipo === "acero" ? 25 : 2.5 }, avisar: ctx2.avisar });
   }
   var art = (N, k) => `<span class="art">${N.corto} \xB7 ${N.art[k]}</span>`;
   var F = (s) => `<span class="f">${s}</span>`;
@@ -8811,7 +8812,7 @@ details.an-ce { margin-top: var(--e2); }
     return grafica({
       series,
       puntos,
-      ...vista === "ei" ? { ejeX: { titulo: `M (${MAG.M.ud})`, d: 1 }, ejeY: { titulo: "EI/EIb", d: 3 }, archivo: `EI-M ${s.nombre}` } : { ejeX: { titulo: `\u03BA (${MAG.curv.ud})`, d: 2 }, ejeY: { titulo: `M (${MAG.M.ud})`, d: 1 }, archivo: `M-k ${s.nombre}` },
+      ...vista === "ei" ? { ejeX: eje("M", "M"), ejeY: { titulo: "EI/EIb", d: 3 }, archivo: `EI-M ${s.nombre}` } : { ejeX: eje("curv", "\u03BA"), ejeY: eje("M", "M"), archivo: `M-k ${s.nombre}` },
       avisar: ctx2.avisar
     });
   }
@@ -10161,8 +10162,8 @@ details.an-ce { margin-top: var(--e2); }
     return h("div", { class: "grafica-flex" }, grafica({
       series,
       puntos,
-      ejeX: { titulo: `${ind("A", "s1")} (${MAG.As.ud})`, d: 0 },
-      ejeY: { titulo: `${ind("M", "Rd")} (${MAG.M.ud})`, d: 1 },
+      ejeX: eje("As", ind("A", "s1")),
+      ejeY: eje("M", ind("M", "Rd")),
       archivo: `MRd-As ${ctx2.p.secciones[est4.i].nombre}${est4.signo < 0 ? " M-" : " M+"}`,
       avisar: ctx2.avisar
     }), h("p", { class: "nota", html: t("g.nota", q(c.Alim, "As")) }));

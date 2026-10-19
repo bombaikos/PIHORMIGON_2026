@@ -85,6 +85,12 @@ export function cientifico(x, sig = 4) {
   return `${fmt(m, sig - 1)} × 10${String(e).split('').map((c) => SUP[c]).join('')}`;
 }
 
+/**
+ * Eje de una gráfica con la precisión de su magnitud (la cruz y las marcas usan los mismos decimales que las tablas):
+ * eje('M', 'M_Rd') → { titulo: 'M_Rd (kN·m)', d: 0 }. Las vistas no fijan decimales a mano.
+ */
+export const eje = (mag, nombre) => ({ titulo: nombre ? `${nombre} (${MAG[mag].ud})` : `(${MAG[mag].ud})`, d: MAG[mag].d ?? 0 });
+
 /** Valor de una magnitud en unidades de pantalla (número). */
 export const enPantalla = (x, mag) => x * MAG[mag].f;
 /** Valor interno a partir del de pantalla. */
