@@ -191,6 +191,10 @@ export default {
   'prop.artFct.EHE-08': 'EHE-08 · art. 38.4', 'prop.artFct.EC2-2004': 'UNE-EN 1992-1-1 · AN 9.2.1.1 (f<sub>ctm,fl</sub>)', 'prop.artFct.EC2-2023': 'EN 1992-1-1:2023 · 9.30',
   'prop.formulaIfis': `Concrete with no tensile strength and elastic steel: ${sub('I', 'cr')} = M / (κ·${sub('E', 'c')})`,
 
+  'fcr.rayo': 'Origin–envelope', 'fcr.subtitulo': 'N-M interaction diagram at ultimate', 'fcr.sinSec': 'Create a section in the Sections module.', 'fcr.compPos': 'compression +', 'fcr.mSigno': '+ compresses the top face', 'fcr.axil': 'The axial force',
+  'fcr.fueraAxil': (l) => `The axial force exceeds the section capacity (limit ${l}).`, 'fcr.diagrama': 'Interaction diagram', 'fcr.diagramaSub': 'N-M ultimate envelope with the design diagrams; M about the centroid of the concrete',
+  'fcr.f.contorno': 'M<sub>Rd</sub> on the envelope at N<sub>Ed</sub> (ultimate state: largest curvature with an admissible plane balancing N<sub>Ed</sub>)', 'fcr.f.ref': (y) => `Moments about the gross concrete centroid, at ${y} from the top face.`,
+  'fcr.f.nrd': 'Concentric compression: whole section at ε = −ε<sub>c2</sub>', 'fcr.f.rayo': 'Utilisation = |OP| / |OQ|: P = (N<sub>Ed</sub>, M<sub>Ed</sub>); Q = where the line from the origin through P cuts the envelope',
   'flex.subtitulo': 'Rectangular or T beam at ULS (module TN1)', 'flex.modo': 'Calculation', 'flex.momento': 'The moment',
   'flex.sinRect': 'The project has no beams (rectangular beam or T). Create them in Sections.',
   'flex.signo': 'Moment', 'flex.positivo': 'Positive (bottom)', 'flex.negativo': 'Negative (top)',
