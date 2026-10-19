@@ -480,6 +480,9 @@ table.rejilla tr.foco td { background: var(--acento-suave); }
 .graf text { fill: var(--tinta-2); font: calc(12px + var(--mas)) var(--f); font-variant-numeric: tabular-nums; }
 .graf .tit-eje { fill: var(--tinta-2); font-weight: 600; }
 .graf .etq-punto { fill: var(--tinta); font-weight: 600; }
+.graf .punto-calculo { fill: var(--hoja); stroke: var(--tinta); stroke-width: 2; }
+.graf .punto-calculo.ok { fill: var(--ok); stroke: var(--hoja); }
+.graf .punto-calculo.no { fill: var(--no); stroke: var(--hoja); }
 .graf .rej { stroke: var(--linea); stroke-width: 1; }
 .graf .rej2 { stroke: var(--linea); stroke-width: 1; opacity: .6; }
 .graf .marco { fill: none; stroke: var(--linea-fuerte); stroke-width: 1; }
@@ -848,6 +851,12 @@ details.an-ce { margin-top: var(--e2); }
 .datos .campo:not(.apilado) select { text-align: right; text-align-last: right; }
 .datos .desliza-sec { margin: 2px 0 4px; }
 :root:not([data-densidad="comoda"]) .par2 .campo:not(.columna) > label { flex: 0 0 calc(44px + var(--mas) * 3); max-width: calc(44px + var(--mas) * 3); overflow: hidden; }
+
+/* Flexión compuesta recta: resultados plegados bajo el diagrama, que ocupa todo el ancho */
+.plegable-res { order: 9; border-top: 1px solid var(--linea); padding-top: var(--e2); }
+.plegable-res > summary { cursor: pointer; font-size: var(--t-s); color: var(--tinta-2); font-weight: 600; }
+.plegable-res[open] { display: flex; flex-direction: column; gap: var(--e2); }
+.plegable-res .res-plegado { display: flex; flex-direction: column; gap: var(--e3); }
 </style>
 
 <header class="barra">
@@ -2669,6 +2678,38 @@ details.an-ce { margin-top: var(--e2); }
     "prop.artFct.EC2-2023": "EN 1992-1-1:2023 \xB7 9.30",
     "prop.formulaIfis": `Hormig\xF3n sin resistencia a tracci\xF3n y acero el\xE1stico: ${sub("I", "fis")} = M / (\u03BA\xB7${sub("E", "c")})`,
     // Flexión
+    "fcr.deSecciones": "La secci\xF3n viene de Secciones (solo lectura).",
+    "fcr.rayo": "Origen\u2013contorno",
+    "fcr.esfuerzos": "Esfuerzos",
+    "fcr.gammaReq": "\u03B3 requerido",
+    "fcr.sinArmadura": "La secci\xF3n no tiene armadura: def\xEDnela en Secciones para dimensionar.",
+    "fcr.sinEsfuerzos": "Escribe al menos un par N, M en la tabla.",
+    "fcr.noBasta": "Ni multiplicando por 40 la armadura de Secciones caben los esfuerzos.",
+    "fcr.sinArm": "Basta el hormig\xF3n",
+    "fcr.kArm": (k, a, g) => `Armadura de Secciones \xD7 <b>${k}</b> (${a}) para \u03B3 \u2265 ${g}.`,
+    "fcr.coefSeg": "Coeficiente de seguridad",
+    "fcr.puntos": "Esfuerzos",
+    "fcr.dentro": "dentro del diagrama",
+    "fcr.dentroSello": "Dentro",
+    "fcr.fueraSello": "Fuera",
+    "fcr.hormigon": "Hormig\xF3n solo",
+    "fcr.contorno": "Contorno N-M",
+    "fcr.puntosCont": "puntos",
+    "fcr.f.env": "Misma secci\xF3n sin armadura: resistencia del hormig\xF3n solo (sin tracci\xF3n), para ver cu\xE1nto aporta el acero.",
+    "fcr.pista": "Compresi\xF3n +, tracci\xF3n \u2212. Armadura sim\xE9trica: solo M \u2265 0 (el signo de M no importa). \u03B3 = |OQ|/|OP| a excentricidad constante (verde \u2265 1, rojo < 1).",
+    "fcr.resumenRes": (n, g) => `Resultados y esfuerzos (${n} \xB7 \u03B3 m\xEDn. ${g})`,
+    "fcr.subtitulo": "Diagrama de interacci\xF3n N-M en rotura",
+    "fcr.sinSec": "Crea una secci\xF3n en el m\xF3dulo Secciones.",
+    "fcr.compPos": "compresi\xF3n +",
+    "fcr.mSigno": "+ comprime la cara superior",
+    "fcr.axil": "El axil",
+    "fcr.fueraAxil": (l) => `El axil supera la capacidad de la secci\xF3n (l\xEDmite ${l}).`,
+    "fcr.diagrama": "Diagrama de interacci\xF3n",
+    "fcr.diagramaSub": "Contorno N-M en rotura con los diagramas de c\xE1lculo; M respecto al c.d.g. del hormig\xF3n",
+    "fcr.f.contorno": "M<sub>Rd</sub> del contorno con el axil N<sub>Ed</sub> (estado \xFAltimo: m\xE1xima curvatura con plano admisible que equilibra N<sub>Ed</sub>)",
+    "fcr.f.ref": (y) => `Momentos respecto al c.d.g. del hormig\xF3n bruto, a ${y} de la cara superior.`,
+    "fcr.f.nrd": "Compresi\xF3n centrada: toda la secci\xF3n a \u03B5 = \u2212\u03B5<sub>c2</sub>",
+    "fcr.f.rayo": "\u03B3 = |OQ| / |OP| a excentricidad constante: P = (N<sub>Ed</sub>, M<sub>Ed</sub>); Q = corte con el contorno de la recta que une el origen con P",
     "flex.subtitulo": "Viga rectangular o en T en ELU (m\xF3dulo TN1)",
     "flex.modo": "Tipo de c\xE1lculo",
     "flex.momento": "El momento",
@@ -3606,6 +3647,38 @@ details.an-ce { margin-top: var(--e2); }
     "prop.artFct.EC2-2004": "UNE-EN 1992-1-1 \xB7 AN 9.2.1.1 (f<sub>ctm,fl</sub>)",
     "prop.artFct.EC2-2023": "EN 1992-1-1:2023 \xB7 9.30",
     "prop.formulaIfis": `Concrete with no tensile strength and elastic steel: ${sub2("I", "cr")} = M / (\u03BA\xB7${sub2("E", "c")})`,
+    "fcr.deSecciones": "The section comes from Sections (read only).",
+    "fcr.rayo": "Origin\u2013envelope",
+    "fcr.esfuerzos": "Actions",
+    "fcr.gammaReq": "Required \u03B3",
+    "fcr.sinArmadura": "The section has no reinforcement: define it in Sections to size it.",
+    "fcr.sinEsfuerzos": "Enter at least one N, M pair in the table.",
+    "fcr.noBasta": "Even 40 times the reinforcement of Sections cannot carry the actions.",
+    "fcr.sinArm": "Concrete is enough",
+    "fcr.kArm": (k, a, g) => `Reinforcement of Sections \xD7 <b>${k}</b> (${a}) for \u03B3 \u2265 ${g}.`,
+    "fcr.coefSeg": "Safety factor",
+    "fcr.puntos": "Actions",
+    "fcr.dentro": "inside the diagram",
+    "fcr.dentroSello": "Inside",
+    "fcr.fueraSello": "Outside",
+    "fcr.hormigon": "Concrete only",
+    "fcr.contorno": "N-M envelope",
+    "fcr.puntosCont": "points",
+    "fcr.f.env": "Same section without reinforcement: concrete-only capacity (no tension), to show what the steel adds.",
+    "fcr.pista": "Compression +, tension \u2212. Symmetric reinforcement: only M \u2265 0 (the sign of M is ignored). \u03B3 = |OQ|/|OP| at constant eccentricity (green \u2265 1, red < 1).",
+    "fcr.resumenRes": (n, g) => `Results and actions (${n} \xB7 min. \u03B3 ${g})`,
+    "fcr.subtitulo": "N-M interaction diagram at ultimate",
+    "fcr.sinSec": "Create a section in the Sections module.",
+    "fcr.compPos": "compression +",
+    "fcr.mSigno": "+ compresses the top face",
+    "fcr.axil": "The axial force",
+    "fcr.fueraAxil": (l) => `The axial force exceeds the section capacity (limit ${l}).`,
+    "fcr.diagrama": "Interaction diagram",
+    "fcr.diagramaSub": "N-M ultimate envelope with the design diagrams; M about the centroid of the concrete",
+    "fcr.f.contorno": "M<sub>Rd</sub> on the envelope at N<sub>Ed</sub> (ultimate state: largest curvature with an admissible plane balancing N<sub>Ed</sub>)",
+    "fcr.f.ref": (y) => `Moments about the gross concrete centroid, at ${y} from the top face.`,
+    "fcr.f.nrd": "Concentric compression: whole section at \u03B5 = \u2212\u03B5<sub>c2</sub>",
+    "fcr.f.rayo": "\u03B3 = |OQ| / |OP| at constant eccentricity: P = (N<sub>Ed</sub>, M<sub>Ed</sub>); Q = where the line from the origin through P cuts the envelope",
     "flex.subtitulo": "Rectangular or T beam at ULS (module TN1)",
     "flex.modo": "Calculation",
     "flex.momento": "The moment",
@@ -4708,14 +4781,14 @@ details.an-ce { margin-top: var(--e2); }
   var par = (...hijos) => h("div", { class: "par" }, ...hijos);
   var boton = (texto, onclick, clase = "secundario") => h("button", { type: "button", class: `boton ${clase}`, onclick, html: texto });
   var aviso = (texto, tipo = "") => h("p", { class: `aviso ${tipo}`, html: texto });
-  function pestanas({ lista, activa: activa2, onCambio }) {
+  function pestanas({ lista, activa: activa3, onCambio }) {
     return h(
       "div",
       { class: "pestanas", role: "tablist" },
       ...lista.map(([k, e2, o = {}]) => h("button", {
         type: "button",
         role: "tab",
-        "aria-selected": String(k === activa2),
+        "aria-selected": String(k === activa3),
         "aria-disabled": o.deshabilitada ? "true" : void 0,
         title: o.deshabilitada ? t("pendiente") : void 0,
         html: e2,
@@ -4770,7 +4843,7 @@ details.an-ce { margin-top: var(--e2); }
   }
 
   // src/ui/paleta.js
-  function instalarPaleta(comandos10, avisar2) {
+  function instalarPaleta(comandos11, avisar2) {
     const pal = document.getElementById("paleta");
     const pq = document.getElementById("paleta-q");
     const pl = document.getElementById("paleta-lista");
@@ -4780,7 +4853,7 @@ details.an-ce { margin-top: var(--e2); }
     const texto = (c) => c.texto ?? t(c.k);
     function listar() {
       const x = pq.value.trim().toLowerCase();
-      vis = comandos10().filter((c) => !x || (plano3(texto(c)) + " " + (c.b ?? "")).toLowerCase().includes(x));
+      vis = comandos11().filter((c) => !x || (plano3(texto(c)) + " " + (c.b ?? "")).toLowerCase().includes(x));
       sel = Math.min(sel, Math.max(vis.length - 1, 0));
       pl.innerHTML = vis.map((c, i) => `<li role="option" aria-selected="${i === sel}" data-i="${i}">${texto(c)}</li>`).join("") || `<li aria-selected="false"><small>${t("p.nada")}</small></li>`;
       pl.querySelector('[aria-selected="true"]')?.scrollIntoView({ block: "nearest" });
@@ -5325,7 +5398,7 @@ details.an-ce { margin-top: var(--e2); }
   // src/ui/rejilla.js
   function rejilla({ id, columnas, filas, onCambio, refFila, altoMax = 260, calculada = null, numerar = false }) {
     const C = columnas.length;
-    let datos13 = filas.map((f) => columnas.map((_2, j) => String(f[j] ?? "")));
+    let datos14 = filas.map((f) => columnas.map((_2, j) => String(f[j] ?? "")));
     let act = { r: 0, c: 0 };
     let ancla = null;
     let editor = null;
@@ -5334,8 +5407,8 @@ details.an-ce { margin-top: var(--e2); }
     const pie = h("div", { class: "eco" });
     const vacia = (f) => f.every((x) => !x.trim());
     const errorDe = (r, c) => {
-      const v2 = datos13[r]?.[c] ?? "";
-      if (!v2.trim()) return vacia(datos13[r]) ? null : columnas[c].num ? t("rej.falta") : null;
+      const v2 = datos14[r]?.[c] ?? "";
+      if (!v2.trim()) return vacia(datos14[r]) ? null : columnas[c].num ? t("rej.falta") : null;
       if (columnas[c].num && !Number.isFinite(leerNumero(v2))) return t("rej.noNumero");
       return columnas[c].validar?.(v2) ?? null;
     };
@@ -5347,12 +5420,12 @@ details.an-ce { margin-top: var(--e2); }
       const R = rango();
       const cab = h("thead", {}, h("tr", {}, ...columnas.map((col2) => h("th", { scope: "col", html: col2.titulo })), ...calculada ? [h("th", { scope: "col", class: "calc", html: calculada.titulo })] : []));
       const cuerpo = h("tbody");
-      const todas = [...datos13, columnas.map(() => "")];
+      const todas = [...datos14, columnas.map(() => "")];
       let errores = 0;
       todas.forEach((f, r) => {
-        const tr = h("tr", refFila && r < datos13.length ? { "data-ref": refFila(r) } : { class: "nueva" });
+        const tr = h("tr", refFila && r < datos14.length ? { "data-ref": refFila(r) } : { class: "nueva" });
         f.forEach((v2, c) => {
-          const err2 = r < datos13.length ? errorDe(r, c) : null;
+          const err2 = r < datos14.length ? errorDe(r, c) : null;
           if (err2) errores++;
           const sel = r >= R.r1 && r <= R.r2 && c >= R.c1 && c <= R.c2;
           const td = h("td", {
@@ -5363,7 +5436,7 @@ details.an-ce { margin-top: var(--e2); }
           }, v2);
           tr.append(td);
         });
-        if (calculada) tr.append(h("td", { class: "num calc" }, r < datos13.length && !vacia(f) ? calculada.f(datos13, r) : ""));
+        if (calculada) tr.append(h("td", { class: "num calc" }, r < datos14.length && !vacia(f) ? calculada.f(datos14, r) : ""));
         cuerpo.append(tr);
       });
       tabla3.replaceChildren(cab, cuerpo);
@@ -5377,31 +5450,31 @@ details.an-ce { margin-top: var(--e2); }
       celda(act.r, act.c)?.scrollIntoView({ block: "nearest", inline: "nearest" });
     }
     function confirmar() {
-      datos13 = datos13.map((f) => f.map((v2, c) => columnas[c].num ? v2.trim().replace(/,/g, ".") : v2.trim()));
-      const limpias = datos13.filter((f) => !vacia(f));
-      const hayError = datos13.some((f, r) => f.some((_2, c) => errorDe(r, c)));
+      datos14 = datos14.map((f) => f.map((v2, c) => columnas[c].num ? v2.trim().replace(/,/g, ".") : v2.trim()));
+      const limpias = datos14.filter((f) => !vacia(f));
+      const hayError = datos14.some((f, r) => f.some((_2, c) => errorDe(r, c)));
       if (!hayError) {
-        datos13 = limpias;
-        act.r = Math.min(act.r, datos13.length);
-        onCambio(datos13.map((f) => [...f]));
+        datos14 = limpias;
+        act.r = Math.min(act.r, datos14.length);
+        onCambio(datos14.map((f) => [...f]));
       }
       pintar2();
     }
     function poner2(r, c, v2) {
-      while (datos13.length <= r) datos13.push(columnas.map(() => ""));
-      datos13[r][c] = v2;
+      while (datos14.length <= r) datos14.push(columnas.map(() => ""));
+      datos14[r][c] = v2;
     }
     function mover(dr, dc, extender = false) {
       if (extender) ancla ?? (ancla = { ...act });
       else ancla = null;
-      act = { r: Math.max(0, Math.min(datos13.length, act.r + dr)), c: Math.max(0, Math.min(C - 1, act.c + dc)) };
+      act = { r: Math.max(0, Math.min(datos14.length, act.r + dr)), c: Math.max(0, Math.min(C - 1, act.c + dc)) };
       pintar2();
       verActiva();
     }
     function editar(inicial) {
       const td = celda(act.r, act.c);
       if (!td) return;
-      const previo = datos13[act.r]?.[act.c] ?? "";
+      const previo = datos14[act.r]?.[act.c] ?? "";
       editor = h("input", { class: "editor-rejilla", value: inicial ?? previo, spellcheck: "false", autocomplete: "off" });
       td.replaceChildren(editor);
       td.classList.add("editando");
@@ -5439,7 +5512,7 @@ details.an-ce { margin-top: var(--e2); }
     function copiar(e2) {
       const R = rango();
       const bloque = [];
-      for (let r = R.r1; r <= Math.min(R.r2, datos13.length - 1); r++) bloque.push(datos13[r].slice(R.c1, R.c2 + 1).map((v2, k) => columnas[R.c1 + k].num ? v2.replace(".", decimalAlCopiar()) : v2));
+      for (let r = R.r1; r <= Math.min(R.r2, datos14.length - 1); r++) bloque.push(datos14[r].slice(R.c1, R.c2 + 1).map((v2, k) => columnas[R.c1 + k].num ? v2.replace(".", decimalAlCopiar()) : v2));
       const esc2 = (v2) => v2.replace(/&/g, "&amp;").replace(/</g, "&lt;");
       e2.clipboardData.setData("text/plain", bloque.map((f) => f.join("	")).join("\r\n"));
       e2.clipboardData.setData("text/html", `<table>${bloque.map((f) => `<tr>${f.map((v2) => `<td>${esc2(v2)}</td>`).join("")}</tr>`).join("")}</table>`);
@@ -5483,21 +5556,21 @@ details.an-ce { margin-top: var(--e2); }
       }
       if (k === "Insert") {
         e2.preventDefault();
-        datos13.splice(act.r, 0, columnas.map(() => ""));
+        datos14.splice(act.r, 0, columnas.map(() => ""));
         return pintar2();
       }
       if ((k === "Delete" || k === "Backspace") && (e2.ctrlKey || e2.metaKey)) {
         e2.preventDefault();
         const R = rango();
-        datos13.splice(R.r1, R.r2 - R.r1 + 1);
+        datos14.splice(R.r1, R.r2 - R.r1 + 1);
         ancla = null;
-        act.r = Math.min(R.r1, datos13.length);
+        act.r = Math.min(R.r1, datos14.length);
         return confirmar();
       }
       if (k === "Delete" || k === "Backspace") {
         e2.preventDefault();
         const R = rango();
-        for (let r = R.r1; r <= Math.min(R.r2, datos13.length - 1); r++) for (let c = R.c1; c <= R.c2; c++) datos13[r][c] = "";
+        for (let r = R.r1; r <= Math.min(R.r2, datos14.length - 1); r++) for (let c = R.c1; c <= R.c2; c++) datos14[r][c] = "";
         return confirmar();
       }
       if (k.length === 1 && !e2.ctrlKey && !e2.metaKey && !e2.altKey) {
@@ -5798,6 +5871,9 @@ details.an-ce { margin-top: var(--e2); }
   }
   function grafica({ series, puntos = [], ejeX, ejeY, archivo = "grafica", rejillaSec = null, invertirY = false, avisar: avisar2 = () => {
   } }) {
+    const sinDec = (e2) => /\((kN|kN·m|mm²)\)/.test(plano(e2.titulo)) ? { ...e2, d: 0, dt: 0 } : e2;
+    ejeX = sinDec(ejeX);
+    ejeY = sinDec(ejeY);
     const caja = document.createElement("div");
     caja.className = "grafica";
     caja.tabIndex = 0;
@@ -5832,7 +5908,7 @@ details.an-ce { margin-top: var(--e2); }
     tabla3.hidden = true;
     const filasT = Math.max(0, ...enCuadro.map((s) => s.xy.length));
     const celda = (s, i, j, d) => s.xy[i] ? fmt(s.xy[i][j], d) : "";
-    tabla3.innerHTML = `<table><thead>${enCuadro.length > 1 ? `<tr>${enCuadro.map((s) => `<th colspan="2" class="${s.clase ?? "s1"}">${s.nombre}</th>`).join("")}</tr>` : ""}<tr>${enCuadro.map(() => `<th>${ejeX.titulo}</th><th>${ejeY.titulo}</th>`).join("")}</tr></thead><tbody>` + Array.from({ length: filasT }, (_2, i) => `<tr>${enCuadro.map((s) => `<td>${celda(s, i, 0, (ejeX.d ?? 2) + 1)}</td><td>${celda(s, i, 1, (ejeY.d ?? 1) + 1)}</td>`).join("")}</tr>`).join("") + "</tbody></table>";
+    tabla3.innerHTML = `<table><thead>${enCuadro.length > 1 ? `<tr>${enCuadro.map((s) => `<th colspan="2" class="${s.clase ?? "s1"}">${s.nombre}</th>`).join("")}</tr>` : ""}<tr>${enCuadro.map(() => `<th>${ejeX.titulo}</th><th>${ejeY.titulo}</th>`).join("")}</tr></thead><tbody>` + Array.from({ length: filasT }, (_2, i) => `<tr>${enCuadro.map((s) => `<td>${celda(s, i, 0, ejeX.dt ?? (ejeX.d ?? 2) + 1)}</td><td>${celda(s, i, 1, ejeY.dt ?? (ejeY.d ?? 1) + 1)}</td>`).join("")}</tr>`).join("") + "</tbody></table>";
     let enTabla = false;
     let listo = false;
     const modo2 = document.createElement("div");
@@ -5929,6 +6005,7 @@ details.an-ce { margin-top: var(--e2); }
         const px = aX(p.x);
         const py = aY(p.y);
         const izq = px > W - M.der - 30;
+        if (p.marca) o.push(`<circle class="punto-calculo ${p.marca}" cx="${px}" cy="${py}" r="4.5"/>`);
         if (p.etq) o.push(`<text class="etq-punto" x="${izq ? px - 6 : px + 6}" y="${p.abajo ? py + 16 : py - 7}" text-anchor="${izq ? "end" : "start"}">${p.etq}</text>`);
       }
       o.push("</g>");
@@ -8134,13 +8211,13 @@ details.an-ce { margin-top: var(--e2); }
     fila3.append(h("button", { type: "button", class: "mas", title: t("sec.nuevaDe", t(`forma.${est3.forma}`)), onclick: () => elegir2(ctx2, est3.forma, null) }, `+ ${t("sec.nueva")}`));
     el.append(fila3);
   }
-  function selectorSecciones(ctx2, el, { formas, activa: activa2, alElegir }) {
+  function selectorSecciones(ctx2, el, { formas, activa: activa3, alElegir }) {
     ctxCab2 = ctx2;
     const fila3 = h("div", { class: "selsec", role: "group", "aria-label": t("seccion") });
     for (const f of formas) {
       const delTipo = ctx2.p.secciones.filter((x) => x.forma === f);
-      const act = activa2?.forma === f;
-      const titulo = act ? `${t(`forma.${f}`)}<span class="sep">\xB7</span><b>${activa2.nombre}</b>` : t(`forma.${f}`);
+      const act = activa3?.forma === f;
+      const titulo = act ? `${t(`forma.${f}`)}<span class="sep">\xB7</span><b>${activa3.nombre}</b>` : t(`forma.${f}`);
       const caja = h(
         "div",
         { class: `desp${act ? " activo" : ""}` },
@@ -8157,7 +8234,7 @@ details.an-ce { margin-top: var(--e2); }
           }
         })
       );
-      if (abierto === f) caja.append(listaSecciones(ctx2, f, delTipo, act ? activa2.nombre : void 0, (n) => {
+      if (abierto === f) caja.append(listaSecciones(ctx2, f, delTipo, act ? activa3.nombre : void 0, (n) => {
         abierto = null;
         alElegir(n);
       }, false));
@@ -8168,7 +8245,7 @@ details.an-ce { margin-top: var(--e2); }
   function modo(k) {
     est3.pestana = k;
   }
-  function listaSecciones(ctx2, f, delTipo, activa2, alElegir = (nombre) => elegir2(ctx2, f, nombre), conAlta = true) {
+  function listaSecciones(ctx2, f, delTipo, activa3, alElegir = (nombre) => elegir2(ctx2, f, nombre), conAlta = true) {
     const m = h("div", { class: "menu-sec", role: "listbox", onclick: (e2) => e2.stopPropagation() });
     const filas = h("div", { class: "filas" });
     const q2 = delTipo.length > 8 ? h("input", { class: "buscar", placeholder: t("sec.buscarEntre", delTipo.length), autocomplete: "off" }) : null;
@@ -8177,7 +8254,7 @@ details.an-ce { margin-top: var(--e2); }
       filas.replaceChildren(...delTipo.filter((s) => !x || s.nombre.toLowerCase().includes(x)).map((s) => h("button", {
         type: "button",
         role: "option",
-        "aria-current": s.nombre === activa2 ? "true" : void 0,
+        "aria-current": s.nombre === activa3 ? "true" : void 0,
         html: `${icono2(f)}${s.nombre}<span class="nombre-sec">${resumenForma(s)}</span>`,
         onclick: () => alElegir(s.nombre)
       })));
@@ -8969,9 +9046,9 @@ details.an-ce { margin-top: var(--e2); }
   var esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
   function botonCopiar(filas) {
     const b = boton(t("dur.copiar"), async () => {
-      const datos13 = filas().map((f) => f.map((c) => typeof c === "number" ? String(c).replace(".", decimalAlCopiar()) : plano2(c)));
-      const txt = datos13.map((f) => f.join("	")).join("\r\n");
-      const htm = `<table>${datos13.map((f, i) => `<tr>${f.map((c) => `<${i ? "td" : "th"}>${esc(c)}</${i ? "td" : "th"}>`).join("")}</tr>`).join("")}</table>`;
+      const datos14 = filas().map((f) => f.map((c) => typeof c === "number" ? String(c).replace(".", decimalAlCopiar()) : plano2(c)));
+      const txt = datos14.map((f) => f.join("	")).join("\r\n");
+      const htm = `<table>${datos14.map((f, i) => `<tr>${f.map((c) => `<${i ? "td" : "th"}>${esc(c)}</${i ? "td" : "th"}>`).join("")}</tr>`).join("")}</table>`;
       try {
         if (navigator.clipboard?.write && typeof ClipboardItem !== "undefined") await navigator.clipboard.write([new ClipboardItem({ "text/plain": new Blob([txt], { type: "text/plain" }), "text/html": new Blob([htm], { type: "text/html" }) })]);
         else await navigator.clipboard.writeText(txt);
@@ -9021,9 +9098,9 @@ details.an-ce { margin-top: var(--e2); }
     const p = ctx2.p;
     const D = condiciones(p);
     const cambio = (estructura) => ctx2.cambio(estructura ? { estructura: true } : void 0);
-    const set = (k, est7) => (v2) => {
+    const set = (k, est8) => (v2) => {
       D[k] = v2;
-      cambio(est7);
+      cambio(est8);
     };
     const seg = (k, lista, etq) => h(
       "div",
@@ -9062,11 +9139,11 @@ details.an-ce { margin-top: var(--e2); }
   }
   function chipsClases(D, grupoClases, no, onClick) {
     return h("div", { class: "chips", role: "group" }, ...grupoClases.map((c) => {
-      const activa2 = D.clasesEHE.includes(c);
+      const activa3 = D.clasesEHE.includes(c);
       return h("button", {
         type: "button",
         class: "chip-sel chip-clase",
-        "aria-pressed": String(activa2),
+        "aria-pressed": String(activa3),
         disabled: no.has(c) || void 0,
         title: no.has(c) ? t("eh.noCompatible") : t(`eh.desc.${c}`),
         html: `${c}<span class="ce">${EQUIV_CE[c]}</span>`,
@@ -9273,11 +9350,11 @@ details.an-ce { margin-top: var(--e2); }
   }
   function chips(D, lista, no, onClick) {
     return h("div", { class: "chips", role: "group" }, ...lista.map((c) => {
-      const activa2 = D.clasesEC.includes(c);
+      const activa3 = D.clasesEC.includes(c);
       return h("button", {
         type: "button",
         class: "chip-sel chip-clase",
-        "aria-pressed": String(activa2),
+        "aria-pressed": String(activa3),
         disabled: no.has(c) || void 0,
         title: no.has(c) ? t("eh.noCompatible") : t(`ec.desc.${c}`),
         html: `${c}<span class="ce">${t(`ec.tag.${c}`)}</span>`,
@@ -10344,12 +10421,366 @@ details.an-ce { margin-top: var(--e2); }
     ];
   }
 
+  // src/ui/vistas/flexRecta.js
+  var flexRecta_exports = {};
+  __export(flexRecta_exports, {
+    cabeza: () => cabeza3,
+    comandos: () => comandos6,
+    datos: () => datos9,
+    reiniciar: () => reiniciar5,
+    resultados: () => resultados9
+  });
+
+  // src/core/interaccion.js
+  function centroBruto(sec) {
+    let A = 0;
+    let S = 0;
+    for (const t2 of sec.trapecios) {
+      const h2 = t2.y2 - t2.y1;
+      const a = (t2.b1 + t2.b2) / 2 * h2;
+      if (!(a > 0)) continue;
+      A += a;
+      S += a * (t2.y1 + h2 * (t2.b1 + 2 * t2.b2) / (3 * (t2.b1 + t2.b2)));
+    }
+    return S / A;
+  }
+  function axilesLimite(sec) {
+    const [lo, hi] = intervaloEpsSup(sec, 0);
+    return { Ncomp: -esfuerzos(sec, lo, 0, 0).N, Ntrac: -esfuerzos(sec, hi, 0, 0).N };
+  }
+  function diagramaNM(sec, { n = 60, yref = centroBruto(sec), simetrica = false, tol = 0 } = {}) {
+    const { Ncomp, Ntrac } = axilesLimite(sec);
+    const rama = (signo) => {
+      const [lo, hi] = intervaloEpsSup(sec, 0);
+      const extremo = (eps) => {
+        const r = esfuerzos(sec, eps, 0, yref);
+        return { N: -r.N, M: r.M, x: eps < 0 ? Infinity : -Infinity, epsSup: eps, epsInf: eps, kappa: 0 };
+      };
+      const pts = [extremo(lo)];
+      for (let i = 1; i < n; i++) {
+        const u = 0.5 - 0.5 * Math.cos(Math.PI * i / n);
+        const N = Ncomp + (Ntrac - Ncomp) * u;
+        const e2 = estadoUltimo(sec, -N, { signo, yref });
+        if (!e2.converge) continue;
+        pts.push({ N: -e2.N, M: e2.M, x: e2.x, epsSup: e2.epsSup, epsInf: e2.epsInf, kappa: e2.kappa });
+      }
+      pts.push(extremo(hi));
+      if (!(tol > 0)) return pts;
+      const lim = tol * Math.max(...pts.map((v2) => Math.abs(v2.M)), 1e-9);
+      const medio = (a, b) => {
+        const N = (a.N + b.N) / 2;
+        const e2 = estadoUltimo(sec, -N, { signo, yref });
+        return e2.converge ? { N: -e2.N, M: e2.M, x: e2.x, epsSup: e2.epsSup, epsInf: e2.epsInf, kappa: e2.kappa } : null;
+      };
+      const afinar = (a, b, prof) => {
+        if (prof >= 9 || Math.abs(a.N - b.N) < 1e-3) return [];
+        const m = medio(a, b);
+        if (!m || Math.abs(m.M - (a.M + b.M) / 2) <= lim) return [];
+        return [...afinar(a, m, prof + 1), m, ...afinar(m, b, prof + 1)];
+      };
+      const out = [pts[0]];
+      for (let i = 1; i < pts.length; i++) out.push(...afinar(pts[i - 1], pts[i], 0), pts[i]);
+      return out;
+    };
+    const pos = rama(1);
+    const neg = simetrica ? pos.map((v2) => ({ ...v2, M: -v2.M, epsSup: v2.epsInf, epsInf: v2.epsSup, kappa: -v2.kappa })) : rama(-1);
+    return { Ncomp, Ntrac, pos, neg, yref };
+  }
+  function momentoEn(rama, N) {
+    for (let i = 1; i < rama.length; i++) {
+      const a = rama[i - 1];
+      const b = rama[i];
+      if (N <= a.N && N >= b.N) return a.N === b.N ? a.M : a.M + (b.M - a.M) * (N - a.N) / (b.N - a.N);
+    }
+    return NaN;
+  }
+  function comprobarNM(d, NEd, MEd) {
+    const rama = MEd >= 0 ? d.pos : d.neg;
+    const MRd = momentoEn(rama, NEd);
+    if (!(NEd <= d.Ncomp && NEd >= d.Ntrac)) return { dentro: false, MRd: NaN, ratio: Infinity, Q: null };
+    const poli = [...d.pos, ...[...d.neg].reverse()].map((p) => [p.N, p.M]);
+    let lam = Infinity;
+    for (let i = 0; i < poli.length; i++) {
+      const [x1, y1] = poli[i];
+      const [x2, y2] = poli[(i + 1) % poli.length];
+      const ex = x2 - x1;
+      const ey = y2 - y1;
+      const den = NEd * ey - MEd * ex;
+      if (Math.abs(den) < 1e-12) continue;
+      const t2 = (x1 * ey - y1 * ex) / den;
+      const u = (x1 * MEd - y1 * NEd) / den;
+      if (t2 > 1e-12 && u >= -1e-9 && u <= 1 + 1e-9) lam = Math.min(lam, t2);
+    }
+    const ratio = Number.isFinite(lam) ? 1 / lam : Infinity;
+    return { dentro: ratio <= 1, MRd, ratio, Q: Number.isFinite(lam) ? [lam * NEd, lam * MEd] : null };
+  }
+  function coeficienteNM(d, NEd, MEd) {
+    if (NEd === 0 && MEd === 0) return Infinity;
+    const r = comprobarNM(d, NEd, MEd);
+    return r.ratio > 0 && Number.isFinite(r.ratio) ? 1 / r.ratio : 0;
+  }
+  var escalarArmadura = (sec, k) => ({ ...sec, barras: sec.barras.map((b) => ({ ...b, A: b.A * k })) });
+  var soloHormigon = (sec) => ({ ...sec, barras: [] });
+  function dimensionarNM(sec, pares2, { gamma = 1, kMax = 40, n = 60, simetrica = false } = {}) {
+    const ok = (k) => {
+      const d = diagramaNM(escalarArmadura(sec, k), { n, simetrica });
+      return pares2.every(([N, M2]) => coeficienteNM(d, N, M2) >= gamma - 1e-9);
+    };
+    if (ok(0)) return 0;
+    if (!ok(kMax)) return Infinity;
+    let lo = 0;
+    let hi = kMax;
+    for (let i = 0; i < 28 && hi - lo > 1e-4 * hi; i++) {
+      const m = (lo + hi) / 2;
+      if (ok(m)) hi = m;
+      else lo = m;
+    }
+    return hi;
+  }
+
+  // src/ui/vistas/flexRecta.js
+  var FORMAS2 = ["pilar", "circular"];
+  var est5 = {
+    i: null,
+    modo: "comprobar",
+    gamma: 1,
+    filas: [["500", "150"], ["1500", "100"], ["-150", "60"], ["2500", "200"]],
+    abiertos: /* @__PURE__ */ new Set(["coef"]),
+    pestana: "resultados",
+    resAbierto: false
+  };
+  function reiniciar5() {
+    est5.i = null;
+  }
+  var sub15 = (a, b) => `${a}<sub>${b}</sub>`;
+  var ind2 = (a, b) => `${a}<tspan class="ind" dy="3">${b}</tspan>`;
+  var nv = (txt) => leerNumero(txt);
+  function activa(p) {
+    if (!FORMAS2.includes(p.secciones[est5.i]?.forma)) est5.i = p.secciones.findIndex((x) => FORMAS2.includes(x.forma));
+    return est5.i >= 0 ? p.secciones[est5.i] : null;
+  }
+  function cabeza3(ctx2, el) {
+    const s = activa(ctx2.p);
+    if (!s) return;
+    selectorSecciones(ctx2, el, { formas: FORMAS2, activa: s, alElegir: (nombre) => {
+      const i = ctx2.p.secciones.findIndex((x) => x.nombre === nombre);
+      if (i >= 0) {
+        est5.i = i;
+        ctx2.pintar();
+      }
+    } });
+  }
+  var mmS2 = (x) => fmt(x * 1e3, 0);
+  function resumenSeccion3(p, s) {
+    const g = s.geo;
+    let dim;
+    if (s.forma === "circular") dim = `\xD8 ${mmS2(g.D)} mm`;
+    else if (s.forma === "generica") {
+      const c = geometriaDe(p, s).caja;
+      dim = `${mmS2(c.xmax - c.xmin)} \xD7 ${mmS2(c.ymax - c.ymin)} mm`;
+    } else dim = `${s.forma === "T" ? "T " : ""}${mmS2(g.b)} \xD7 ${mmS2(g.h)} mm`;
+    return `${dim} \xB7 ${s.hormigon} \xB7 ${s.acero}`;
+  }
+  var pares = () => est5.filas.map((f, i) => ({ i, N: nv(f[0]), M: Math.abs(nv(f[1])) })).filter((x) => Number.isFinite(x.N) && Number.isFinite(x.M));
+  var memo = { clave: "", c: null };
+  function calculo(p, s) {
+    const ps = pares();
+    const clave = JSON.stringify([p.norma, s.geo, s.armado, s.hormigon, s.acero, sepCapas(p), est5.modo, est5.modo === "dimensionar" ? [est5.gamma, ps.map((x) => [x.N, x.M])] : 0]);
+    if (memo.clave === clave) return memo.c;
+    const geo = geometriaDe(p, s);
+    if (geo.errores?.length) throw new Error(geo.errores.join(" "));
+    const mats = materialesSeccion(p, s);
+    const sec = seccionMotor(geo, mats.hormigon, mats.acero);
+    const As0 = sec.barras.reduce((a, b) => a + b.A, 0);
+    let k = 1;
+    if (est5.modo === "dimensionar") {
+      if (!(As0 > 0)) throw new Error(t("fcr.sinArmadura"));
+      k = dimensionarNM(sec, ps.map((x) => [x.N, x.M]), { gamma: est5.gamma, simetrica: true });
+    }
+    const dibujada = Number.isFinite(k) ? escalarArmadura(sec, k) : escalarArmadura(sec, 1);
+    const c = { geo, sec, As0, k, d: diagramaNM(dibujada, { n: 60, simetrica: true, tol: TOL }), dH: diagramaNM(soloHormigon(sec), { n: 60, simetrica: true, tol: TOL }) };
+    memo = { clave, c };
+    return c;
+  }
+  var TOL = 1e-4;
+  var sigla = (g) => g === Infinity ? "\u221E" : fmt(g, 2);
+  function datos9(ctx2, form) {
+    const p = ctx2.p;
+    const s = activa(p);
+    poner(form, h("div", { class: "cab" }, h("h1", {}, t("menu.flexRecta")), h("p", {}, t("fcr.subtitulo"))));
+    if (!s) return poner(form, aviso(t("fcr.sinSec"), "info"));
+    const cambio = () => ctx2.cambio();
+    let c = null;
+    try {
+      c = calculo(p, s);
+    } catch {
+    }
+    const coefFila = (datosTabla, r) => {
+      if (!c) return "";
+      const N = nv(datosTabla[r][0]);
+      const M2 = nv(datosTabla[r][1]);
+      return Number.isFinite(N) && Number.isFinite(M2) ? sigla(coeficienteNM(c.d, N, Math.abs(M2))) : "";
+    };
+    poner(
+      form,
+      segmentado({ ancho: true, etiqueta: t("flex.modo"), opciones: [["comprobar", t("comprobar")], ["dimensionar", t("dimensionar")]], valor: est5.modo, onCambio: (m) => {
+        est5.modo = m;
+        ctx2.pintar();
+      } }),
+      grupo(
+        t("fcr.esfuerzos"),
+        rejilla({
+          id: "fr-esf",
+          altoMax: 190,
+          columnas: [{ titulo: `${sub15("N", "Ed")} (kN)`, num: true }, { titulo: `${sub15("M", "Ed")} (kN\xB7m)`, num: true }],
+          filas: est5.filas,
+          calculada: { titulo: "\u03B3", f: coefFila },
+          onCambio: (f) => {
+            est5.filas = f.map((r) => [r[0], r[1]]);
+            cambio();
+          }
+        }),
+        h("p", { style: "margin:4px 0 0;font-size:var(--t-s);color:var(--tinta-3)", html: t("fcr.pista") }),
+        est5.modo === "dimensionar" ? campoNum({ id: "fr-gamma", etq: t("fcr.gammaReq"), valor: est5.gamma, mag: "ratio", paso: 0.05, min: 0.5, max: 5, onCambio: (v2) => {
+          est5.gamma = v2;
+          cambio();
+        } }) : null
+      ),
+      grupo(t("g.seccion"), h("p", { style: "margin:0;font-size:var(--t-s);color:var(--tinta-2);line-height:1.5", html: `${resumenSeccion3(p, s)}<br>${t("fcr.deSecciones")}` }))
+    );
+  }
+  function resultados9(ctx2, res) {
+    var _a;
+    const p = ctx2.p;
+    const s = activa(p);
+    if (!s) return;
+    const c = calculo(p, s);
+    const { d, dH, geo } = c;
+    const ps = pares();
+    if (!ps.length) throw new Error(t("fcr.sinEsfuerzos"));
+    const gam = ps.map((x) => ({ ...x, g: coeficienteNM(d, x.N, x.M) }));
+    const gmin = Math.min(...gam.map((x) => x.g));
+    const dim = est5.modo === "dimensionar";
+    (_a = p.calculos).flexionCompuesta ?? (_a.flexionCompuesta = {});
+    p.calculos.flexionCompuesta[s.nombre] = { modo: est5.modo, esfuerzos: ps.map((x) => [x.N, x.M]), norma: p.norma, fecha: (/* @__PURE__ */ new Date()).toISOString().slice(0, 10), resultado: { gammaMin: gmin, k: c.k } };
+    if (dim && !Number.isFinite(c.k)) {
+      res.append(veredicto("nocumple", t("aumentar"), t("armaduraNec"), "\u2014", t("fcr.noBasta")));
+    } else if (dim) {
+      const As = c.As0 * c.k;
+      res.append(veredicto(
+        c.k === 0 ? "atencion" : "cumple",
+        c.k === 0 ? t("fcr.sinArm") : t("valida"),
+        t("armaduraNec"),
+        qh(As, "As"),
+        t("fcr.kArm", fmt(c.k, 2), q(c.As0, "As"), fmt(est5.gamma, 2))
+      ));
+    } else {
+      const ok = gmin >= 1 - 1e-6;
+      res.append(veredicto(
+        ok ? "cumple" : "nocumple",
+        ok ? t("cumple") : t("noCumple"),
+        "\u03B3 = |OQ|/|OP|",
+        sigla(gmin),
+        `${t("fcr.puntos")} <b>${gam.filter((x) => x.g >= 1 - 1e-6).length}</b> / ${gam.length} ${t("fcr.dentro")}`,
+        Math.min(1 / Math.max(gmin, 1e-9) / 1.25, 1)
+      ));
+    }
+    const Mmax = (rama) => rama.reduce((a, b) => Math.abs(b.M) > Math.abs(a.M) ? b : a);
+    const mp = Mmax(d.pos);
+    const cif = [
+      ...dim && Number.isFinite(c.k) ? [[sub15("A", "s,req"), qh(c.As0 * c.k, "As")], ["k", fmt(c.k, 2)]] : [],
+      [sub15("N", "Rd"), qh(d.Ncomp, "N")],
+      [sub15("N", "Rd,t"), qh(d.Ntrac, "N")],
+      [`${sub15("M", "Rd,m\xE1x")} (N = ${fmt(mp.N, MAG.N.d)})`, qh(mp.M, "M")],
+      [`${sub15("N", "Rd,hormig\xF3n")}`, qh(dH.Ncomp, "N")]
+    ];
+    const tarjetaRes = h("div", { class: "res-plegado" });
+    tarjetaRes.append(pestanas({ lista: [["resultados", t("t.resultados")], ["esfuerzos", t("fcr.esfuerzos")], ["seccion", t("g.seccion")]], activa: est5.pestana, onCambio: (k) => {
+      est5.pestana = k;
+      ctx2.pintar();
+    } }));
+    if (est5.pestana === "seccion") tarjetaRes.append(h("div", { class: "lienzo", html: dibujoSeccion(geo, s, { ancho: 360, alto: 300 }) }));
+    else if (est5.pestana === "esfuerzos") tarjetaRes.append(tablaEsfuerzos(gam));
+    else tarjetaRes.append(cifras(cif), h("p", { class: "sub", style: "margin:0" }, t("t.desplegar")), traza2(p, d, dH, gmin));
+    const plegable2 = h(
+      "details",
+      { class: "plegable-res", open: est5.resAbierto },
+      h("summary", {}, t("fcr.resumenRes", fmt(gam.length, 0), sigla(gmin))),
+      tarjetaRes
+    );
+    plegable2.addEventListener("toggle", () => {
+      est5.resAbierto = plegable2.open;
+    });
+    res.append(h("article", { class: "panel tarjeta" }, h("h2", {}, t("fcr.diagrama")), h("p", { class: "sub" }, t("fcr.diagramaSub")), graficoNM(ctx2, d, dH, gam, s), plegable2));
+  }
+  function tablaEsfuerzos(gam) {
+    const filas = gam.map((x) => [
+      String(x.i + 1),
+      fmt(x.N, MAG.N.d),
+      fmt(x.M, MAG.M.d),
+      x.N !== 0 ? fmt(x.M / x.N * 1e3, MAG.long.d) : "\u221E",
+      sigla(x.g),
+      `<span class="${x.g >= 1 - 1e-6 ? "ok" : "no"}">${x.g >= 1 - 1e-6 ? t("fcr.dentroSello") : t("fcr.fueraSello")}</span>`
+    ]);
+    const cont = h("div", {}, h("table", { class: "tabla", html: `<thead><tr>${["#", "N<sub>Ed</sub> (kN)", "M<sub>Ed</sub> (kN\xB7m)", "e (mm)", "\u03B3", ""].map((x) => `<th>${x}</th>`).join("")}</tr></thead><tbody>${filas.map((f) => `<tr>${f.map((x) => `<td>${x}</td>`).join("")}</tr>`).join("")}</tbody>` }));
+    return cont;
+  }
+  function graficoNM(ctx2, d, dH, gam, s) {
+    const xy = (rama) => [...rama].reverse().map((v2) => [v2.N, v2.M]);
+    const series = [
+      { nombre: ind2("M", "Rd"), clase: "s1", xy: xy(d.pos) },
+      { nombre: t("fcr.hormigon"), clase: "ref", cruz: false, xy: xy(dH.pos) }
+    ];
+    const puntos = gam.map((x) => ({ x: x.N, y: x.M, etq: String(x.i + 1), marca: x.g >= 1 - 1e-6 ? "ok" : "no" }));
+    return h("div", { class: "lienzo" }, grafica({
+      series,
+      puntos,
+      ejeX: { titulo: `N (${MAG.N.ud}), ${t("fcr.compPos")}`, d: MAG.N.d, dt: MAG.N.d },
+      ejeY: { titulo: `M (${MAG.M.ud})`, d: MAG.M.d, dt: MAG.M.d },
+      archivo: `N-M ${s.nombre}`,
+      avisar: ctx2.avisar
+    }));
+  }
+  function traza2(p, d, dH, gmin) {
+    const fam = NORMAS[p.norma];
+    const art4 = (a, b, c) => `<span class="art">${fam.ref} \xB7 ${p.norma === "EC2-2004" ? c ?? b : fam.familia === "EHE" ? a : b}</span>`;
+    const filas = [
+      { id: "coef", nom: t("fcr.coefSeg"), val: sigla(gmin), cuenta: `<span class="f">${t("fcr.f.rayo")}</span>` },
+      { id: "mrd", nom: t("fcr.contorno"), val: `${fmt(d.pos.length + d.neg.length, 0)} ${t("fcr.puntosCont")}`, cuenta: `<span class="f">${t("fcr.f.contorno")}</span>
+      <span class="n">${t("fcr.f.ref", q(d.yref, "long"))}</span>${art4("art. 42.1", "8.1.1", "6.1")}` },
+      { id: "nrd", nom: sub15("N", "Rd"), val: q(d.Ncomp, "N"), cuenta: `<span class="f">${t("fcr.f.nrd")}</span>${art4("art. 42.1", "8.1.1", "6.1")}` },
+      { id: "env", nom: t("fcr.hormigon"), val: q(dH.Ncomp, "N"), cuenta: `<span class="f">${t("fcr.f.env")}</span>` }
+    ];
+    return h("div", { class: "traza" }, ...filas.map((f) => {
+      const det = h(
+        "details",
+        { "data-ref": f.id, open: est5.abiertos.has(f.id) },
+        h("summary", {}, h("span", { class: "nom", html: f.nom }), h("span", { class: "val", html: f.val })),
+        h("div", { class: "cuenta", html: f.cuenta })
+      );
+      det.addEventListener("toggle", () => det.open ? est5.abiertos.add(f.id) : est5.abiertos.delete(f.id));
+      return det;
+    }));
+  }
+  function comandos6(ctx2) {
+    return [
+      { k: "p.fcrComprobar", b: "flexion compuesta recta comprobar interaccion", f: () => {
+        est5.modo = "comprobar";
+        ctx2.ir("flexRecta");
+      } },
+      { k: "p.fcrDimensionar", b: "flexion compuesta recta dimensionar interaccion", f: () => {
+        est5.modo = "dimensionar";
+        ctx2.ir("flexRecta");
+      } }
+    ];
+  }
+
   // src/ui/vistas/fuego.js
   var fuego_exports = {};
   __export(fuego_exports, {
-    comandos: () => comandos6,
-    datos: () => datos9,
-    resultados: () => resultados9
+    comandos: () => comandos7,
+    datos: () => datos10,
+    resultados: () => resultados10
   });
 
   // src/norma/fuego.js
@@ -10593,7 +11024,7 @@ details.an-ce { margin-top: var(--e2); }
   }
 
   // src/ui/dibujoFuego.js
-  var sub15 = (b, s) => `${b}<tspan baseline-shift="sub" font-size="75%">${s}</tspan>`;
+  var sub16 = (b, s) => `${b}<tspan baseline-shift="sub" font-size="75%">${s}</tspan>`;
   var cotaH2 = (x1, x2, y, texto, der = false) => `<line class="cota" x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" marker-start="url(#tic)" marker-end="url(#tic)"/>` + (der ? `<text x="${x2 + 6}" y="${y + 4}" text-anchor="start" class="fuerte">${texto}</text>` : `<text x="${(x1 + x2) / 2}" y="${y - 5}" text-anchor="middle" class="fuerte">${texto}</text>`);
   var cotaV2 = (x, y1, y2, texto, lado = "izq") => `<line class="cota" x1="${x}" y1="${y1}" x2="${x}" y2="${y2}" marker-start="url(#tic)" marker-end="url(#tic)"/><text x="${lado === "izq" ? x - 6 : x + 6}" y="${(y1 + y2) / 2 + 4}" text-anchor="${lado === "izq" ? "end" : "start"}" class="fuerte">${texto}</text>`;
   var ref = (x1, y1, x2, y2) => `<line class="ref" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`;
@@ -10607,8 +11038,8 @@ details.an-ce { margin-top: var(--e2); }
   }
   function dibujoFuego(e2, o) {
     const v2 = (x) => x == null ? "\u2014" : fmt(x, 0);
-    const dim = o ? `${sub15(e2.dimEtq, "min")} = ${v2(o.d)}` : sub15(e2.dimEtq, "min");
-    const aTxt = o && o.a != null ? `${sub15("a", "min")} = ${v2(o.a)}` : sub15("a", "min");
+    const dim = o ? `${sub16(e2.dimEtq, "min")} = ${v2(o.d)}` : sub16(e2.dimEtq, "min");
+    const aTxt = o && o.a != null ? `${sub16("a", "min")} = ${v2(o.a)}` : sub16("a", "min");
     let s = "";
     if (e2.elemento === "pilar") {
       const x = 130;
@@ -10666,7 +11097,7 @@ details.an-ce { margin-top: var(--e2); }
       s += fuego2(x - 56, y + 26, 40, 0);
       s += cotaH2(x, x + b, y + h2 + 20, dim) + ref(x, y + h2, x, y + h2 + 24) + ref(x + b, y + h2, x + b, y + h2 + 24);
       s += cotaV2(x + b + 14, y + h2 - a, y + h2, aTxt, "der") + ref(x + b - a, y + h2 - a, x + b + 18, y + h2 - a) + ref(x + b, y + h2, x + b + 18, y + h2);
-      const asd = o && o.a != null ? `${sub15("a", "sd")} = ${v2(o.a + 10)}` : sub15("a", "sd");
+      const asd = o && o.a != null ? `${sub16("a", "sd")} = ${v2(o.a + 10)}` : sub16("a", "sd");
       s += cotaH2(x, x + a, y + h2 - a - 16, asd).replace(/<text[^>]*>.*<\/text>/, `<text x="${x - 4}" y="${y + h2 - a - 12}" text-anchor="end" class="fuerte">${asd}</text>`) + ref(x + a, y + h2 - a - 20, x + a, y + h2 - a);
       s += `<text class="nota-d" x="${x + b / 2}" y="${y - (cuatro ? 14 : 32)}" text-anchor="middle">${cuatro ? t("fu.dib.cuatro") : t("fu.dib.losa")}</text>`;
     }
@@ -10674,7 +11105,7 @@ details.an-ce { margin-top: var(--e2); }
   }
 
   // src/ui/vistas/fuego.js
-  var sub16 = (a, b) => `${a}<sub>${b}</sub>`;
+  var sub17 = (a, b) => `${a}<sub>${b}</sub>`;
   var INICIAL = () => ({ elemento: "viga", R: 90, arido: "siliceo", carasPilar: 4, carasMuro: 1, carasViga: 3, eta: 0.7, portante: true, continua: false, dir: "uni", metodo: "A", n: 0.5, omega: 0.5 });
   function estado(p) {
     var _a;
@@ -10708,18 +11139,18 @@ details.an-ce { margin-top: var(--e2); }
       omega: D.omega
     };
   }
-  function datos9(ctx2, form) {
+  function datos10(ctx2, form) {
     const p = ctx2.p;
     const D = estado(p);
     const ehe = p.norma === "EHE-08" || p.norma === "EHE-98";
     const cambio = (estructura) => ctx2.cambio(estructura ? { estructura: true } : void 0);
-    const seg = (k, opciones, etq, est7 = true) => h(
+    const seg = (k, opciones, etq, est8 = true) => h(
       "div",
       { class: "fu-campo" },
       h("span", { class: "etq-grupo" }, etq),
       segmentado({ opciones, valor: D[k], ancho: true, etiqueta: etq, onCambio: (v2) => {
         D[k] = v2;
-        cambio(est7);
+        cambio(est8);
       } })
     );
     poner(form, h("div", { class: "cab" }, h("h1", {}, t("m.fuego")), h("p", {}, t("fu.subtitulo"))));
@@ -10791,7 +11222,7 @@ details.an-ce { margin-top: var(--e2); }
     tb.classList.add("fu-info");
     return h("div", { class: "fu-campo" }, h("span", { class: "etq-grupo" }, t("fu.queSon")), filasPlegables(tb, filas.map((k) => `<span>${t(`fu.i.${k}.txt`)}</span>`)));
   }
-  function resultados9(ctx2, res) {
+  function resultados10(ctx2, res) {
     const p = ctx2.p;
     const D = estado(p);
     const r = fuego(entrada(p, D));
@@ -10799,12 +11230,12 @@ details.an-ce { margin-top: var(--e2); }
     const art4 = `${ref3} \xB7 ${r.articulo} \xB7 ${t("fu.tabla")} ${r.tabla}`;
     const sinValor = r.opciones.length === 0;
     const o = r.opciones[0];
-    const etqD = sub16(r.dimEtq, "min");
+    const etqD = sub17(r.dimEtq, "min");
     const valor = sinValor ? "\u2014" : o.a == null ? `${fmt(o.d, 0)}<span class="u">${ESP}mm</span>` : `${fmt(o.d, 0)} / ${fmt(o.a, 0)}<span class="u">${ESP}mm</span>`;
     res.append(h(
       "div",
       { class: `veredicto sin-barra${sinValor ? " atencion" : ""}` },
-      h("div", { class: "ratio" }, h("span", { class: "etq", html: o?.a == null ? `${t("fu.minimo")} ${etqD}` : `${etqD} / ${sub16("a", "min")}` }), h("span", { class: "v", html: valor })),
+      h("div", { class: "ratio" }, h("span", { class: "etq", html: o?.a == null ? `${t("fu.minimo")} ${etqD}` : `${etqD} / ${sub17("a", "min")}` }), h("span", { class: "v", html: valor })),
       h("div", { class: "medidor" }, h("div", { class: "ecu", html: sinValor ? t("fu.sinValor") : `${r.crit} ${D.R} \xB7 ${r.opciones.length > 1 ? t("fu.opciones", r.opciones.length) : ""}<span class="art">${art4}</span>` })),
       h("span", {}, "")
     ));
@@ -10828,7 +11259,7 @@ details.an-ce { margin-top: var(--e2); }
     const dcha = h("article", { class: "panel tarjeta" });
     const lista = r.opciones.map((x, i) => [
       r.opciones.length > 1 ? `${t("fu.combinacion")} ${i + 1}` : t("fu.minimos"),
-      `${sub16(r.dimEtq, "min")} = <b>${fmt(x.d, 0)}</b>${x.a == null ? "" : `, ${sub16("a", "min")} = <b>${fmt(x.a, 0)}</b>`}${ESP}mm${x.geom ? ` <span class="nota">(${t("fu.geom")})</span>` : ""}${x.barras8 ? ` <span class="nota">(${t("fu.barras8")})</span>` : ""}`
+      `${sub17(r.dimEtq, "min")} = <b>${fmt(x.d, 0)}</b>${x.a == null ? "" : `, ${sub17("a", "min")} = <b>${fmt(x.a, 0)}</b>`}${ESP}mm${x.geom ? ` <span class="nota">(${t("fu.geom")})</span>` : ""}${x.barras8 ? ` <span class="nota">(${t("fu.barras8")})</span>` : ""}`
     ]);
     const ex = r.extra.map(([k, v2, u = "mm"]) => [t(k), `${v2}${ESP}${u}`]);
     poner(centro, h("h2", {}, t("fu.requisitos", `${r.crit} ${D.R}`)), sinValor ? h("p", { class: "nota" }, t("fu.sinValor")) : tabla([...lista, ...ex]));
@@ -10841,16 +11272,16 @@ details.an-ce { margin-top: var(--e2); }
     );
     res.append(h("div", { class: "cuerpo" }, centro, dcha));
   }
-  function comandos6() {
+  function comandos7() {
     return [];
   }
 
   // src/ui/vistas/anclaje.js
   var anclaje_exports = {};
   __export(anclaje_exports, {
-    comandos: () => comandos7,
-    datos: () => datos10,
-    resultados: () => resultados10
+    comandos: () => comandos8,
+    datos: () => datos11,
+    resultados: () => resultados11
   });
 
   // src/norma/anclaje.js
@@ -10941,7 +11372,7 @@ details.an-ce { margin-top: var(--e2); }
   }
 
   // src/ui/dibujoAnclaje.js
-  var sub17 = (b, s) => `${b}<tspan baseline-shift="sub" font-size="75%">${s}</tspan>`;
+  var sub18 = (b, s) => `${b}<tspan baseline-shift="sub" font-size="75%">${s}</tspan>`;
   var cotaH3 = (x1, x2, y, texto) => `<line class="cota" x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" marker-start="url(#tic)" marker-end="url(#tic)"/><text x="${(x1 + x2) / 2}" y="${y + 13}" text-anchor="middle" class="fuerte">${texto}</text>`;
   var ref2 = (x, y1, y2) => `<line class="ref" x1="${x}" y1="${y1}" x2="${x}" y2="${y2}"/>`;
   var tit = (x, y, s) => `<text class="tit" x="${x}" y="${y}">${s}</text>`;
@@ -10952,25 +11383,25 @@ details.an-ce { margin-top: var(--e2); }
     s += tit(12, 14, t("an.dib.anclaje"));
     s += `<rect class="hor" x="12" y="20" width="236" height="34"/>`;
     s += barra2("M12 37 H236") + `<circle class="barra-ac" cx="236" cy="37" r="0"/>`;
-    s += ref2(24, 54, 70) + ref2(236, 54, 70) + cotaH3(24, 236, 66, sub17("l", "bd"));
+    s += ref2(24, 54, 70) + ref2(236, 54, 70) + cotaH3(24, 236, 66, sub18("l", "bd"));
     if (!comp) {
       s += tit(12, 106, t("an.dib.gancho"));
       s += `<rect class="hor" x="12" y="112" width="236" height="52"/>`;
       s += barra2("M12 128 H200 Q216 128 216 144 V156");
-      s += ref2(24, 164, 178) + ref2(216, 164, 178) + cotaH3(24, 216, 174, sub17("l", "bd"));
+      s += ref2(24, 164, 178) + ref2(216, 164, 178) + cotaH3(24, 216, 174, sub18("l", "bd"));
     }
     const y0 = comp ? 112 : 208;
     s += tit(12, y0 - 6, t("an.dib.solapo"));
     s += `<rect class="hor" x="12" y="${y0}" width="236" height="46"/>`;
     s += barra2(`M12 ${y0 + 15} H176`) + barra2(`M84 ${y0 + 29} H248`);
     s += `<line class="cota" x1="28" y1="${y0 + 15}" x2="28" y2="${y0 + 29}" marker-start="url(#tic)" marker-end="url(#tic)"/><text x="34" y="${y0 + 26}" class="nota-d">${t("an.dib.sep")}</text>`;
-    s += ref2(84, y0 + 46, y0 + 60) + ref2(176, y0 + 46, y0 + 60) + cotaH3(84, 176, y0 + 56, sub17("l", "s"));
+    s += ref2(84, y0 + 46, y0 + 60) + ref2(176, y0 + 46, y0 + 60) + cotaH3(84, 176, y0 + 56, sub18("l", "s"));
     const alto = comp ? 190 : 288;
     return `<svg class="dib dib-anclaje" viewBox="0 0 260 ${alto}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${t("an.dib.aria")}"><defs><marker id="tic" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M2 8L8 2" class="tic"/></marker></defs>${s}</svg>`;
   }
 
   // src/ui/vistas/anclaje.js
-  var sub18 = (a, b) => `${a}<sub>${b}</sub>`;
+  var sub19 = (a, b) => `${a}<sub>${b}</sub>`;
   var INICIAL2 = () => ({ hormigon: null, acero: null, esfuerzo: "traccion", r: 100, cd: 25, pct: 100, lejos: false, via: "viga" });
   function estado2(p) {
     var _a;
@@ -10982,7 +11413,7 @@ details.an-ce { margin-top: var(--e2); }
   }
   var normaEHE = (p) => p.norma === "EHE-08" || p.norma === "EHE-98";
   var idNorma = (p) => normaEHE(p) ? "EHE-08" : p.norma;
-  function datos10(ctx2, form) {
+  function datos11(ctx2, form) {
     const p = ctx2.p;
     const D = estado2(p);
     const ehe = normaEHE(p);
@@ -10991,13 +11422,13 @@ details.an-ce { margin-top: var(--e2); }
       D[k] = v2;
       cambio();
     };
-    const seg = (k, opciones, etq, est7 = true) => h(
+    const seg = (k, opciones, etq, est8 = true) => h(
       "div",
       { class: "fu-campo" },
       h("span", { class: "etq-grupo" }, etq),
       segmentado({ opciones, valor: D[k], ancho: true, etiqueta: etq, onCambio: (v2) => {
         D[k] = v2;
-        cambio(est7);
+        cambio(est8);
       } })
     );
     poner(form, h("div", { class: "cab" }, h("h1", {}, t("m.anclaje")), h("p", {}, t("an.subtitulo"))));
@@ -11096,7 +11527,7 @@ details.an-ce { margin-top: var(--e2); }
     if (c.est) return "est.";
     return `${fmt(c.v, 0)}${c.min ? "*" : ""}${c.g ? "\u2020" : ""}`;
   };
-  function resultados10(ctx2, res) {
+  function resultados11(ctx2, res) {
     const p = ctx2.p;
     const D = estado2(p);
     const comp = D.esfuerzo === "compresion";
@@ -11196,7 +11627,7 @@ details.an-ce { margin-top: var(--e2); }
     const tb = h("div", { class: "tabla-scroll" }, h(
       "table",
       { class: "tabla-dur tabla-an" },
-      h("thead", {}, h("tr", {}, h("th", { html: "\xF8" }), h("th", { html: `${sub18("l", "bd")} I` }), h("th", { html: `${sub18("l", "bd")} II` }), h("th", { html: `${sub18("l", "s")} I` }), h("th", { html: `${sub18("l", "s")} II` }))),
+      h("thead", {}, h("tr", {}, h("th", { html: "\xF8" }), h("th", { html: `${sub19("l", "bd")} I` }), h("th", { html: `${sub19("l", "bd")} II` }), h("th", { html: `${sub19("l", "s")} I` }), h("th", { html: `${sub19("l", "s")} II` }))),
       h("tbody", {}, ...ce.map((x) => h("tr", {}, h("th", { scope: "row" }, String(x.phi)), c(x.lI, x.maI), c(x.lII, x.maII), c(x.sI, x.msI), c(x.sII, x.msII))))
     ));
     return h(
@@ -11206,18 +11637,18 @@ details.an-ce { margin-top: var(--e2); }
       h("div", { class: "cuenta" }, h("p", { class: "nota", html: t("an.ce.txt") }), h("p", { class: `nota${mas ? " an-mas" : ""}`, html: mas ? t("an.ce.mas", mas) : t("an.ce.igual") }), tb)
     );
   }
-  function comandos7() {
+  function comandos8() {
     return [];
   }
 
   // src/ui/vistas/cortante.js
   var cortante_exports = {};
   __export(cortante_exports, {
-    cabeza: () => cabeza3,
-    comandos: () => comandos8,
-    datos: () => datos11,
-    reiniciar: () => reiniciar5,
-    resultados: () => resultados11
+    cabeza: () => cabeza4,
+    comandos: () => comandos9,
+    datos: () => datos12,
+    reiniciar: () => reiniciar6,
+    resultados: () => resultados12
   });
 
   // src/norma/cortante/ehe08.js
@@ -11915,7 +12346,7 @@ details.an-ce { margin-top: var(--e2); }
   }
 
   // src/ui/vistas/cortante.js
-  var est5 = {
+  var est6 = {
     i: null,
     modo: "comprobar",
     signo: 1,
@@ -11936,10 +12367,10 @@ details.an-ce { margin-top: var(--e2); }
     ov: { b0: null, d: null, Asl: null, Asc: null },
     abiertos: /* @__PURE__ */ new Set()
   };
-  function reiniciar5() {
-    est5.i = null;
-    est5.ov = { b0: null, d: null, Asl: null, Asc: null };
-    est5.aceroCercos = null;
+  function reiniciar6() {
+    est6.i = null;
+    est6.ov = { b0: null, d: null, Asl: null, Asc: null };
+    est6.aceroCercos = null;
   }
   var RAD = Math.PI / 180;
   var thetaDe2 = (cot4) => Math.atan(1 / cot4) / RAD;
@@ -11947,8 +12378,8 @@ details.an-ce { margin-top: var(--e2); }
     min: Math.ceil(+(Math.atan(1 / rg.max) / RAD).toFixed(6) * 10) / 10,
     max: Math.floor(+(Math.atan(1 / rg.min) / RAD).toFixed(6) * 10) / 10
   });
-  var FORMAS2 = ["rectangular", "T", "pilar", "circular"];
-  var secciones = (p) => p.secciones.map((s, i) => [s, i]).filter(([s]) => FORMAS2.includes(s.forma));
+  var FORMAS3 = ["rectangular", "T", "pilar", "circular"];
+  var secciones = (p) => p.secciones.map((s, i) => [s, i]).filter(([s]) => FORMAS3.includes(s.forma));
   var esViga2 = (s) => s.forma === "rectangular" || s.forma === "T";
   var diametrosEntrada = () => serieDiametros().filter((x) => x >= 6 && x <= 25);
   var diametrosTabla = () => serieDiametros().filter((x) => x >= 8 && x <= 20);
@@ -11956,18 +12387,18 @@ details.an-ce { margin-top: var(--e2); }
   var esEC2 = (p) => nuc(p)?.id === "EC2-2004" || nuc(p)?.id === "EC2-2023";
   var es23 = (p) => nuc(p)?.id === "EC2-2023";
   function efectivos(p, s) {
-    const sec = datosCortante(p, s, { signo: est5.signo, dir: est5.dir });
+    const sec = datosCortante(p, s, { signo: est6.signo, dir: est6.dir });
     const ef = {
-      b0: est5.ov.b0 ?? sec.b0,
-      d: est5.ov.d ?? sec.d,
-      Asl: est5.ov.Asl ?? sec.Asl,
-      Asc: est5.ov.Asc ?? sec.Asc
+      b0: est6.ov.b0 ?? sec.b0,
+      d: est6.ov.d ?? sec.d,
+      Asl: est6.ov.Asl ?? sec.Asl,
+      Asc: est6.ov.Asc ?? sec.Asc
     };
     return { sec, ef };
   }
   function cambiaSeccion(ctx2) {
-    est5.ov = { b0: null, d: null, Asl: null, Asc: null };
-    est5.aceroCercos = null;
+    est6.ov = { b0: null, d: null, Asl: null, Asc: null };
+    est6.aceroCercos = null;
     ctx2.pintar();
   }
   function calculado(c) {
@@ -11977,29 +12408,29 @@ details.an-ce { margin-top: var(--e2); }
     c.classList.add("calculado");
     return c;
   }
-  function activa(p) {
+  function activa2(p) {
     const R = secciones(p);
     if (!R.length) return null;
-    if (!R.some(([, i]) => i === est5.i)) {
-      est5.i = R[0][1];
-      est5.ov = { b0: null, d: null, Asl: null, Asc: null };
+    if (!R.some(([, i]) => i === est6.i)) {
+      est6.i = R[0][1];
+      est6.ov = { b0: null, d: null, Asl: null, Asc: null };
     }
-    return p.secciones[est5.i];
+    return p.secciones[est6.i];
   }
-  function cabeza3(ctx2, el) {
+  function cabeza4(ctx2, el) {
     const p = ctx2.p;
     if (!nuc(p)) return;
-    const s = activa(p);
+    const s = activa2(p);
     if (!s) return;
-    selectorSecciones(ctx2, el, { formas: FORMAS2, activa: s, alElegir: (nombre) => {
+    selectorSecciones(ctx2, el, { formas: FORMAS3, activa: s, alElegir: (nombre) => {
       const i = p.secciones.findIndex((x) => x.nombre === nombre);
       if (i >= 0) {
-        est5.i = i;
+        est6.i = i;
         cambiaSeccion(ctx2);
       }
     } });
   }
-  function datos11(ctx2, form) {
+  function datos12(ctx2, form) {
     const p = ctx2.p;
     poner(form, h("div", { class: "cab" }, h("h1", {}, t("m.cortante"))));
     if (!nuc(p)) {
@@ -12018,7 +12449,7 @@ details.an-ce { margin-top: var(--e2); }
     }
     const R = secciones(p);
     if (!R.length) return poner(form, aviso(t("cor.sinSec"), "info"));
-    const s = activa(p);
+    const s = activa2(p);
     let ef;
     let sec;
     try {
@@ -12026,7 +12457,7 @@ details.an-ce { margin-top: var(--e2); }
     } catch (e2) {
       return poner(form, aviso(String(e2.message ?? e2), "error"));
     }
-    const comp = est5.modo === "comprobar";
+    const comp = est6.modo === "comprobar";
     const cambio = () => ctx2.cambio();
     const refrescar = () => {
       const rho = ef.Asl / (ef.b0 * ef.d);
@@ -12036,7 +12467,7 @@ details.an-ce { margin-top: var(--e2); }
       if (b && document.activeElement !== b) b.value = String(Math.round(ef.Asl * 1e6));
     };
     const nuevo2 = (k) => (v2) => {
-      est5.ov[k] = v2;
+      est6.ov[k] = v2;
       ef[k] = v2;
       refrescar();
       cambio();
@@ -12047,13 +12478,13 @@ details.an-ce { margin-top: var(--e2); }
     const e23 = es23(p);
     const rg = ajustaCot(p, s, sec, ef);
     const LT = limitesTheta(rg);
-    const gauge = h("input", { type: "range", class: "desliza-sec", min: LT.min, max: LT.max, step: 0.1, value: thetaDe2(est5.cot), "aria-label": t("cor.theta") });
+    const gauge = h("input", { type: "range", class: "desliza-sec", min: LT.min, max: LT.max, step: 0.1, value: thetaDe2(est6.cot), "aria-label": t("cor.theta") });
     const refrescarGauge = () => {
-      gauge.value = thetaDe2(est5.cot);
+      gauge.value = thetaDe2(est6.cot);
     };
     gauge.addEventListener("input", () => {
       const v2 = Number(gauge.value);
-      est5.cot = 1 / Math.tan(v2 * RAD);
+      est6.cot = 1 / Math.tan(v2 * RAD);
       const c = document.getElementById("c-theta");
       if (c) c.value = String(+v2.toFixed(1));
       cambio();
@@ -12061,31 +12492,31 @@ details.an-ce { margin-top: var(--e2); }
     const conEtq = (etq, c) => h("div", { class: "fu-campo" }, h("span", { class: "etq-grupo", html: etq }), c);
     poner(
       form,
-      segmentado({ ancho: true, etiqueta: t("flex.modo"), opciones: [["comprobar", t("comprobar")], ["dimensionar", t("dimensionar")]], valor: est5.modo, onCambio: (m) => {
-        est5.modo = m;
+      segmentado({ ancho: true, etiqueta: t("flex.modo"), opciones: [["comprobar", t("comprobar")], ["dimensionar", t("dimensionar")]], valor: est6.modo, onCambio: (m) => {
+        est6.modo = m;
         ctx2.pintar();
       } }),
-      esViga2(s) ? conEtq(t("cor.signo"), segmentado({ ancho: true, etiqueta: t("cor.signo"), opciones: [["1", t("flex.positivo")], ["-1", t("flex.negativo")]], valor: String(est5.signo), onCambio: (v2) => {
-        est5.signo = Number(v2);
+      esViga2(s) ? conEtq(t("cor.signo"), segmentado({ ancho: true, etiqueta: t("cor.signo"), opciones: [["1", t("flex.positivo")], ["-1", t("flex.negativo")]], valor: String(est6.signo), onCambio: (v2) => {
+        est6.signo = Number(v2);
         cambiaSeccion(ctx2);
       } })) : null,
-      s.forma === "pilar" ? conEtq(t("cor.dir"), segmentado({ ancho: true, etiqueta: t("cor.dir"), opciones: [["h", t("cor.dirH")], ["b", t("cor.dirB")]], valor: est5.dir, onCambio: (v2) => {
-        est5.dir = v2;
+      s.forma === "pilar" ? conEtq(t("cor.dir"), segmentado({ ancho: true, etiqueta: t("cor.dir"), opciones: [["h", t("cor.dirH")], ["b", t("cor.dirB")]], valor: est6.dir, onCambio: (v2) => {
+        est6.dir = v2;
         cambiaSeccion(ctx2);
       } })) : null,
       grupo(
         t("g.esfuerzo"),
         ...parejas([
-          campoNum({ id: "c-ved", etq: t("cor.VEd"), valor: est5.VEd, mag: "N", paso: 10, min: 0.01, max: 1e6, nombre: t("cor.VEdNombre"), onCambio: (v2) => {
-            est5.VEd = v2;
+          campoNum({ id: "c-ved", etq: t("cor.VEd"), valor: est6.VEd, mag: "N", paso: 10, min: 0.01, max: 1e6, nombre: t("cor.VEdNombre"), onCambio: (v2) => {
+            est6.VEd = v2;
             cambio();
           } }),
-          campoNum({ id: "c-ned", etq: t("cor.NEd"), ref: t("cor.NEdRef"), valor: est5.NEd, mag: "N", paso: 10, min: -1e6, max: 1e6, ayuda: t("cor.NEdNota"), onCambio: (v2) => {
-            est5.NEd = v2;
+          campoNum({ id: "c-ned", etq: t("cor.NEd"), ref: t("cor.NEdRef"), valor: est6.NEd, mag: "N", paso: 10, min: -1e6, max: 1e6, ayuda: t("cor.NEdNota"), onCambio: (v2) => {
+            est6.NEd = v2;
             cambio();
           } }),
-          e23 ? campoNum({ id: "c-med", etq: t("cor.MEd"), valor: est5.MEd, mag: "M", paso: 10, min: 0, max: 1e7, ayuda: t("cor.MEdAyuda"), onCambio: (v2) => {
-            est5.MEd = v2;
+          e23 ? campoNum({ id: "c-med", etq: t("cor.MEd"), valor: est6.MEd, mag: "M", paso: 10, min: 0, max: 1e7, ayuda: t("cor.MEdAyuda"), onCambio: (v2) => {
+            est6.MEd = v2;
             cambio();
           } }) : null
         ]),
@@ -12099,50 +12530,50 @@ details.an-ce { margin-top: var(--e2); }
           mostrar(campoNum({ id: "c-asl", etq: t("cor.Asl"), valor: ef.Asl, mag: "As", paso: 50, min: 0, max: 1, ayuda: t("cor.AslAyuda"), onCambio: nuevo2("Asl") }), ef.Asl * 1e6, 0),
           calculado(mostrar(campoNum({ id: "c-rho", etq: t("cor.rho"), valor: rho0, mag: "cuantia", paso: 1, min: 0, max: 1, ayuda: t("cor.rhoAyuda"), onCambio: () => {
           } }), rho0 * 1e3, 2)),
-          e23 && (!comp || est5.sin) ? campoNum({ id: "c-dlow", etq: t("cor.Dlower"), valor: est5.Dlower, mag: "diam", paso: 2, min: 4, max: 63, ayuda: t("cor.DlowerAyuda"), onCambio: (v2) => {
-            est5.Dlower = v2;
+          e23 && (!comp || est6.sin) ? campoNum({ id: "c-dlow", etq: t("cor.Dlower"), valor: est6.Dlower, mag: "diam", paso: 2, min: 4, max: 63, ayuda: t("cor.DlowerAyuda"), onCambio: (v2) => {
+            est6.Dlower = v2;
             cambio();
           } }) : null,
-          ec ? null : campoNum({ id: "c-sigy", etq: t("cor.sigY"), ref: t("cor.sigYRef"), valor: est5.sigY, mag: "tension", paso: 0.5, min: -50, max: 50, ayuda: t("cor.sigYAyuda"), onCambio: (v2) => {
-            est5.sigY = v2;
+          ec ? null : campoNum({ id: "c-sigy", etq: t("cor.sigY"), ref: t("cor.sigYRef"), valor: est6.sigY, mag: "tension", paso: 0.5, min: -50, max: 50, ayuda: t("cor.sigYAyuda"), onCambio: (v2) => {
+            est6.sigY = v2;
             cambio();
           } }),
           pilarOCirc && !ec ? mostrar(campoNum({ id: "c-asc", etq: t("cor.Asc"), valor: ef.Asc, mag: "As", paso: 50, min: 0, max: 1, ayuda: t("cor.AscAyuda"), onCambio: nuevo2("Asc") }), ef.Asc * 1e6, 0) : null
         ]),
-        sec.circular && (!ec || e23) ? conEtq(t(e23 ? "cor.circ23" : "cor.circ"), segmentado({ opciones: [["si", e23 ? "b<sub>w</sub>/D<sub>h</sub>" : "\xD7 0,85"], ["no", t("cor.sinReduccion")]], valor: est5.circ ? "si" : "no", ancho: true, etiqueta: t("cor.circ"), onCambio: (v2) => {
-          est5.circ = v2 === "si";
+        sec.circular && (!ec || e23) ? conEtq(t(e23 ? "cor.circ23" : "cor.circ"), segmentado({ opciones: [["si", e23 ? "b<sub>w</sub>/D<sub>h</sub>" : "\xD7 0,85"], ["no", t("cor.sinReduccion")]], valor: est6.circ ? "si" : "no", ancho: true, etiqueta: t("cor.circ"), onCambio: (v2) => {
+          est6.circ = v2 === "si";
           ctx2.pintar();
         } })) : null
       ),
       grupo(
         t("cor.cercos"),
-        comp ? segmentado({ ancho: true, etiqueta: t("cor.cercos"), opciones: [["con", t("cor.conArm")], ["sin", t("cor.sinArm")]], valor: est5.sin ? "sin" : "con", onCambio: (v2) => {
-          est5.sin = v2 === "sin";
+        comp ? segmentado({ ancho: true, etiqueta: t("cor.cercos"), opciones: [["con", t("cor.conArm")], ["sin", t("cor.sinArm")]], valor: est6.sin ? "sin" : "con", onCambio: (v2) => {
+          est6.sin = v2 === "sin";
           ctx2.pintar();
         } }) : null,
         ...parejas([
-          selector({ id: "c-acero", etq: t("cor.cercosAcero"), linea: true, opciones: p.aceros.map((m) => [m.nombre, m.nombre]), valor: est5.aceroCercos ?? s.acero, onCambio: (v2) => {
-            est5.aceroCercos = v2;
+          selector({ id: "c-acero", etq: t("cor.cercosAcero"), linea: true, opciones: p.aceros.map((m) => [m.nombre, m.nombre]), valor: est6.aceroCercos ?? s.acero, onCambio: (v2) => {
+            est6.aceroCercos = v2;
             cambio();
           } }),
-          comp && !est5.sin ? selector({ id: "c-fi", etq: t("cor.fi"), linea: true, opciones: diametrosEntrada().map((x) => [String(x), `\xF8${x}`]), valor: String(est5.fi), onCambio: (v2) => {
-            est5.fi = Number(v2);
+          comp && !est6.sin ? selector({ id: "c-fi", etq: t("cor.fi"), linea: true, opciones: diametrosEntrada().map((x) => [String(x), `\xF8${x}`]), valor: String(est6.fi), onCambio: (v2) => {
+            est6.fi = Number(v2);
             cambio();
           } }) : null,
-          comp && !est5.sin ? selector({ id: "c-ramas", etq: t("cor.ramas"), linea: true, opciones: [2, 3, 4, 6].map((x) => [String(x), String(x)]), valor: String(est5.ramas), onCambio: (v2) => {
-            est5.ramas = Number(v2);
+          comp && !est6.sin ? selector({ id: "c-ramas", etq: t("cor.ramas"), linea: true, opciones: [2, 3, 4, 6].map((x) => [String(x), String(x)]), valor: String(est6.ramas), onCambio: (v2) => {
+            est6.ramas = Number(v2);
             cambio();
           } }) : null,
-          comp && !est5.sin ? campoNum({ id: "c-s", etq: t("cor.s"), valor: est5.s, mag: "diam", paso: 25, min: 25, max: 1e3, onCambio: (v2) => {
-            est5.s = v2;
+          comp && !est6.sin ? campoNum({ id: "c-s", etq: t("cor.s"), valor: est6.s, mag: "diam", paso: 25, min: 25, max: 1e3, onCambio: (v2) => {
+            est6.s = v2;
             cambio();
           } }) : null,
-          !est5.sin ? campoNum({ id: "c-alfa", etq: t("cor.alfa"), ref: t("cor.alfaRef"), valor: est5.alfa, mag: "ang", paso: 5, min: 45, max: 90, onCambio: (v2) => {
-            est5.alfa = v2;
+          !est6.sin ? campoNum({ id: "c-alfa", etq: t("cor.alfa"), ref: t("cor.alfaRef"), valor: est6.alfa, mag: "ang", paso: 5, min: 45, max: 90, onCambio: (v2) => {
+            est6.alfa = v2;
             cambio();
           } }) : null,
-          campoNum({ id: "c-theta", etq: t("cor.theta"), valor: thetaDe2(est5.cot), mag: "ang1", paso: 1, min: LT.min, max: LT.max, ayuda: t("cor.cotAyuda"), onCambio: (v2) => {
-            est5.cot = 1 / Math.tan(v2 * RAD);
+          campoNum({ id: "c-theta", etq: t("cor.theta"), valor: thetaDe2(est6.cot), mag: "ang1", paso: 1, min: LT.min, max: LT.max, ayuda: t("cor.cotAyuda"), onCambio: (v2) => {
+            est6.cot = 1 / Math.tan(v2 * RAD);
             cambio();
             refrescarGauge();
           } })
@@ -12152,9 +12583,9 @@ details.an-ce { margin-top: var(--e2); }
           try {
             const { sec: s2, ef: e2 } = efectivos(p, s);
             const base2 = entrada2(p, s, s2, e2);
-            est5.cot = nuc(p).cotOptimo(base2, { VEd: est5.VEd, dim: !comp });
+            est6.cot = nuc(p).cotOptimo(base2, { VEd: est6.VEd, dim: !comp });
             ctx2.pintar();
-            ctx2.avisar(t("cor.optimoPuesto", fmt(thetaDe2(est5.cot), 1)));
+            ctx2.avisar(t("cor.optimoPuesto", fmt(thetaDe2(est6.cot), 1)));
           } catch (e2) {
             ctx2.avisar(String(e2.message ?? e2));
           }
@@ -12163,7 +12594,7 @@ details.an-ce { margin-top: var(--e2); }
     );
   }
   function entrada2(p, s, sec, ef) {
-    const acero2 = p.aceros.find((m) => m.nombre === (est5.aceroCercos ?? s.acero)) ?? p.aceros[0];
+    const acero2 = p.aceros.find((m) => m.nombre === (est6.aceroCercos ?? s.acero)) ?? p.aceros[0];
     return {
       fck: sec.fck,
       fykCercos: acero2.fyk,
@@ -12173,21 +12604,21 @@ details.an-ce { margin-top: var(--e2); }
       Ac: sec.Ac * 1e6,
       Asl: ef.Asl * 1e6,
       Asc: ef.Asc * 1e6,
-      NEd: est5.NEd,
-      sigY: est5.sigY,
-      cotTheta: est5.cot,
-      alfa: est5.alfa,
-      circular: sec.circular && est5.circ,
-      MEd: est5.MEd,
-      Dlower: est5.Dlower,
+      NEd: est6.NEd,
+      sigY: est6.sigY,
+      cotTheta: est6.cot,
+      alfa: est6.alfa,
+      circular: sec.circular && est6.circ,
+      MEd: est6.MEd,
+      Dlower: est6.Dlower,
       ductilidad: acero2.ductilidad ?? aceroTipificado(acero2.nombre)?.ductilidad ?? "B",
       Dh: sec.circular ? (sec.h - 2 * (sec.r ?? 0)) * 1e3 : null
     };
   }
   function ajustaCot(p, s, sec, ef) {
-    const rg = nuc(p).rangoCot(entrada2(p, s, sec, ef), est5.VEd);
-    if (est5.cot < rg.min) est5.cot = rg.min;
-    if (est5.cot > rg.max) est5.cot = rg.max;
+    const rg = nuc(p).rangoCot(entrada2(p, s, sec, ef), est6.VEd);
+    if (est6.cot < rg.min) est6.cot = rg.min;
+    if (est6.cot > rg.max) est6.cot = rg.max;
     return rg;
   }
   var mostrar = (c, v2, d) => {
@@ -12204,7 +12635,7 @@ details.an-ce { margin-top: var(--e2); }
   var fila2 = (id, nom, val, cuenta) => ({ id, nom, val, cuenta });
   var refNorma = "EHE-08";
   var art3 = (a) => `<span class="art">${refNorma} \xB7 ${a}</span>`;
-  function resultados11(ctx2, res) {
+  function resultados12(ctx2, res) {
     var _a;
     const p = ctx2.p;
     const centro = h("article", { class: "panel tarjeta" });
@@ -12213,8 +12644,8 @@ details.an-ce { margin-top: var(--e2); }
       res.append(h("div", { class: "cuerpo" }, centro, dcha));
       return;
     }
-    const s = p.secciones[est5.i];
-    if (!s || !FORMAS2.includes(s.forma)) return;
+    const s = p.secciones[est6.i];
+    if (!s || !FORMAS3.includes(s.forma)) return;
     const N = nuc(p);
     const ec = esEC2(p);
     const e23 = es23(p);
@@ -12222,28 +12653,28 @@ details.an-ce { margin-top: var(--e2); }
     const { sec, ef } = efectivos(p, s);
     ajustaCot(p, s, sec, ef);
     const x = entrada2(p, s, sec, ef);
-    const comp = est5.modo === "comprobar";
-    const AswS = comp && !est5.sin ? AswSDe(est5.fi, est5.ramas, est5.s) : 0;
-    const r = comp ? N.comprobar({ ...x, AswS, sinArmadura: est5.sin, VEd: est5.VEd }) : N.dimensionar(x, est5.VEd, { diametros: diametrosTabla() });
+    const comp = est6.modo === "comprobar";
+    const AswS = comp && !est6.sin ? AswSDe(est6.fi, est6.ramas, est6.s) : 0;
+    const r = comp ? N.comprobar({ ...x, AswS, sinArmadura: est6.sin, VEd: est6.VEd }) : N.dimensionar(x, est6.VEd, { diametros: diametrosTabla() });
     const P = r.P;
     const avisos = r.avisos.filter((a) => a.clave !== "cor.av.fyd400").map((a) => aviso(t(a.clave, ...a.args ?? [])));
     (_a = p.calculos).cortante ?? (_a.cortante = {});
     p.calculos.cortante[s.nombre] = {
-      modo: est5.modo,
+      modo: est6.modo,
       norma: p.norma,
       fecha: (/* @__PURE__ */ new Date()).toISOString().slice(0, 10),
-      VEd: est5.VEd,
-      NEd: est5.NEd,
-      cotTheta: est5.cot,
-      alfa: est5.alfa,
+      VEd: est6.VEd,
+      NEd: est6.NEd,
+      cotTheta: est6.cot,
+      alfa: est6.alfa,
       resultado: comp ? { Vu1: r.Vu1, Vu2: r.Vu2, Vcu: r.Vcu, Vsu: r.Vsu, Vu: r.Vu } : { caso: r.caso, AswS: r.AswS, Vu1: r.Vu1 }
     };
     if (comp) {
-      const ok = est5.VEd <= r.Vu + 1e-9;
-      const sepOk = r.sinArmadura || est5.s <= r.sep + 1e-9;
+      const ok = est6.VEd <= r.Vu + 1e-9;
+      const sepOk = r.sinArmadura || est6.s <= r.sep + 1e-9;
       const minOk = r.sinArmadura || r.minima.ok;
       const detalles = ok && (!sepOk || !minOk);
-      if (!r.sinArmadura && !sepOk) avisos.push(aviso(t("cor.avs.sep", fmt(est5.s, 0), fmt(r.sep, 0), e23 ? "Tabla 12.1" : ec ? "9.2.2(6)" : "44.2.3.4.1")));
+      if (!r.sinArmadura && !sepOk) avisos.push(aviso(t("cor.avs.sep", fmt(est6.s, 0), fmt(r.sep, 0), e23 ? "Tabla 12.1" : ec ? "9.2.2(6)" : "44.2.3.4.1")));
       const P0 = ec ? "cor.ec.manda." : "cor.manda.";
       const manda = r.sinArmadura ? t(`${P0}sin`) : r.mandaBiela ? t(`${P0}biela`) : t(`${P0}arm`);
       res.append(veredicto(
@@ -12251,23 +12682,23 @@ details.an-ce { margin-top: var(--e2); }
         !ok ? t("cor.ver.no") : detalles ? t("cor.ver.revisar") : t("cor.ver.cumple"),
         t("aprovechamiento"),
         fmt(r.aprov, 2),
-        t(ec ? "cor.ec.ver.ecu" : "cor.ver.ecu", q(est5.VEd, "N"), q(r.Vu, "N"), ok, manda),
+        t(ec ? "cor.ec.ver.ecu" : "cor.ver.ecu", q(est6.VEd, "N"), q(r.Vu, "N"), ok, manda),
         Math.min(r.aprov / 1.25, 1)
       ));
     } else if (r.caso === "biela") {
-      res.append(veredicto("nocumple", t("cor.ver.aum"), t("cor.armNec"), "\u2014", t(ec ? "cor.ec.ver.necAum" : "cor.ver.necAum", q(est5.VEd, "N"), q(r.Vu1, "N"))));
+      res.append(veredicto("nocumple", t("cor.ver.aum"), t("cor.armNec"), "\u2014", t(ec ? "cor.ec.ver.necAum" : "cor.ver.necAum", q(est6.VEd, "N"), q(r.Vu1, "N"))));
     } else {
       res.append(veredicto(
         r.caso === "minima" ? "atencion" : "cumple",
         r.caso === "minima" ? t("cor.ver.min") : t("cor.ver.valida"),
         t("cor.armNec"),
         qh(r.AswS, "AswS"),
-        t(ec ? "cor.ec.ver.nec" : "cor.ver.nec", q(est5.VEd, "N"), q(r.Vu1, "N"))
+        t(ec ? "cor.ec.ver.nec" : "cor.ver.nec", q(est6.VEd, "N"), q(r.Vu1, "N"))
       ));
     }
     if (avisos.length) res.append(h("div", { class: "avisos" }, ...avisos));
     const geo = geometriaDe(p, s);
-    const lienzo = h("div", { class: "lienzo", html: dibujoCortante(geo, s, { b0: ef.b0, d: ef.d, z: P.z / 1e3, cotTheta: est5.cot, alfa: est5.alfa, neg: esViga2(s) && est5.signo < 0, sinArmadura: comp && est5.sin }) });
+    const lienzo = h("div", { class: "lienzo", html: dibujoCortante(geo, s, { b0: ef.b0, d: ef.d, z: P.z / 1e3, cotTheta: est6.cot, alfa: est6.alfa, neg: esViga2(s) && est6.signo < 0, sinArmadura: comp && est6.sin }) });
     poner(centro, h("h2", {}, t("cor.t.dibujo")), lienzo, notas(sec.circular, P, e23 ? "e23" : ec));
     const cif = ec ? cifrasEC2(r, comp, P) : comp ? r.sinArmadura ? [[t("cor.c.Vu2"), qh(r.Vu2, "N")], [t("cor.rho"), `${fmt(P.rho * 1e3, 1)}<span class="u">${ESP}\u2030</span>`]] : [[t("cor.c.Vu1"), qh(r.Vu1, "N")], [t("cor.c.Vu2"), qh(r.Vu2, "N")], [`${t("cor.c.Vcu")} + ${t("cor.c.Vsu")}`, `${fmt(r.Vcu, 0)} + ${fmt(r.Vsu, 0)}<span class="u">${ESP}kN</span>`], [`\u03B8 \xB7 \u03B2`, `${fmt(r.theta, 1)}\xB0 \xB7 ${fmt(r.beta, 2)}`]] : [[t("cor.c.Vu1"), qh(r.Vu1, "N")], [t("cor.c.Vcu"), qh(r.Vcu, "N")], [t("cor.armNec"), qh(r.AswSNec, "AswS")], [t("cor.c.Asw") + " m\xEDn.", qh(r.AswSMin, "AswS")]];
     poner(dcha, h("h2", {}, t("cor.t.res")), cifras(cif));
@@ -12278,11 +12709,11 @@ details.an-ce { margin-top: var(--e2); }
     poner(dcha, h("div", { class: "traza" }, ...trazas(p, r, { ...x, AswS }, comp, ef).map((f) => {
       const det = h(
         "details",
-        { "data-ref": f.id, open: est5.abiertos.has(f.id) },
+        { "data-ref": f.id, open: est6.abiertos.has(f.id) },
         h("summary", {}, h("span", { class: "nom", html: f.nom }), h("span", { class: "val", html: f.val })),
         h("div", { class: "cuenta", html: f.cuenta })
       );
-      det.addEventListener("toggle", () => det.open ? est5.abiertos.add(f.id) : est5.abiertos.delete(f.id));
+      det.addEventListener("toggle", () => det.open ? est6.abiertos.add(f.id) : est6.abiertos.delete(f.id));
       return det;
     })));
     res.append(h("div", { class: "cuerpo" }, centro, dcha));
@@ -12334,8 +12765,8 @@ details.an-ce { margin-top: var(--e2); }
       f.push(fila2(
         "sep",
         t("cor.r.sep"),
-        r.sinArmadura ? "\u2014" : `${fmt(est5.s, 0)} \u2264 ${fmt(r.sep, 0)} mm`,
-        `<span class="f">${t("cor.ec.f.sep")}</span><span class="n">V<sub>Ed</sub> = ${n1(est5.VEd, 0)} kN \u2192 s<sub>l,m\xE1x</sub> \u2264 ${n1(r.sep, 0)} mm \xB7 ${t("cor.avs.trans", n1(r.sepTrans, 0))}</span>${art3("AN 9.2.2(6), (8)")}`
+        r.sinArmadura ? "\u2014" : `${fmt(est6.s, 0)} \u2264 ${fmt(r.sep, 0)} mm`,
+        `<span class="f">${t("cor.ec.f.sep")}</span><span class="n">V<sub>Ed</sub> = ${n1(est6.VEd, 0)} kN \u2192 s<sub>l,m\xE1x</sub> \u2264 ${n1(r.sep, 0)} mm \xB7 ${t("cor.avs.trans", n1(r.sepTrans, 0))}</span>${art3("AN 9.2.2(6), (8)")}`
       ));
       f.push(fila2(
         "long",
@@ -12390,7 +12821,7 @@ details.an-ce { margin-top: var(--e2); }
       f.push(fila2(
         "sep",
         t("cor.r.sep"),
-        r.sinArmadura ? "\u2014" : `${fmt(est5.s, 0)} \u2264 ${fmt(r.sep, 0)} mm`,
+        r.sinArmadura ? "\u2014" : `${fmt(est6.s, 0)} \u2264 ${fmt(r.sep, 0)} mm`,
         `<span class="f">${t("cor.e3.f.sep")}</span><span class="n">s<sub>l,m\xE1x</sub> \u2264 ${n1(r.sep, 0)} mm \xB7 ${t("cor.avs.trans", n1(r.sepTrans, 0))}</span>${art3("Tabla 12.1")}`
       ));
       f.push(longitudinal23(r));
@@ -12445,8 +12876,8 @@ details.an-ce { margin-top: var(--e2); }
       f.push(fila2(
         "sep",
         t("cor.r.sep"),
-        r.sinArmadura ? "\u2014" : `${fmt(est5.s, 0)} \u2264 ${fmt(r.sep, 0)} mm`,
-        `<span class="f">${t("cor.f.sep")}</span><span class="n">V<sub>Ed</sub> = ${n1(est5.VEd, 0)} kN \xB7 V<sub>u1</sub> = ${n1(r.Vu1, 0)} kN \u2192 s<sub>t</sub> \u2264 ${n1(r.sep, 0)} mm \xB7 ${t("cor.avs.trans", n1(r.sepTrans, 0))}</span>${art3("44.2.3.4.1")}`
+        r.sinArmadura ? "\u2014" : `${fmt(est6.s, 0)} \u2264 ${fmt(r.sep, 0)} mm`,
+        `<span class="f">${t("cor.f.sep")}</span><span class="n">V<sub>Ed</sub> = ${n1(est6.VEd, 0)} kN \xB7 V<sub>u1</sub> = ${n1(r.Vu1, 0)} kN \u2192 s<sub>t</sub> \u2264 ${n1(r.sep, 0)} mm \xB7 ${t("cor.avs.trans", n1(r.sepTrans, 0))}</span>${art3("44.2.3.4.1")}`
       ));
       f.push(fila2(
         "long",
@@ -12476,14 +12907,14 @@ details.an-ce { margin-top: var(--e2); }
       ...claves.map(([k, v2]) => h("details", { class: "pleg" }, h("summary", {}, h("span", { html: t(k) })), h("div", { class: "cuenta" }, h("p", { class: "nota", html: t(v2, fmt(P.fydLibre, 1)) }))))
     );
   }
-  function comandos8(ctx2) {
+  function comandos9(ctx2) {
     return [
       { k: "cor.cmdComprobar", b: "cortante comprobar shear check", f: () => {
-        est5.modo = "comprobar";
+        est6.modo = "comprobar";
         ctx2.ir("cortante");
       } },
       { k: "cor.cmdDimensionar", b: "cortante dimensionar shear design", f: () => {
-        est5.modo = "dimensionar";
+        est6.modo = "dimensionar";
         ctx2.ir("cortante");
       } }
     ];
@@ -12492,9 +12923,9 @@ details.an-ce { margin-top: var(--e2); }
   // src/ui/vistas/vigas.js
   var vigas_exports = {};
   __export(vigas_exports, {
-    datos: () => datos12,
-    reiniciar: () => reiniciar6,
-    resultados: () => resultados12
+    datos: () => datos13,
+    reiniciar: () => reiniciar7,
+    resultados: () => resultados13
   });
 
   // src/core/vigas.js
@@ -12857,9 +13288,9 @@ details.an-ce { margin-top: var(--e2); }
   }
 
   // src/ui/vistas/vigas.js
-  var sub19 = (a, b) => `${a}<sub>${b}</sub>`;
+  var sub20 = (a, b) => `${a}<sub>${b}</sub>`;
   var num3 = (x) => String(+Number(x).toFixed(4));
-  var nv = (txt) => leerNumero(txt);
+  var nv2 = (txt) => leerNumero(txt);
   var INICIAL3 = () => ({ L: 6, izq: "apoyo", der: "apoyo", sec: null, EI: 48e3, cargas: [{ tipo: "distribuida", a: 0, b: 6, q1: 20, q2: 20 }] });
   function datosVigas(p) {
     var _a;
@@ -12875,7 +13306,7 @@ details.an-ce { margin-top: var(--e2); }
     return Math.round(hormigon2.E * bruta(geometriaDe(p, s)).Ix);
   }
   var APOYOS = ["apoyo", "empotramiento", "libre"];
-  function datos12(ctx2, form) {
+  function datos13(ctx2, form) {
     const p = ctx2.p;
     const D = datosVigas(p);
     const cambio = () => ctx2.cambio();
@@ -12886,7 +13317,7 @@ details.an-ce { margin-top: var(--e2); }
     };
     const numeros = (...cols) => cols.map((c) => ({ ...c, num: true }));
     const posicion = (txt) => {
-      const v2 = nv(txt);
+      const v2 = nv2(txt);
       return v2 >= 0 && v2 <= D.L + 1e-9 ? null : t("vig.err.posicion", fmt(D.L, 2));
     };
     const rejillas = {
@@ -12895,7 +13326,7 @@ details.an-ce { margin-top: var(--e2); }
         altoMax: 90,
         columnas: [{ titulo: "a (m)", num: true, validar: posicion }, { titulo: "P (kN)", num: true }],
         filas: tipo("puntual").map((c) => [num3(c.a), num3(c.P)]),
-        onCambio: (f) => poner_("puntual", f.map((r) => ({ tipo: "puntual", a: nv(r[0]), P: nv(r[1]) })))
+        onCambio: (f) => poner_("puntual", f.map((r) => ({ tipo: "puntual", a: nv2(r[0]), P: nv2(r[1]) })))
       }),
       q: () => rejilla({
         id: "v-distrib",
@@ -12907,14 +13338,14 @@ details.an-ce { margin-top: var(--e2); }
           { titulo: `q<sub>2</sub> (kN/m)`, num: true }
         ],
         filas: tipo("distribuida").map((c) => [num3(c.a), num3(c.b), num3(c.q1), num3(c.q2)]),
-        onCambio: (f) => poner_("distribuida", f.map((r) => ({ tipo: "distribuida", a: nv(r[0]), b: nv(r[1]), q1: nv(r[2]), q2: nv(r[3]) })))
+        onCambio: (f) => poner_("distribuida", f.map((r) => ({ tipo: "distribuida", a: nv2(r[0]), b: nv2(r[1]), q1: nv2(r[2]), q2: nv2(r[3]) })))
       }),
       M: () => rejilla({
         id: "v-momento",
         altoMax: 90,
         columnas: [{ titulo: "a (m)", num: true, validar: posicion }, { titulo: "M (kN\xB7m)", num: true }],
         filas: tipo("momento").map((c) => [num3(c.a), num3(c.C)]),
-        onCambio: (f) => poner_("momento", f.map((r) => ({ tipo: "momento", a: nv(r[0]), C: nv(r[1]) })))
+        onCambio: (f) => poner_("momento", f.map((r) => ({ tipo: "momento", a: nv2(r[0]), C: nv2(r[1]) })))
       })
     };
     const secs = p.secciones;
@@ -12941,7 +13372,7 @@ details.an-ce { margin-top: var(--e2); }
       h("div", { class: "cab" }, h("h1", {}, t("menu.vigas1vano")), h("p", {}, t("vig.subtitulo"))),
       grupo(
         t("vig.viga"),
-        campoNum({ id: "v-L", etq: sub19("L", ""), ref: t("vig.luz"), valor: D.L, mag: "m", paso: 0.5, min: 0.05, max: 1e3, onCambio: (v2) => {
+        campoNum({ id: "v-L", etq: sub20("L", ""), ref: t("vig.luz"), valor: D.L, mag: "m", paso: 0.5, min: 0.05, max: 1e3, onCambio: (v2) => {
           D.L = v2;
           cambio();
         } }),
@@ -12972,11 +13403,11 @@ details.an-ce { margin-top: var(--e2); }
     );
   }
   var COLS = [["x", "x (m)", 3, 1], ["M", "M (kN\xB7m)", MAG.M.d, 1], ["V", "V (kN)", MAG.N.d, 1], ["giro", "\u03B8 (mrad)", 1, 1e3], ["flecha", "\u03B4 (mm)", 1, 1e3]];
-  var est6 = { tabla: false };
-  function reiniciar6() {
-    est6.tabla = false;
+  var est7 = { tabla: false };
+  function reiniciar7() {
+    est7.tabla = false;
   }
-  function resultados12(ctx2, res) {
+  function resultados13(ctx2, res) {
     const p = ctx2.p;
     const D = datosVigas(p);
     const r = analizarViga({ L: D.L, EI: D.EI, izq: D.izq, der: D.der, cargas: D.cargas });
@@ -13006,14 +13437,14 @@ details.an-ce { margin-top: var(--e2); }
       }
     };
     const tecla = (txt, titulo, f) => h("button", { type: "button", class: "tecla", title: titulo, onclick: f }, txt);
-    const bCopiar = tecla(t("graf.copiar"), t("graf.copiarTit"), () => est6.tabla ? copiarTabla() : copiarPNG(svg, ...medida(), "viga", ctx2.avisar));
+    const bCopiar = tecla(t("graf.copiar"), t("graf.copiarTit"), () => est7.tabla ? copiarTabla() : copiarPNG(svg, ...medida(), "viga", ctx2.avisar));
     const bPNG = tecla("PNG", t("graf.guardarPNG"), () => guardar(svg, ...medida(), "viga", "png", ctx2.avisar));
     const bSVG = tecla("SVG", t("graf.guardarSVG"), () => guardar(svg, ...medida(), "viga", "svg", ctx2.avisar));
     const barra3 = h("div", { class: "graf-barra" }, bCopiar, bPNG, bSVG);
     const bG = h("button", { type: "button", role: "radio" }, t("graf.grafico"));
     const bT = h("button", { type: "button", role: "radio" }, t("graf.tabla"));
     const modo2 = (tab) => {
-      est6.tabla = tab;
+      est7.tabla = tab;
       bG.setAttribute("aria-checked", String(!tab));
       bT.setAttribute("aria-checked", String(tab));
       lienzo.hidden = tab;
@@ -13026,7 +13457,7 @@ details.an-ce { margin-top: var(--e2); }
     bT.onclick = () => modo2(true);
     const seg = h("div", { class: "graf-modo", style: "order:3" }, h("div", { class: "seg", role: "radiogroup" }, bG, bT));
     res.append(h("article", { class: "panel tarjeta" }, barra3, lienzo, tabla3, seg, h("p", { class: "pista", style: "order:4", html: `${t("vig.pistaCargas")} ${t("vig.convenio")}` })));
-    modo2(est6.tabla);
+    modo2(est7.tabla);
   }
 
   // src/ui/app.js
@@ -13038,7 +13469,7 @@ details.an-ce { margin-top: var(--e2); }
     const v2 = { cabeza: fijar(cabeza2), datos: fijar(datos4), resultados: fijar(resultados4) };
     return propia ? { ...secciones_exports, ...v2 } : v2;
   }
-  var VISTAS = { proyecto: proyecto_exports, materiales: materiales_exports, reologicas: reologicas_exports, secciones: vistaSecciones("seccion", true), durabilidad: durabilidad_exports5, diagramas: vistaSecciones("mk", false), vigas1vano: vigas_exports, flexion: flexion_exports, fuego: fuego_exports, anclaje: anclaje_exports, cortante: cortante_exports };
+  var VISTAS = { proyecto: proyecto_exports, materiales: materiales_exports, reologicas: reologicas_exports, secciones: vistaSecciones("seccion", true), durabilidad: durabilidad_exports5, diagramas: vistaSecciones("mk", false), vigas1vano: vigas_exports, flexion: flexion_exports, flexRecta: flexRecta_exports, fuego: fuego_exports, anclaje: anclaje_exports, cortante: cortante_exports };
   var MENU = [
     "proyecto",
     { grupo: "materiales", vistas: ["materiales", "reologicas"] },
@@ -13252,8 +13683,8 @@ details.an-ce { margin-top: var(--e2); }
   function pintar() {
     document.documentElement.lang = lenguaActual();
     pintarCabecera();
-    const datos13 = $("datos");
-    datos13.replaceChildren();
+    const datos14 = $("datos");
+    datos14.replaceChildren();
     const cab = $("cabeza");
     cab.replaceChildren();
     const vista = VISTAS[estado3.vista];
@@ -13267,10 +13698,10 @@ details.an-ce { margin-top: var(--e2); }
       }
     }
     try {
-      VISTAS[estado3.vista].datos(ctx, datos13);
+      VISTAS[estado3.vista].datos(ctx, datos14);
     } catch (e2) {
       console.error(e2);
-      datos13.append(aviso(tx(e2), "error"));
+      datos14.append(aviso(tx(e2), "error"));
     }
     pintarResultados();
   }
@@ -13286,7 +13717,7 @@ details.an-ce { margin-top: var(--e2); }
       if (x) foco(x.dataset.ref, false);
     });
   }
-  function comandos9() {
+  function comandos10() {
     const lista = [
       { k: "p.idioma", b: "idioma language english espa\xF1ol ingl\xE9s", f: () => {
         ponerLengua(lenguaActual() === "es" ? "en" : "es");
@@ -13362,7 +13793,7 @@ details.an-ce { margin-top: var(--e2); }
     if (leerPref("datos") === "plegado") document.documentElement.dataset.datos = "plegado";
     comportamientoFormulario($("datos"));
     instalarFoco();
-    instalarPaleta(comandos9, avisar);
+    instalarPaleta(comandos10, avisar);
     document.addEventListener("keydown", (e2) => {
       if ((e2.ctrlKey || e2.metaKey) && !e2.shiftKey && e2.key.toLowerCase() === "z" && !e2.target.closest("input, textarea")) {
         e2.preventDefault();

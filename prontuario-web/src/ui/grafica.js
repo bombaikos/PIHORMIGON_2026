@@ -45,7 +45,7 @@ function interpolar(xy, x) {
  * @param {Object} o
  * @param {{nombre:string, xy:number[][], clase?:string, cruz?:boolean}[]} o.series  clase: s1, s2, ref; cruz:false la deja fuera de la cruz
  * @param {{x:number, y:number, etq:string, clase?:string, abajo?:boolean}[]} [o.puntos]  puntos marcados con su rótulo (abajo: bajo el punto) (SVG: subíndices con <tspan class="ind">)
- * @param {{titulo:string, d?:number}} o.ejeX  d: decimales en la cruz
+ * @param {{titulo:string, d?:number, dt?:number}} o.ejeX  d: decimales en la cruz; dt: decimales en la tabla (por defecto d + 1)
  * @param {{titulo:string, d?:number}} o.ejeY
  * @param {{x?:number, y?:number}} [o.rejillaSec]  rejilla secundaria (sin números) cada x e y; solo si es más fina que la principal
  * @param {boolean} [o.invertirY]  el eje y crece hacia abajo (momentos flectores: positivos debajo)
@@ -54,6 +54,10 @@ function interpolar(xy, x) {
  * @returns {HTMLElement}
  */
 export function grafica({ series, puntos = [], ejeX, ejeY, archivo = 'grafica', rejillaSec = null, invertirY = false, avisar = () => {} }) {
+  // Guía § 1: fuerzas (kN), momentos (kN·m) y áreas de armadura (mm²) sin decimales, también en la cruz y en la tabla, diga lo que diga el módulo
+  const sinDec = (e) => (/\((kN|kN·m|mm²)\)/.test(plano(e.titulo)) ? { ...e, d: 0, dt: 0 } : e);
+  ejeX = sinDec(ejeX);
+  ejeY = sinDec(ejeY);
   const caja = document.createElement('div');
   caja.className = 'grafica';
   caja.tabIndex = 0;
@@ -90,7 +94,7 @@ export function grafica({ series, puntos = [], ejeX, ejeY, archivo = 'grafica', 
   const celda = (s, i, j, d) => (s.xy[i] ? fmt(s.xy[i][j], d) : '');
   tabla.innerHTML = `<table><thead>${enCuadro.length > 1 ? `<tr>${enCuadro.map((s) => `<th colspan="2" class="${s.clase ?? 's1'}">${s.nombre}</th>`).join('')}</tr>` : ''}`
     + `<tr>${enCuadro.map(() => `<th>${ejeX.titulo}</th><th>${ejeY.titulo}</th>`).join('')}</tr></thead><tbody>`
-    + Array.from({ length: filasT }, (_, i) => `<tr>${enCuadro.map((s) => `<td>${celda(s, i, 0, (ejeX.d ?? 2) + 1)}</td><td>${celda(s, i, 1, (ejeY.d ?? 1) + 1)}</td>`).join('')}</tr>`).join('')
+    + Array.from({ length: filasT }, (_, i) => `<tr>${enCuadro.map((s) => `<td>${celda(s, i, 0, ejeX.dt ?? (ejeX.d ?? 2) + 1)}</td><td>${celda(s, i, 1, ejeY.dt ?? (ejeY.d ?? 1) + 1)}</td>`).join('')}</tr>`).join('')
     + '</tbody></table>';
 
   // Selector Gráfico/Tabla debajo de la gráfica
@@ -193,7 +197,8 @@ export function grafica({ series, puntos = [], ejeX, ejeY, archivo = 'grafica', 
       const py = aY(p.y);
       // El rótulo va a la izquierda si no cabe a la derecha
       const izq = px > W - M.der - 30;
-      // Sin marcadores (guía § 15): solo el rótulo, si lo hay
+      // Sin marcadores de serie (guía § 15); el punto de cálculo (marca: 'ok' | 'no' | 'neutro') lleva un círculo indicador
+      if (p.marca) o.push(`<circle class="punto-calculo ${p.marca}" cx="${px}" cy="${py}" r="4.5"/>`);
       if (p.etq) o.push(`<text class="etq-punto" x="${izq ? px - 6 : px + 6}" y="${p.abajo ? py + 16 : py - 7}" text-anchor="${izq ? 'end' : 'start'}">${p.etq}</text>`);
     }
     o.push('</g>');
