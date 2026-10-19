@@ -155,7 +155,7 @@ export function capasSeccion(geo, sec, { e, x0, y0, x = null, id = 'd', cotasCap
 export function dibujoSeccion(geo, sec, { ancho = 560, alto = 320, x = null } = {}) {
   const margenIzq = 64;
   // En Secciones se ve siempre la sección entera, por ancha que sea; la genérica no lleva cotas a la derecha
-  const margenDer = sec.forma === 'generica' ? 40 : 150;
+  const margenDer = sec.forma === 'generica' ? 40 : 175;
   const e = encuadre(geo, ancho - margenIzq - margenDer, alto, { completa: true });
   const x0 = margenIzq;
   const y0 = 24;
