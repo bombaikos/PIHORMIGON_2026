@@ -12,7 +12,7 @@ import { seccionMotor } from '../../core/geometria.js';
 import { NORMAS } from '../../norma/normas.js';
 import { geometriaDe, materialesSeccion, sepCapas } from '../../io/proyecto.js';
 import { t } from '../i18n.js';
-import { fmt, q, qh } from '../formato.js';
+import { fmt, q, qh, MAG } from '../formato.js';
 import { selectorSecciones } from './secciones.js';
 import { h, poner, campoNum, segmentado, grupo, aviso, cifras, pestanas } from '../campos.js';
 import { rejilla } from '../rejilla.js';
@@ -143,7 +143,7 @@ export function resultados(ctx, res) {
     ...(dim && Number.isFinite(c.k) ? [[sub('A', 's,req'), qh(c.As0 * c.k, 'As')], ['k', fmt(c.k, 2)]] : []),
     [sub('N', 'Rd'), qh(d.Ncomp, 'N')],
     [sub('N', 'Rd,t'), qh(d.Ntrac, 'N')],
-    [`${sub('M', 'Rd,máx')} (N = ${fmt(mp.N, 0)})`, qh(mp.M, 'M')],
+    [`${sub('M', 'Rd,máx')} (N = ${fmt(mp.N, MAG.N.d)})`, qh(mp.M, 'M')],
     [`${sub('N', 'Rd,hormigón')}`, qh(dH.Ncomp, 'N')],
   ];
   const tarjetaGraf = h('article', { class: 'panel tarjeta' }, h('h2', {}, t('fcr.diagrama')), h('p', { class: 'sub' }, t('fcr.diagramaSub')), graficoNM(ctx, d, dH, gam, s));
@@ -156,7 +156,7 @@ export function resultados(ctx, res) {
 }
 
 function tablaEsfuerzos(gam) {
-  const filas = gam.map((x) => [String(x.i + 1), fmt(x.N, 0), fmt(x.M, 0), x.N !== 0 ? fmt((x.M / x.N) * 1000, 0) : '∞', sigla(x.g),
+  const filas = gam.map((x) => [String(x.i + 1), fmt(x.N, MAG.N.d), fmt(x.M, MAG.M.d), x.N !== 0 ? fmt((x.M / x.N) * 1000, MAG.long.d) : '∞', sigla(x.g),
     `<span class="${x.g >= 1 - 1e-6 ? 'ok' : 'no'}">${x.g >= 1 - 1e-6 ? t('fcr.dentroSello') : t('fcr.fueraSello')}</span>`]);
   const cont = h('div', {}, h('table', { class: 'tabla', html: `<thead><tr>${['#', 'N<sub>Ed</sub> (kN)', 'M<sub>Ed</sub> (kN·m)', 'e (mm)', 'γ', ''].map((x) => `<th>${x}</th>`).join('')}</tr></thead><tbody>${filas.map((f) => `<tr>${f.map((x) => `<td>${x}</td>`).join('')}</tr>`).join('')}</tbody>` }));
   return cont;
@@ -172,8 +172,8 @@ function graficoNM(ctx, d, dH, gam, s) {
   const puntos = gam.map((x) => ({ x: x.N, y: x.M, etq: String(x.i + 1), marca: x.g >= 1 - 1e-6 ? 'ok' : 'no' }));
   return h('div', { class: 'lienzo' }, grafica({
     series, puntos,
-    ejeX: { titulo: `N (kN), ${t('fcr.compPos')}`, d: 0, dt: 0 },
-    ejeY: { titulo: 'M (kN·m)', d: 0, dt: 0 },
+    ejeX: { titulo: `N (${MAG.N.ud}), ${t('fcr.compPos')}`, d: MAG.N.d, dt: MAG.N.d },
+    ejeY: { titulo: `M (${MAG.M.ud})`, d: MAG.M.d, dt: MAG.M.d },
     archivo: `N-M ${s.nombre}`,
     avisar: ctx.avisar,
   }));
