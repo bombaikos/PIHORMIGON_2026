@@ -193,8 +193,8 @@ export function grafica({ series, puntos = [], ejeX, ejeY, archivo = 'grafica', 
       const py = aY(p.y);
       // El rótulo va a la izquierda si no cabe a la derecha
       const izq = px > W - M.der - 30;
-      // Sin marcadores de serie (guía § 15); el punto de cálculo (marca: true) lleva un círculo indicador
-      if (p.marca) o.push(`<circle class="punto-calculo" cx="${px}" cy="${py}" r="4.5"/>`);
+      // Sin marcadores de serie (guía § 15); el punto de cálculo (marca: 'ok' | 'no' | 'neutro') lleva un círculo indicador
+      if (p.marca) o.push(`<circle class="punto-calculo ${p.marca}" cx="${px}" cy="${py}" r="4.5"/>`);
       if (p.etq) o.push(`<text class="etq-punto" x="${izq ? px - 6 : px + 6}" y="${p.abajo ? py + 16 : py - 7}" text-anchor="${izq ? 'end' : 'start'}">${p.etq}</text>`);
     }
     o.push('</g>');

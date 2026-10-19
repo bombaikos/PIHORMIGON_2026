@@ -91,3 +91,39 @@ export function comprobarNM(d, NEd, MEd) {
   const ratio = Number.isFinite(lam) ? 1 / lam : Infinity;
   return { dentro: ratio <= 1, MRd, ratio, Q: Number.isFinite(lam) ? [lam * NEd, lam * MEd] : null };
 }
+
+/** Coeficiente de seguridad a excentricidad constante: |OQ| / |OP| (≥ 1 cumple; 0 si el axil supera la capacidad). */
+export function coeficienteNM(d, NEd, MEd) {
+  if (NEd === 0 && MEd === 0) return Infinity;
+  const r = comprobarNM(d, NEd, MEd);
+  return r.ratio > 0 && Number.isFinite(r.ratio) ? 1 / r.ratio : 0;
+}
+
+/** Copia de la sección con la armadura multiplicada por k (la disposición se mantiene). */
+export const escalarArmadura = (sec, k) => ({ ...sec, barras: sec.barras.map((b) => ({ ...b, A: b.A * k })) });
+
+/** Sección sin armadura: contorno del hormigón solo. */
+export const soloHormigon = (sec) => ({ ...sec, barras: [] });
+
+/**
+ * Dimensionamiento: menor factor k de la armadura dada (misma disposición) con el que todos los pares
+ * (N, M) quedan dentro del contorno con coeficiente ≥ gamma. Devuelve k, 0 si basta sin armadura, o
+ * Infinity si no se alcanza con k ≤ kMax.
+ * @param {import('./seccion.js').Seccion} sec  con la armadura de referencia (k = 1)
+ * @param {[number, number][]} pares
+ */
+export function dimensionarNM(sec, pares, { gamma = 1, kMax = 40, n = 60 } = {}) {
+  const ok = (k) => {
+    const d = diagramaNM(escalarArmadura(sec, k), { n });
+    return pares.every(([N, M]) => coeficienteNM(d, N, M) >= gamma - 1e-9);
+  };
+  if (ok(0)) return 0;
+  if (!ok(kMax)) return Infinity;
+  let lo = 0;
+  let hi = kMax;
+  for (let i = 0; i < 28 && hi - lo > 1e-4 * hi; i++) {
+    const m = (lo + hi) / 2;
+    if (ok(m)) hi = m; else lo = m;
+  }
+  return hi;
+}

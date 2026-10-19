@@ -43,3 +43,20 @@ test('N-M: aprovechamiento = 1 sobre el contorno, < 1 dentro y > 1 fuera', () =>
   assert.ok(comprobarNM(d, 1000, 1.2 * MR).ratio > 1);
   assert.equal(comprobarNM(d, 1e5, 1).dentro, false);
 });
+
+test('N-M: coeficiente de seguridad = 1/aprovechamiento y la armadura dimensionada lo deja en 1', async () => {
+  const { coeficienteNM, dimensionarNM, escalarArmadura } = await import('../src/core/interaccion.js');
+  const sec = rect(603e-6, 603e-6);
+  const d = diagramaNM(sec, { n: 60 });
+  const r = comprobarNM(d, 800, 120);
+  cerca(coeficienteNM(d, 800, 120), 1 / r.ratio, 1e-9);
+  assert.equal(coeficienteNM(d, 1e5, 10), 0);
+  const pares = [[800, 200], [-100, 150]];
+  const k = dimensionarNM(sec, pares, { gamma: 1 });
+  assert.ok(k > 0 && Number.isFinite(k));
+  const dk = diagramaNM(escalarArmadura(sec, k), { n: 60 });
+  const g = Math.min(...pares.map(([N, M]) => coeficienteNM(dk, N, M)));
+  cerca(g, 1, 0.01, 'γ mínimo con k');
+  assert.equal(dimensionarNM(sec, [[0, 1e5]]), Infinity);
+  assert.equal(dimensionarNM(sec, [[1000, 5]]), 0);
+});

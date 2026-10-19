@@ -1,27 +1,35 @@
-// ELU · Flexión compuesta recta: diagrama de interacción N-M de una sección en rotura (primera entrega).
-// La sección (geometría, armadura y materiales) viene de Secciones y aquí no se toca. Se da el par
-// (N_Ed, M_Ed) y se comprueba contra el contorno N-M. Compresión positiva; M > 0 comprime la cara superior.
-// Motor: src/core/interaccion.js (estado último para cada axil, con los diagramas de cálculo).
+// ELU · Flexión compuesta recta: comprobación, dimensionamiento y diagrama de interacción N-M en rotura.
+// La sección (geometría, disposición de la armadura y materiales) viene de Secciones y aquí no se toca.
+// Los esfuerzos solicitantes (N, M) entran en una tabla y se colocan en el diagrama: verdes dentro, rojos fuera.
+// Coeficiente de seguridad a excentricidad constante: γ = |OQ| / |OP| (Q = corte de la recta O–P con el contorno).
+// Dimensionar mantiene la disposición de la armadura de Secciones y busca el factor que da γ ≥ γ requerido.
+// Compresión positiva; M > 0 comprime la cara superior. Motor: src/core/interaccion.js.
 
-import { diagramaNM, comprobarNM } from '../../core/interaccion.js';
-import { estadoUltimo } from '../../core/seccion.js';
+import { diagramaNM, coeficienteNM, dimensionarNM, escalarArmadura, soloHormigon } from '../../core/interaccion.js';
+import { leerNumero } from '../../core/armado.js';
 import { seccionMotor } from '../../core/geometria.js';
 import { NORMAS } from '../../norma/normas.js';
 import { geometriaDe, materialesSeccion, sepCapas } from '../../io/proyecto.js';
 import { t } from '../i18n.js';
 import { fmt, q, qh } from '../formato.js';
 import { selectorSecciones } from './secciones.js';
-import { h, poner, campoNum, grupo, aviso, cifras, pestanas } from '../campos.js';
+import { h, poner, campoNum, segmentado, grupo, aviso, cifras, pestanas } from '../campos.js';
+import { rejilla } from '../rejilla.js';
 import { grafica } from '../grafica.js';
 import { dibujoSeccion } from '../dibujoSeccion.js';
 import { veredicto } from './flexion.js';
 
 const FORMAS = ['rectangular', 'pilar', 'T', 'circular', 'generica'];
-const est = { i: null, NEd: 500, MEd: 150, abiertos: new Set(['mrd']), pestana: 'resultados' };
+const est = {
+  i: null, modo: 'comprobar', gamma: 1,
+  filas: [['500', '150'], ['1500', '100'], ['-150', '60'], ['2500', '200']],
+  abiertos: new Set(['coef']), pestana: 'resultados',
+};
 export function reiniciar() { est.i = null; }
 
 const sub = (a, b) => `${a}<sub>${b}</sub>`;
 const ind = (a, b) => `${a}<tspan class="ind" dy="3">${b}</tspan>`;
+const nv = (txt) => leerNumero(txt);
 
 function activa(p) {
   if (!p.secciones.length) return null;
@@ -48,102 +56,141 @@ function resumenSeccion(p, s) {
   return `${dim} · ${s.hormigon} · ${s.acero}`;
 }
 
+/** Pares (N, M) válidos de la tabla, con su fila. */
+const pares = () => est.filas.map((f, i) => ({ i, N: nv(f[0]), M: nv(f[1]) })).filter((x) => Number.isFinite(x.N) && Number.isFinite(x.M));
+
+// Los diagramas de una sección circular o genérica tardan: se guarda el último cálculo mientras no cambien los datos
+let memo = { clave: '', c: null };
+/** Contornos (armado y solo hormigón) para la sección activa; en Dimensionar, con la armadura escalada. */
+function calculo(p, s) {
+  const ps = pares();
+  const clave = JSON.stringify([p.norma, s.geo, s.armado, s.hormigon, s.acero, sepCapas(p), est.modo, est.modo === 'dimensionar' ? [est.gamma, ps.map((x) => [x.N, x.M])] : 0]);
+  if (memo.clave === clave) return memo.c;
+  const geo = geometriaDe(p, s);
+  if (geo.errores?.length) throw new Error(geo.errores.join(' '));
+  const mats = materialesSeccion(p, s);
+  const sec = seccionMotor(geo, mats.hormigon, mats.acero);
+  const As0 = sec.barras.reduce((a, b) => a + b.A, 0);
+  let k = 1;
+  if (est.modo === 'dimensionar') {
+    if (!(As0 > 0)) throw new Error(t('fcr.sinArmadura'));
+    k = dimensionarNM(sec, ps.map((x) => [x.N, x.M]), { gamma: est.gamma });
+  }
+  const dibujada = Number.isFinite(k) ? escalarArmadura(sec, k) : escalarArmadura(sec, 1);
+  const c = { geo, sec, As0, k, d: diagramaNM(dibujada, { n: 60 }), dH: diagramaNM(soloHormigon(sec), { n: 60 }) };
+  memo = { clave, c };
+  return c;
+}
+
+const sigla = (g) => (g === Infinity ? '∞' : fmt(g, 2));
+
 export function datos(ctx, form) {
-  const s = activa(ctx.p);
+  const p = ctx.p;
+  const s = activa(p);
   poner(form, h('div', { class: 'cab' }, h('h1', {}, t('menu.flexRecta')), h('p', {}, t('fcr.subtitulo'))));
   if (!s) return poner(form, aviso(t('fcr.sinSec'), 'info'));
   const cambio = () => ctx.cambio();
+  let c = null;
+  try { c = calculo(p, s); } catch { /* el error se muestra en resultados */ }
+  const coefFila = (datosTabla, r) => {
+    if (!c) return '';
+    const N = nv(datosTabla[r][0]);
+    const M = nv(datosTabla[r][1]);
+    return Number.isFinite(N) && Number.isFinite(M) ? sigla(coeficienteNM(c.d, N, M)) : '';
+  };
   poner(form,
-    grupo(t('g.esfuerzo'),
-      campoNum({ id: 'fr-n', etq: sub('N', 'Ed'), ref: t('fcr.compPos'), valor: est.NEd, mag: 'N', paso: 10, min: -1e6, max: 1e6, nombre: t('fcr.axil'), onCambio: (v) => { est.NEd = v; cambio(); } }),
-      campoNum({ id: 'fr-m', etq: sub('M', 'Ed'), ref: t('fcr.mSigno'), valor: est.MEd, mag: 'M', paso: 5, min: -1e6, max: 1e6, nombre: t('flex.momento'), onCambio: (v) => { est.MEd = v; cambio(); } })),
-    h('p', { style: 'margin:0;font-size:var(--t-s);color:var(--tinta-3)', html: t('fcr.pista') }),
-    grupo(t('g.seccion'), h('p', { style: 'margin:0;font-size:var(--t-s);color:var(--tinta-2);line-height:1.5', html: `${resumenSeccion(ctx.p, s)}<br>${t('fcr.deSecciones')}` })));
-}
-
-// El diagrama de una sección circular o genérica tarda: se guarda el último y solo se repite si cambian los datos
-let memo = { clave: '', d: null, sec: null };
-function contorno(p, s) {
-  const clave = JSON.stringify([p.norma, s.geo, s.armado, s.hormigon, s.acero, sepCapas(p)]);
-  if (memo.clave !== clave) {
-    const geo = geometriaDe(p, s);
-    if (geo.errores?.length) throw new Error(geo.errores.join(' '));
-    const mats = materialesSeccion(p, s);
-    const sec = seccionMotor(geo, mats.hormigon, mats.acero);
-    memo = { clave, d: diagramaNM(sec, { n: 60 }), sec, geo };
-  }
-  return memo;
+    segmentado({ ancho: true, etiqueta: t('flex.modo'), opciones: [['comprobar', t('comprobar')], ['dimensionar', t('dimensionar')]], valor: est.modo, onCambio: (m) => { est.modo = m; ctx.pintar(); } }),
+    grupo(t('fcr.esfuerzos'),
+      rejilla({ id: 'fr-esf', altoMax: 190,
+        columnas: [{ titulo: `${sub('N', 'Ed')} (kN)`, num: true }, { titulo: `${sub('M', 'Ed')} (kN·m)`, num: true }],
+        filas: est.filas, calculada: { titulo: 'γ', f: coefFila },
+        onCambio: (f) => { est.filas = f.map((r) => [r[0], r[1]]); cambio(); } }),
+      h('p', { style: 'margin:4px 0 0;font-size:var(--t-s);color:var(--tinta-3)', html: t('fcr.pista') }),
+      est.modo === 'dimensionar' ? campoNum({ id: 'fr-gamma', etq: t('fcr.gammaReq'), valor: est.gamma, mag: 'ratio', paso: 0.05, min: 0.5, max: 5, onCambio: (v) => { est.gamma = v; cambio(); } }) : null),
+    grupo(t('g.seccion'), h('p', { style: 'margin:0;font-size:var(--t-s);color:var(--tinta-2);line-height:1.5', html: `${resumenSeccion(p, s)}<br>${t('fcr.deSecciones')}` })));
 }
 
 export function resultados(ctx, res) {
   const p = ctx.p;
   const s = activa(p);
   if (!s) return;
-  const { d, sec, geo } = contorno(p, s);
-  const NEd = est.NEd;
-  const MEd = est.MEd;
-  const r = comprobarNM(d, NEd, MEd);
-  const ok = r.ratio <= 1;
+  const c = calculo(p, s);
+  const { d, dH, geo } = c;
+  const ps = pares();
+  if (!ps.length) throw new Error(t('fcr.sinEsfuerzos'));
+  const gam = ps.map((x) => ({ ...x, g: coeficienteNM(d, x.N, x.M) }));
+  const gmin = Math.min(...gam.map((x) => x.g));
+  const dim = est.modo === 'dimensionar';
+  p.calculos.flexionCompuesta ??= {};
+  p.calculos.flexionCompuesta[s.nombre] = { modo: est.modo, esfuerzos: ps.map((x) => [x.N, x.M]), norma: p.norma, fecha: new Date().toISOString().slice(0, 10), resultado: { gammaMin: gmin, k: c.k } };
+
+  if (dim && !Number.isFinite(c.k)) {
+    res.append(veredicto('nocumple', t('aumentar'), t('armaduraNec'), '—', t('fcr.noBasta')));
+  } else if (dim) {
+    const As = c.As0 * c.k;
+    res.append(veredicto(c.k === 0 ? 'atencion' : 'cumple', c.k === 0 ? t('fcr.sinArm') : t('valida'), t('armaduraNec'), qh(As, 'As'),
+      t('fcr.kArm', fmt(c.k, 2), q(c.As0, 'As'), fmt(est.gamma, 2))));
+  } else {
+    const ok = gmin >= 1 - 1e-6;
+    res.append(veredicto(ok ? 'cumple' : 'nocumple', ok ? t('cumple') : t('noCumple'), t('fcr.coefSeg'), sigla(gmin),
+      `${t('fcr.puntos')} <b>${gam.filter((x) => x.g >= 1 - 1e-6).length}</b> / ${gam.length} ${t('fcr.dentro')}`, Math.min(1 / Math.max(gmin, 1e-9) / 1.25, 1)));
+  }
+
   const Mmax = (rama) => rama.reduce((a, b) => (Math.abs(b.M) > Math.abs(a.M) ? b : a));
   const mp = Mmax(d.pos);
   const mn = Mmax(d.neg);
-  p.calculos.flexionCompuesta ??= {};
-  p.calculos.flexionCompuesta[s.nombre] = { NEd, MEd, norma: p.norma, fecha: new Date().toISOString().slice(0, 10), resultado: { MRd: r.MRd, aprovechamiento: r.ratio } };
-
-  const dentroRango = NEd <= d.Ncomp && NEd >= d.Ntrac;
-  res.append(veredicto(ok ? 'cumple' : 'nocumple', ok ? t('cumple') : t('noCumple'), t('aprovechamiento'), dentroRango ? fmt(r.ratio, 2) : '—',
-    dentroRango ? `${sub('M', 'Rd')}(${sub('N', 'Ed')}) <b>${q(Math.abs(r.MRd), 'M')}</b> · ${sub('M', 'Ed')} <b>${q(Math.abs(MEd), 'M')}</b>` : t('fcr.fueraAxil', q(NEd > 0 ? d.Ncomp : d.Ntrac, 'N')),
-    dentroRango ? Math.min(r.ratio / 1.25, 1) : 1));
-
-  // Estado último con el axil dado (para x y las deformaciones)
-  const e = dentroRango ? estadoUltimo(sec, -NEd, { signo: MEd >= 0 ? 1 : -1, yref: d.yref }) : null;
   const cif = [
-    [`${sub('M', 'Rd')}(${sub('N', 'Ed')})`, dentroRango ? qh(Math.abs(r.MRd), 'M') : '—'],
+    ...(dim && Number.isFinite(c.k) ? [[sub('A', 's,req'), qh(c.As0 * c.k, 'As')], ['k', fmt(c.k, 2)]] : []),
     [sub('N', 'Rd'), qh(d.Ncomp, 'N')],
     [sub('N', 'Rd,t'), qh(d.Ntrac, 'N')],
-    [`${sub('M', 'Rd,máx')}⁺ (${sub('N', '')} = ${fmt(mp.N, 0)})`, qh(mp.M, 'M')],
-    [`${sub('M', 'Rd,máx')}⁻ (${sub('N', '')} = ${fmt(mn.N, 0)})`, qh(Math.abs(mn.M), 'M')],
-    ...(e?.converge ? [[t('c.x'), qh(e.x, 'long')]] : []),
+    [`${sub('M', 'Rd,máx')}⁺ (N = ${fmt(mp.N, 0)})`, qh(mp.M, 'M')],
+    [`${sub('M', 'Rd,máx')}⁻ (N = ${fmt(mn.N, 0)})`, qh(Math.abs(mn.M), 'M')],
+    [`${sub('N', 'Rd,hormigón')}`, qh(dH.Ncomp, 'N')],
   ];
-  const tarjetaGraf = h('article', { class: 'panel tarjeta' }, h('h2', {}, t('fcr.diagrama')), h('p', { class: 'sub' }, t('fcr.diagramaSub')), graficoNM(ctx, d, s, r));
+  const tarjetaGraf = h('article', { class: 'panel tarjeta' }, h('h2', {}, t('fcr.diagrama')), h('p', { class: 'sub' }, t('fcr.diagramaSub')), graficoNM(ctx, d, dH, gam, s));
   const tarjetaRes = h('article', { class: 'panel tarjeta' });
-  const lista = [['resultados', t('t.resultados')], ['seccion', t('g.seccion')]];
-  tarjetaRes.append(pestanas({ lista, activa: est.pestana, onCambio: (k) => { est.pestana = k; ctx.pintar(); } }));
-  if (est.pestana === 'seccion') {
-    tarjetaRes.append(h('div', { class: 'lienzo', html: dibujoSeccion(geo, s, { ancho: 360, alto: 300, x: e?.converge && Number.isFinite(e.x) ? e.x : null }) }));
-  } else {
-    tarjetaRes.append(cifras(cif), h('p', { class: 'sub', style: 'margin:0' }, t('t.desplegar')), traza(p, d, r, e));
-  }
+  tarjetaRes.append(pestanas({ lista: [['resultados', t('t.resultados')], ['esfuerzos', t('fcr.esfuerzos')], ['seccion', t('g.seccion')]], activa: est.pestana, onCambio: (k) => { est.pestana = k; ctx.pintar(); } }));
+  if (est.pestana === 'seccion') tarjetaRes.append(h('div', { class: 'lienzo', html: dibujoSeccion(geo, s, { ancho: 360, alto: 300 }) }));
+  else if (est.pestana === 'esfuerzos') tarjetaRes.append(tablaEsfuerzos(gam));
+  else tarjetaRes.append(cifras(cif), h('p', { class: 'sub', style: 'margin:0' }, t('t.desplegar')), traza(p, d, dH, gmin));
   res.append(h('div', { class: 'cuerpo dib-ancho' }, tarjetaGraf, tarjetaRes));
 }
 
-/** Contorno N-M: x = N (compresión positiva), y = M. Rama M⁺ continua y rama M⁻ discontinua; el punto de cálculo marcado. */
-function graficoNM(ctx, d, s, r) {
+function tablaEsfuerzos(gam) {
+  const filas = gam.map((x) => [String(x.i + 1), fmt(x.N, 0), fmt(x.M, 0), x.N !== 0 ? fmt((x.M / x.N) * 1000, 0) : '∞', sigla(x.g),
+    `<span class="${x.g >= 1 - 1e-6 ? 'ok' : 'no'}">${x.g >= 1 - 1e-6 ? t('fcr.dentroSello') : t('fcr.fueraSello')}</span>`]);
+  const cont = h('div', {}, h('table', { class: 'tabla', html: `<thead><tr>${['#', 'N<sub>Ed</sub> (kN)', 'M<sub>Ed</sub> (kN·m)', 'e (mm)', 'γ', ''].map((x) => `<th>${x}</th>`).join('')}</tr></thead><tbody>${filas.map((f) => `<tr>${f.map((x) => `<td>${x}</td>`).join('')}</tr>`).join('')}</tbody>` }));
+  return cont;
+}
+
+/** Contorno N-M (x = N, y = M) con la envolvente del hormigón solo y los esfuerzos: verde dentro, rojo fuera. */
+function graficoNM(ctx, d, dH, gam, s) {
   const xy = (rama) => [...rama].reverse().map((v) => [v.N, v.M]);
   const series = [
     { nombre: `${ind('M', 'Rd')}⁺`, clase: 's1', xy: xy(d.pos) },
     { nombre: `${ind('M', 'Rd')}⁻`, clase: 's2', xy: xy(d.neg) },
+    { nombre: t('fcr.hormigon'), clase: 'ref', cruz: false, xy: xy(dH.pos) },
+    { nombre: '', clase: 'ref', cruz: false, xy: xy(dH.neg) },
   ];
-  // La recta del origen al contorno pasa por el punto de cálculo: su cociente es el aprovechamiento
-  if (r.Q) series.push({ nombre: t('fcr.rayo'), clase: 'ref', cruz: false, xy: [[0, 0], r.Q].sort((a, b) => a[0] - b[0]) });
-  const puntos = [{ x: est.NEd, y: est.MEd, etq: `${ind('N', 'Ed')}, ${ind('M', 'Ed')}`, clase: 'ref', marca: true }];
+  const puntos = gam.map((x) => ({ x: x.N, y: x.M, etq: String(x.i + 1), marca: x.g >= 1 - 1e-6 ? 'ok' : 'no' }));
   return h('div', { class: 'lienzo' }, grafica({
     series, puntos,
-    ejeX: { titulo: `N (${'kN'}), ${t('fcr.compPos')}`, d: 0 },
-    ejeY: { titulo: `M (${'kN·m'})`, d: 0 },
+    ejeX: { titulo: `N (kN), ${t('fcr.compPos')}`, d: 0 },
+    ejeY: { titulo: 'M (kN·m)', d: 0 },
     archivo: `N-M ${s.nombre}`,
     avisar: ctx.avisar,
   }));
 }
 
-function traza(p, d, r, e) {
+function traza(p, d, dH, gmin) {
   const fam = NORMAS[p.norma];
   const art = (a, b, c) => `<span class="art">${fam.ref} · ${p.norma === 'EC2-2004' ? c ?? b : fam.familia === 'EHE' ? a : b}</span>`;
   const filas = [
-    { id: 'mrd', nom: `${sub('M', 'Rd')}(${sub('N', 'Ed')})`, val: Number.isFinite(r.MRd) ? q(Math.abs(r.MRd), 'M') : '—', cuenta: `<span class="f">${t('fcr.f.contorno')}</span>
+    { id: 'coef', nom: t('fcr.coefSeg'), val: sigla(gmin), cuenta: `<span class="f">${t('fcr.f.rayo')}</span>` },
+    { id: 'mrd', nom: t('fcr.contorno'), val: `${fmt(d.pos.length + d.neg.length, 0)} ${t('fcr.puntosCont')}`, cuenta: `<span class="f">${t('fcr.f.contorno')}</span>
       <span class="n">${t('fcr.f.ref', q(d.yref, 'long'))}</span>${art('art. 42.1', '8.1.1', '6.1')}` },
     { id: 'nrd', nom: sub('N', 'Rd'), val: q(d.Ncomp, 'N'), cuenta: `<span class="f">${t('fcr.f.nrd')}</span>${art('art. 42.1', '8.1.1', '6.1')}` },
-    { id: 'rat', nom: t('aprovechamiento'), val: Number.isFinite(r.ratio) ? fmt(r.ratio, 2) : '—', cuenta: `<span class="f">${t('fcr.f.rayo')}</span>` },
+    { id: 'env', nom: t('fcr.hormigon'), val: q(dH.Ncomp, 'N'), cuenta: `<span class="f">${t('fcr.f.env')}</span>` },
   ];
   return h('div', { class: 'traza' }, ...filas.map((f) => {
     const det = h('details', { 'data-ref': f.id, open: est.abiertos.has(f.id) },
@@ -152,4 +199,11 @@ function traza(p, d, r, e) {
     det.addEventListener('toggle', () => (det.open ? est.abiertos.add(f.id) : est.abiertos.delete(f.id)));
     return det;
   }));
+}
+
+export function comandos(ctx) {
+  return [
+    { k: 'p.fcrComprobar', b: 'flexion compuesta recta comprobar interaccion', f: () => { est.modo = 'comprobar'; ctx.ir('flexRecta'); } },
+    { k: 'p.fcrDimensionar', b: 'flexion compuesta recta dimensionar interaccion', f: () => { est.modo = 'dimensionar'; ctx.ir('flexRecta'); } },
+  ];
 }
