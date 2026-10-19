@@ -12,7 +12,7 @@ import { rejilla } from '../rejilla.js';
 import { evolucionEdad, fckEdad } from '../../core/reologia.js';
 import { normaMat } from '../../norma/materiales/index.js';
 import { t } from '../i18n.js';
-import { fmt, ESP } from '../formato.js';
+import { eje, fmt, ESP } from '../formato.js';
 import { h, poner, campoNum, campoTexto, selector, grupo, par, boton, aviso, pestanas, tabla, filaCampos } from '../campos.js';
 import { filasPlegables } from '../filasPlegables.js';
 import { grafica } from '../grafica.js';
@@ -411,7 +411,7 @@ function graficaSigmaEps(ctx, mat) {
     puntos.push({ x: -ey * 1000, y: -fy / 1000, etq: `${tag('f', 'yd')} = ${fmt(fy / 1000, 1)}` },
       { x: -eu * 1000, y: -su / 1000, etq: tag('ε', 'ud') });
   }
-  return grafica({ series, puntos, ejeX: { titulo: 'ε (‰)', d: 2 }, ejeY: { titulo: 'σ (MPa)', d: 1 }, archivo: `sigma-epsilon-${mat.nombre}`, rejillaSec: { x: 0.5, y: mat.tipo === 'acero' ? 25 : 2.5 }, avisar: ctx.avisar });
+  return grafica({ series, puntos, ejeX: eje('def', 'ε'), ejeY: eje('tension', 'σ'), archivo: `sigma-epsilon-${mat.nombre}`, rejillaSec: { x: 0.5, y: mat.tipo === 'acero' ? 25 : 2.5 }, avisar: ctx.avisar });
 }
 
 const art = (N, k) => `<span class="art">${N.corto} · ${N.art[k]}</span>`;

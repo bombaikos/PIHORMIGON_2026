@@ -4,15 +4,15 @@
 // positivos hacia abajo (M sobre la parte traccionada, flecha en el sentido físico) y V positivo hacia arriba.
 // Sin eje de ordenadas: los valores notables van escritos en el gráfico. Al pasar el cursor se leen los cuatro.
 
-import { fmt } from './formato.js';
+import { fmt, MAG } from './formato.js';
 import { t } from './i18n.js';
 
 const NS = 'http://www.w3.org/2000/svg';
 const PAD = 44; // margen horizontal: caben los apoyos y los rótulos de los extremos
 
 const BANDAS = [
-  { k: 'M', f: 1, d: 0, ud: 'kN·m', abajo: true, rayado: true, fuente: 'diagrama', peso: 1.35 },
-  { k: 'V', f: 1, d: 0, ud: 'kN', abajo: false, rayado: true, fuente: 'diagrama', peso: 1.1 },
+  { k: 'M', f: 1, d: MAG.M.d, ud: 'kN·m', abajo: true, rayado: true, fuente: 'diagrama', peso: 1.35 },
+  { k: 'V', f: 1, d: MAG.N.d, ud: 'kN', abajo: false, rayado: true, fuente: 'diagrama', peso: 1.1 },
   { k: 'giro', f: 1000, d: 1, ud: 'mrad', abajo: true, rayado: false, fuente: 'puntos', peso: 1 },
   { k: 'flecha', f: 1000, d: 1, ud: 'mm', abajo: true, rayado: false, fuente: 'puntos', peso: 1.1 },
 ];
@@ -69,14 +69,14 @@ function esquema(g, D, r, W, top, h, X) {
   for (const c of D.cargas.filter((z) => z.tipo === 'puntual')) {
     const x = X(c.a), s = c.P >= 0 ? 1 : -1;
     g.append(e('path', { d: `M${x} ${yv - 3 - s * palto} V${yv - 3} m-4.5 ${-8 * s} l4.5 ${8 * s} l4.5 ${-8 * s}`, class: 'vl-carga puntual' }));
-    g.append(e('text', { x, y: s > 0 ? yv - palto - 8 : yv + palto + 12, 'text-anchor': 'middle', class: 'vl-num carga' }, `${fmt(c.P, 1)} kN`));
+    g.append(e('text', { x, y: s > 0 ? yv - palto - 8 : yv + palto + 12, 'text-anchor': 'middle', class: 'vl-num carga' }, `${fmt(c.P, MAG.F.d)} kN`));
   }
   // El rótulo del momento va por encima del de las distribuidas (alto + 18) para que no coincidan
   for (const c of D.cargas.filter((z) => z.tipo === 'momento')) {
     const x = X(c.a), s = c.C >= 0 ? 1 : -1;
     const r = 17, cy = yv - 8;
     g.append(e('path', { d: `M${x - r * s} ${cy} a${r} ${r} 0 1 1 ${2 * r * s} 0 m${-4 * s} ${-5} l${4 * s} 5 l${-5 * s} 2`, class: 'vl-carga', fill: 'none' }));
-    g.append(e('text', { x, y: yv - 3 - alto - 18, 'text-anchor': 'middle', class: 'vl-num carga' }, `${fmt(c.C, 1)} kN·m`));
+    g.append(e('text', { x, y: yv - 3 - alto - 18, 'text-anchor': 'middle', class: 'vl-num carga' }, `${fmt(c.C, MAG.M.d)} kN·m`));
   }
   g.append(e('path', { d: `M${X(0)} ${yv} H${X(D.L)}`, class: 'vl-viga' }));
   apoyo(g, X(0), yv, D.izq);
@@ -87,8 +87,8 @@ function esquema(g, D, r, W, top, h, X) {
     const R = r.reacciones[lado];
     const anc = x < W / 2 ? 'start' : 'end';
     const xt = anc === 'start' ? x - 8 : x + 8;
-    g.append(e('text', { x: xt, y: yv + 30, 'text-anchor': anc, class: 'vl-num rea' }, `R = ${fmt(R.R, 1)} kN`));
-    if (tp === 'empotramiento') g.append(e('text', { x: xt, y: yv + 44, 'text-anchor': anc, class: 'vl-num rea' }, `M = ${fmt(R.M, 1)} kN·m`));
+    g.append(e('text', { x: xt, y: yv + 30, 'text-anchor': anc, class: 'vl-num rea' }, `R = ${fmt(R.R, MAG.F.d)} kN`));
+    if (tp === 'empotramiento') g.append(e('text', { x: xt, y: yv + 44, 'text-anchor': anc, class: 'vl-num rea' }, `M = ${fmt(R.M, MAG.M.d)} kN·m`));
   }
 }
 

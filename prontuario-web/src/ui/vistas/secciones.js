@@ -15,7 +15,7 @@ import { propiedadesHormigon, opcionesHormigon, caracteristico } from '../../cor
 import { modulo } from '../../norma/index.js';
 import { seccionNueva, materialesSeccion, normalizarCaras, sepCapas, geometriaDe } from '../../io/proyecto.js';
 import { t, tx } from '../i18n.js';
-import { fmt, q, qh, ESP, MAG, armadoBonito, serieDiametros } from '../formato.js';
+import { eje, fmt, q, qh, ESP, MAG, armadoBonito, serieDiametros } from '../formato.js';
 import { h, html, poner, campoNum, campoTexto, campoArmado, selector, grupo, par, boton, aviso, tabla, cifras, segmentado, filaCampos } from '../campos.js';
 import { dibujoSeccion } from '../dibujoSeccion.js';
 import { rejilla, celdaMm } from '../rejilla.js';
@@ -836,8 +836,8 @@ function graficaMk(ctx, s, mk, vista, props, mats) {
   return grafica({
     series, puntos,
     ...(vista === 'ei'
-      ? { ejeX: { titulo: `M (${MAG.M.ud})`, d: 1 }, ejeY: { titulo: 'EI/EIb', d: 3 }, archivo: `EI-M ${s.nombre}` }
-      : { ejeX: { titulo: `κ (${MAG.curv.ud})`, d: 2 }, ejeY: { titulo: `M (${MAG.M.ud})`, d: 1 }, archivo: `M-k ${s.nombre}` }),
+      ? { ejeX: eje('M', 'M'), ejeY: { titulo: 'EI/EIb', d: 3 }, archivo: `EI-M ${s.nombre}` }
+      : { ejeX: eje('curv', 'κ'), ejeY: eje('M', 'M'), archivo: `M-k ${s.nombre}` }),
     avisar: ctx.avisar,
   });
 }

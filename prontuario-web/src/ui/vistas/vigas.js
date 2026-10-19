@@ -7,7 +7,7 @@ import { bruta } from '../../core/propiedades.js';
 import { leerNumero } from '../../core/armado.js';
 import { geometriaDe, materialesSeccion } from '../../io/proyecto.js';
 import { t, tx } from '../i18n.js';
-import { fmt, decimalAlCopiar } from '../formato.js';
+import { fmt, decimalAlCopiar, MAG } from '../formato.js';
 import { copiarPNG, guardar } from '../exportarSvg.js';
 import { h, poner, campoNum, selector, grupo, par } from '../campos.js';
 import { rejilla } from '../rejilla.js';
@@ -92,7 +92,7 @@ export function datos(ctx, form) {
 
 /* ---------- resultados ---------- */
 
-const COLS = [['x', 'x (m)', 3, 1], ['M', 'M (kN·m)', 0, 1], ['V', 'V (kN)', 0, 1], ['giro', 'θ (mrad)', 1, 1000], ['flecha', 'δ (mm)', 1, 1000]];
+const COLS = [['x', 'x (m)', 3, 1], ['M', 'M (kN·m)', MAG.M.d, 1], ['V', 'V (kN)', MAG.N.d, 1], ['giro', 'θ (mrad)', 1, 1000], ['flecha', 'δ (mm)', 1, 1000]];
 const est = { tabla: false };
 export function reiniciar() { est.tabla = false; }
 

@@ -42,7 +42,7 @@ export const MAG = {
   Ac: { ud: 'm²', f: 1, d: 4 },               // áreas de hormigón
   I: { ud: 'm⁴', f: 1, sig: 4 },              // inercias, en notación científica
   N: { ud: 'kN', f: 1, d: 0 },
-  F: { ud: 'kN', f: 1, d: 1 },                  // fuerzas y reacciones en vigas
+  F: { ud: 'kN', f: 1, d: 0 },                  // fuerzas y reacciones en vigas (sin decimales, José Luis 19/10)
   m: { ud: 'm', f: 1, d: 2 },                  // luces y posiciones en vigas
   Imm: { ud: 'mm⁴', f: 1e12, d: 0 },           // inercia en mm⁴ (valor interno en m⁴)
   EI: { ud: 'kN·m²', f: 1, d: 0 },
@@ -84,6 +84,16 @@ export function cientifico(x, sig = 4) {
   if (e >= -1 && e <= 3) return fmt(x, Math.max(0, sig - 1 - e));
   return `${fmt(m, sig - 1)} × 10${String(e).split('').map((c) => SUP[c]).join('')}`;
 }
+
+/**
+ * Eje de una gráfica con la precisión de su magnitud (la cruz y las marcas usan los mismos decimales que las tablas):
+ * eje('M', 'M_Rd') → { titulo: 'M_Rd (kN·m)', d: 0 }. Las vistas no fijan decimales a mano.
+ */
+export const eje = (mag, nombre) => {
+  const d = MAG[mag].d ?? 0;
+  // dt: decimales de la tabla del gráfico (un decimal más que la cruz, salvo en fuerzas y momentos, que van sin decimales)
+  return { titulo: nombre ? `${nombre} (${MAG[mag].ud})` : `(${MAG[mag].ud})`, d, dt: d === 0 && /^kN/.test(MAG[mag].ud) ? 0 : d + 1 };
+};
 
 /** Valor de una magnitud en unidades de pantalla (número). */
 export const enPantalla = (x, mag) => x * MAG[mag].f;
