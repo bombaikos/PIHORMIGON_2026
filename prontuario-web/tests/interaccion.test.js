@@ -60,3 +60,10 @@ test('N-M: coeficiente de seguridad = 1/aprovechamiento y la armadura dimensiona
   assert.equal(dimensionarNM(sec, [[0, 1e5]]), Infinity);
   assert.equal(dimensionarNM(sec, [[1000, 5]]), 0);
 });
+
+test('N-M: con simetrica = true la rama M− es el espejo de la M+ y coincide con el cálculo completo', () => {
+  const sec = rect(603e-6, 603e-6);
+  const a = diagramaNM(sec, { n: 30 });
+  const b = diagramaNM(sec, { n: 30, simetrica: true });
+  b.pos.forEach((p, i) => { cerca(p.M, a.pos[i].M, 1e-6); cerca(b.neg[i].M, a.neg[i].M, 0.05); });
+});

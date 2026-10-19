@@ -204,7 +204,7 @@ export default {
   'fcr.noBasta': 'Ni multiplicando por 40 la armadura de Secciones caben los esfuerzos.', 'fcr.sinArm': 'Basta el hormigón', 'fcr.kArm': (k, a, g) => `Armadura de Secciones × <b>${k}</b> (${a}) para γ ≥ ${g}.`,
   'fcr.coefSeg': 'Coeficiente de seguridad', 'fcr.puntos': 'Esfuerzos', 'fcr.dentro': 'dentro del diagrama', 'fcr.dentroSello': 'Dentro', 'fcr.fueraSello': 'Fuera', 'fcr.hormigon': 'Hormigón solo', 'fcr.contorno': 'Contorno N-M', 'fcr.puntosCont': 'puntos',
   'fcr.f.env': 'Misma sección sin armadura: resistencia del hormigón solo (sin tracción), para ver cuánto aporta el acero.',
-  'fcr.pista': 'Compresión +, tracción −. M + comprime la cara superior. γ = |OQ|/|OP| a excentricidad constante (verde ≥ 1, rojo < 1).',
+  'fcr.pista': 'Compresión +, tracción −. Armadura simétrica: solo M ≥ 0 (el signo de M no importa). γ = |OQ|/|OP| a excentricidad constante (verde ≥ 1, rojo < 1).',
   'fcr.subtitulo': 'Diagrama de interacción N-M en rotura', 'fcr.sinSec': 'Crea una sección en el módulo Secciones.', 'fcr.compPos': 'compresión +', 'fcr.mSigno': '+ comprime la cara superior', 'fcr.axil': 'El axil',
   'fcr.fueraAxil': (l) => `El axil supera la capacidad de la sección (límite ${l}).`, 'fcr.diagrama': 'Diagrama de interacción', 'fcr.diagramaSub': 'Contorno N-M en rotura con los diagramas de cálculo; M respecto al c.d.g. del hormigón',
   'fcr.f.contorno': 'M<sub>Rd</sub> del contorno con el axil N<sub>Ed</sub> (estado último: máxima curvatura con plano admisible que equilibra N<sub>Ed</sub>)', 'fcr.f.ref': (y) => `Momentos respecto al c.d.g. del hormigón bruto, a ${y} de la cara superior.`,

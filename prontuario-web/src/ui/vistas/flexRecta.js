@@ -1,5 +1,6 @@
 // ELU · Flexión compuesta recta: comprobación, dimensionamiento y diagrama de interacción N-M en rotura.
 // La sección (geometría, disposición de la armadura y materiales) viene de Secciones y aquí no se toca.
+// Solo M ≥ 0 (armadura simétrica: el negativo es el espejo; un M escrito con signo menos se toma en valor absoluto).
 // Los esfuerzos solicitantes (N, M) entran en una tabla y se colocan en el diagrama: verdes dentro, rojos fuera.
 // Coeficiente de seguridad a excentricidad constante: γ = |OQ| / |OP| (Q = corte de la recta O–P con el contorno).
 // Dimensionar mantiene la disposición de la armadura de Secciones y busca el factor que da γ ≥ γ requerido.
@@ -19,7 +20,8 @@ import { grafica } from '../grafica.js';
 import { dibujoSeccion } from '../dibujoSeccion.js';
 import { veredicto } from './flexion.js';
 
-const FORMAS = ['rectangular', 'pilar', 'T', 'circular', 'generica'];
+// Solo secciones con armadura simétrica respecto al eje de flexión (pilar rectangular y circular): basta el diagrama con M ≥ 0
+const FORMAS = ['pilar', 'circular'];
 const est = {
   i: null, modo: 'comprobar', gamma: 1,
   filas: [['500', '150'], ['1500', '100'], ['-150', '60'], ['2500', '200']],
@@ -32,9 +34,8 @@ const ind = (a, b) => `${a}<tspan class="ind" dy="3">${b}</tspan>`;
 const nv = (txt) => leerNumero(txt);
 
 function activa(p) {
-  if (!p.secciones.length) return null;
-  if (!p.secciones[est.i]) est.i = 0;
-  return p.secciones[est.i];
+  if (!FORMAS.includes(p.secciones[est.i]?.forma)) est.i = p.secciones.findIndex((x) => FORMAS.includes(x.forma));
+  return est.i >= 0 ? p.secciones[est.i] : null;
 }
 
 export function cabeza(ctx, el) {
@@ -57,7 +58,7 @@ function resumenSeccion(p, s) {
 }
 
 /** Pares (N, M) válidos de la tabla, con su fila. */
-const pares = () => est.filas.map((f, i) => ({ i, N: nv(f[0]), M: nv(f[1]) })).filter((x) => Number.isFinite(x.N) && Number.isFinite(x.M));
+const pares = () => est.filas.map((f, i) => ({ i, N: nv(f[0]), M: Math.abs(nv(f[1])) })).filter((x) => Number.isFinite(x.N) && Number.isFinite(x.M));
 
 // Los diagramas de una sección circular o genérica tardan: se guarda el último cálculo mientras no cambien los datos
 let memo = { clave: '', c: null };
@@ -74,10 +75,10 @@ function calculo(p, s) {
   let k = 1;
   if (est.modo === 'dimensionar') {
     if (!(As0 > 0)) throw new Error(t('fcr.sinArmadura'));
-    k = dimensionarNM(sec, ps.map((x) => [x.N, x.M]), { gamma: est.gamma });
+    k = dimensionarNM(sec, ps.map((x) => [x.N, x.M]), { gamma: est.gamma, simetrica: true });
   }
   const dibujada = Number.isFinite(k) ? escalarArmadura(sec, k) : escalarArmadura(sec, 1);
-  const c = { geo, sec, As0, k, d: diagramaNM(dibujada, { n: 60 }), dH: diagramaNM(soloHormigon(sec), { n: 60 }) };
+  const c = { geo, sec, As0, k, d: diagramaNM(dibujada, { n: 60, simetrica: true }), dH: diagramaNM(soloHormigon(sec), { n: 60, simetrica: true }) };
   memo = { clave, c };
   return c;
 }
@@ -96,7 +97,7 @@ export function datos(ctx, form) {
     if (!c) return '';
     const N = nv(datosTabla[r][0]);
     const M = nv(datosTabla[r][1]);
-    return Number.isFinite(N) && Number.isFinite(M) ? sigla(coeficienteNM(c.d, N, M)) : '';
+    return Number.isFinite(N) && Number.isFinite(M) ? sigla(coeficienteNM(c.d, N, Math.abs(M))) : '';
   };
   poner(form,
     segmentado({ ancho: true, etiqueta: t('flex.modo'), opciones: [['comprobar', t('comprobar')], ['dimensionar', t('dimensionar')]], valor: est.modo, onCambio: (m) => { est.modo = m; ctx.pintar(); } }),
@@ -138,13 +139,11 @@ export function resultados(ctx, res) {
 
   const Mmax = (rama) => rama.reduce((a, b) => (Math.abs(b.M) > Math.abs(a.M) ? b : a));
   const mp = Mmax(d.pos);
-  const mn = Mmax(d.neg);
   const cif = [
     ...(dim && Number.isFinite(c.k) ? [[sub('A', 's,req'), qh(c.As0 * c.k, 'As')], ['k', fmt(c.k, 2)]] : []),
     [sub('N', 'Rd'), qh(d.Ncomp, 'N')],
     [sub('N', 'Rd,t'), qh(d.Ntrac, 'N')],
-    [`${sub('M', 'Rd,máx')}⁺ (N = ${fmt(mp.N, 0)})`, qh(mp.M, 'M')],
-    [`${sub('M', 'Rd,máx')}⁻ (N = ${fmt(mn.N, 0)})`, qh(Math.abs(mn.M), 'M')],
+    [`${sub('M', 'Rd,máx')} (N = ${fmt(mp.N, 0)})`, qh(mp.M, 'M')],
     [`${sub('N', 'Rd,hormigón')}`, qh(dH.Ncomp, 'N')],
   ];
   const tarjetaGraf = h('article', { class: 'panel tarjeta' }, h('h2', {}, t('fcr.diagrama')), h('p', { class: 'sub' }, t('fcr.diagramaSub')), graficoNM(ctx, d, dH, gam, s));
@@ -167,10 +166,8 @@ function tablaEsfuerzos(gam) {
 function graficoNM(ctx, d, dH, gam, s) {
   const xy = (rama) => [...rama].reverse().map((v) => [v.N, v.M]);
   const series = [
-    { nombre: `${ind('M', 'Rd')}⁺`, clase: 's1', xy: xy(d.pos) },
-    { nombre: `${ind('M', 'Rd')}⁻`, clase: 's2', xy: xy(d.neg) },
+    { nombre: ind('M', 'Rd'), clase: 's1', xy: xy(d.pos) },
     { nombre: t('fcr.hormigon'), clase: 'ref', cruz: false, xy: xy(dH.pos) },
-    { nombre: '', clase: 'ref', cruz: false, xy: xy(dH.neg) },
   ];
   const puntos = gam.map((x) => ({ x: x.N, y: x.M, etq: String(x.i + 1), marca: x.g >= 1 - 1e-6 ? 'ok' : 'no' }));
   return h('div', { class: 'lienzo' }, grafica({

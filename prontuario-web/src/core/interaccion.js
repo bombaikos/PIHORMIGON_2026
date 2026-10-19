@@ -31,9 +31,9 @@ export function axilesLimite(sec) {
  * en el convenio del Prontuario, ordenados de compresión máxima a tracción máxima. M se toma respecto
  * al c.d.g. del hormigón bruto (yref).
  * @param {import('./seccion.js').Seccion} sec
- * @param {{n?: number, yref?: number}} [opc]  n = puntos por rama
+ * @param {{n?: number, yref?: number, simetrica?: boolean}} [opc]  n = puntos por rama; simetrica: solo se calcula M+
  */
-export function diagramaNM(sec, { n = 60, yref = centroBruto(sec) } = {}) {
+export function diagramaNM(sec, { n = 60, yref = centroBruto(sec), simetrica = false } = {}) {
   const { Ncomp, Ntrac } = axilesLimite(sec); // Ncomp > 0, Ntrac < 0
   const rama = (signo) => {
     // Extremos: compresión centrada y tracción pura (curvatura nula, sin estado último con κ ≠ 0)
@@ -51,7 +51,10 @@ export function diagramaNM(sec, { n = 60, yref = centroBruto(sec) } = {}) {
     pts.push(extremo(hi));
     return pts;
   };
-  return { Ncomp, Ntrac, pos: rama(1), neg: rama(-1), yref };
+  const pos = rama(1);
+  // Con armadura simétrica respecto al eje de flexión la rama M− es la M+ cambiada de signo
+  const neg = simetrica ? pos.map((v) => ({ ...v, M: -v.M, epsSup: v.epsInf, epsInf: v.epsSup, kappa: -v.kappa })) : rama(-1);
+  return { Ncomp, Ntrac, pos, neg, yref };
 }
 
 /** Interpola linealmente M en una rama (puntos ordenados por N decreciente) para un axil N. */
@@ -112,9 +115,9 @@ export const soloHormigon = (sec) => ({ ...sec, barras: [] });
  * @param {import('./seccion.js').Seccion} sec  con la armadura de referencia (k = 1)
  * @param {[number, number][]} pares
  */
-export function dimensionarNM(sec, pares, { gamma = 1, kMax = 40, n = 60 } = {}) {
+export function dimensionarNM(sec, pares, { gamma = 1, kMax = 40, n = 60, simetrica = false } = {}) {
   const ok = (k) => {
-    const d = diagramaNM(escalarArmadura(sec, k), { n });
+    const d = diagramaNM(escalarArmadura(sec, k), { n, simetrica });
     return pares.every(([N, M]) => coeficienteNM(d, N, M) >= gamma - 1e-9);
   };
   if (ok(0)) return 0;
