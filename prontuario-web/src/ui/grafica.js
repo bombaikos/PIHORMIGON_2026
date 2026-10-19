@@ -54,6 +54,10 @@ function interpolar(xy, x) {
  * @returns {HTMLElement}
  */
 export function grafica({ series, puntos = [], ejeX, ejeY, archivo = 'grafica', rejillaSec = null, invertirY = false, avisar = () => {} }) {
+  // Guía § 1: fuerzas (kN) y momentos (kN·m) sin decimales, también en la cruz y en la tabla, diga lo que diga el módulo
+  const sinDec = (e) => (/\((kN|kN·m)\)/.test(plano(e.titulo)) ? { ...e, d: 0, dt: 0 } : e);
+  ejeX = sinDec(ejeX);
+  ejeY = sinDec(ejeY);
   const caja = document.createElement('div');
   caja.className = 'grafica';
   caja.tabIndex = 0;
