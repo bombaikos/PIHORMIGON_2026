@@ -811,7 +811,7 @@ details.an-ce { margin-top: var(--e2); }
 .dib .cordon { stroke: var(--linea-fuerte); stroke-width: 2.4; fill: none; }
 .dib .biela { fill: none; stroke: var(--compr); stroke-width: 2.2; }
 .dib .tirante { fill: none; stroke: var(--acero); stroke-width: 1.6; }
-.cor-notas { display: flex; flex-direction: column; gap: 2px; order: 3; }
+.cor-notas, .pun-notas { display: flex; flex-direction: column; gap: 2px; order: 3; }
 
 /* Cortante · etiqueta delante de un segmentado, campo calculado, cotg θ con su botón y aclaraciones junto al dibujo */
 .fu-campo.en-linea { flex-direction: row; align-items: center; gap: 8px; }
@@ -848,3 +848,16 @@ details.an-ce { margin-top: var(--e2); }
 .plegable-res > summary { cursor: pointer; font-size: var(--t-s); color: var(--tinta-2); font-weight: 600; }
 .plegable-res[open] { display: flex; flex-direction: column; gap: var(--e2); }
 .plegable-res .res-plegado { display: flex; flex-direction: column; gap: var(--e3); }
+
+/* Punzonamiento · planta con perímetros de control, perímetro exterior y ramas de cercos */
+.dib .perim { fill: none; stroke-width: 1.6; }
+.dib .perim-ctrl { stroke: var(--tinta); stroke-dasharray: 7 4; }
+.dib .perim-ext { stroke: var(--tinta-3); stroke-dasharray: 2 4; stroke-linecap: round; stroke-width: 2.2; }
+.dib .pilar { fill: var(--linea-fuerte); stroke: var(--tinta); stroke-width: 1.2; }
+.dib .borde-libre { stroke: var(--tinta); stroke-width: 3; fill: none; }
+.dib .rot { font-size: calc((10px + var(--mas)) / var(--k, 1)); }
+svg.dib-pun { min-width: 0; }
+@media (forced-colors: active) {
+  .dib .pilar { fill: Canvas; stroke: CanvasText; }
+  .dib .perim-ctrl, .dib .perim-ext, .dib .borde-libre { stroke: CanvasText; }
+}
