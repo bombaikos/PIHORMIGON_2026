@@ -19,6 +19,7 @@ import * as flexRecta from './vistas/flexRecta.js';
 import * as fuego from './vistas/fuego.js';
 import * as anclaje from './vistas/anclaje.js';
 import * as cortante from './vistas/cortante.js';
+import * as punzonamiento from './vistas/punzonamiento.js';
 import * as vigas1vano from './vistas/vigas.js';
 
 // Crear y editar y Diagramas son el mismo módulo de secciones con la misma sección activa;
@@ -28,7 +29,7 @@ function vistaSecciones(m, propia) {
   const v = { cabeza: fijar(secciones.cabeza), datos: fijar(secciones.datos), resultados: fijar(secciones.resultados) };
   return propia ? { ...secciones, ...v } : v;
 }
-const VISTAS = { proyecto, materiales, reologicas, secciones: vistaSecciones('seccion', true), durabilidad, diagramas: vistaSecciones('mk', false), vigas1vano, flexion, flexRecta, fuego, anclaje, cortante };
+const VISTAS = { proyecto, materiales, reologicas, secciones: vistaSecciones('seccion', true), durabilidad, diagramas: vistaSecciones('mk', false), vigas1vano, flexion, flexRecta, fuego, anclaje, cortante, punzonamiento };
 // Menú principal. Una entrada es un módulo suelto o un grupo con submenú; '|' separa familias dentro del
 // submenú. Lo que aún no está en VISTAS sale atenuado y sin acción, y se activa solo al migrarlo.
 const MENU = [
