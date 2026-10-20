@@ -870,9 +870,13 @@ svg.dib-pun { min-width: 0; }
   .dib .pilar { fill: Canvas; stroke: CanvasText; }
   .dib .perim-ctrl, .dib .perim-ext, .dib .borde-libre { stroke: CanvasText; }
 }
-.pun-criticos h3 { margin: var(--e2) 0 0; font-size: var(--t-s); }
+.pun-criticos { margin-top: var(--e3); }
 .pun-criticos td .ok { color: var(--ok, #1a7f37); font-weight: 600; }
 .pun-criticos td .no { color: var(--mal, #c62828); font-weight: 600; }
+.dib text.halo { paint-order: stroke; stroke: var(--hormigon); stroke-width: 3px; stroke-linejoin: round; font-weight: 650; }
+.dib .cerco-v { stroke: var(--acero); stroke-width: 1.8; }
+.dib .cerco-v.tenue { opacity: .3; }
+.dib .cota { stroke: var(--tinta-2); stroke-width: 1; }
 </style>
 
 <header class="barra">
@@ -4568,11 +4572,11 @@ svg.dib-pun { min-width: 0; }
     "pun.esqRet": "Ret\xEDcula",
     "pun.ramasBrazo": "Ramas/brazo",
     "pun.ramasBrazoAyuda": (n) => `Ramas de cada brazo en cada per\xEDmetro (${n} brazos seg\xFAn la posici\xF3n del pilar), en fila transversal a la separaci\xF3n sr`,
-    "pun.dib.cercosCruz": (n, per, fi, k, b) => `Cruz: ${b} brazos \xD7 ${k} ramas \xF8${fi}, ${per} per\xEDm.`,
-    "pun.dib.cercosRet": (n, per, fi) => `Ret\xEDcula: ${n} ramas \xF8${fi}, ${per} per\xEDm.`,
-    "pun.dib.extEHE": (dl, u, req) => `${sv("u", "n,ef")} exterior a ${dl} mm: ${u} \u2265 ${req} mm`,
-    "pun.dib.extEC": (dl, u, req) => `${sv("u", "out,ef")} exterior a ${dl} mm: ${u} \u2265 ${req} mm`,
-    "pun.dib.ext23": (dl, u, req) => `${sv("b", "0,5,out")} exterior a ${dl} mm: ${u} \u2265 ${req} mm`,
+    "pun.dib.cercosCruz": (n, per, fi, k, b) => `Cruz ${b}\xD7${k} ramas \xF8${fi}, ${per} per\xEDm.`,
+    "pun.dib.cercosRet": (n, per, fi) => `Ret\xEDcula ${n} ramas \xF8${fi}, ${per} per\xEDm.`,
+    "pun.dib.extEHE": (dl, u, req) => `${sv("u", "n,ef")} a ${dl} mm: ${u} \u2265 ${req}`,
+    "pun.dib.extEC": (dl, u, req) => `${sv("u", "out,ef")} a ${dl} mm: ${u} \u2265 ${req}`,
+    "pun.dib.ext23": (dl, u, req) => `${sv("b", "0,5,out")} a ${dl} mm: ${u} \u2265 ${req}`,
     "pun.crit.t": "Per\xEDmetros cr\xEDticos",
     "pun.crit.per": "Per\xEDmetro",
     "pun.crit.dist": "Dist. (mm)",
@@ -4581,12 +4585,16 @@ svg.dib-pun { min-width: 0; }
     "pun.crit.cara": "Cara del pilar (biela)",
     "pun.crit.ctrl": (n) => `Control ${n} (cercos)`,
     "pun.crit.ext": (n) => `Exterior ${n} (hormig\xF3n)`,
+    "pun.dib.alzX": "Alzado A-A (corte por el eje x)",
+    "pun.dib.alzY": "Alzado B-B (corte por el eje y)",
+    "pun.dib.armaz": (fi, a1, sr) => `cercos \xF8${fi} \xB7 a<tspan baseline-shift="sub" font-size="75%">1</tspan> = ${a1} \xB7 s = ${sr} mm`,
+    "pun.hAyuda": "Espesor total de la losa (solo para el dibujo)",
     "pun.dib.aria": (a, b) => `Planta del pilar de ${a} por ${b} mm con los per\xEDmetros de control y los cercos`,
     "pun.dib.borde": "borde libre",
     "pun.dib.pilarR": (a, b, pos) => `Pilar ${a} \xD7 ${b} mm, ${pos}`,
     "pun.dib.pilarC": (D, pos) => `Pilar circular \xF8${D} mm, ${pos}`,
-    "pun.dib.u1": (dl, u) => `${sv("u", "1")} a 2d = ${dl} mm de la cara: ${u} mm`,
-    "pun.dib.b05": (dl, u) => `${sv("b", "0,5")} a 0,5\xB7${sv("d", "v")} = ${dl} mm de la cara: ${u} mm`,
+    "pun.dib.u1": (dl, u) => `${sv("u", "1")} a 2d = ${dl} mm: ${u} mm`,
+    "pun.dib.b05": (dl, u) => `${sv("b", "0,5")} a 0,5\xB7${sv("d", "v")} = ${dl} mm: ${u} mm`,
     // Avisos
     "pun.av.fyd400": (f) => `f<sub>yd</sub> = ${f} MPa se limita a 400 MPa en los cercos (EHE-08 46.4.1)`,
     "pun.av.rho": (r) => `La cuant\xEDa \u03C1<sub>l</sub> = ${r} \u2030 pasa del 20 \u2030 que admite la f\xF3rmula: se toma 20 \u2030`,
@@ -4740,11 +4748,11 @@ svg.dib-pun { min-width: 0; }
     "pun.esqRet": "Rectangular grid",
     "pun.ramasBrazo": "Legs/arm",
     "pun.ramasBrazoAyuda": (n) => `Legs of each arm in each perimeter (${n} arms depending on the column position), in a transverse row at spacing sr`,
-    "pun.dib.cercosCruz": (n, per, fi, k, b) => `Cross: ${b} arms \xD7 ${k} legs \xF8${fi}, ${per} perim.`,
-    "pun.dib.cercosRet": (n, per, fi) => `Grid: ${n} legs \xF8${fi}, ${per} perim.`,
-    "pun.dib.extEHE": (dl, u, req) => `${sv2("u", "n,ef")} outer at ${dl} mm: ${u} \u2265 ${req} mm`,
-    "pun.dib.extEC": (dl, u, req) => `${sv2("u", "out,ef")} outer at ${dl} mm: ${u} \u2265 ${req} mm`,
-    "pun.dib.ext23": (dl, u, req) => `${sv2("b", "0,5,out")} outer at ${dl} mm: ${u} \u2265 ${req} mm`,
+    "pun.dib.cercosCruz": (n, per, fi, k, b) => `Cross ${b}\xD7${k} legs \xF8${fi}, ${per} perim.`,
+    "pun.dib.cercosRet": (n, per, fi) => `Grid ${n} legs \xF8${fi}, ${per} perim.`,
+    "pun.dib.extEHE": (dl, u, req) => `${sv2("u", "n,ef")} at ${dl} mm: ${u} \u2265 ${req}`,
+    "pun.dib.extEC": (dl, u, req) => `${sv2("u", "out,ef")} at ${dl} mm: ${u} \u2265 ${req}`,
+    "pun.dib.ext23": (dl, u, req) => `${sv2("b", "0,5,out")} at ${dl} mm: ${u} \u2265 ${req}`,
     "pun.crit.t": "Critical perimeters",
     "pun.crit.per": "Perimeter",
     "pun.crit.dist": "Dist. (mm)",
@@ -4753,12 +4761,16 @@ svg.dib-pun { min-width: 0; }
     "pun.crit.cara": "Column face (strut)",
     "pun.crit.ctrl": (n) => `Control ${n} (links)`,
     "pun.crit.ext": (n) => `Outer ${n} (concrete)`,
+    "pun.dib.alzX": "Elevation A-A (cut along x)",
+    "pun.dib.alzY": "Elevation B-B (cut along y)",
+    "pun.dib.armaz": (fi, a1, sr) => `links \xF8${fi} \xB7 a<tspan baseline-shift="sub" font-size="75%">1</tspan> = ${a1} \xB7 s = ${sr} mm`,
+    "pun.hAyuda": "Total slab thickness (drawing only)",
     "pun.dib.aria": (a, b) => `Plan of the ${a} by ${b} mm column with control perimeters and links`,
     "pun.dib.borde": "free edge",
     "pun.dib.pilarR": (a, b, pos) => `Column ${a} \xD7 ${b} mm, ${pos}`,
     "pun.dib.pilarC": (D, pos) => `Circular column \xF8${D} mm, ${pos}`,
-    "pun.dib.u1": (dl, u) => `${sv2("u", "1")} at 2d = ${dl} mm from the face: ${u} mm`,
-    "pun.dib.b05": (dl, u) => `${sv2("b", "0,5")} at 0.5\xB7${sv2("d", "v")} = ${dl} mm from the face: ${u} mm`,
+    "pun.dib.u1": (dl, u) => `${sv2("u", "1")} at 2d = ${dl} mm: ${u} mm`,
+    "pun.dib.b05": (dl, u) => `${sv2("b", "0,5")} at 0.5\xB7${sv2("d", "v")} = ${dl} mm: ${u} mm`,
     "pun.av.fyd400": (f) => `f<sub>yd</sub> = ${f} MPa is limited to 400 MPa for links (EHE-08 46.4.1)`,
     "pun.av.rho": (r) => `The ratio \u03C1<sub>l</sub> = ${r} \u2030 exceeds the 20 \u2030 the formula allows: 20 \u2030 is used`,
     "pun.av.sigCd": (s, l) => `\u03C3'<sub>cd</sub> = ${s} MPa exceeds the limit of ${l} MPa (0.30 f<sub>cd</sub>, max. 12 MPa): the limit is used`,
@@ -14000,8 +14012,9 @@ svg.dib-pun { min-width: 0; }
   }
 
   // src/ui/dibujoPunzonamiento.js
-  var ANCHO = 420;
-  var ALTO = 300;
+  var ANCHO = 290;
+  var ALTO = 290;
+  var VW = 650;
   var mm3 = (v2) => fmt(v2, 0);
   function dibujoPunzonamiento(x, o) {
     const aGrande = Math.max(...o.perimetros.map((p) => p.delta), ...o.anillos ?? [0], o.ext ? o.ext.dl + o.ext.kd : 0, 1);
@@ -14035,6 +14048,8 @@ svg.dib-pun { min-width: 0; }
     for (const p of [...o.perimetros].sort((a, b) => b.delta - a.delta)) {
       out.push(`<path class="perim perim-${p.clase}" d="${camino(contorno(x, p.delta, paso2), interior)}"/>`);
     }
+    const studs = [];
+    let formaExt = null;
     if (o.ext && !o.sinArmadura) {
       if (o.esq === "cruz") {
         const env = envolventeCruz(x, o.ext.dl, o.ext.kd, o.k, o.sl);
@@ -14055,30 +14070,50 @@ svg.dib-pun { min-width: 0; }
           abierto2 = true;
         }
         out.push(`<path class="perim perim-ext" d="${dd}"/>`);
-      } else out.push(`<path class="perim perim-ext" d="${camino(contorno(x, o.ext.dl + o.ext.kd, paso2), interior)}"/>`);
+        formaExt = P.filter((q2) => !env.enBorde(q2));
+      } else {
+        const cp = contorno(x, o.ext.dl + o.ext.kd, paso2);
+        out.push(`<path class="perim perim-ext" d="${camino(cp, interior)}"/>`);
+        formaExt = cp;
+      }
     }
     if (!o.sinArmadura && o.anillos?.length) {
       const barra3 = ([a, b]) => `<circle class="barra-ac" cx="${X(a).toFixed(1)}" cy="${Y(b).toFixed(1)}" r="2.6"/>`;
       if (o.esq === "cruz") {
         const ult = o.anillos[o.anillos.length - 1];
-        const cc = x.tipo === "rect" ? { cx: x.c1 / 2, cy: x.c2 / 2, hx: x.c1 / 2, hy: x.c2 / 2 } : { cx: x.D / 2, cy: x.D / 2, hx: x.D / 2, hy: x.D / 2 };
+        const cc2 = x.tipo === "rect" ? { cx: x.c1 / 2, cy: x.c2 / 2, hx: x.c1 / 2, hy: x.c2 / 2 } : { cx: x.D / 2, cy: x.D / 2, hx: x.D / 2, hy: x.D / 2 };
         const ejes = [[1, 0], [0, 1]];
         if (x.pos !== "esquina") ejes.push([-1, 0]);
         if (x.pos === "interior") ejes.push([0, -1]);
         for (const [ux, uy] of ejes) {
-          const cara2 = Math.abs(ux) * cc.hx + Math.abs(uy) * cc.hy;
-          out.push(`<line class="cerco" x1="${X(cc.cx + ux * cara2).toFixed(1)}" y1="${Y(cc.cy + uy * cara2).toFixed(1)}" x2="${X(cc.cx + ux * (cara2 + ult)).toFixed(1)}" y2="${Y(cc.cy + uy * (cara2 + ult)).toFixed(1)}"/>`);
+          const cara2 = Math.abs(ux) * cc2.hx + Math.abs(uy) * cc2.hy;
+          out.push(`<line class="cerco" x1="${X(cc2.cx + ux * cara2).toFixed(1)}" y1="${Y(cc2.cy + uy * cara2).toFixed(1)}" x2="${X(cc2.cx + ux * (cara2 + ult)).toFixed(1)}" y2="${Y(cc2.cy + uy * (cara2 + ult)).toFixed(1)}"/>`);
         }
-        for (const q2 of cercosCruz(x, o.anillos, o.k, o.sl)) out.push(barra3(q2));
+        for (const q2 of cercosCruz(x, o.anillos, o.k, o.sl)) {
+          out.push(barra3(q2));
+          studs.push(q2);
+        }
       } else {
         for (const dl of o.anillos) {
           out.push(`<path class="cerco" d="${camino(contornoRect(x, dl), interior)}"/>`);
-          for (const q2 of cercosReticula(x, dl, o.ramas)) out.push(barra3(q2));
+          for (const q2 of cercosReticula(x, dl, o.ramas)) {
+            out.push(barra3(q2));
+            studs.push(q2);
+          }
         }
       }
     }
     if (x.tipo === "rect") out.push(`<rect class="pilar" x="${X(0).toFixed(1)}" y="${Y(x.c2).toFixed(1)}" width="${(x.c1 * sc).toFixed(1)}" height="${(x.c2 * sc).toFixed(1)}"/>`);
     else out.push(`<circle class="pilar" cx="${X(x.D / 2).toFixed(1)}" cy="${Y(x.D / 2).toFixed(1)}" r="${(x.D / 2 * sc).toFixed(1)}"/>`);
+    const cc = x.tipo === "rect" ? [x.c1 / 2, x.c2 / 2] : [x.D / 2, x.D / 2];
+    const diag = (pts) => pts.reduce((m, q2) => q2[0] - cc[0] + (q2[1] - cc[1]) > m[0] ? [q2[0] - cc[0] + (q2[1] - cc[1]), q2] : m, [-Infinity, null])[1];
+    const nom = o.nombres ?? {};
+    const etiqueta = (q2, txt, dx = 4, dy = -4, fin = false) => q2 && txt ? out.push(`<text class="halo" x="${(X(q2[0]) + dx).toFixed(1)}" y="${(Y(q2[1]) + dy).toFixed(1)}"${fin ? ' text-anchor="end"' : ""}>${txt}</text>`) : 0;
+    etiqueta(x.tipo === "rect" ? [x.c1, x.c2] : [cc[0] + x.D / 2 * Math.SQRT1_2, cc[1] + x.D / 2 * Math.SQRT1_2], nom.u0);
+    const ctrlD = (o.perimetros.find((p) => p.clase === "ctrl") ?? {}).delta;
+    if (ctrlD) etiqueta(diag(contorno(x, ctrlD, paso2 * 2)), nom.ctrl, -3, -3, true);
+    if (formaExt) etiqueta(diag(formaExt), nom.ext, -3, -3, true);
+    if (o.h) out.push(alzados(x, o, studs, ctrlD));
     let yL = ALTO + 6;
     const muestras = {
       ctrl: '<line class="perim perim-ctrl" x1="0" y1="0" x2="22" y2="0"/>',
@@ -14086,12 +14121,74 @@ svg.dib-pun { min-width: 0; }
       cercos: '<line class="cerco" x1="0" y1="0" x2="22" y2="0"/><circle class="barra-ac" cx="11" cy="0" r="2.6"/>',
       pilar: '<rect class="pilar" x="6" y="-5" width="10" height="10"/>'
     };
-    for (const [k, texto] of o.leyenda) {
-      out.push(`<g transform="translate(${margen} ${yL + 8})">${muestras[k] ?? ""}<text x="30" y="4">${texto}</text></g>`);
-      yL += 20;
-    }
+    const mitad = VW / 2;
+    o.leyenda.forEach(([k, texto], i) => {
+      const xx = margen + i % 2 * (mitad - margen / 2);
+      const yy = yL + 8 + Math.floor(i / 2) * 20;
+      out.push(`<g transform="translate(${xx.toFixed(1)} ${yy})">${muestras[k] ?? ""}<text x="30" y="4">${texto}</text></g>`);
+    });
+    yL += Math.ceil(o.leyenda.length / 2) * 20;
     if (!interior) out.push(`<text x="${(Lx1 - 4).toFixed(1)}" y="${(Ly1 + 14).toFixed(1)}" text-anchor="end" class="rot">${t("pun.dib.borde")}</text>`);
-    return `<svg class="dib dib-pun" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${ANCHO} ${Math.ceil(yL + 4)}" role="img" aria-label="${t("pun.dib.aria", mm3(w0), mm3(h0))}">${out.join("")}</svg>`;
+    return `<svg class="dib dib-pun" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${VW} ${Math.ceil(yL + 4)}" role="img" aria-label="${t("pun.dib.aria", mm3(w0), mm3(h0))}">${out.join("")}</svg>`;
+  }
+  function alzados(x, o, studs, ctrlD) {
+    const EW = VW - ANCHO - 16;
+    const EH = 148;
+    const x0 = ANCHO + 16;
+    const w = x.tipo === "rect" ? [x.c1, x.c2] : [x.D, x.D];
+    const c = [w[0] / 2, w[1] / 2];
+    const E = Math.max(ctrlD ?? 0, o.ext ? o.ext.dl + o.ext.kd : 0, 1);
+    const salida = [];
+    ["x", "y"].forEach((eje2, i) => {
+      const k = eje2 === "x" ? 0 : 1;
+      const dim = w[k];
+      const libre = eje2 === "x" && x.pos === "esquina" || eje2 === "y" && x.pos !== "interior";
+      const lo = libre ? 0 : -E;
+      const hi = dim + E;
+      const RES = 80;
+      const m = 6;
+      const se = (EW - RES - 2 * m) / (hi - lo);
+      const U7 = (v2) => x0 + m + (v2 - lo) * se;
+      const sv3 = Math.min(se, 40 / o.h);
+      const y0 = i * EH + 68;
+      const hs = o.h * sv3;
+      const stub = 16;
+      const f = (v2) => v2.toFixed(1);
+      const g = [];
+      g.push(`<text class="tit" x="${x0}" y="${i * EH + 10}">${t(eje2 === "x" ? "pun.dib.alzX" : "pun.dib.alzY")}</text>`);
+      g.push(`<rect class="hor" x="${f(U7(lo))}" y="${f(y0)}" width="${f(U7(hi) - U7(lo))}" height="${f(hs)}"/>`);
+      if (libre) g.push(`<line class="borde-libre" x1="${f(U7(0))}" y1="${f(y0 - 4)}" x2="${f(U7(0))}" y2="${f(y0 + hs + 4)}"/>`);
+      g.push(`<rect class="pilar" x="${f(U7(0))}" y="${f(y0 - stub)}" width="${f(dim * se)}" height="${f(hs + 2 * stub)}"/>`);
+      const banda = o.esq === "cruz" ? o.sl / 2 + 1 : 0.75 * o.sl;
+      const yz = (z) => y0 + (o.h - z) * sv3;
+      const dd = Math.min(o.d ?? o.h, o.h);
+      const pos = studs.map((q2) => [q2[k], Math.abs(q2[1 - k] - c[1 - k]) <= banda]);
+      const vistos = /* @__PURE__ */ new Set();
+      for (const [u, en] of pos.sort((a, b) => a[1] - b[1])) {
+        const key = `${u.toFixed(0)}${en}`;
+        if (vistos.has(key)) continue;
+        vistos.add(key);
+        g.push(`<line class="${en ? "cerco-v" : "cerco-v tenue"}" x1="${f(U7(u))}" y1="${f(yz(o.h - (o.h - dd)))}" x2="${f(U7(u))}" y2="${f(yz(o.h - dd))}"/>`);
+      }
+      const per = [[ctrlD, "perim-ctrl", o.nombres?.ctrl], o.ext ? [o.ext.dl + o.ext.kd, "perim-ext", o.nombres?.ext] : null].filter((p) => p && p[0]);
+      for (const [dl, cl3, nm] of per) {
+        for (const [u, lado] of [[-dl, "i"], [dim + dl, "d"]]) {
+          if (lado === "i" && libre) continue;
+          g.push(`<line class="perim ${cl3}" x1="${f(U7(u))}" y1="${f(y0 - stub - (cl3 === "perim-ext" ? 24 : 8))}" x2="${f(U7(u))}" y2="${f(y0 + hs + 8)}"/>`);
+          if (nm) g.push(`<text class="halo" x="${f(U7(u))}" y="${f(y0 - stub - (cl3 === "perim-ext" ? 24 : 8))}" text-anchor="middle">${nm}</text>`);
+        }
+      }
+      const xe = U7(hi) + 12;
+      g.push(`<line class="cota" x1="${f(xe)}" y1="${f(y0)}" x2="${f(xe)}" y2="${f(y0 + hs)}"/><line class="cota" x1="${f(xe - 4)}" y1="${f(y0)}" x2="${f(xe + 4)}" y2="${f(y0)}"/><line class="cota" x1="${f(xe - 4)}" y1="${f(y0 + hs)}" x2="${f(xe + 4)}" y2="${f(y0 + hs)}"/>`);
+      g.push(`<text x="${f(xe + 7)}" y="${f(y0 + hs / 2 + 4)}">e = ${mm3(o.h)}</text>`);
+      if (o.ext && o.anillos?.length) {
+        const yd = y0 + hs + stub + 12;
+        const a = o.anillos;
+        g.push(`<text x="${f(x0 + m)}" y="${f(yd + 3)}">${t("pun.dib.armaz", mm3(o.fi), mm3(a[0]), mm3(o.sl))}</text>`);
+      }
+      salida.push(...g);
+    });
+    return salida.join("");
   }
 
   // src/ui/vistas/punzonamiento.js
@@ -14109,6 +14206,7 @@ svg.dib-pun { min-width: 0; }
     c1: 300,
     c2: 300,
     D: 350,
+    h: 250,
     d: 210,
     hormigon: null,
     aceroCercos: null,
@@ -14226,19 +14324,12 @@ svg.dib-pun { min-width: 0; }
       ),
       grupo(
         t("pun.losa"),
-        h(
-          "div",
-          { class: "par2" },
+        ...parejas2([
           selector({ id: "p-hor", linea: true, etq: t("pun.hormigon"), opciones: p.hormigones.map((m) => [m.nombre, m.nombre]), valor: D.hormigon, onCambio: (v2) => {
             D.hormigon = v2;
             cambio();
           } }),
-          selector({ id: "p-ace", linea: true, etq: t("pun.acero"), opciones: p.aceros.map((m) => [m.nombre, m.nombre]), valor: D.aceroCercos, onCambio: (v2) => {
-            D.aceroCercos = v2;
-            cambio();
-          } })
-        ),
-        ...parejas2([
+          campoNum({ id: "p-h", etq: "e", valor: D.h, mag: "diam", paso: 10, min: 50, max: 3e3, ayuda: t("pun.hAyuda"), onCambio: set("h") }),
           campoNum({ id: "p-d", etq: e23 ? sub22("d", "v") : "d", valor: D.d, mag: "diam", paso: 10, min: 20, max: 3e3, ayuda: t("pun.dAyuda"), onCambio: set("d") }),
           e23 ? campoNum({ id: "p-dlow", etq: t("pun.Dlower"), valor: D.Dlower, mag: "diam", paso: 2, min: 4, max: 63, ayuda: t("pun.DlowerAyuda"), onCambio: set("Dlower") }) : campoNum({ id: "p-sig", etq: sub22("\u03C3", "cd"), ref: t("pun.sigRef"), valor: D.sigCd, mag: "tension", paso: 0.5, min: -20, max: 40, ayuda: t("pun.sigAyuda"), onCambio: set("sigCd") }),
           campoNum({ id: "p-rx", etq: sub22("\u03C1", "x"), valor: D.rhoX, mag: "cuantia", paso: 0.5, min: 0, max: 0.1, ayuda: t("pun.rhoAyuda"), onCambio: set("rhoX") }),
@@ -14264,16 +14355,20 @@ svg.dib-pun { min-width: 0; }
           D.esq = v2;
           ctx2.cambio({ estructura: true });
         } }),
-        ...arm ? parejas2([
-          comp ? selector({ id: "p-fi", etq: t("cor.fi"), linea: true, opciones: diametrosEntrada2().map((x) => [String(x), `\xF8${x}`]), valor: String(D.fi), onCambio: (v2) => {
+        ...parejas2([
+          selector({ id: "p-ace", linea: true, etq: t("pun.acero"), opciones: p.aceros.map((m) => [m.nombre, m.nombre]), valor: D.aceroCercos, onCambio: (v2) => {
+            D.aceroCercos = v2;
+            cambio();
+          } }),
+          arm && comp ? selector({ id: "p-fi", etq: t("cor.fi"), linea: true, opciones: diametrosEntrada2().map((x) => [String(x), `\xF8${x}`]), valor: String(D.fi), onCambio: (v2) => {
             D.fi = Number(v2);
             cambio();
           } }) : null,
-          comp ? D.esq === "cruz" ? campoNum({ id: "p-rb", etq: t("pun.ramasBrazo"), valor: D.ramasBrazo, mag: "n", paso: 1, min: 1, max: 20, ayuda: t("pun.ramasBrazoAyuda", nBrazos(D.pos)), onCambio: set("ramasBrazo") }) : campoNum({ id: "p-ramas", etq: t("pun.ramas"), valor: D.ramas, mag: "n", paso: 2, min: 1, max: 200, ayuda: t("pun.ramasAyuda"), onCambio: set("ramas") }) : null,
-          campoNum({ id: "p-a1", etq: sub22("a", "1"), valor: D.a1, mag: "diam", paso: 5, min: 0, max: 2e3, ayuda: t("pun.a1Ayuda"), onCambio: set("a1") }),
-          campoNum({ id: "p-sr", etq: sub22("s", "r"), valor: D.sr, mag: "diam", paso: 5, min: 20, max: 2e3, ayuda: t("pun.srAyuda"), onCambio: set("sr") }),
-          comp ? campoNum({ id: "p-nper", etq: t("pun.nPer"), valor: D.nPer, mag: "n", paso: 1, min: 1, max: 30, ayuda: t("pun.nPerAyuda"), onCambio: set("nPer") }) : null
-        ]) : []
+          arm && comp ? D.esq === "cruz" ? campoNum({ id: "p-rb", etq: t("pun.ramasBrazo"), valor: D.ramasBrazo, mag: "n", paso: 1, min: 1, max: 20, ayuda: t("pun.ramasBrazoAyuda", nBrazos(D.pos)), onCambio: set("ramasBrazo") }) : campoNum({ id: "p-ramas", etq: t("pun.ramas"), valor: D.ramas, mag: "n", paso: 2, min: 1, max: 200, ayuda: t("pun.ramasAyuda"), onCambio: set("ramas") }) : null,
+          arm && comp ? campoNum({ id: "p-nper", etq: t("pun.nPer"), valor: D.nPer, mag: "n", paso: 1, min: 1, max: 30, ayuda: t("pun.nPerAyuda"), onCambio: set("nPer") }) : null,
+          arm ? campoNum({ id: "p-a1", etq: sub22("a", "1"), valor: D.a1, mag: "diam", paso: 5, min: 0, max: 2e3, ayuda: t("pun.a1Ayuda"), onCambio: set("a1") }) : null,
+          arm ? campoNum({ id: "p-sr", etq: sub22("s", "r"), valor: D.sr, mag: "diam", paso: 5, min: 20, max: 2e3, ayuda: t("pun.srAyuda"), onCambio: set("sr") }) : null
+        ])
       )
     );
   }
@@ -14393,7 +14488,9 @@ svg.dib-pun { min-width: 0; }
       leyenda3.push(["cercos", t(esq === "cruz" ? "pun.dib.cercosCruz" : "pun.dib.cercosRet", fmt(arm.ramas, 0), fmt(arm.an.length, 0), arm.fi, fmt(k, 0), fmt(brazos, 0))]);
       leyenda3.push(["ext", t(e23 ? "pun.dib.ext23" : ec ? "pun.dib.extEC" : "pun.dib.extEHE", fmt(dl + kd, 0), fmt(uProv, 0), Number.isFinite(uReq) ? fmt(uReq, 0) : "\u2014")]);
     }
-    return dibujoPunzonamiento(x, { perimetros: perimetros4, anillos: arm?.an ?? [], ramas: arm?.ramas ?? 0, sinArmadura: !arm, leyenda: leyenda3, esq, k, sl: comp ? x.arm.sr : r.sr, ext });
+    const sv3 = (a, b) => `${a}<tspan baseline-shift="sub" font-size="75%">${b}</tspan>`;
+    const nombres = e23 ? { u0: sv3("b", "0"), ctrl: sv3("b", "0,5"), ext: sv3("b", "0,5,out") } : { u0: sv3("u", "0"), ctrl: sv3("u", "1"), ext: ec ? sv3("u", "out,ef") : sv3("u", "n,ef") };
+    return dibujoPunzonamiento(x, { perimetros: perimetros4, anillos: arm?.an ?? [], ramas: arm?.ramas ?? 0, sinArmadura: !arm, leyenda: leyenda3, esq, k, sl: comp ? x.arm.sr : r.sr, ext, h: D.h, d: x.d, fi: arm?.fi, nombres });
   }
   function criticos(r, x, D, e23, ec) {
     const d = x.d;
@@ -14417,8 +14514,7 @@ svg.dib-pun { min-width: 0; }
     return h(
       "div",
       { class: "pun-criticos" },
-      h("h3", {}, t("pun.crit.t")),
-      tabla(filas, { cabecera: [t("pun.crit.per"), t("pun.crit.dist"), t("pun.crit.long"), t("pun.crit.comp")] })
+      tabla(filas, { cabecera: [t("pun.crit.t"), t("pun.crit.dist"), t("pun.crit.long"), t("pun.crit.comp")] })
     );
   }
   var rectTexto = (x) => x.tipo === "rect" ? t("pun.dib.pilarR", fmt(x.c1, 0), fmt(x.c2, 0), t(`pun.${x.pos}`).toLowerCase()) : t("pun.dib.pilarC", fmt(x.D, 0), t(`pun.${x.pos}`).toLowerCase());

@@ -19,7 +19,7 @@ const est = { modo: 'comprobar', abiertos: new Set() };
 export function reiniciar() { est.abiertos = new Set(); }
 
 const INICIAL = () => ({
-  tipo: 'rect', pos: 'interior', c1: 300, c2: 300, D: 350, d: 210, hormigon: null, aceroCercos: null,
+  tipo: 'rect', pos: 'interior', c1: 300, c2: 300, D: 350, h: 250, d: 210, hormigon: null, aceroCercos: null,
   rhoX: 0.008, rhoY: 0.008, sigCd: 0, VEd: 400, exc: 'aprox', betaOtro: 1.15, Dlower: 20,
   sin: false, esq: 'cruz', ramasBrazo: 3, fi: 10, ramas: 12, sr: 150, a1: 100, nPer: 3,
 });
@@ -92,10 +92,9 @@ export function datos(ctx, form) {
         : parejas([campoNum({ id: 'p-D', etq: 'D', valor: D.D, mag: 'diam', paso: 25, min: 1, max: 5000, ayuda: t('pun.DAyuda'), onCambio: set('D') })])),
     ),
     grupo(t('pun.losa'),
-      h('div', { class: 'par2' },
-        selector({ id: 'p-hor', linea: true, etq: t('pun.hormigon'), opciones: p.hormigones.map((m) => [m.nombre, m.nombre]), valor: D.hormigon, onCambio: (v) => { D.hormigon = v; cambio(); } }),
-        selector({ id: 'p-ace', linea: true, etq: t('pun.acero'), opciones: p.aceros.map((m) => [m.nombre, m.nombre]), valor: D.aceroCercos, onCambio: (v) => { D.aceroCercos = v; cambio(); } })),
       ...parejas([
+        selector({ id: 'p-hor', linea: true, etq: t('pun.hormigon'), opciones: p.hormigones.map((m) => [m.nombre, m.nombre]), valor: D.hormigon, onCambio: (v) => { D.hormigon = v; cambio(); } }),
+        campoNum({ id: 'p-h', etq: 'e', valor: D.h, mag: 'diam', paso: 10, min: 50, max: 3000, ayuda: t('pun.hAyuda'), onCambio: set('h') }),
         campoNum({ id: 'p-d', etq: e23 ? sub('d', 'v') : 'd', valor: D.d, mag: 'diam', paso: 10, min: 20, max: 3000, ayuda: t('pun.dAyuda'), onCambio: set('d') }),
         e23 ? campoNum({ id: 'p-dlow', etq: t('pun.Dlower'), valor: D.Dlower, mag: 'diam', paso: 2, min: 4, max: 63, ayuda: t('pun.DlowerAyuda'), onCambio: set('Dlower') })
           : campoNum({ id: 'p-sig', etq: sub('σ', 'cd'), ref: t('pun.sigRef'), valor: D.sigCd, mag: 'tension', paso: 0.5, min: -20, max: 40, ayuda: t('pun.sigAyuda'), onCambio: set('sigCd') }),
@@ -112,15 +111,16 @@ export function datos(ctx, form) {
     grupo(t('pun.cercos'),
       comp ? segmentado({ ancho: true, etiqueta: t('pun.cercos'), opciones: [['con', t('cor.conArm')], ['sin', t('cor.sinArm')]], valor: D.sin ? 'sin' : 'con', onCambio: (v) => { D.sin = v === 'sin'; ctx.pintar(); } }) : null,
       segmentado({ ancho: true, etiqueta: t('pun.esq'), opciones: [['cruz', t('pun.esqCruz')], ['ret', t('pun.esqRet')]], valor: D.esq, onCambio: (v) => { D.esq = v; ctx.cambio({ estructura: true }); } }),
-      ...(arm ? parejas([
-        comp ? selector({ id: 'p-fi', etq: t('cor.fi'), linea: true, opciones: diametrosEntrada().map((x) => [String(x), `ø${x}`]), valor: String(D.fi), onCambio: (v) => { D.fi = Number(v); cambio(); } }) : null,
-        comp ? (D.esq === 'cruz'
+      ...parejas([
+        selector({ id: 'p-ace', linea: true, etq: t('pun.acero'), opciones: p.aceros.map((m) => [m.nombre, m.nombre]), valor: D.aceroCercos, onCambio: (v) => { D.aceroCercos = v; cambio(); } }),
+        arm && comp ? selector({ id: 'p-fi', etq: t('cor.fi'), linea: true, opciones: diametrosEntrada().map((x) => [String(x), `ø${x}`]), valor: String(D.fi), onCambio: (v) => { D.fi = Number(v); cambio(); } }) : null,
+        arm && comp ? (D.esq === 'cruz'
           ? campoNum({ id: 'p-rb', etq: t('pun.ramasBrazo'), valor: D.ramasBrazo, mag: 'n', paso: 1, min: 1, max: 20, ayuda: t('pun.ramasBrazoAyuda', nBrazos(D.pos)), onCambio: set('ramasBrazo') })
           : campoNum({ id: 'p-ramas', etq: t('pun.ramas'), valor: D.ramas, mag: 'n', paso: 2, min: 1, max: 200, ayuda: t('pun.ramasAyuda'), onCambio: set('ramas') })) : null,
-        campoNum({ id: 'p-a1', etq: sub('a', '1'), valor: D.a1, mag: 'diam', paso: 5, min: 0, max: 2000, ayuda: t('pun.a1Ayuda'), onCambio: set('a1') }),
-        campoNum({ id: 'p-sr', etq: sub('s', 'r'), valor: D.sr, mag: 'diam', paso: 5, min: 20, max: 2000, ayuda: t('pun.srAyuda'), onCambio: set('sr') }),
-        comp ? campoNum({ id: 'p-nper', etq: t('pun.nPer'), valor: D.nPer, mag: 'n', paso: 1, min: 1, max: 30, ayuda: t('pun.nPerAyuda'), onCambio: set('nPer') }) : null,
-      ]) : [])));
+        arm && comp ? campoNum({ id: 'p-nper', etq: t('pun.nPer'), valor: D.nPer, mag: 'n', paso: 1, min: 1, max: 30, ayuda: t('pun.nPerAyuda'), onCambio: set('nPer') }) : null,
+        arm ? campoNum({ id: 'p-a1', etq: sub('a', '1'), valor: D.a1, mag: 'diam', paso: 5, min: 0, max: 2000, ayuda: t('pun.a1Ayuda'), onCambio: set('a1') }) : null,
+        arm ? campoNum({ id: 'p-sr', etq: sub('s', 'r'), valor: D.sr, mag: 'diam', paso: 5, min: 20, max: 2000, ayuda: t('pun.srAyuda'), onCambio: set('sr') }) : null,
+      ])));
 }
 
 export function resultados(ctx, res) {
@@ -223,7 +223,9 @@ function planta(p, x, r, comp, D, e23, ec, N) {
     leyenda.push(['cercos', t(esq === 'cruz' ? 'pun.dib.cercosCruz' : 'pun.dib.cercosRet', fmt(arm.ramas, 0), fmt(arm.an.length, 0), arm.fi, fmt(k, 0), fmt(brazos, 0))]);
     leyenda.push(['ext', t(e23 ? 'pun.dib.ext23' : ec ? 'pun.dib.extEC' : 'pun.dib.extEHE', fmt(dl + kd, 0), fmt(uProv, 0), Number.isFinite(uReq) ? fmt(uReq, 0) : '—')]);
   }
-  return dibujoPunzonamiento(x, { perimetros, anillos: arm?.an ?? [], ramas: arm?.ramas ?? 0, sinArmadura: !arm, leyenda, esq, k, sl: comp ? x.arm.sr : r.sr, ext });
+  const sv = (a, b) => `${a}<tspan baseline-shift="sub" font-size="75%">${b}</tspan>`;
+  const nombres = e23 ? { u0: sv('b', '0'), ctrl: sv('b', '0,5'), ext: sv('b', '0,5,out') } : { u0: sv('u', '0'), ctrl: sv('u', '1'), ext: ec ? sv('u', 'out,ef') : sv('u', 'n,ef') };
+  return dibujoPunzonamiento(x, { perimetros, anillos: arm?.an ?? [], ramas: arm?.ramas ?? 0, sinArmadura: !arm, leyenda, esq, k, sl: comp ? x.arm.sr : r.sr, ext, h: D.h, d: x.d, fi: arm?.fi, nombres });
 }
 
 /** Tabla de comprobación en los perímetros críticos: cara del pilar, perímetro de control y perímetro exterior. */
@@ -246,8 +248,8 @@ function criticos(r, x, D, e23, ec) {
     [t('pun.crit.ctrl', e23 ? nombre('b', '0,5') : nombre('u', '1')), fmt(ctrl, 0), fmt(uCtrl, 0), `${kN(V)} ≤ ${kN(capCtrl)} kN ${ok(V <= capCtrl + 1e-9)}`],
     [t('pun.crit.ext', e23 ? nombre('b', '0,5,out') : ec ? nombre('u', 'out,ef') : nombre('u', 'n,ef')), fmt(dl + kd, 0), fmt(uProv, 0), `${fmt(uProv, 0)} ≥ ${fmt(uReq, 0)} mm ${ok(uProv >= uReq - 1e-6)}`],
   ];
-  return h('div', { class: 'pun-criticos' }, h('h3', {}, t('pun.crit.t')),
-    tabla(filas, { cabecera: [t('pun.crit.per'), t('pun.crit.dist'), t('pun.crit.long'), t('pun.crit.comp')] }));
+  return h('div', { class: 'pun-criticos' },
+    tabla(filas, { cabecera: [t('pun.crit.t'), t('pun.crit.dist'), t('pun.crit.long'), t('pun.crit.comp')] }));
 }
 
 const rectTexto = (x) => (x.tipo === 'rect' ? t('pun.dib.pilarR', fmt(x.c1, 0), fmt(x.c2, 0), t(`pun.${x.pos}`).toLowerCase())

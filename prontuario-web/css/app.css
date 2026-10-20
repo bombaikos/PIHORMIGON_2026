@@ -861,6 +861,10 @@ svg.dib-pun { min-width: 0; }
   .dib .pilar { fill: Canvas; stroke: CanvasText; }
   .dib .perim-ctrl, .dib .perim-ext, .dib .borde-libre { stroke: CanvasText; }
 }
-.pun-criticos h3 { margin: var(--e2) 0 0; font-size: var(--t-s); }
+.pun-criticos { margin-top: var(--e3); }
 .pun-criticos td .ok { color: var(--ok, #1a7f37); font-weight: 600; }
 .pun-criticos td .no { color: var(--mal, #c62828); font-weight: 600; }
+.dib text.halo { paint-order: stroke; stroke: var(--hormigon); stroke-width: 3px; stroke-linejoin: round; font-weight: 650; }
+.dib .cerco-v { stroke: var(--acero); stroke-width: 1.8; }
+.dib .cerco-v.tenue { opacity: .3; }
+.dib .cota { stroke: var(--tinta-2); stroke-width: 1; }
