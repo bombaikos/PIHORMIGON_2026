@@ -209,7 +209,7 @@ export function resultados(ctx, res) {
   const lado = h('aside', { class: 'fcr-lado' },
     h('div', { class: 'fcr-sec', html: dibujoSeccionPeq(geo, s) }),
     tablaEsfuerzos(gam));
-  res.append(h('article', { class: 'panel tarjeta' }, h('h2', {}, t('fcr.diagrama')),
+  res.append(h('article', { class: 'panel tarjeta' }, h('h2', {}, `${t('fcr.diagrama')} · ${s.nombre}${c.phi0 ? ` · ø${fmt(est.fi ?? c.phi0, 0)}` : ''}`),
     h('div', { class: 'fcr-diag' }, h('div', { class: 'fcr-graf' }, graficoNM(ctx, d, dH, gam, s), nota), lado)));
 }
 
