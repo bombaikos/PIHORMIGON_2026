@@ -851,6 +851,16 @@ details.an-ce { margin-top: var(--e2); }
 .plegable-res[open] { display: flex; flex-direction: column; gap: var(--e2); }
 .plegable-res .res-plegado { display: flex; flex-direction: column; gap: var(--e3); }
 
+/* Flexión compuesta recta, modo Diagrama: todo a la vista (diagrama, nota de resultados, sección pequeña y tabla) */
+.fcr-diag { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--e4); flex: 1; min-height: 0; }
+@media (min-width: 1100px) and (min-height: 600px) { .fcr-diag { grid-template-columns: minmax(0, 1fr) minmax(220px, 300px); } }
+.fcr-graf { display: flex; flex-direction: column; gap: var(--e2); min-width: 0; min-height: 0; }
+.fcr-graf > .lienzo { flex: 1; min-height: 0; }
+.nota-diag { margin: 0; font-size: var(--t-s); color: var(--tinta-2); line-height: 1.5; flex-shrink: 0; }
+.fcr-lado { display: flex; flex-direction: column; gap: var(--e3); min-width: 0; min-height: 0; overflow: auto; }
+.fcr-sec svg { width: 100%; height: auto; max-height: 190px; }
+.fcr-lado table { width: 100%; }
+
 /* Punzonamiento · planta con perímetros de control, perímetro exterior y ramas de cercos */
 .dib .perim { fill: none; stroke-width: 1.6; }
 .dib .perim-ctrl { stroke: var(--tinta); stroke-dasharray: 7 4; }
@@ -2704,6 +2714,19 @@ svg.dib-pun { min-width: 0; }
     "fcr.f.env": "Misma secci\xF3n sin armadura: resistencia del hormig\xF3n solo (sin tracci\xF3n), para ver cu\xE1nto aporta el acero.",
     "fcr.pista": "Compresi\xF3n +, tracci\xF3n \u2212. Armadura sim\xE9trica: solo M \u2265 0 (el signo de M no importa). \u03B3 = |OQ|/|OP| a excentricidad constante (verde \u2265 1, rojo < 1).",
     "fcr.resumenRes": (n, g) => `Resultados y esfuerzos (${n} \xB7 \u03B3 m\xEDn. ${g})`,
+    "fcr.modoDiagrama": "Diagrama",
+    "fcr.pista1": "Compresi\xF3n +, tracci\xF3n \u2212. Armadura sim\xE9trica: el signo de M no importa. \u03B3 = |OQ|/|OP| a excentricidad constante.",
+    "fcr.dibujoSub": "Secci\xF3n, deformaciones y tensiones en el estado \xFAltimo al mismo e = M/N, a la misma escala vertical",
+    "fcr.dibujoAria": "Secci\xF3n, plano de deformaciones y tensiones en rotura",
+    "fcr.fiCalc": "di\xE1metro de c\xE1lculo",
+    "fcr.fiSec": (f) => `Secci\xF3n: \xF8${f}. Aqu\xED se puede cambiar sin tocar Secciones.`,
+    "fcr.fiProp": "Di\xE1metro propuesto",
+    "fcr.fiArm": (fe, a, ae, g) => `\xF8 estricto ${fe} mm \xB7 A<sub>s</sub> ${a} (estricta ${ae}) para \u03B3 \u2265 ${g}.`,
+    "fcr.estricto": "estricto",
+    "fcr.propuesto": "propuesto",
+    "fcr.bajoMin": (a, m) => `Armadura dispuesta ${a} menor que la cuant\xEDa m\xEDnima ${m}: aunque cumpla el c\xE1lculo, no cumple el m\xEDnimo.`,
+    "fcr.mandaMin": (m) => `Manda la cuant\xEDa m\xEDnima (${m}), no la resistencia.`,
+    "fcr.subeEmin": (e2) => `* M elevado a N\xB7e<sub>m\xEDn</sub> (e<sub>m\xEDn</sub> = ${e2} mm).`,
     "fcr.subtitulo": "Diagrama de interacci\xF3n N-M en rotura",
     "fcr.sinSec": "Crea una secci\xF3n en el m\xF3dulo Secciones.",
     "fcr.compPos": "compresi\xF3n +",
@@ -3673,6 +3696,19 @@ svg.dib-pun { min-width: 0; }
     "fcr.f.env": "Same section without reinforcement: concrete-only capacity (no tension), to show what the steel adds.",
     "fcr.pista": "Compression +, tension \u2212. Symmetric reinforcement: only M \u2265 0 (the sign of M is ignored). \u03B3 = |OQ|/|OP| at constant eccentricity (green \u2265 1, red < 1).",
     "fcr.resumenRes": (n, g) => `Results and actions (${n} \xB7 min. \u03B3 ${g})`,
+    "fcr.modoDiagrama": "Diagram",
+    "fcr.pista1": "Compression +, tension \u2212. Symmetric reinforcement: the sign of M is ignored. \u03B3 = |OQ|/|OP| at constant eccentricity.",
+    "fcr.dibujoSub": "Section, strains and stresses at the ultimate state at the same e = M/N, same vertical scale",
+    "fcr.dibujoAria": "Section, strain plane and stresses at failure",
+    "fcr.fiCalc": "design diameter",
+    "fcr.fiSec": (f) => `Section: \xF8${f}. It can be changed here without touching Sections.`,
+    "fcr.fiProp": "Proposed diameter",
+    "fcr.fiArm": (fe, a, ae, g) => `strict \xF8 ${fe} mm \xB7 A<sub>s</sub> ${a} (strict ${ae}) for \u03B3 \u2265 ${g}.`,
+    "fcr.estricto": "strict",
+    "fcr.propuesto": "proposed",
+    "fcr.bajoMin": (a, m) => `Provided reinforcement ${a} is below the minimum ${m}: it passes the calculation but not the minimum.`,
+    "fcr.mandaMin": (m) => `The minimum reinforcement (${m}) governs, not strength.`,
+    "fcr.subeEmin": (e2) => `* M raised to N\xB7e<sub>min</sub> (e<sub>min</sub> = ${e2} mm).`,
     "fcr.subtitulo": "N-M interaction diagram at ultimate",
     "fcr.sinSec": "Create a section in the Sections module.",
     "fcr.compPos": "compression +",
@@ -10723,6 +10759,7 @@ svg.dib-pun { min-width: 0; }
     cabeza: () => cabeza3,
     comandos: () => comandos6,
     datos: () => datos9,
+    eMinima: () => eMinima,
     reiniciar: () => reiniciar5,
     resultados: () => resultados9
   });
@@ -10769,7 +10806,7 @@ svg.dib-pun { min-width: 0; }
         return e2.converge ? { N: -e2.N, M: e2.M, x: e2.x, epsSup: e2.epsSup, epsInf: e2.epsInf, kappa: e2.kappa } : null;
       };
       const afinar = (a, b, prof) => {
-        if (prof >= 9 || Math.abs(a.N - b.N) < 1e-3) return [];
+        if (prof >= 11 || Math.abs(a.N - b.N) < 1e-3) return [];
         const m = medio(a, b);
         if (!m || Math.abs(m.M - (a.M + b.M) / 2) <= lim) return [];
         return [...afinar(a, m, prof + 1), m, ...afinar(m, b, prof + 1)];
@@ -10838,10 +10875,13 @@ svg.dib-pun { min-width: 0; }
   var FORMAS2 = ["pilar", "circular"];
   var est5 = {
     i: null,
+    fi: null,
     modo: "comprobar",
     gamma: 1,
+    NEd: 500,
+    MEd: 150,
     filas: [["500", "150"], ["1500", "100"], ["-150", "60"], ["2500", "200"]],
-    abiertos: /* @__PURE__ */ new Set(["coef"]),
+    abiertos: /* @__PURE__ */ new Set(),
     pestana: "resultados",
     resAbierto: false
   };
@@ -10851,9 +10891,16 @@ svg.dib-pun { min-width: 0; }
   var sub17 = (a, b) => `${a}<sub>${b}</sub>`;
   var ind2 = (a, b) => `${a}<tspan class="ind" dy="3">${b}</tspan>`;
   var nv = (txt) => leerNumero(txt);
+  function eMinima(norma2, s) {
+    const h2 = s.forma === "circular" ? s.geo.D : s.geo.h;
+    return Math.max(h2 / (norma2 === "EHE-08" ? 20 : 30), 0.02);
+  }
+  var emin = 0;
   function activa(p) {
     if (!FORMAS2.includes(p.secciones[est5.i]?.forma)) est5.i = p.secciones.findIndex((x) => FORMAS2.includes(x.forma));
-    return est5.i >= 0 ? p.secciones[est5.i] : null;
+    const s = est5.i >= 0 ? p.secciones[est5.i] : null;
+    emin = s ? eMinima(p.norma, s) : 0;
+    return s;
   }
   function cabeza3(ctx2, el) {
     const s = activa(ctx2.p);
@@ -10862,6 +10909,7 @@ svg.dib-pun { min-width: 0; }
       const i = ctx2.p.secciones.findIndex((x) => x.nombre === nombre);
       if (i >= 0) {
         est5.i = i;
+        est5.fi = null;
         ctx2.pintar();
       }
     } });
@@ -10877,28 +10925,47 @@ svg.dib-pun { min-width: 0; }
     } else dim = `${s.forma === "T" ? "T " : ""}${mmS2(g.b)} \xD7 ${mmS2(g.h)} mm`;
     return `${dim} \xB7 ${s.hormigon} \xB7 ${s.acero}`;
   }
-  var pares = () => est5.filas.map((f, i) => ({ i, N: nv(f[0]), M: Math.abs(nv(f[1])) })).filter((x) => Number.isFinite(x.N) && Number.isFinite(x.M));
+  var pares = () => (est5.modo !== "diagrama" ? [{ i: 0, N: est5.NEd, M: Math.abs(est5.MEd) }] : est5.filas.map((f, i) => ({ i, N: nv(f[0]), M: Math.abs(nv(f[1])) }))).filter((x) => Number.isFinite(x.N) && Number.isFinite(x.M)).map((x) => x.N > 0 && x.M < x.N * emin - 1e-9 ? { ...x, M: x.N * emin, subeM: true } : x);
+  function fiComun(geo) {
+    if (!geo.barras.length || geo.franjas.length) return null;
+    const f = geo.barras.map((b) => b.fi);
+    return f.every((x) => Math.abs(x - f[0]) < 1e-9) ? f[0] : null;
+  }
   var memo = { clave: "", c: null };
   function calculo(p, s) {
     const ps = pares();
-    const clave = JSON.stringify([p.norma, s.geo, s.armado, s.hormigon, s.acero, sepCapas(p), est5.modo, est5.modo === "dimensionar" ? [est5.gamma, ps.map((x) => [x.N, x.M])] : 0]);
+    const clave = JSON.stringify([p.norma, s.geo, s.armado, s.hormigon, s.acero, sepCapas(p), est5.modo, est5.fi, serieDiametros(), emin, est5.modo === "dimensionar" ? [ps.map((x) => [x.N, x.M])] : 0]);
     if (memo.clave === clave) return memo.c;
     const geo = geometriaDe(p, s);
     if (geo.errores?.length) throw new Error(geo.errores.join(" "));
     const mats = materialesSeccion(p, s);
     const sec = seccionMotor(geo, mats.hormigon, mats.acero);
     const As0 = sec.barras.reduce((a, b) => a + b.A, 0);
+    const phi0 = fiComun(geo);
+    const Ac = sec.trapecios.reduce((a, t2) => a + (t2.b1 + t2.b2) / 2 * (t2.y2 - t2.y1), 0);
+    const cm = cuantiaMinima({ norma: p.norma, tipo: "pilar", h: 0, Ac, yg: 0, Ix: 0, fctm: 0, fyk: mats.acero.fk, gammaS: mats.acero.gamma, N: Math.max(0, ...ps.map((x) => x.N)) });
+    const Amin = cm.A;
+    const kMin = As0 > 0 ? Amin / As0 : 0;
     let k = 1;
+    let kEstricto = 1;
+    let phiEstricto = null;
+    let phiProp = null;
     if (est5.modo === "dimensionar") {
       if (!(As0 > 0)) throw new Error(t("fcr.sinArmadura"));
-      k = dimensionarNM(sec, ps.map((x) => [x.N, x.M]), { gamma: est5.gamma, simetrica: true });
-    }
+      kEstricto = dimensionarNM(sec, ps.map((x) => [x.N, x.M]), { gamma: 1, simetrica: true });
+      k = Number.isFinite(kEstricto) ? Math.max(kEstricto, kMin) : kEstricto;
+      if (phi0 && Number.isFinite(k)) {
+        phiEstricto = kEstricto > 0 ? phi0 * Math.sqrt(kEstricto) : 0;
+        phiProp = serieDiametros().find((x) => x >= phi0 * Math.sqrt(k) - 1e-9) ?? null;
+        if (phiProp) k = (phiProp / phi0) ** 2;
+      }
+    } else if (phi0 && est5.fi > 0) k = (est5.fi / phi0) ** 2;
     const dibujada = Number.isFinite(k) ? escalarArmadura(sec, k) : escalarArmadura(sec, 1);
-    const c = { geo, sec, As0, k, d: diagramaNM(dibujada, { n: 60, simetrica: true, tol: TOL }), dH: diagramaNM(soloHormigon(sec), { n: 60, simetrica: true, tol: TOL }) };
+    const c = { geo, sec, secD: dibujada, As0, Amin, cm, k, kEstricto, phi0, phiEstricto, phiProp, d: diagramaNM(dibujada, { n: 100, simetrica: true, tol: TOL }), dH: diagramaNM(soloHormigon(sec), { n: 100, simetrica: true, tol: TOL }) };
     memo = { clave, c };
     return c;
   }
-  var TOL = 1e-4;
+  var TOL = 2e-5;
   var sigla = (g) => g === Infinity ? "\u221E" : fmt(g, 2);
   function datos9(ctx2, form) {
     const p = ctx2.p;
@@ -10911,19 +10978,39 @@ svg.dib-pun { min-width: 0; }
       c = calculo(p, s);
     } catch {
     }
+    const campoFi = () => {
+      if (est5.modo === "dimensionar" || !c?.phi0) return null;
+      const serie = [.../* @__PURE__ */ new Set([...serieDiametros(), c.phi0])].sort((x, y) => x - y);
+      return selector({ id: "fr-fi", etq: "\xF8 (mm)", linea: true, opciones: serie.map((x) => [x, fmt(x, 0)]), valor: est5.fi ?? c.phi0, onCambio: (v2) => {
+        est5.fi = Number(v2);
+        cambio();
+      } });
+    };
     const coefFila = (datosTabla, r) => {
       if (!c) return "";
       const N = nv(datosTabla[r][0]);
-      const M2 = nv(datosTabla[r][1]);
-      return Number.isFinite(N) && Number.isFinite(M2) ? sigla(coeficienteNM(c.d, N, Math.abs(M2))) : "";
+      const M0 = nv(datosTabla[r][1]);
+      const M2 = Number.isFinite(N) && N > 0 ? Math.max(Math.abs(M0), N * emin) : Math.abs(M0);
+      return Number.isFinite(N) && Number.isFinite(M2) ? sigla(coeficienteNM(c.d, N, M2)) : "";
     };
     poner(
       form,
-      segmentado({ ancho: true, etiqueta: t("flex.modo"), opciones: [["comprobar", t("comprobar")], ["dimensionar", t("dimensionar")]], valor: est5.modo, onCambio: (m) => {
+      segmentado({ ancho: true, etiqueta: t("flex.modo"), opciones: [["comprobar", t("comprobar")], ["dimensionar", t("dimensionar")], ["diagrama", t("fcr.modoDiagrama")]], valor: est5.modo, onCambio: (m) => {
         est5.modo = m;
         ctx2.pintar();
       } }),
-      grupo(
+      est5.modo !== "diagrama" ? grupo(
+        t("g.esfuerzo"),
+        campoNum({ id: "fr-n", etq: sub17("N", "Ed"), ref: t("fcr.compPos"), valor: est5.NEd, mag: "N", paso: 10, min: -1e6, max: 1e6, nombre: t("fcr.axil"), onCambio: (v2) => {
+          est5.NEd = v2;
+          cambio();
+        } }),
+        campoNum({ id: "fr-m", etq: sub17("M", "Ed"), valor: est5.MEd, mag: "M", paso: 5, min: -1e6, max: 1e6, nombre: t("flex.momento"), onCambio: (v2) => {
+          est5.MEd = v2;
+          cambio();
+        } }),
+        campoFi()
+      ) : grupo(
         t("fcr.esfuerzos"),
         rejilla({
           id: "fr-esf",
@@ -10936,11 +11023,7 @@ svg.dib-pun { min-width: 0; }
             cambio();
           }
         }),
-        h("p", { style: "margin:4px 0 0;font-size:var(--t-s);color:var(--tinta-3)", html: t("fcr.pista") }),
-        est5.modo === "dimensionar" ? campoNum({ id: "fr-gamma", etq: t("fcr.gammaReq"), valor: est5.gamma, mag: "ratio", paso: 0.05, min: 0.5, max: 5, onCambio: (v2) => {
-          est5.gamma = v2;
-          cambio();
-        } }) : null
+        campoFi()
       ),
       grupo(t("g.seccion"), h("p", { style: "margin:0;font-size:var(--t-s);color:var(--tinta-2);line-height:1.5", html: `${resumenSeccion3(p, s)}<br>${t("fcr.deSecciones")}` }))
     );
@@ -10957,19 +11040,30 @@ svg.dib-pun { min-width: 0; }
     const gam = ps.map((x) => ({ ...x, g: coeficienteNM(d, x.N, x.M) }));
     const gmin = Math.min(...gam.map((x) => x.g));
     const dim = est5.modo === "dimensionar";
+    const unico = est5.modo !== "diagrama";
     (_a = p.calculos).flexionCompuesta ?? (_a.flexionCompuesta = {});
     p.calculos.flexionCompuesta[s.nombre] = { modo: est5.modo, esfuerzos: ps.map((x) => [x.N, x.M]), norma: p.norma, fecha: (/* @__PURE__ */ new Date()).toISOString().slice(0, 10), resultado: { gammaMin: gmin, k: c.k } };
     if (dim && !Number.isFinite(c.k)) {
       res.append(veredicto("nocumple", t("aumentar"), t("armaduraNec"), "\u2014", t("fcr.noBasta")));
     } else if (dim) {
       const As = c.As0 * c.k;
-      res.append(veredicto(
-        c.k === 0 ? "atencion" : "cumple",
-        c.k === 0 ? t("fcr.sinArm") : t("valida"),
-        t("armaduraNec"),
-        qh(As, "As"),
-        t("fcr.kArm", fmt(c.k, 2), q(c.As0, "As"), fmt(est5.gamma, 2))
-      ));
+      if (c.phiProp) {
+        res.append(veredicto(
+          "cumple",
+          t("valida"),
+          t("fcr.fiProp"),
+          `\xF8${fmt(c.phiProp, 0)}<span class="u"> mm</span>`,
+          t("fcr.fiArm", c.phiEstricto > 0 ? fmt(c.phiEstricto, 1) : "\u2014", q(As, "As"), q(c.As0 * c.kEstricto, "As"), "1,00")
+        ));
+      } else {
+        res.append(veredicto(
+          c.k === 0 ? "atencion" : "cumple",
+          c.k === 0 ? t("fcr.sinArm") : t("valida"),
+          t("armaduraNec"),
+          qh(As, "As"),
+          t("fcr.kArm", fmt(c.k, 2), q(c.As0, "As"), "1,00")
+        ));
+      }
     } else {
       const ok = gmin >= 1 - 1e-6;
       res.append(veredicto(
@@ -10977,43 +11071,49 @@ svg.dib-pun { min-width: 0; }
         ok ? t("cumple") : t("noCumple"),
         "\u03B3 = |OQ|/|OP|",
         sigla(gmin),
-        `${t("fcr.puntos")} <b>${gam.filter((x) => x.g >= 1 - 1e-6).length}</b> / ${gam.length} ${t("fcr.dentro")}`,
+        unico ? `${sub17("M", "Rd")}(${sub17("N", "Ed")}) <b>${q(momentoEn(d.pos, gam[0].N), "M")}</b> \xB7 ${sub17("M", "Ed")} <b>${q(gam[0].M, "M")}</b>` : `${t("fcr.puntos")} <b>${gam.filter((x) => x.g >= 1 - 1e-6).length}</b> / ${gam.length} ${t("fcr.dentro")}`,
         Math.min(1 / Math.max(gmin, 1e-9) / 1.25, 1)
       ));
     }
+    const Asd = c.As0 * c.k;
+    if (Asd + 1e-12 < c.Amin) res.append(aviso(t("fcr.bajoMin", q(Asd, "As"), q(c.Amin, "As"))));
+    else if (dim && c.As0 * c.kEstricto + 1e-12 < c.Amin) res.append(aviso(t("fcr.mandaMin", q(c.Amin, "As")), "info"));
+    if (gam.some((x) => x.subeM)) res.append(aviso(t("fcr.subeEmin", fmt(emin * 1e3, 0)), "info"));
+    if (unico) return resultadoUnico(ctx2, res, { s, c, gam: gam[0], gmin, dim });
     const Mmax = (rama) => rama.reduce((a, b) => Math.abs(b.M) > Math.abs(a.M) ? b : a);
     const mp = Mmax(d.pos);
-    const cif = [
-      ...dim && Number.isFinite(c.k) ? [[sub17("A", "s,req"), qh(c.As0 * c.k, "As")], ["k", fmt(c.k, 2)]] : [],
-      [sub17("N", "Rd"), qh(d.Ncomp, "N")],
-      [sub17("N", "Rd,t"), qh(d.Ntrac, "N")],
-      [`${sub17("M", "Rd,m\xE1x")} (N = ${fmt(mp.N, MAG.N.d)})`, qh(mp.M, "M")],
-      [`${sub17("N", "Rd,hormig\xF3n")}`, qh(dH.Ncomp, "N")]
-    ];
-    const tarjetaRes = h("div", { class: "res-plegado" });
-    tarjetaRes.append(pestanas({ lista: [["resultados", t("t.resultados")], ["esfuerzos", t("fcr.esfuerzos")], ["seccion", t("g.seccion")]], activa: est5.pestana, onCambio: (k) => {
-      est5.pestana = k;
-      ctx2.pintar();
-    } }));
-    if (est5.pestana === "seccion") tarjetaRes.append(h("div", { class: "lienzo", html: dibujoSeccion(geo, s, { ancho: 360, alto: 300 }) }));
-    else if (est5.pestana === "esfuerzos") tarjetaRes.append(tablaEsfuerzos(gam));
-    else tarjetaRes.append(cifras(cif), h("p", { class: "sub", style: "margin:0" }, t("t.desplegar")), traza2(p, d, dH, gmin));
-    const plegable2 = h(
-      "details",
-      { class: "plegable-res", open: est5.resAbierto },
-      h("summary", {}, t("fcr.resumenRes", fmt(gam.length, 0), sigla(gmin))),
-      tarjetaRes
+    const nota = h("p", { class: "nota-diag", html: [
+      `${sub17("N", "Rd")} <b>${q(d.Ncomp, "N")}</b>`,
+      `${sub17("N", "Rd,t")} <b>${q(d.Ntrac, "N")}</b>`,
+      `${sub17("M", "Rd,m\xE1x")} <b>${q(mp.M, "M")}</b> (N = ${fmt(mp.N, MAG.N.d)})`,
+      `${sub17("N", "Rd,hormig\xF3n")} <b>${q(dH.Ncomp, "N")}</b>`,
+      ...c.phi0 ? [`\xF8 <b>${fmt(est5.fi ?? c.phi0, 0)}</b> mm \xB7 ${sub17("A", "s")} <b>${q(c.As0 * c.k, "As")}</b> (${sub17("A", "s,m\xEDn")} ${q(c.Amin, "As")})`] : []
+    ].join(" \xB7 ") });
+    const lado = h(
+      "aside",
+      { class: "fcr-lado" },
+      h("div", { class: "fcr-sec", html: dibujoSeccionPeq(geo, s) }),
+      tablaEsfuerzos(gam)
     );
-    plegable2.addEventListener("toggle", () => {
-      est5.resAbierto = plegable2.open;
-    });
-    res.append(h("article", { class: "panel tarjeta" }, h("h2", {}, t("fcr.diagrama")), h("p", { class: "sub" }, t("fcr.diagramaSub")), graficoNM(ctx2, d, dH, gam, s), plegable2));
+    res.append(h(
+      "article",
+      { class: "panel tarjeta" },
+      h("h2", {}, `${t("fcr.diagrama")} \xB7 ${s.nombre}${c.phi0 ? ` \xB7 \xF8${fmt(est5.fi ?? c.phi0, 0)}` : ""}`),
+      h("div", { class: "fcr-diag" }, h("div", { class: "fcr-graf" }, graficoNM(ctx2, d, dH, gam, s), nota), lado)
+    ));
+  }
+  function dibujoSeccionPeq(geo, s) {
+    const e2 = encuadre(geo, 150, 150, { completa: true });
+    const x0 = 46;
+    const y0 = 10;
+    const { svg, hp, bp } = capasSeccion(geo, s, { e: e2, x0, y0, x: null, id: "fcrs", cotasCapas: false });
+    return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${x0 + bp + 30} ${y0 + hp + 32}" role="img" aria-label="${t("g.seccion")}">${DEFS}${svg}</svg>`;
   }
   function tablaEsfuerzos(gam) {
     const filas = gam.map((x) => [
       String(x.i + 1),
       fmt(x.N, MAG.N.d),
-      fmt(x.M, MAG.M.d),
+      fmt(x.M, MAG.M.d) + (x.subeM ? "*" : ""),
       x.N !== 0 ? fmt(x.M / x.N * 1e3, MAG.long.d) : "\u221E",
       sigla(x.g),
       `<span class="${x.g >= 1 - 1e-6 ? "ok" : "no"}">${x.g >= 1 - 1e-6 ? t("fcr.dentroSello") : t("fcr.fueraSello")}</span>`
@@ -11022,10 +11122,12 @@ svg.dib-pun { min-width: 0; }
     return cont;
   }
   function graficoNM(ctx2, d, dH, gam, s) {
+    const eMm = fmt(emin * 1e3, 0);
     const xy = (rama) => [...rama].reverse().map((v2) => [v2.N, v2.M]);
     const series = [
       { nombre: ind2("M", "Rd"), clase: "s1", xy: xy(d.pos) },
-      { nombre: t("fcr.hormigon"), clase: "ref", cruz: false, xy: xy(dH.pos) }
+      { nombre: t("fcr.hormigon"), clase: "ref", cruz: false, xy: xy(dH.pos) },
+      { nombre: `e m\xEDn = ${eMm} mm`, clase: "ref", cruz: false, xy: [[0, 0], [d.Ncomp, d.Ncomp * emin]] }
     ];
     const puntos = gam.map((x) => ({ x: x.N, y: x.M, etq: String(x.i + 1), marca: x.g >= 1 - 1e-6 ? "ok" : "no" }));
     return h("div", { class: "lienzo" }, grafica({
@@ -11069,6 +11171,100 @@ svg.dib-pun { min-width: 0; }
         ctx2.ir("flexRecta");
       } }
     ];
+  }
+  function resultadoUnico(ctx2, res, { s, c, gam, gmin, dim }) {
+    const { d, geo } = c;
+    const Q = comprobarNM(d, gam.N, gam.M).Q;
+    const e2 = Q ? estadoUltimo(c.secD, -Q[0], { signo: 1, yref: d.yref }) : null;
+    const ok = e2?.converge ? e2 : null;
+    const rama = d.pos;
+    const Mn = momentoEn(rama, gam.N);
+    const cif = [
+      [`${sub17("M", "Rd")}(${sub17("N", "Ed")})`, Number.isFinite(Mn) ? qh(Mn, "M") : "\u2014"],
+      [sub17("N", "Rd"), qh(d.Ncomp, "N")],
+      ...ok ? [[t("c.x"), Number.isFinite(ok.x) && ok.x > 0 ? qh(ok.x, "long") : "\u2014"], [sub17("\u03B5", "c"), qh(-ok.epsSup, "def")]] : [],
+      ...cifrasArmadura(c, dim)
+    ];
+    const lienzo = h("div", { class: "lienzo", html: ok ? dibujoRotura(geo, s, c, ok) : "" });
+    const tarjetaDib = h("article", { class: "panel tarjeta" }, h("h2", {}, t("t.dibujo")), h("p", { class: "sub" }, t("fcr.dibujoSub")), lienzo);
+    const tarjetaRes = h("article", { class: "panel tarjeta" }, cifras(cif), h("p", { class: "sub", style: "margin:0" }, t("t.desplegar")), traza2(ctx2.p, d, c.dH, gmin));
+    res.append(h("div", { class: "cuerpo dib-ancho" }, tarjetaDib, tarjetaRes));
+  }
+  function dibujoRotura(geo, s, c, e2) {
+    const sec = c.secD;
+    const matH = sec.trapecios[0].mat;
+    const matA = sec.barras[0]?.mat;
+    const W = 640;
+    const top = 56;
+    const x0 = 64;
+    const y0 = top;
+    const em = encuadre(geo, 300, 290, { desp: 0.5 });
+    const xn = Number.isFinite(e2.x) ? Math.min(Math.max(e2.x, 0), geo.h) : 0;
+    const { svg, hp, bp } = capasSeccion(geo, s, { e: em, x0, y0, x: e2.x > 0 ? e2.x : null, id: "fcr", cotasCapas: false });
+    const Y = (y) => y0 + y * em.s;
+    const eps = (y) => e2.epsSup + e2.kappa * y;
+    const out = [DEFS, svg];
+    out.push(`<text class="tit" x="${x0}" y="22">${t("tit.sec")}</text>`);
+    if (e2.x > 0 && e2.x < geo.h) {
+      out.push(`<line class="en" x1="${x0 - 8}" y1="${Y(xn)}" x2="${W - 12}" y2="${Y(xn)}"/>`);
+      out.push(`<text x="${W - 12}" y="${Y(xn) + 14}" text-anchor="end" style="fill:var(--acento)">${t("ejeNeutro")}</text>`);
+      out.push(`<text class="fuerte" x="${x0 + bp + 16}" y="${(Y(0) + Y(xn)) / 2 + 4}">x = ${fmt(e2.x * 1e3, 0)}</text>`);
+    }
+    const e0 = x0 + bp + 110;
+    const emax = Math.max(Math.abs(eps(0)), Math.abs(eps(geo.h)), 1e-3);
+    const ke = 58 / emax;
+    const X1 = (v2) => e0 + v2 * ke;
+    out.push(`<text class="tit" style="text-transform:none" x="${e0 - 58}" y="22">\u03B5 (\u2030)</text>`);
+    out.push(`<line class="ref" x1="${e0}" y1="${y0 - 6}" x2="${e0}" y2="${y0 + hp + 6}"/>`);
+    const poli = (cl3, y1, y2) => `<polygon class="${cl3}" points="${e0},${Y(y1)} ${X1(eps(y1))},${Y(y1)} ${X1(eps(y2))},${Y(y2)} ${e0},${Y(y2)}"/>`;
+    if (e2.x > 0 && e2.x < geo.h) {
+      out.push(`<polygon class="eps-c" points="${e0},${Y(0)} ${X1(eps(0))},${Y(0)} ${e0},${Y(xn)}"/>`);
+      out.push(`<polygon class="eps-t" points="${e0},${Y(xn)} ${X1(eps(geo.h))},${Y(geo.h)} ${e0},${Y(geo.h)}"/>`);
+    } else out.push(poli(e2.x >= geo.h || e2.epsSup < 0 && e2.epsInf < 0 ? "eps-c" : "eps-t", 0, geo.h));
+    out.push(`<text x="${X1(eps(0)) - 4}" y="${y0 - 8}">\u03B5<tspan baseline-shift="sub" font-size="75%">sup</tspan> = ${fmt(-eps(0) * 1e3, 2)}</text>`);
+    out.push(`<text x="${X1(eps(geo.h)) - 4}" y="${y0 + hp + 18}">\u03B5<tspan baseline-shift="sub" font-size="75%">inf</tspan> = ${fmt(-eps(geo.h) * 1e3, 2)}</text>`);
+    const t0 = e0 + 185;
+    const fcd = Math.max(...matH.comp.map((v2) => -v2[1]), 1);
+    const kc = 64 / fcd;
+    out.push(`<text class="tit" style="text-transform:none" x="${t0 - 64}" y="22">\u03C3 (MPa)</text>`);
+    out.push(`<line class="ref" x1="${t0}" y1="${y0 - 6}" x2="${t0}" y2="${y0 + hp + 6}"/>`);
+    const pts = [];
+    const ys = [];
+    const n = 40;
+    for (let i = 0; i <= n; i++) {
+      const y = geo.h * i / n;
+      const sg = sigma(matH, eps(y));
+      if (sg < 0) {
+        pts.push(`${t0 + sg * kc},${Y(y)}`);
+        ys.push(y);
+      }
+    }
+    if (pts.length) out.push(`<polygon class="sig-c" points="${t0},${Y(ys[0])} ${pts.join(" ")} ${t0},${Y(ys.at(-1))}"/>`);
+    out.push(`<text x="${t0 - fcd * kc}" y="${y0 - 8}">${fmt(fcd / 1e3, 1)}${ESP}MPa</text>`);
+    if (matA) {
+      const fy = Math.max(...matA.tracc.map((v2) => v2[1]), 1);
+      const ks = 46 / fy;
+      const barras = sec.barras.map((b) => ({ y: b.y, sg: sigma(matA, eps(b.y)), A: b.A }));
+      const extremas = [barras.reduce((a, b) => b.y < a.y ? b : a), barras.reduce((a, b) => b.y > a.y ? b : a)];
+      for (const b of barras) out.push(`<line class="flecha" x1="${t0}" y1="${Y(b.y)}" x2="${t0 + b.sg * ks}" y2="${Y(b.y)}" marker-end="url(#pta)"/>`);
+      for (const b of extremas) out.push(`<text class="fuerte" x="${t0 + 52}" y="${Y(b.y) + (b === extremas[0] ? -4 : 14)}">\u03C3<tspan baseline-shift="sub" font-size="75%">s</tspan> = ${fmt(-b.sg / 1e3, 1)}${ESP}MPa</text>`);
+    }
+    const Wt = t0 + 215;
+    const H = y0 + hp + 40;
+    return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${Wt} ${H}" role="img" aria-label="${t("fcr.dibujoAria")}">${out.join("")}</svg>`;
+  }
+  function cifrasArmadura(c, dim) {
+    const mm4 = (x, dd) => `${fmt(x, dd)}<span class="u"> mm</span>`;
+    if (dim && c.phiProp) {
+      return [
+        [`\xF8 ${t("fcr.estricto")}`, c.phiEstricto > 0 ? mm4(c.phiEstricto, 1) : "\u2014"],
+        [`\xF8 ${t("fcr.propuesto")}`, mm4(c.phiProp, 0)],
+        [`${sub17("A", "s")} ${t("fcr.estricto")}`, qh(c.As0 * c.kEstricto, "As")],
+        [`${sub17("A", "s")} ${t("fcr.propuesto")}`, qh(c.As0 * c.k, "As")]
+      ];
+    }
+    if (dim && Number.isFinite(c.k)) return [[sub17("A", "s,req"), qh(c.As0 * c.k, "As")], ["k", fmt(c.k, 2)]];
+    return c.phi0 ? [["\xF8", mm4(est5.fi ?? c.phi0, 0)], [sub17("A", "s"), qh(c.As0 * c.k, "As")], [sub17("A", "s,m\xEDn"), qh(c.Amin, "As")]] : [[sub17("A", "s,m\xEDn"), qh(c.Amin, "As")]];
   }
 
   // src/ui/vistas/fuego.js
