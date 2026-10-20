@@ -138,6 +138,7 @@ export function comprobar(x) {
     r.extOk = r.deltaUltimo >= r.deltaOut - 0.5 * dvOut - 1e-9;
     // Lo que admite la zona exterior con los perímetros dados: b0,5(δ_último + 0,5·dv,out) ≥ b0,5·(dv/dv,out/ηc)²
     const bExt = uExterior(x, a, r.deltaUltimo, 0.5 * dvOut, 3 * P.dv);
+    r.bExt = bExt;
     const q = Math.sqrt(bExt / u.b05) * (dvOut / P.dv);
     r.etaCMinExt = 1 / q;
     r.VuExtEf = Math.max(s.VRdc, s.VRdc * q);

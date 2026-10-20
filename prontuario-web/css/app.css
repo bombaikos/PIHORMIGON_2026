@@ -861,3 +861,6 @@ svg.dib-pun { min-width: 0; }
   .dib .pilar { fill: Canvas; stroke: CanvasText; }
   .dib .perim-ctrl, .dib .perim-ext, .dib .borde-libre { stroke: CanvasText; }
 }
+.pun-criticos h3 { margin: var(--e2) 0 0; font-size: var(--t-s); }
+.pun-criticos td .ok { color: var(--ok, #1a7f37); font-weight: 600; }
+.pun-criticos td .no { color: var(--mal, #c62828); font-weight: 600; }

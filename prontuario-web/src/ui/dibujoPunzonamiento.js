@@ -5,7 +5,7 @@
 import { fmt } from './formato.js';
 import { t } from './i18n.js';
 import { DEFS } from './dibujoSeccion.js';
-import { contorno, repartir } from '../norma/punzonamiento/comun.js';
+import { contorno, contornoRect, cercosCruz, cercosReticula, envolventeCruz, nBrazos } from '../norma/punzonamiento/comun.js';
 
 const ANCHO = 420;
 const ALTO = 300;
@@ -17,7 +17,7 @@ const mm = (v) => fmt(v, 0);
  *   perimetros: contornos a dibujar (clase 'ctrl' perímetro de control, 'ext' perímetro exterior); anillos: δ de cada perímetro de cercos
  */
 export function dibujoPunzonamiento(x, o) {
-  const aGrande = Math.max(...o.perimetros.map((p) => p.delta), ...(o.anillos ?? [0]), 1);
+  const aGrande = Math.max(...o.perimetros.map((p) => p.delta), ...(o.anillos ?? [0]), o.ext ? o.ext.dl + o.ext.kd : 0, 1);
   // Caja del dibujo: del contorno más lejano
   const grande = contorno(x, aGrande, 10);
   const xs = grande.map((p) => p[0]);
@@ -51,12 +51,46 @@ export function dibujoPunzonamiento(x, o) {
   for (const p of [...o.perimetros].sort((a, b) => b.delta - a.delta)) {
     out.push(`<path class="perim perim-${p.clase}" d="${camino(contorno(x, p.delta, paso), interior)}"/>`);
   }
-  // Perímetros de cercos: línea fina y ramas como puntos
-  if (!o.sinArmadura) {
-    for (const dl of o.anillos ?? []) {
-      const pts = contorno(x, dl, paso);
-      out.push(`<path class="cerco" d="${camino(pts, interior)}"/>`);
-      for (const [a, b] of repartir(pts, o.ramas, interior)) out.push(`<circle class="barra-ac" cx="${X(a).toFixed(1)}" cy="${Y(b).toFixed(1)}" r="2.6"/>`);
+  // Perímetro exterior (el que dan los cercos puestos): a kd del último; en cruz, envolvente de círculos (EC-2, fig. 6.22)
+  if (o.ext && !o.sinArmadura) {
+    if (o.esq === 'cruz') {
+      const env = envolventeCruz(x, o.ext.dl, o.ext.kd, o.k, o.sl);
+      const P = env.pts;
+      // Se arranca en un vértice del borde libre para no partir el trazo (en el interior, en cualquiera)
+      let ini = 0;
+      if (!interior) ini = Math.max(0, P.findIndex((q, i) => env.enBorde(q) && env.enBorde(P[(i + 1) % P.length])));
+      let dd = '';
+      let abierto = false;
+      for (let m = 0; m < P.length; m++) {
+        const a = P[(ini + m) % P.length];
+        const b = P[(ini + m + 1) % P.length];
+        if (env.enBorde(a) && env.enBorde(b)) { abierto = false; continue; }
+        if (!abierto) dd += `M${X(a[0]).toFixed(1)} ${Y(a[1]).toFixed(1)}`;
+        dd += `L${X(b[0]).toFixed(1)} ${Y(b[1]).toFixed(1)}`;
+        abierto = true;
+      }
+      out.push(`<path class="perim perim-ext" d="${dd}"/>`);
+    } else out.push(`<path class="perim perim-ext" d="${camino(contorno(x, o.ext.dl + o.ext.kd, paso), interior)}"/>`);
+  }
+  // Cercos: en cruz, carriles por los ejes del pilar; en retícula, filas rectangulares paralelas a las caras
+  if (!o.sinArmadura && o.anillos?.length) {
+    const barra = ([a, b]) => `<circle class="barra-ac" cx="${X(a).toFixed(1)}" cy="${Y(b).toFixed(1)}" r="2.6"/>`;
+    if (o.esq === 'cruz') {
+      const ult = o.anillos[o.anillos.length - 1];
+      const cc = x.tipo === 'rect' ? { cx: x.c1 / 2, cy: x.c2 / 2, hx: x.c1 / 2, hy: x.c2 / 2 } : { cx: x.D / 2, cy: x.D / 2, hx: x.D / 2, hy: x.D / 2 };
+      const ejes = [[1, 0], [0, 1]];
+      if (x.pos !== 'esquina') ejes.push([-1, 0]);
+      if (x.pos === 'interior') ejes.push([0, -1]);
+      for (const [ux, uy] of ejes) {
+        const cara = Math.abs(ux) * cc.hx + Math.abs(uy) * cc.hy;
+        out.push(`<line class="cerco" x1="${X(cc.cx + ux * cara).toFixed(1)}" y1="${Y(cc.cy + uy * cara).toFixed(1)}" x2="${X(cc.cx + ux * (cara + ult)).toFixed(1)}" y2="${Y(cc.cy + uy * (cara + ult)).toFixed(1)}"/>`);
+      }
+      for (const q of cercosCruz(x, o.anillos, o.k, o.sl)) out.push(barra(q));
+    } else {
+      for (const dl of o.anillos) {
+        out.push(`<path class="cerco" d="${camino(contornoRect(x, dl), interior)}"/>`);
+        for (const q of cercosReticula(x, dl, o.ramas)) out.push(barra(q));
+      }
     }
   }
   // Pilar
