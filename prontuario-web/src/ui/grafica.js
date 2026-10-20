@@ -178,7 +178,10 @@ export function grafica({ series, puntos = [], ejeX, ejeY, archivo = 'grafica', 
         o.push(vert ? `<line class="rej2" x1="${px}" x2="${px}" y1="${M.arr}" y2="${H - M.aba}"/>` : `<line class="rej2" x1="${M.izq}" x2="${W - M.der}" y1="${px}" y2="${px}"/>`);
       }
     };
-    if (rejillaSec) { sec(rejillaSec.x, [vista.x0, vista.x1], dx.s, pw, true); sec(rejillaSec.y, [vista.y0, vista.y1], dy.s, ph, false); }
+    // Sin rejilla secundaria indicada se afina la principal: 1 y 5 en cinco partes, 2 en cuatro
+    const fina = (s) => { const m = s / 10 ** Math.floor(Math.log10(s) + 1e-9); return s / (Math.abs(m - 2) < 1e-6 ? 4 : 5); };
+    sec(rejillaSec?.x ?? fina(dx.s), [vista.x0, vista.x1], dx.s, pw, true);
+    sec(rejillaSec?.y ?? fina(dy.s), [vista.y0, vista.y1], dy.s, ph, false);
     for (const x of dx.out) o.push(`<line class="rej" x1="${aX(x)}" x2="${aX(x)}" y1="${M.arr}" y2="${H - M.aba}"/><text x="${aX(x)}" y="${H - M.aba + 16}" text-anchor="middle">${fmt(x, decimales(dx.s))}</text>`);
     for (const y of dy.out) o.push(`<line class="rej" x1="${M.izq}" x2="${W - M.der}" y1="${aY(y)}" y2="${aY(y)}"/><text x="${M.izq - 6}" y="${aY(y) + 4}" text-anchor="end">${fmt(y, decimales(dy.s))}</text>`);
     o.push(`<rect class="marco" x="${M.izq}" y="${M.arr}" width="${pw}" height="${ph}"/>`);
@@ -213,7 +216,9 @@ export function grafica({ series, puntos = [], ejeX, ejeY, archivo = 'grafica', 
       const largo = plano(s.nombre).length * 6.6;
       const px = aX(ult[0]);
       const cabe = px + 6 + largo <= W - 4;
-      directas.push({ s, y: aY(ult[1]) + (cabe ? 4 : -7), x: cabe ? px + 6 : px - 6, anc: cabe ? 'start' : 'end' });
+      // Una curva que acaba sobre el eje cero se rotula por encima, para que el eje no pise el texto
+      const sobreEje = vista.y0 < 0 && vista.y1 > 0 && Math.abs(aY(ult[1]) - aY(0)) < 14;
+      directas.push({ s, y: aY(ult[1]) + (sobreEje || !cabe ? -7 : 4), x: cabe ? px + 6 : px - 6, anc: cabe ? 'start' : 'end' });
     }
     directas.sort((p, q) => p.y - q.y);
     directas.forEach((d, i) => { if (i && d.y - directas[i - 1].y < 14) d.y = directas[i - 1].y + 14; });
