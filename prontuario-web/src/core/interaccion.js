@@ -59,7 +59,7 @@ export function diagramaNM(sec, { n = 60, yref = centroBruto(sec), simetrica = f
       return e.converge ? { N: -e.N, M: e.M, x: e.x, epsSup: e.epsSup, epsInf: e.epsInf, kappa: e.kappa } : null;
     };
     const afinar = (a, b, prof) => {
-      if (prof >= 9 || Math.abs(a.N - b.N) < 1e-3) return [];
+      if (prof >= 11 || Math.abs(a.N - b.N) < 1e-3) return [];
       const m = medio(a, b);
       if (!m || Math.abs(m.M - (a.M + b.M) / 2) <= lim) return [];
       return [...afinar(a, m, prof + 1), m, ...afinar(m, b, prof + 1)];
@@ -75,7 +75,7 @@ export function diagramaNM(sec, { n = 60, yref = centroBruto(sec), simetrica = f
 }
 
 /** Interpola linealmente M en una rama (puntos ordenados por N decreciente) para un axil N. */
-function momentoEn(rama, N) {
+export function momentoEn(rama, N) {
   for (let i = 1; i < rama.length; i++) {
     const a = rama[i - 1];
     const b = rama[i];
