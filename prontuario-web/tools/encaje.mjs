@@ -31,6 +31,7 @@ const PANTALLAS = [
   ['Análisis · apoyo empotrado', 'vigas1vano', [(p) => p.selectOption('#v-izq', { index: 1 })]],
   ['Flexión compuesta recta', 'flexRecta', []],
   ['Flexión compuesta recta · dimensionar', 'flexRecta', [(p) => p.click('.datos .seg button:nth-child(2)')]],
+  ['Flexión compuesta recta · diagrama', 'flexRecta', [(p) => p.click('.datos .seg button:nth-child(3)')]],
   ['Flexión compuesta recta · circular', 'flexRecta', [SEC(2)]],
   ['Cortante · EC-2 comprobar', 'cortante', []],
   ['Cortante · EC-2 dimensionar', 'cortante', [(p) => p.click('.datos .seg >> nth=0 >> button >> nth=1')]],

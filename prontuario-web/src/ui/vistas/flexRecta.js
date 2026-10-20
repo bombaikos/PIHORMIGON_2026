@@ -6,24 +6,26 @@
 // Dimensionar mantiene la disposición de la armadura de Secciones y busca el factor que da γ ≥ γ requerido.
 // Compresión positiva; M > 0 comprime la cara superior. Motor: src/core/interaccion.js.
 
-import { diagramaNM, coeficienteNM, dimensionarNM, escalarArmadura, soloHormigon } from '../../core/interaccion.js';
+import { diagramaNM, coeficienteNM, comprobarNM, momentoEn, dimensionarNM, escalarArmadura, soloHormigon } from '../../core/interaccion.js';
+import { estadoUltimo } from '../../core/seccion.js';
+import { sigma } from '../../core/materiales.js';
 import { leerNumero } from '../../core/armado.js';
 import { seccionMotor } from '../../core/geometria.js';
 import { NORMAS } from '../../norma/normas.js';
 import { geometriaDe, materialesSeccion, sepCapas } from '../../io/proyecto.js';
 import { t } from '../i18n.js';
-import { fmt, q, qh, MAG } from '../formato.js';
+import { fmt, q, qh, MAG, ESP } from '../formato.js';
 import { selectorSecciones } from './secciones.js';
 import { h, poner, campoNum, segmentado, grupo, aviso, cifras, pestanas } from '../campos.js';
 import { rejilla } from '../rejilla.js';
 import { grafica } from '../grafica.js';
-import { dibujoSeccion } from '../dibujoSeccion.js';
+import { dibujoSeccion, DEFS, encuadre, capasSeccion } from '../dibujoSeccion.js';
 import { veredicto } from './flexion.js';
 
 // Solo secciones con armadura simétrica respecto al eje de flexión (pilar rectangular y circular): basta el diagrama con M ≥ 0
 const FORMAS = ['pilar', 'circular'];
 const est = {
-  i: null, modo: 'comprobar', gamma: 1,
+  i: null, modo: 'comprobar', gamma: 1, NEd: 500, MEd: 150,
   filas: [['500', '150'], ['1500', '100'], ['-150', '60'], ['2500', '200']],
   abiertos: new Set(['coef']), pestana: 'resultados', resAbierto: false,
 };
@@ -58,7 +60,9 @@ function resumenSeccion(p, s) {
 }
 
 /** Pares (N, M) válidos de la tabla, con su fila. */
-const pares = () => est.filas.map((f, i) => ({ i, N: nv(f[0]), M: Math.abs(nv(f[1])) })).filter((x) => Number.isFinite(x.N) && Number.isFinite(x.M));
+const pares = () => (est.modo !== 'diagrama'
+  ? [{ i: 0, N: est.NEd, M: Math.abs(est.MEd) }]
+  : est.filas.map((f, i) => ({ i, N: nv(f[0]), M: Math.abs(nv(f[1])) }))).filter((x) => Number.isFinite(x.N) && Number.isFinite(x.M));
 
 // Los diagramas de una sección circular o genérica tardan: se guarda el último cálculo mientras no cambien los datos
 let memo = { clave: '', c: null };
@@ -78,7 +82,7 @@ function calculo(p, s) {
     k = dimensionarNM(sec, ps.map((x) => [x.N, x.M]), { gamma: est.gamma, simetrica: true });
   }
   const dibujada = Number.isFinite(k) ? escalarArmadura(sec, k) : escalarArmadura(sec, 1);
-  const c = { geo, sec, As0, k, d: diagramaNM(dibujada, { n: 60, simetrica: true, tol: TOL }), dH: diagramaNM(soloHormigon(sec), { n: 60, simetrica: true, tol: TOL }) };
+  const c = { geo, sec, secD: dibujada, As0, k, d: diagramaNM(dibujada, { n: 60, simetrica: true, tol: TOL }), dH: diagramaNM(soloHormigon(sec), { n: 60, simetrica: true, tol: TOL }) };
   memo = { clave, c };
   return c;
 }
@@ -102,14 +106,19 @@ export function datos(ctx, form) {
     return Number.isFinite(N) && Number.isFinite(M) ? sigla(coeficienteNM(c.d, N, Math.abs(M))) : '';
   };
   poner(form,
-    segmentado({ ancho: true, etiqueta: t('flex.modo'), opciones: [['comprobar', t('comprobar')], ['dimensionar', t('dimensionar')]], valor: est.modo, onCambio: (m) => { est.modo = m; ctx.pintar(); } }),
+    segmentado({ ancho: true, etiqueta: t('flex.modo'), opciones: [['comprobar', t('comprobar')], ['dimensionar', t('dimensionar')], ['diagrama', t('fcr.modoDiagrama')]], valor: est.modo, onCambio: (m) => { est.modo = m; ctx.pintar(); } }),
+    est.modo !== 'diagrama' ? grupo(t('g.esfuerzo'),
+      campoNum({ id: 'fr-n', etq: sub('N', 'Ed'), ref: t('fcr.compPos'), valor: est.NEd, mag: 'N', paso: 10, min: -1e6, max: 1e6, nombre: t('fcr.axil'), onCambio: (v) => { est.NEd = v; cambio(); } }),
+      campoNum({ id: 'fr-m', etq: sub('M', 'Ed'), valor: est.MEd, mag: 'M', paso: 5, min: -1e6, max: 1e6, nombre: t('flex.momento'), onCambio: (v) => { est.MEd = v; cambio(); } }),
+      h('p', { style: 'margin:4px 0 0;font-size:var(--t-s);color:var(--tinta-3)', html: t('fcr.pista1') }),
+      est.modo === 'dimensionar' ? campoNum({ id: 'fr-gamma', etq: t('fcr.gammaReq'), valor: est.gamma, mag: 'ratio', paso: 0.05, min: 0.5, max: 5, onCambio: (v) => { est.gamma = v; cambio(); } }) : null) :
     grupo(t('fcr.esfuerzos'),
       rejilla({ id: 'fr-esf', altoMax: 190,
         columnas: [{ titulo: `${sub('N', 'Ed')} (kN)`, num: true }, { titulo: `${sub('M', 'Ed')} (kN·m)`, num: true }],
         filas: est.filas, calculada: { titulo: 'γ', f: coefFila },
         onCambio: (f) => { est.filas = f.map((r) => [r[0], r[1]]); cambio(); } }),
       h('p', { style: 'margin:4px 0 0;font-size:var(--t-s);color:var(--tinta-3)', html: t('fcr.pista') }),
-      est.modo === 'dimensionar' ? campoNum({ id: 'fr-gamma', etq: t('fcr.gammaReq'), valor: est.gamma, mag: 'ratio', paso: 0.05, min: 0.5, max: 5, onCambio: (v) => { est.gamma = v; cambio(); } }) : null),
+      ),
     grupo(t('g.seccion'), h('p', { style: 'margin:0;font-size:var(--t-s);color:var(--tinta-2);line-height:1.5', html: `${resumenSeccion(p, s)}<br>${t('fcr.deSecciones')}` })));
 }
 
@@ -124,6 +133,7 @@ export function resultados(ctx, res) {
   const gam = ps.map((x) => ({ ...x, g: coeficienteNM(d, x.N, x.M) }));
   const gmin = Math.min(...gam.map((x) => x.g));
   const dim = est.modo === 'dimensionar';
+  const unico = est.modo !== 'diagrama';
   p.calculos.flexionCompuesta ??= {};
   p.calculos.flexionCompuesta[s.nombre] = { modo: est.modo, esfuerzos: ps.map((x) => [x.N, x.M]), norma: p.norma, fecha: new Date().toISOString().slice(0, 10), resultado: { gammaMin: gmin, k: c.k } };
 
@@ -136,9 +146,10 @@ export function resultados(ctx, res) {
   } else {
     const ok = gmin >= 1 - 1e-6;
     res.append(veredicto(ok ? 'cumple' : 'nocumple', ok ? t('cumple') : t('noCumple'), 'γ = |OQ|/|OP|', sigla(gmin),
-      `${t('fcr.puntos')} <b>${gam.filter((x) => x.g >= 1 - 1e-6).length}</b> / ${gam.length} ${t('fcr.dentro')}`, Math.min(1 / Math.max(gmin, 1e-9) / 1.25, 1)));
+      unico ? `${sub('M', 'Rd')}(${sub('N', 'Ed')}) <b>${q(momentoEn(d.pos, gam[0].N), 'M')}</b> · ${sub('M', 'Ed')} <b>${q(gam[0].M, 'M')}</b>` : `${t('fcr.puntos')} <b>${gam.filter((x) => x.g >= 1 - 1e-6).length}</b> / ${gam.length} ${t('fcr.dentro')}`, Math.min(1 / Math.max(gmin, 1e-9) / 1.25, 1)));
   }
 
+  if (unico) return resultadoUnico(ctx, res, { s, c, gam: gam[0], gmin, dim });
   const Mmax = (rama) => rama.reduce((a, b) => (Math.abs(b.M) > Math.abs(a.M) ? b : a));
   const mp = Mmax(d.pos);
   const cif = [
@@ -208,4 +219,82 @@ export function comandos(ctx) {
     { k: 'p.fcrComprobar', b: 'flexion compuesta recta comprobar interaccion', f: () => { est.modo = 'comprobar'; ctx.ir('flexRecta'); } },
     { k: 'p.fcrDimensionar', b: 'flexion compuesta recta dimensionar interaccion', f: () => { est.modo = 'dimensionar'; ctx.ir('flexRecta'); } },
   ];
+}
+
+/** Comprobar y Dimensionar con un solo par (N_Ed, M_Ed): sección, plano de rotura y tensiones, como Flexión simple. */
+function resultadoUnico(ctx, res, { s, c, gam, gmin, dim }) {
+  const { d, geo } = c;
+  const Q = comprobarNM(d, gam.N, gam.M).Q;
+  const e = Q ? estadoUltimo(c.secD, -Q[0], { signo: 1, yref: d.yref }) : null;
+  const ok = e?.converge ? e : null;
+  const rama = d.pos;
+  const Mn = momentoEn(rama, gam.N);
+  const cif = [
+    [`${sub('M', 'Rd')}(${sub('N', 'Ed')})`, Number.isFinite(Mn) ? qh(Mn, 'M') : '—'],
+    [sub('N', 'Rd'), qh(d.Ncomp, 'N')],
+    ...(ok ? [[t('c.x'), Number.isFinite(ok.x) && ok.x > 0 ? qh(ok.x, 'long') : '—'], [sub('ε', 'c'), qh(-ok.epsSup, 'def')]] : []),
+    ...(dim && Number.isFinite(c.k) ? [[sub('A', 's,req'), qh(c.As0 * c.k, 'As')], ['k', fmt(c.k, 2)]] : []),
+  ];
+  const lienzo = h('div', { class: 'lienzo', html: ok ? dibujoRotura(geo, s, c, ok) : '' });
+  const tarjetaDib = h('article', { class: 'panel tarjeta' }, h('h2', {}, t('t.dibujo')), h('p', { class: 'sub' }, t('fcr.dibujoSub')), lienzo);
+  const tarjetaRes = h('article', { class: 'panel tarjeta' }, cifras(cif), h('p', { class: 'sub', style: 'margin:0' }, t('t.desplegar')), traza(ctx.p, d, c.dH, gmin));
+  res.append(h('div', { class: 'cuerpo dib-ancho' }, tarjetaDib, tarjetaRes));
+}
+
+/** Sección, deformaciones y tensiones en rotura, a la misma escala vertical (como Flexión simple). */
+function dibujoRotura(geo, s, c, e) {
+  const sec = c.secD;
+  const matH = sec.trapecios[0].mat;
+  const matA = sec.barras[0]?.mat;
+  const W = 640;
+  const top = 56;
+  const x0 = 64;
+  const y0 = top;
+  const em = encuadre(geo, 300, 290, { desp: 0.5 });
+  const xn = Number.isFinite(e.x) ? Math.min(Math.max(e.x, 0), geo.h) : 0;
+  const { svg, hp, bp } = capasSeccion(geo, s, { e: em, x0, y0, x: e.x > 0 ? e.x : null, id: 'fcr', cotasCapas: false });
+  const Y = (y) => y0 + y * em.s;
+  const eps = (y) => e.epsSup + e.kappa * y;
+  const out = [DEFS, svg];
+  out.push(`<text class="tit" x="${x0}" y="22">${t('tit.sec')}</text>`);
+  if (e.x > 0 && e.x < geo.h) {
+    out.push(`<line class="en" x1="${x0 - 8}" y1="${Y(xn)}" x2="${W - 12}" y2="${Y(xn)}"/>`);
+    out.push(`<text x="${W - 12}" y="${Y(xn) + 14}" text-anchor="end" style="fill:var(--acento)">${t('ejeNeutro')}</text>`);
+    out.push(`<text class="fuerte" x="${x0 + bp + 16}" y="${(Y(0) + Y(xn)) / 2 + 4}">x = ${fmt(e.x * 1000, 0)}</text>`);
+  }
+  // Deformaciones (compresión a la izquierda del eje, como en Flexión simple)
+  const e0 = x0 + bp + 110;
+  const emax = Math.max(Math.abs(eps(0)), Math.abs(eps(geo.h)), 0.001);
+  const ke = 58 / emax;
+  const X1 = (v) => e0 + v * ke;
+  out.push(`<text class="tit" style="text-transform:none" x="${e0 - 58}" y="22">ε (‰)</text>`);
+  out.push(`<line class="ref" x1="${e0}" y1="${y0 - 6}" x2="${e0}" y2="${y0 + hp + 6}"/>`);
+  const poli = (cl, y1, y2) => `<polygon class="${cl}" points="${e0},${Y(y1)} ${X1(eps(y1))},${Y(y1)} ${X1(eps(y2))},${Y(y2)} ${e0},${Y(y2)}"/>`;
+  if (e.x > 0 && e.x < geo.h) { out.push(`<polygon class="eps-c" points="${e0},${Y(0)} ${X1(eps(0))},${Y(0)} ${e0},${Y(xn)}"/>`); out.push(`<polygon class="eps-t" points="${e0},${Y(xn)} ${X1(eps(geo.h))},${Y(geo.h)} ${e0},${Y(geo.h)}"/>`); }
+  else out.push(poli(e.x >= geo.h || (e.epsSup < 0 && e.epsInf < 0) ? 'eps-c' : 'eps-t', 0, geo.h));
+  out.push(`<text x="${X1(eps(0)) - 4}" y="${y0 - 8}">ε<tspan baseline-shift="sub" font-size="75%">sup</tspan> = ${fmt(-eps(0) * 1000, 2)}</text>`);
+  out.push(`<text x="${X1(eps(geo.h)) - 4}" y="${y0 + hp + 18}">ε<tspan baseline-shift="sub" font-size="75%">inf</tspan> = ${fmt(-eps(geo.h) * 1000, 2)}</text>`);
+  // Tensiones: hormigón y barras
+  const t0 = e0 + 185;
+  const fcd = Math.max(...matH.comp.map((v) => -v[1]), 1);
+  const kc = 64 / fcd;
+  out.push(`<text class="tit" style="text-transform:none" x="${t0 - 64}" y="22">σ (MPa)</text>`);
+  out.push(`<line class="ref" x1="${t0}" y1="${y0 - 6}" x2="${t0}" y2="${y0 + hp + 6}"/>`);
+  const pts = [];
+  const ys = [];
+  const n = 40;
+  for (let i = 0; i <= n; i++) { const y = (geo.h * i) / n; const sg = sigma(matH, eps(y)); if (sg < 0) { pts.push(`${t0 + sg * kc},${Y(y)}`); ys.push(y); } }
+  if (pts.length) out.push(`<polygon class="sig-c" points="${t0},${Y(ys[0])} ${pts.join(' ')} ${t0},${Y(ys.at(-1))}"/>`);
+  out.push(`<text x="${t0 - fcd * kc}" y="${y0 - 8}">${fmt(fcd / 1000, 1)}${ESP}MPa</text>`);
+  if (matA) {
+    const fy = Math.max(...matA.tracc.map((v) => v[1]), 1);
+    const ks = 46 / fy;
+    const barras = sec.barras.map((b) => ({ y: b.y, sg: sigma(matA, eps(b.y)), A: b.A }));
+    const extremas = [barras.reduce((a, b) => (b.y < a.y ? b : a)), barras.reduce((a, b) => (b.y > a.y ? b : a))];
+    for (const b of barras) out.push(`<line class="flecha" x1="${t0}" y1="${Y(b.y)}" x2="${t0 + b.sg * ks}" y2="${Y(b.y)}" marker-end="url(#pta)"/>`);
+    for (const b of extremas) out.push(`<text class="fuerte" x="${t0 + 52}" y="${Y(b.y) + (b === extremas[0] ? -4 : 14)}">σ<tspan baseline-shift="sub" font-size="75%">s</tspan> = ${fmt(-b.sg / 1000, 1)}${ESP}MPa</text>`);
+  }
+  const Wt = t0 + 215;
+  const H = y0 + hp + 40;
+  return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${Wt} ${H}" role="img" aria-label="${t('fcr.dibujoAria')}">${out.join('')}</svg>`;
 }

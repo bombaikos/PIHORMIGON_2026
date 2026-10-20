@@ -75,7 +75,7 @@ export function diagramaNM(sec, { n = 60, yref = centroBruto(sec), simetrica = f
 }
 
 /** Interpola linealmente M en una rama (puntos ordenados por N decreciente) para un axil N. */
-function momentoEn(rama, N) {
+export function momentoEn(rama, N) {
   for (let i = 1; i < rama.length; i++) {
     const a = rama[i - 1];
     const b = rama[i];
