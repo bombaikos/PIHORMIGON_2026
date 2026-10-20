@@ -14,7 +14,7 @@ import { seccionMotor } from '../../core/geometria.js';
 import { NORMAS } from '../../norma/normas.js';
 import { geometriaDe, materialesSeccion, sepCapas } from '../../io/proyecto.js';
 import { t } from '../i18n.js';
-import { fmt, q, qh, MAG, ESP } from '../formato.js';
+import { fmt, q, qh, MAG, ESP, serieDiametros } from '../formato.js';
 import { selectorSecciones } from './secciones.js';
 import { h, poner, campoNum, segmentado, grupo, aviso, cifras, pestanas } from '../campos.js';
 import { rejilla } from '../rejilla.js';
@@ -25,7 +25,7 @@ import { veredicto } from './flexion.js';
 // Solo secciones con armadura simétrica respecto al eje de flexión (pilar rectangular y circular): basta el diagrama con M ≥ 0
 const FORMAS = ['pilar', 'circular'];
 const est = {
-  i: null, modo: 'comprobar', gamma: 1, NEd: 500, MEd: 150,
+  i: null, fi: null, modo: 'comprobar', gamma: 1, NEd: 500, MEd: 150,
   filas: [['500', '150'], ['1500', '100'], ['-150', '60'], ['2500', '200']],
   abiertos: new Set(['coef']), pestana: 'resultados', resAbierto: false,
 };
@@ -45,7 +45,7 @@ export function cabeza(ctx, el) {
   if (!s) return;
   selectorSecciones(ctx, el, { formas: FORMAS, activa: s, alElegir: (nombre) => {
     const i = ctx.p.secciones.findIndex((x) => x.nombre === nombre);
-    if (i >= 0) { est.i = i; ctx.pintar(); }
+    if (i >= 0) { est.i = i; est.fi = null; ctx.pintar(); }
   } });
 }
 
@@ -64,25 +64,43 @@ const pares = () => (est.modo !== 'diagrama'
   ? [{ i: 0, N: est.NEd, M: Math.abs(est.MEd) }]
   : est.filas.map((f, i) => ({ i, N: nv(f[0]), M: Math.abs(nv(f[1])) }))).filter((x) => Number.isFinite(x.N) && Number.isFinite(x.M));
 
+/** Diámetro común (mm) de las barras de la sección, o null si hay franjas por área o diámetros distintos. */
+function fiComun(geo) {
+  if (!geo.barras.length || geo.franjas.length) return null;
+  const f = geo.barras.map((b) => b.fi);
+  return f.every((x) => Math.abs(x - f[0]) < 1e-9) ? f[0] : null;
+}
+
 // Los diagramas de una sección circular o genérica tardan: se guarda el último cálculo mientras no cambien los datos
 let memo = { clave: '', c: null };
 /** Contornos (armado y solo hormigón) para la sección activa; en Dimensionar, con la armadura escalada. */
 function calculo(p, s) {
   const ps = pares();
-  const clave = JSON.stringify([p.norma, s.geo, s.armado, s.hormigon, s.acero, sepCapas(p), est.modo, est.modo === 'dimensionar' ? [est.gamma, ps.map((x) => [x.N, x.M])] : 0]);
+  const clave = JSON.stringify([p.norma, s.geo, s.armado, s.hormigon, s.acero, sepCapas(p), est.modo, est.fi, serieDiametros(), est.modo === 'dimensionar' ? [est.gamma, ps.map((x) => [x.N, x.M])] : 0]);
   if (memo.clave === clave) return memo.c;
   const geo = geometriaDe(p, s);
   if (geo.errores?.length) throw new Error(geo.errores.join(' '));
   const mats = materialesSeccion(p, s);
   const sec = seccionMotor(geo, mats.hormigon, mats.acero);
   const As0 = sec.barras.reduce((a, b) => a + b.A, 0);
+  const phi0 = fiComun(geo);
   let k = 1;
+  let kEstricto = 1;
+  let phiEstricto = null;
+  let phiProp = null;
   if (est.modo === 'dimensionar') {
     if (!(As0 > 0)) throw new Error(t('fcr.sinArmadura'));
-    k = dimensionarNM(sec, ps.map((x) => [x.N, x.M]), { gamma: est.gamma, simetrica: true });
-  }
+    kEstricto = dimensionarNM(sec, ps.map((x) => [x.N, x.M]), { gamma: est.gamma, simetrica: true });
+    k = kEstricto;
+    // A_s crece con ø²: el diámetro estricto es ø₀·√k y el propuesto el primero de la serie que lo alcanza
+    if (phi0 && Number.isFinite(kEstricto) && kEstricto > 0) {
+      phiEstricto = phi0 * Math.sqrt(kEstricto);
+      phiProp = serieDiametros().find((x) => x >= phiEstricto - 1e-9) ?? null;
+      if (phiProp) k = (phiProp / phi0) ** 2;
+    }
+  } else if (phi0 && est.fi > 0) k = (est.fi / phi0) ** 2; // el ø de cálculo no tiene por qué ser el de la sección
   const dibujada = Number.isFinite(k) ? escalarArmadura(sec, k) : escalarArmadura(sec, 1);
-  const c = { geo, sec, secD: dibujada, As0, k, d: diagramaNM(dibujada, { n: 60, simetrica: true, tol: TOL }), dH: diagramaNM(soloHormigon(sec), { n: 60, simetrica: true, tol: TOL }) };
+  const c = { geo, sec, secD: dibujada, As0, k, kEstricto, phi0, phiEstricto, phiProp, d: diagramaNM(dibujada, { n: 60, simetrica: true, tol: TOL }), dH: diagramaNM(soloHormigon(sec), { n: 60, simetrica: true, tol: TOL }) };
   memo = { clave, c };
   return c;
 }
@@ -99,6 +117,11 @@ export function datos(ctx, form) {
   const cambio = () => ctx.cambio();
   let c = null;
   try { c = calculo(p, s); } catch { /* el error se muestra en resultados */ }
+  // Diámetro de cálculo: dato propio de este módulo (el de Secciones solo es el valor inicial)
+  const campoFi = () => (est.modo !== 'dimensionar' && c?.phi0
+    ? [campoNum({ id: 'fr-fi', etq: 'ø', ref: t('fcr.fiCalc'), valor: est.fi ?? c.phi0, mag: 'diam', paso: 2, min: 6, max: 50, onCambio: (v) => { est.fi = v; cambio(); } }),
+      h('p', { style: 'margin:0;font-size:var(--t-s);color:var(--tinta-3)', html: t('fcr.fiSec', fmt(c.phi0, 0)) })]
+    : null);
   const coefFila = (datosTabla, r) => {
     if (!c) return '';
     const N = nv(datosTabla[r][0]);
@@ -111,6 +134,7 @@ export function datos(ctx, form) {
       campoNum({ id: 'fr-n', etq: sub('N', 'Ed'), ref: t('fcr.compPos'), valor: est.NEd, mag: 'N', paso: 10, min: -1e6, max: 1e6, nombre: t('fcr.axil'), onCambio: (v) => { est.NEd = v; cambio(); } }),
       campoNum({ id: 'fr-m', etq: sub('M', 'Ed'), valor: est.MEd, mag: 'M', paso: 5, min: -1e6, max: 1e6, nombre: t('flex.momento'), onCambio: (v) => { est.MEd = v; cambio(); } }),
       h('p', { style: 'margin:4px 0 0;font-size:var(--t-s);color:var(--tinta-3)', html: t('fcr.pista1') }),
+      campoFi(),
       est.modo === 'dimensionar' ? campoNum({ id: 'fr-gamma', etq: t('fcr.gammaReq'), valor: est.gamma, mag: 'ratio', paso: 0.05, min: 0.5, max: 5, onCambio: (v) => { est.gamma = v; cambio(); } }) : null) :
     grupo(t('fcr.esfuerzos'),
       rejilla({ id: 'fr-esf', altoMax: 190,
@@ -118,7 +142,7 @@ export function datos(ctx, form) {
         filas: est.filas, calculada: { titulo: 'γ', f: coefFila },
         onCambio: (f) => { est.filas = f.map((r) => [r[0], r[1]]); cambio(); } }),
       h('p', { style: 'margin:4px 0 0;font-size:var(--t-s);color:var(--tinta-3)', html: t('fcr.pista') }),
-      ),
+      campoFi()),
     grupo(t('g.seccion'), h('p', { style: 'margin:0;font-size:var(--t-s);color:var(--tinta-2);line-height:1.5', html: `${resumenSeccion(p, s)}<br>${t('fcr.deSecciones')}` })));
 }
 
@@ -141,8 +165,13 @@ export function resultados(ctx, res) {
     res.append(veredicto('nocumple', t('aumentar'), t('armaduraNec'), '—', t('fcr.noBasta')));
   } else if (dim) {
     const As = c.As0 * c.k;
-    res.append(veredicto(c.k === 0 ? 'atencion' : 'cumple', c.k === 0 ? t('fcr.sinArm') : t('valida'), t('armaduraNec'), qh(As, 'As'),
-      t('fcr.kArm', fmt(c.k, 2), q(c.As0, 'As'), fmt(est.gamma, 2))));
+    if (c.phiProp) {
+      res.append(veredicto('cumple', t('valida'), t('fcr.fiProp'), `ø${fmt(c.phiProp, 0)}<span class="u"> mm</span>`,
+        t('fcr.fiArm', fmt(c.phiEstricto, 1), q(As, 'As'), q(c.As0 * c.kEstricto, 'As'), fmt(est.gamma, 2))));
+    } else {
+      res.append(veredicto(c.k === 0 ? 'atencion' : 'cumple', c.k === 0 ? t('fcr.sinArm') : t('valida'), t('armaduraNec'), qh(As, 'As'),
+        t('fcr.kArm', fmt(c.k, 2), q(c.As0, 'As'), fmt(est.gamma, 2))));
+    }
   } else {
     const ok = gmin >= 1 - 1e-6;
     res.append(veredicto(ok ? 'cumple' : 'nocumple', ok ? t('cumple') : t('noCumple'), 'γ = |OQ|/|OP|', sigla(gmin),
@@ -152,23 +181,25 @@ export function resultados(ctx, res) {
   if (unico) return resultadoUnico(ctx, res, { s, c, gam: gam[0], gmin, dim });
   const Mmax = (rama) => rama.reduce((a, b) => (Math.abs(b.M) > Math.abs(a.M) ? b : a));
   const mp = Mmax(d.pos);
-  const cif = [
-    ...(dim && Number.isFinite(c.k) ? [[sub('A', 's,req'), qh(c.As0 * c.k, 'As')], ['k', fmt(c.k, 2)]] : []),
-    [sub('N', 'Rd'), qh(d.Ncomp, 'N')],
-    [sub('N', 'Rd,t'), qh(d.Ntrac, 'N')],
-    [`${sub('M', 'Rd,máx')} (N = ${fmt(mp.N, MAG.N.d)})`, qh(mp.M, 'M')],
-    [`${sub('N', 'Rd,hormigón')}`, qh(dH.Ncomp, 'N')],
-  ];
-  // El diagrama ocupa todo el ancho; resultados, tabla de esfuerzos y sección van plegados debajo (por defecto cerrados)
-  const tarjetaRes = h('div', { class: 'res-plegado' });
-  tarjetaRes.append(pestanas({ lista: [['resultados', t('t.resultados')], ['esfuerzos', t('fcr.esfuerzos')], ['seccion', t('g.seccion')]], activa: est.pestana, onCambio: (k) => { est.pestana = k; ctx.pintar(); } }));
-  if (est.pestana === 'seccion') tarjetaRes.append(h('div', { class: 'lienzo', html: dibujoSeccion(geo, s, { ancho: 360, alto: 300 }) }));
-  else if (est.pestana === 'esfuerzos') tarjetaRes.append(tablaEsfuerzos(gam));
-  else tarjetaRes.append(cifras(cif), h('p', { class: 'sub', style: 'margin:0' }, t('t.desplegar')), traza(p, d, dH, gmin));
-  const plegable = h('details', { class: 'plegable-res', open: est.resAbierto },
-    h('summary', {}, t('fcr.resumenRes', fmt(gam.length, 0), sigla(gmin))), tarjetaRes);
-  plegable.addEventListener('toggle', () => { est.resAbierto = plegable.open; });
-  res.append(h('article', { class: 'panel tarjeta' }, h('h2', {}, t('fcr.diagrama')), h('p', { class: 'sub' }, t('fcr.diagramaSub')), graficoNM(ctx, d, dH, gam, s), plegable));
+  // Todo a la vista: diagrama grande con los resultados principales como nota; a su lado, la sección pequeña y la tabla de esfuerzos
+  const nota = h('p', { class: 'nota-diag', html: [
+    `${sub('N', 'Rd')} <b>${q(d.Ncomp, 'N')}</b>`, `${sub('N', 'Rd,t')} <b>${q(d.Ntrac, 'N')}</b>`,
+    `${sub('M', 'Rd,máx')} <b>${q(mp.M, 'M')}</b> (N = ${fmt(mp.N, MAG.N.d)})`, `${sub('N', 'Rd,hormigón')} <b>${q(dH.Ncomp, 'N')}</b>`,
+    ...(c.phi0 ? [`ø <b>${fmt(est.fi ?? c.phi0, 0)}</b> mm · ${sub('A', 's')} <b>${q(c.As0 * c.k, 'As')}</b>`] : [])].join(' · ') });
+  const lado = h('aside', { class: 'fcr-lado' },
+    h('div', { class: 'fcr-sec', html: dibujoSeccionPeq(geo, s) }),
+    tablaEsfuerzos(gam));
+  res.append(h('article', { class: 'panel tarjeta' }, h('h2', {}, t('fcr.diagrama')),
+    h('div', { class: 'fcr-diag' }, h('div', { class: 'fcr-graf' }, graficoNM(ctx, d, dH, gam, s), nota), lado)));
+}
+
+/** Sección pequeña, solo contorno y barras con sus cotas. */
+function dibujoSeccionPeq(geo, s) {
+  const e = encuadre(geo, 150, 150, { completa: true });
+  const x0 = 46;
+  const y0 = 10;
+  const { svg, hp, bp } = capasSeccion(geo, s, { e, x0, y0, x: null, id: 'fcrs', cotasCapas: false });
+  return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${x0 + bp + 30} ${y0 + hp + 32}" role="img" aria-label="${t('g.seccion')}">${DEFS}${svg}</svg>`;
 }
 
 function tablaEsfuerzos(gam) {
@@ -233,7 +264,7 @@ function resultadoUnico(ctx, res, { s, c, gam, gmin, dim }) {
     [`${sub('M', 'Rd')}(${sub('N', 'Ed')})`, Number.isFinite(Mn) ? qh(Mn, 'M') : '—'],
     [sub('N', 'Rd'), qh(d.Ncomp, 'N')],
     ...(ok ? [[t('c.x'), Number.isFinite(ok.x) && ok.x > 0 ? qh(ok.x, 'long') : '—'], [sub('ε', 'c'), qh(-ok.epsSup, 'def')]] : []),
-    ...(dim && Number.isFinite(c.k) ? [[sub('A', 's,req'), qh(c.As0 * c.k, 'As')], ['k', fmt(c.k, 2)]] : []),
+    ...cifrasArmadura(c, dim),
   ];
   const lienzo = h('div', { class: 'lienzo', html: ok ? dibujoRotura(geo, s, c, ok) : '' });
   const tarjetaDib = h('article', { class: 'panel tarjeta' }, h('h2', {}, t('t.dibujo')), h('p', { class: 'sub' }, t('fcr.dibujoSub')), lienzo);
@@ -297,4 +328,15 @@ function dibujoRotura(geo, s, c, e) {
   const Wt = t0 + 215;
   const H = y0 + hp + 40;
   return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${Wt} ${H}" role="img" aria-label="${t('fcr.dibujoAria')}">${out.join('')}</svg>`;
+}
+
+/** Cifras de la armadura: ø de cálculo, o en Dimensionar ø estricto y propuesto con sus áreas. */
+function cifrasArmadura(c, dim) {
+  const mm = (x, dd) => `${fmt(x, dd)}<span class="u"> mm</span>`;
+  if (dim && c.phiProp) {
+    return [[`ø ${t('fcr.estricto')}`, mm(c.phiEstricto, 1)], [`ø ${t('fcr.propuesto')}`, mm(c.phiProp, 0)],
+      [`${sub('A', 's')} ${t('fcr.estricto')}`, qh(c.As0 * c.kEstricto, 'As')], [`${sub('A', 's')} ${t('fcr.propuesto')}`, qh(c.As0 * c.k, 'As')]];
+  }
+  if (dim && Number.isFinite(c.k)) return [[sub('A', 's,req'), qh(c.As0 * c.k, 'As')], ['k', fmt(c.k, 2)]];
+  return c.phi0 ? [['ø', mm(est.fi ?? c.phi0, 0)], [sub('A', 's'), qh(c.As0 * c.k, 'As')]] : [];
 }

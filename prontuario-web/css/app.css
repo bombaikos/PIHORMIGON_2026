@@ -844,3 +844,13 @@ details.an-ce { margin-top: var(--e2); }
 .plegable-res > summary { cursor: pointer; font-size: var(--t-s); color: var(--tinta-2); font-weight: 600; }
 .plegable-res[open] { display: flex; flex-direction: column; gap: var(--e2); }
 .plegable-res .res-plegado { display: flex; flex-direction: column; gap: var(--e3); }
+
+/* Flexión compuesta recta, modo Diagrama: todo a la vista (diagrama, nota de resultados, sección pequeña y tabla) */
+.fcr-diag { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--e4); flex: 1; min-height: 0; }
+@media (min-width: 1100px) and (min-height: 600px) { .fcr-diag { grid-template-columns: minmax(0, 1fr) minmax(220px, 300px); } }
+.fcr-graf { display: flex; flex-direction: column; gap: var(--e2); min-width: 0; min-height: 0; }
+.fcr-graf > .lienzo { flex: 1; min-height: 0; }
+.nota-diag { margin: 0; font-size: var(--t-s); color: var(--tinta-2); line-height: 1.5; flex-shrink: 0; }
+.fcr-lado { display: flex; flex-direction: column; gap: var(--e3); min-width: 0; min-height: 0; overflow: auto; }
+.fcr-sec svg { width: 100%; height: auto; max-height: 190px; }
+.fcr-lado table { width: 100%; }
