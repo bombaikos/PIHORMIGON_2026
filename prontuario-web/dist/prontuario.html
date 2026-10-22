@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 </head>
 <body>
-<title>Prontuario del Hormigón</title>
+<title>Prontuario Informático del Hormigón 2026 BETA a</title>
 <style>
 /* Prontuario web. Estilo según analisis/guia-estilo-prontuario.md (la maqueta de flexión es la referencia).
    Disposición: todo en una pantalla de PC (§ 13): barra de una línea; datos | dibujo | resultados, sin scroll de página. En móvil, una columna. */
@@ -880,6 +880,8 @@ svg.dib-pun { min-width: 0; }
   .dib .pilar { fill: Canvas; stroke: CanvasText; }
   .dib .perim-ctrl, .dib .perim-ext, .dib .borde-libre { stroke: CanvasText; }
 }
+.marca .app { letter-spacing: 0; white-space: nowrap; font-size: 10px; }
+.marca .app .beta { color: #ff9a2e; font-weight: 700; }
 </style>
 
 <header class="barra">
@@ -2306,7 +2308,7 @@ svg.dib-pun { min-width: 0; }
   // src/i18n/es.js
   var sub = (a, b) => `${a}<sub>${b}</sub>`;
   var es_default = {
-    app: "Prontuario inform\xE1tico del hormig\xF3n \xB7 2026",
+    app: 'Prontuario Inform\xE1tico del Hormig\xF3n 2026 <b class="beta">BETA a</b>',
     ejemplo: "ejemplo",
     ejemploNombre: "Ejemplo",
     sinNombre: "Sin nombre",
@@ -3297,7 +3299,7 @@ svg.dib-pun { min-width: 0; }
   // src/i18n/en.js
   var sub2 = (a, b) => `${a}<sub>${b}</sub>`;
   var en_default = {
-    app: "Concrete design handbook \xB7 2026",
+    app: 'Concrete Design Handbook 2026 <b class="beta">BETA a</b>',
     ejemplo: "example",
     ejemploNombre: "Example",
     sinNombre: "Untitled",
@@ -15344,7 +15346,7 @@ svg.dib-pun { min-width: 0; }
   }
   function pintarCabecera() {
     const p = estado3.proyecto;
-    $("marca-app").textContent = t("app");
+    $("marca-app").innerHTML = t("app");
     $("nombre-proyecto").textContent = p.nombre || t("sinNombre");
     $("marca-ejemplo").hidden = !estado3.ejemplo;
     $("marca-ejemplo").textContent = t("ejemplo");

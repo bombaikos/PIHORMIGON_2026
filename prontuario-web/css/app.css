@@ -871,3 +871,5 @@ svg.dib-pun { min-width: 0; }
   .dib .pilar { fill: Canvas; stroke: CanvasText; }
   .dib .perim-ctrl, .dib .perim-ext, .dib .borde-libre { stroke: CanvasText; }
 }
+.marca .app { letter-spacing: 0; white-space: nowrap; font-size: 10px; }
+.marca .app .beta { color: #ff9a2e; font-weight: 700; }
