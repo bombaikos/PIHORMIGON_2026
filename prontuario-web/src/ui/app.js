@@ -115,7 +115,7 @@ function deshacer() {
 
 function pintarCabecera() {
   const p = estado.proyecto;
-  $('marca-app').textContent = t('app');
+  $('marca-app').innerHTML = t('app');
   $('nombre-proyecto').textContent = p.nombre || t('sinNombre');
   $('marca-ejemplo').hidden = !estado.ejemplo;
   $('marca-ejemplo').textContent = t('ejemplo');
