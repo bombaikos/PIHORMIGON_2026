@@ -871,5 +871,17 @@ svg.dib-pun { min-width: 0; }
   .dib .pilar { fill: Canvas; stroke: CanvasText; }
   .dib .perim-ctrl, .dib .perim-ext, .dib .borde-libre { stroke: CanvasText; }
 }
+
+/* Rasante en juntas · alzado de la junta con el cosido */
+.dib .hor-2 { fill: color-mix(in oklch, var(--hormigon) 55%, var(--hoja)); }
+.dib .junta { fill: none; stroke: var(--tinta); stroke-width: 1.6; }
+.dib .barra-cos { stroke: var(--acero); stroke-width: 3.2; stroke-linecap: round; }
+.dib .fuerza { stroke: var(--acento); stroke-width: 2; fill: none; }
+.dib .fuerza + text, .dib text.fuerza-t { fill: var(--acento); }
+svg.dib-ras { min-width: 0; }
+@media (forced-colors: active) {
+  .dib .hor-2 { fill: Canvas; }
+  .dib .junta, .dib .barra-cos, .dib .fuerza { stroke: CanvasText; }
+}
 .marca .app { letter-spacing: 0; white-space: nowrap; font-size: 10px; }
 .marca .app .beta { color: #ff9a2e; font-weight: 700; }
