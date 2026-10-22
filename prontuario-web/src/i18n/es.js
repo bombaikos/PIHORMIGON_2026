@@ -4,7 +4,7 @@
 const sub = (a, b) => `${a}<sub>${b}</sub>`;
 
 export default {
-  app: 'Prontuario informático del hormigón · 2026',
+  app: 'Prontuario Informático del Hormigón 2026 <b class="beta">BETA a</b>',
   ejemplo: 'ejemplo',
   ejemploNombre: 'Ejemplo',
   sinNombre: 'Sin nombre',
