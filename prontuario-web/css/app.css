@@ -896,5 +896,21 @@ svg.dib-ras { min-width: 0; }
   .dib .hor-2 { fill: Canvas; }
   .dib .junta, .dib .barra-cos, .dib .fuerza { stroke: CanvasText; }
 }
-.marca .app { letter-spacing: 0; white-space: nowrap; font-size: 10px; }
+.marca .app { letter-spacing: 0; white-space: nowrap; font-size: calc(10px + var(--mas)); }
 .marca .app .beta { color: #ff9a2e; font-weight: 700; }
+
+/* ---------- Barra superior de una línea, 52 px (guía común § 2.3) ---------- */
+@media (min-width: 1100px) and (min-height: 600px) {
+  .barra { flex-wrap: nowrap; gap: var(--e3); padding: 4px var(--e4); min-height: 52px; }
+  .barra .marca { flex: none; }
+  .barra .menu { flex: 1 1 auto; min-width: 0; gap: 0; }
+  .barra .menu button { padding: 3px 8px; }
+  .barra .menu button:disabled:not(:last-child) { display: none; } /* módulos aún no migrados: fuera de la barra */
+  .barra .lado { flex: none; flex-wrap: nowrap; margin-left: 0; gap: var(--e2); }
+  .barra .tecla { white-space: nowrap; }
+}
+.barra .pant-completa { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; border: 1px solid var(--banda-linea); border-radius: var(--r-campo); background: none; color: var(--banda-tinta-2); cursor: pointer; }
+.barra .pant-completa:hover { border-color: rgb(255 255 255 / .5); color: var(--banda-tinta); }
+.barra .pant-completa svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.5; }
+#menu-archivo button { display: flex; justify-content: space-between; gap: var(--e5); width: 100%; }
+#menu-archivo small { color: var(--tinta-3); }
