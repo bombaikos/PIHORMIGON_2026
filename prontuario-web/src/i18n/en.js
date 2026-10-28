@@ -333,7 +333,7 @@ export default {
   'fu.tabla': 'table', 'fu.minimo': 'Minimum', 'fu.sinValor': 'The code gives no value for this combination; a specific study is needed.',
   'fu.opciones': (n) => `${n} possible combinations · `, 'fu.combinacion': 'Combination', 'fu.minimos': 'Minimums',
   'fu.geom': 'geometric cover governs', 'fu.barras8': 'at least 8 bars',
-  'fu.tablaTitulo': 'Code table', 'fu.tablaSub': (a) => `${a}. Each cell is minimum dimension / minimum axis distance (mm); the chosen row is highlighted.`,
+  'fu.tablaTitulo': 'Code table', 'fu.tablaSub': (a) => `${a}. Each cell is minimum dimension / minimum axis distance [mm]; the chosen row is highlighted.`,
   'fu.unidades': 'Values in mm. * = geometric cover (durability) governs; ** = at least 8 bars. With several combinations, any one is valid.',
   'fu.requisitos': (r) => `Minimums for ${r}`, 'fu.condiciones': 'Conditions attached to the table',
   'fu.am': 'a<sub>min</sub> is the equivalent axis distance of the reinforcement (a<sub>m</sub>), weighted by area and yield strength, measured to the exposed face. Durability covers may require larger values.',

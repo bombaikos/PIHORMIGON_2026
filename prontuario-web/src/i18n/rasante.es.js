@@ -13,7 +13,7 @@ export default {
   'ras.bAyuda': 'Ancho de contacto de la junta, medido en el plano de la junta y normal al esfuerzo rasante (p en la EHE-08, b_i en el EC-2). No cuentes zonas con paso menor de 20 mm o con recubrimiento menor de 30 mm',
   'ras.LAyuda': 'Longitud de junta sobre la que actúa el esfuerzo rasante R_Ed y de la que se comprueba la resistencia (A_i = b·L)',
   'ras.REdNombre': 'El esfuerzo rasante',
-  'ras.REdAyuda': 'Esfuerzo rasante de cálculo que actúa en la longitud L de la junta, paralelo a ella (kN). Se escribe directo; no se calcula a partir del cortante',
+  'ras.REdAyuda': 'Esfuerzo rasante de cálculo que actúa en la longitud L de la junta, paralelo a ella [kN]. Se escribe directo; no se calcula a partir del cortante',
   'ras.sigRef': 'compresión +', 'ras.sigAyuda': 'Tensión normal al plano de la junta que actúa a la vez que el rasante (mínima). Compresión positiva; con tracción la cohesión se anula',
   'ras.hAyuda': 'Canto de la sección compuesta (EHE-08 47.3). Solo para comprobar la separación máxima del cosido. 0 = no se comprueba',
   'ras.eminAyuda': 'Menor espesor de hormigón a un lado de la junta (EHE-08 47.2: 50 mm, localmente 30 mm). Se usa en la separación máxima del cosido. 0 = no se comprueba',
@@ -32,7 +32,7 @@ export default {
   'ras.t.junta': 'Junta',
   'ras.c.rmax': sub('R', 'u,máx') + ' (límite)', 'ras.c.coh': 'Cohesión', 'ras.c.fric': 'Fricción', 'ras.c.cosido': 'Cosido', 'ras.c.estado': 'Estado',
   'ras.c.muEstado': (n) => `μ (estado ${n})`,
-  'ras.tabla.ramas': 'Barras', 'ras.tabla.asw': 'A<sub>sw</sub> (mm²)', 'ras.tabla.s': 's (mm)', 'ras.tabla.asws': 'A<sub>sw</sub>/s (cm²/m)',
+  'ras.tabla.ramas': 'Barras', 'ras.tabla.asw': 'A<sub>sw</sub> [mm²]', 'ras.tabla.s': 's [mm]', 'ras.tabla.asws': 'A<sub>sw</sub>/s (cm²/m)',
   'ras.tabla.nota': (n, smax) => `${n} barras por sección, separación de 25 en 25 mm hasta ${smax} mm. «—» = ni con la separación mínima de 50 mm llega.`,
   // Dibujo
   'ras.dib.aria': 'Alzado de la junta entre dos hormigones con las barras de cosido',

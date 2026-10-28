@@ -30,7 +30,7 @@ function cotaV(x, y1, y2, texto, xRef, lado = 'izq') {
 /**
  * Escala y encuadre para una caja de dibujo.
  * @param {{completa?: boolean, desp?: number}} [o]  completa: dibuja toda la anchura; desp: posición del tramo (0 izquierda, 1 derecha)
- * @returns {{s:number, tramo:boolean, bDib:number, x0m:number}}  s en px/m; x0m = x (m) del borde izquierdo dibujado
+ * @returns {{s:number, tramo:boolean, bDib:number, x0m:number}}  s en px/m; x0m = x [m] del borde izquierdo dibujado
  */
 export function encuadre(geo, anchoMax, altoMax, { completa = false, desp = 0.5 } = {}) {
   const { xmin, xmax } = geo.caja;
@@ -47,7 +47,7 @@ export function encuadre(geo, anchoMax, altoMax, { completa = false, desp = 0.5 
  * Capas SVG de la sección colocadas en (x0, y0) px con escala e.
  * @param {Object} geo  geometria(s)
  * @param {Object} s    sección del proyecto (para las cotas propias de cada forma)
- * @param {Object} o    {e: encuadre, x0, y0, x: profundidad de la fibra neutra (m) o null, id: prefijo único, abajo: la zona comprimida está en la cara inferior}
+ * @param {Object} o    {e: encuadre, x0, y0, x: profundidad de la fibra neutra [m] o null, id: prefijo único, abajo: la zona comprimida está en la cara inferior}
  */
 export function capasSeccion(geo, sec, { e, x0, y0, x = null, id = 'd', cotasCapas = true, abajo = false }) {
   const { s, tramo, bDib, x0m } = e;

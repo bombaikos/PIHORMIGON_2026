@@ -39,7 +39,7 @@ export default {
   'pun.manda.exterior': 'manda la zona exterior a los cercos',
   'pun.c.vc': sub('V', 'u') + ' sin armadura', 'pun.c.vcs': sub('V', 'u') + ' con cercos', 'pun.c.vmax': sub('V', 'u') + ' máx. (biela)', 'pun.c.vext': sub('V', 'u') + ' zona exterior',
   'pun.t.planta': 'Planta',
-  'pun.tabla.ramas': 'Ramas', 'pun.tabla.asw': 'A<sub>sw</sub> (mm²)', 'pun.tabla.st': 's<sub>t</sub> (mm)', 'pun.tabla.vu': 'V<sub>u</sub> (kN)', 'pun.tabla.nPer': 'Perím.',
+  'pun.tabla.ramas': 'Ramas', 'pun.tabla.asw': 'A<sub>sw</sub> [mm²]', 'pun.tabla.st': 's<sub>t</sub> [mm]', 'pun.tabla.vu': 'V<sub>u</sub> [kN]', 'pun.tabla.nPer': 'Perím.',
   'pun.tabla.nota': (sr, a1, nPer) => `Ramas por perímetro (pares, y las que pide la separación tangencial), con a<sub>1</sub> = ${a1} mm y s<sub>r</sub> = ${sr} mm. Perímetros de cercos hasta la zona exterior: ${nPer}.`,
   // Dibujo
   'pun.dib.aria': (a, b) => `Planta del pilar de ${a} por ${b} mm con los perímetros de control y los cercos`,

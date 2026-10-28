@@ -36,7 +36,7 @@ const sub = (a, b) => `${a}<sub>${b}</sub>`;
 const ind = (a, b) => `${a}<tspan class="ind" dy="3">${b}</tspan>`;
 const nv = (txt) => leerNumero(txt);
 
-/** Excentricidad mínima (m): EHE-08 42.2.1 máx{h/20; 2 cm}; EC-2 6.1(4) y EC-2 2023 8.1.1(5) máx{h/30; 20 mm}. h = canto (o diámetro). */
+/** Excentricidad mínima [m]: EHE-08 42.2.1 máx{h/20; 2 cm}; EC-2 6.1(4) y EC-2 2023 8.1.1(5) máx{h/30; 20 mm}. h = canto (o diámetro). */
 export function eMinima(norma, s) {
   const h = s.forma === 'circular' ? s.geo.D : s.geo.h;
   return Math.max(h / (norma === 'EHE-08' ? 20 : 30), 0.02);
@@ -76,7 +76,7 @@ const pares = () => (est.modo !== 'diagrama'
   // Con compresión, el momento de cálculo no baja de N·e_mín (se marca con *)
   .map((x) => (x.N > 0 && x.M < x.N * emin - 1e-9 ? { ...x, M: x.N * emin, subeM: true } : x));
 
-/** Diámetro común (mm) de las barras de la sección, o null si hay franjas por área o diámetros distintos. */
+/** Diámetro común [mm] de las barras de la sección, o null si hay franjas por área o diámetros distintos. */
 function fiComun(geo) {
   if (!geo.barras.length || geo.franjas.length) return null;
   const f = geo.barras.map((b) => b.fi);
@@ -138,7 +138,7 @@ export function datos(ctx, form) {
   const campoFi = () => {
     if (est.modo === 'dimensionar' || !c?.phi0) return null;
     const serie = [...new Set([...serieDiametros(), c.phi0])].sort((x, y) => x - y);
-    return selector({ id: 'fr-fi', etq: 'ø (mm)', linea: true, opciones: serie.map((x) => [x, fmt(x, 0)]), valor: est.fi ?? c.phi0, onCambio: (v) => { est.fi = Number(v); cambio(); } });
+    return selector({ id: 'fr-fi', etq: 'ø [mm]', linea: true, opciones: serie.map((x) => [x, fmt(x, 0)]), valor: est.fi ?? c.phi0, onCambio: (v) => { est.fi = Number(v); cambio(); } });
   };
   const coefFila = (datosTabla, r) => {
     if (!c) return '';
@@ -155,7 +155,7 @@ export function datos(ctx, form) {
       campoFi()) :
     grupo(t('fcr.esfuerzos'),
       rejilla({ id: 'fr-esf', altoMax: 190,
-        columnas: [{ titulo: `${sub('N', 'Ed')} (kN)`, num: true }, { titulo: `${sub('M', 'Ed')} (kN·m)`, num: true }],
+        columnas: [{ titulo: `${sub('N', 'Ed')} [kN]`, num: true }, { titulo: `${sub('M', 'Ed')} [kN·m]`, num: true }],
         filas: est.filas, calculada: { titulo: 'γ', f: coefFila },
         onCambio: (f) => { est.filas = f.map((r) => [r[0], r[1]]); cambio(); } }),
       campoFi()),
@@ -225,7 +225,7 @@ function dibujoSeccionPeq(geo, s) {
 function tablaEsfuerzos(gam) {
   const filas = gam.map((x) => [String(x.i + 1), fmt(x.N, MAG.N.d), fmt(x.M, MAG.M.d) + (x.subeM ? '*' : ''), x.N !== 0 ? fmt((x.M / x.N) * 1000, MAG.long.d) : '∞', sigla(x.g),
     `<span class="${x.g >= 1 - 1e-6 ? 'ok' : 'no'}">${x.g >= 1 - 1e-6 ? t('fcr.dentroSello') : t('fcr.fueraSello')}</span>`]);
-  const cont = h('div', {}, h('table', { class: 'tabla', html: `<thead><tr>${['#', 'N<sub>Ed</sub> (kN)', 'M<sub>Ed</sub> (kN·m)', 'e (mm)', 'γ', ''].map((x) => `<th>${x}</th>`).join('')}</tr></thead><tbody>${filas.map((f) => `<tr>${f.map((x) => `<td>${x}</td>`).join('')}</tr>`).join('')}</tbody>` }));
+  const cont = h('div', {}, h('table', { class: 'tabla', html: `<thead><tr>${['#', 'N<sub>Ed</sub> [kN]', 'M<sub>Ed</sub> [kN·m]', 'e [mm]', 'γ', ''].map((x) => `<th>${x}</th>`).join('')}</tr></thead><tbody>${filas.map((f) => `<tr>${f.map((x) => `<td>${x}</td>`).join('')}</tr>`).join('')}</tbody>` }));
   return cont;
 }
 
@@ -241,8 +241,8 @@ function graficoNM(ctx, d, dH, gam, s) {
   const puntos = gam.map((x) => ({ x: x.N, y: x.M, etq: String(x.i + 1), marca: x.g >= 1 - 1e-6 ? 'ok' : 'no' }));
   return h('div', { class: 'lienzo' }, grafica({
     series, puntos,
-    ejeX: { titulo: `N (${MAG.N.ud}), ${t('fcr.compPos')}`, d: MAG.N.d, dt: MAG.N.d },
-    ejeY: { titulo: `M (${MAG.M.ud})`, d: MAG.M.d, dt: MAG.M.d },
+    ejeX: { titulo: `N [${MAG.N.ud}], ${t('fcr.compPos')}`, d: MAG.N.d, dt: MAG.N.d },
+    ejeY: { titulo: `M [${MAG.M.ud}]`, d: MAG.M.d, dt: MAG.M.d },
     archivo: `N-M ${s.nombre}`,
     avisar: ctx.avisar,
   }));
@@ -320,7 +320,7 @@ function dibujoRotura(geo, s, c, e) {
   const emax = Math.max(Math.abs(eps(0)), Math.abs(eps(geo.h)), 0.001);
   const ke = 58 / emax;
   const X1 = (v) => e0 + v * ke;
-  out.push(`<text class="tit" style="text-transform:none" x="${e0 - 58}" y="22">ε (‰)</text>`);
+  out.push(`<text class="tit" style="text-transform:none" x="${e0 - 58}" y="22">ε [‰]</text>`);
   out.push(`<line class="ref" x1="${e0}" y1="${y0 - 6}" x2="${e0}" y2="${y0 + hp + 6}"/>`);
   const poli = (cl, y1, y2) => `<polygon class="${cl}" points="${e0},${Y(y1)} ${X1(eps(y1))},${Y(y1)} ${X1(eps(y2))},${Y(y2)} ${e0},${Y(y2)}"/>`;
   if (e.x > 0 && e.x < geo.h) { out.push(`<polygon class="eps-c" points="${e0},${Y(0)} ${X1(eps(0))},${Y(0)} ${e0},${Y(xn)}"/>`); out.push(`<polygon class="eps-t" points="${e0},${Y(xn)} ${X1(eps(geo.h))},${Y(geo.h)} ${e0},${Y(geo.h)}"/>`); }
@@ -331,7 +331,7 @@ function dibujoRotura(geo, s, c, e) {
   const t0 = e0 + 185;
   const fcd = Math.max(...matH.comp.map((v) => -v[1]), 1);
   const kc = 64 / fcd;
-  out.push(`<text class="tit" style="text-transform:none" x="${t0 - 64}" y="22">σ (MPa)</text>`);
+  out.push(`<text class="tit" style="text-transform:none" x="${t0 - 64}" y="22">σ [MPa]</text>`);
   out.push(`<line class="ref" x1="${t0}" y1="${y0 - 6}" x2="${t0}" y2="${y0 + hp + 6}"/>`);
   const pts = [];
   const ys = [];

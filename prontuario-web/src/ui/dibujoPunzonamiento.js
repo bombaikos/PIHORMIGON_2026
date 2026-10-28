@@ -12,7 +12,7 @@ const ALTO = 300;
 const mm = (v) => fmt(v, 0);
 
 /**
- * @param {Object} x  pilar: tipo, pos, c1, c2, D (mm)
+ * @param {Object} x  pilar: tipo, pos, c1, c2, D [mm]
  * @param {{perimetros: {delta:number, clase:string, texto:string}[], anillos:number[], ramas:number, sinArmadura?:boolean, leyenda:string[]}} o
  *   perimetros: contornos a dibujar (clase 'ctrl' perímetro de control, 'ext' perímetro exterior); anillos: δ de cada perímetro de cercos
  */
