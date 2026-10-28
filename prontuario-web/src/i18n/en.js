@@ -319,7 +319,7 @@ export default {
   'vig.esquema': 'Diagram', 'vig.giro': 'Rotation', 'vig.flecha': 'Deflection', 'vig.convenio': 'M is drawn on the tension side (positive downwards) · V positive upwards · rotation and deflection positive downwards · hover to read the values.',
   'vig.flechaRel': (n) => `Maximum deflection = L / ${n}`, 'vig.err.luz': 'The span must be greater than zero.', 'vig.err.ei': 'The stiffness EI must be greater than zero.', 'vig.err.inestable': 'The supports do not hold the beam (unstable).', 'vig.err.fuera': 'A load lies outside the beam.',
   'vig.err.posicion': (L) => `Must be between 0 and ${L} m`,
-  'm.analisis': 'Analysis', 'm.elu': 'ULS', 'm.els': 'SLS', 'm.bielas': 'Struts and ties', 'm.ejecucion': 'Execution and control', 'm.ayuda': '?',
+  'm.archivo': 'File', 'm.analisis': 'Analysis', 'm.elu': 'ULS', 'm.els': 'SLS', 'm.bielas': 'Struts and ties', 'm.ejecucion': 'Execution and control', 'm.ayuda': '?',
   'menu.pronto': 'Not migrated yet', 'menu.materiales': 'Create and edit', 'menu.reologicas': 'Rheological properties', 'menu.vigas1vano': 'Single-span beams',
   'menu.flexion': 'Simple bending', 'menu.flexRecta': 'Axial load + uniaxial bending', 'menu.flexEsviada': 'Axial load + biaxial bending',
   'menu.cortante': 'Shear', 'menu.torsion': 'Torsion', 'menu.punzonamiento': 'Punching shear', 'menu.anclaje': 'Anchorage and lap splices',

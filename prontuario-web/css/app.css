@@ -704,7 +704,7 @@ table.rejilla.numerada tbody tr:not(.nueva) td:first-child { padding-left: 22px;
 /* A anchos de portátil la norma y los comandos caben en la fila del menú: sin la palabra «Norma» ni las teclas */
 @media (min-width: 1100px) and (max-width: 1500px) { #seg-norma .chip-ajuste > span:first-child { display: none; } #abrir-paleta kbd { display: none; } }
 /* Propiedades de un material: etiqueta y valor juntos, no repartidos por todo el ancho del panel */
-.tarjeta table.prop { width: auto; min-width: 420px; max-width: 100%; }
+.tarjeta table.prop { width: 100%; }
 .tarjeta table.prop td { padding-left: 20px; }
 .edad tr.dia28 > * { background: var(--hundido); }
 .sub-edad { margin: 10px 0 2px; font-size: var(--t-s); color: var(--tinta-2); font-weight: 600; }
@@ -788,8 +788,9 @@ svg.vl { display: block; width: 100%; height: 100%; }
 .dib-anclaje { width: 100%; min-width: 0; max-width: 360px; max-height: 250px; }
 .dib .barra-lin { fill: none; stroke: var(--acero); stroke-width: 4; }
 .tabla-an th, .tabla-an td { text-align: right; font-variant-numeric: tabular-nums; }
-.tabla-an thead th { text-align: center; }
-.tabla-an tbody th { text-align: center; }
+.tabla-an thead th { text-align: right; }
+.tabla-an thead th[colspan] { text-align: center; }
+.tabla-an tbody th { text-align: right; }
 .an-ficha { user-select: all; }
 .an-mas { color: var(--no); font-weight: 600; }
 details.an-ce { margin-top: var(--e2); }
@@ -896,7 +897,7 @@ svg.dib-ras { min-width: 0; }
   .dib .hor-2 { fill: Canvas; }
   .dib .junta, .dib .barra-cos, .dib .fuerza { stroke: CanvasText; }
 }
-.marca .app { letter-spacing: 0; white-space: nowrap; font-size: 10px; }
+.marca .app { letter-spacing: 0; white-space: nowrap; font-size: calc(10px + var(--mas)); }
 .marca .app .beta { color: #ff9a2e; font-weight: 700; }
 
 /* Análisis · vigas: la mitad de la pantalla para el dibujo y la otra mitad para la tabla */
@@ -914,3 +915,19 @@ svg.dib-ras { min-width: 0; }
 .vigas-datos table.rejilla td, .vigas-datos table.rejilla tr.nueva td { background: var(--campo); } /* celdas de datos en blanco; solo la cabecera en gris */
 .vigas-datos table.rejilla td.sel, .vigas-datos table.rejilla tr.foco td { background: var(--acento-suave); }
 .vigas-datos .marco-rejilla { border-color: var(--campo-borde); }
+
+/* ---------- Barra superior de una línea, 52 px (guía común § 2.3) ---------- */
+@media (min-width: 1100px) and (min-height: 600px) {
+  .barra { flex-wrap: nowrap; gap: var(--e3); padding: 4px var(--e4); min-height: 52px; }
+  .barra .marca { flex: none; }
+  .barra .menu { flex: 1 1 auto; min-width: 0; gap: 0; }
+  .barra .menu button { padding: 3px 8px; }
+  .barra .menu button:disabled:not(:last-child) { display: none; } /* módulos aún no migrados: fuera de la barra */
+  .barra .lado { flex: none; flex-wrap: nowrap; margin-left: 0; gap: var(--e2); }
+  .barra .tecla { white-space: nowrap; }
+}
+.barra .pant-completa { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; border: 1px solid var(--banda-linea); border-radius: var(--r-campo); background: none; color: var(--banda-tinta-2); cursor: pointer; }
+.barra .pant-completa:hover { border-color: rgb(255 255 255 / .5); color: var(--banda-tinta); }
+.barra .pant-completa svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.5; }
+#menu-archivo button { display: flex; justify-content: space-between; gap: var(--e5); width: 100%; }
+#menu-archivo small { color: var(--tinta-3); }
