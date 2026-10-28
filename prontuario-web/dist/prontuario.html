@@ -13,6 +13,7 @@
   --suelo: oklch(96.4% 0.005 240);
   --hoja: oklch(99.6% 0.002 240);
   --hundido: oklch(95.2% 0.006 240);
+  --campo: oklch(100% 0 0); --campo-borde: oklch(78% 0.05 252);
   --nota: oklch(94.8% 0.014 78); --nota-borde: oklch(85.5% 0.024 75);
   --tinta: oklch(24% 0.02 248);
   --tinta-2: oklch(44% 0.02 248);
@@ -40,18 +41,19 @@
   --f: system-ui, 'Segoe UI Variable Text', 'Segoe UI', -apple-system, Roboto, 'Helvetica Neue', Arial, sans-serif;
 
   /* Serie tipográfica 10 · 12 · 14; solo el resultado principal va grande (28) */
-  --mas: 2px; /* +2 px de texto y de alto de controles (pedido de Pepiño, 19/10); se anula en pantallas pequeñas */
+  --mas: 2px; /* +2 px de texto y de alto de controles (Pepiño, 19/10); en todas las pantallas (28/10) */
   --t-xs: calc(10px + var(--mas)); --t-s: calc(12px + var(--mas)); --t-m: calc(14px + var(--mas)); --t-l: calc(14px + var(--mas)); --t-xl: calc(14px + var(--mas)); --t-xxl: 28px;
   --e1: 4px; --e2: 8px; --e3: 12px; --e4: 16px; --e5: 24px; --e6: 32px;
   --r-panel: 10px; --r-campo: 6px; --r-chip: 4px;
   --alto-campo: calc(24px + var(--mas));
   --hueco-campos: 4px;
 }
-@media (max-width: 1500px), (max-height: 700px) { :root { --mas: 0px; } }
+/* Pantallas bajas (1366×657): mismo texto, menos aire vertical */
+@media (max-height: 700px) { :root { --alto-campo: 24px; --hueco-campos: 2px; } body { line-height: 1.3; } }
 :root[data-densidad="comoda"] { --alto-campo: 32px; --hueco-campos: 10px; }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --suelo: oklch(17% 0.012 245); --hoja: oklch(21% 0.014 245); --hundido: oklch(18.5% 0.012 245); --nota: oklch(25.5% 0.014 72); --nota-borde: oklch(36% 0.022 70);
+    --suelo: oklch(17% 0.012 245); --hoja: oklch(21% 0.014 245); --hundido: oklch(18.5% 0.012 245); --campo: oklch(15.5% 0.02 250); --campo-borde: oklch(46% 0.06 252); --nota: oklch(25.5% 0.014 72); --nota-borde: oklch(36% 0.022 70);
     --tinta: oklch(93% 0.008 240); --tinta-2: oklch(78% 0.012 240); --tinta-3: oklch(66% 0.014 240);
     --linea: oklch(29% 0.014 245); --linea-fuerte: oklch(38% 0.016 245);
     --acento: oklch(74% 0.11 250); --acento-suave: oklch(30% 0.05 252);
@@ -66,7 +68,7 @@
   }
 }
 :root[data-theme="dark"] {
-  --suelo: oklch(17% 0.012 245); --hoja: oklch(21% 0.014 245); --hundido: oklch(18.5% 0.012 245); --nota: oklch(25.5% 0.014 72); --nota-borde: oklch(36% 0.022 70);
+  --suelo: oklch(17% 0.012 245); --hoja: oklch(21% 0.014 245); --hundido: oklch(18.5% 0.012 245); --campo: oklch(15.5% 0.02 250); --campo-borde: oklch(46% 0.06 252); --nota: oklch(25.5% 0.014 72); --nota-borde: oklch(36% 0.022 70);
   --tinta: oklch(93% 0.008 240); --tinta-2: oklch(78% 0.012 240); --tinta-3: oklch(66% 0.014 240);
   --linea: oklch(29% 0.014 245); --linea-fuerte: oklch(38% 0.016 245);
   --acento: oklch(74% 0.11 250); --acento-suave: oklch(30% 0.05 252);
@@ -140,11 +142,11 @@ kbd { font: calc(11px + var(--mas)) var(--f); border: 1px solid var(--linea-fuer
 .campo > label { font-size: var(--t-s); color: var(--tinta-2); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .campo > label .ref { color: var(--tinta-3); font-size: var(--t-xs); float: right; margin-top: 1px; }
 .caja {
-  display: flex; align-items: center; height: var(--alto-campo); background: var(--hundido);
-  border: 1px solid var(--linea); border-radius: var(--r-campo); transition: border-color .12s, background-color .12s;
+  display: flex; align-items: center; height: var(--alto-campo); background: var(--campo);
+  border: 1px solid var(--campo-borde); border-radius: var(--r-campo); transition: border-color .12s, background-color .12s;
 }
-.caja:hover { border-color: var(--linea-fuerte); }
-.caja:focus-within { border-color: var(--acento); background: var(--hoja); box-shadow: 0 0 0 3px var(--acento-suave); }
+.caja:hover { border-color: var(--acento); }
+.caja:focus-within { border-color: var(--acento); background: var(--campo); box-shadow: 0 0 0 3px var(--acento-suave); }
 .caja input { font-size: var(--t-m); }
 .caja input, .caja select { flex: 1; min-width: 0; height: 100%; border: 0; background: none; padding: 0 9px; outline: none; }
 .caja input { text-align: right; }
