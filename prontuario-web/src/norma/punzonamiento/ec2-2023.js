@@ -15,7 +15,7 @@ import { EC2_2023 } from '../normas.js';
 import { ErrorClave } from '../../core/errores.js';
 import { areaRama } from '../cortante/ehe08.js';
 import { ddgDe } from '../cortante/ec2-2023.js';
-import { perimetro, perimetroCara, deltaDePerimetro, validarPilar, validarArmadura, anillos, nPerimetrosExt, uExterior, alMultiplo, multiploDe } from './comun.js';
+import { perimetro, perimetroCara, deltaDePerimetro, validarPilar, validarArmadura, anillos, nPerimetrosExt, uExterior, ramasDe } from './comun.js';
 
 export { areaRama };
 export const ID = 'EC2-2023';
@@ -182,7 +182,8 @@ export function dimensionar(x, VEd, { diametros = [8, 10, 12, 16, 20] } = {}) {
     const Vw1 = (Vef - etaC * s.VRdc) / etaS;
     const Vw = Math.min(Vw1, Vef);
     const AswNec = (Vw * 1000 * r.srEf) / (P.fywd * P.dv);
-    const n = alMultiplo(Math.max(Math.ceil(AswNec / Ab - 1e-9), nMinSt, 2), multiploDe(a, x.pos));
+    const gr = ramasDe(a, x.pos, Math.max(Math.ceil(AswNec / Ab - 1e-9), nMinSt, 2));
+    const n = gr.ramas;
     const Asw = n * Ab;
     const VwR = (Asw * P.fywd * P.dv) / r.srEf / 1000;
     const c = VRdcs(P, s, fi, VwR, Vef);
@@ -190,7 +191,7 @@ export function dimensionar(x, VEd, { diametros = [8, 10, 12, 16, 20] } = {}) {
     const dvOut = P.dv - fi;
     const b05out = u.b05 * Math.pow((P.dv / dvOut) / Math.min(1, etaC), 2);
     const nPer = nPerimetrosExt(x, { ...a, ramas: n }, 0.5 * dvOut, b05out, 2, 3 * P.dv);
-    return { fi, ramas: n, Asw, st: u.b05 / n, etaC, etaS, AswNec, nPer, b05out, Vu: VuConArmadura(P, s, fi, VwR).V / beta, ok: c.VRdcs >= Vef - 1e-9 };
+    return { fi, ramas: n, nx: gr.nx, ny: gr.ny, Asw, st: u.b05 / n, etaC, etaS, AswNec, nPer, b05out, Vu: VuConArmadura(P, s, fi, VwR).V / beta, ok: c.VRdcs >= Vef - 1e-9 };
   });
   r.nPer = Math.max(...r.tabla.map((f) => f.nPer));
   return r;

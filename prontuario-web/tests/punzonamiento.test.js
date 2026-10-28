@@ -141,7 +141,7 @@ test('EHE-08 dimensionar: bielas rotas, sin armadura y con armadura (y la tabla 
     const c = ehe.comprobar({ ...base, VEd: 560, arm: { fi: f.fi, ramas: f.ramas, sr: d.sr, a1: d.a1, nPer: d.nPer } });
     assert.ok(c.Vcs >= 560 - 1e-6, `ø${f.fi} cercos`);
     assert.ok(c.Vext >= 560 - 1e-6, `ø${f.fi} zona exterior`);
-    assert.ok(f.ramas % 2 === 0 && f.ramas >= d.nMinSt);
+    assert.ok(f.ramas >= 4 && f.ramas >= d.nMinSt);
   }
 });
 

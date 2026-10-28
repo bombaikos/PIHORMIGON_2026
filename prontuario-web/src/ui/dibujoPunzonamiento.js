@@ -57,7 +57,7 @@ export function dibujoPunzonamiento(x, o) {
   // Perímetro exterior (el que dan los cercos puestos): a kd del último; en cruz, envolvente de círculos (EC-2, fig. 6.22)
   if (o.ext && !o.sinArmadura) {
     if (o.esq === 'cruz') {
-      const env = envolventeCruz(x, o.ext.dl, o.ext.kd, o.k, o.sl);
+      const env = envolventeCruz(x, o.ext.dl, o.ext.kd, o.ramas, o.sl);
       const P = env.pts;
       // Se arranca en un vértice del borde libre para no partir el trazo (en el interior, en cualquiera)
       let ini = 0;
@@ -93,11 +93,11 @@ export function dibujoPunzonamiento(x, o) {
         const cara = Math.abs(ux) * cc.hx + Math.abs(uy) * cc.hy;
         out.push(`<line class="cerco" x1="${X(cc.cx + ux * cara).toFixed(1)}" y1="${Y(cc.cy + uy * cara).toFixed(1)}" x2="${X(cc.cx + ux * (cara + ult)).toFixed(1)}" y2="${Y(cc.cy + uy * (cara + ult)).toFixed(1)}"/>`);
       }
-      for (const q of cercosCruz(x, o.anillos, o.k, o.sl)) { out.push(barra(q)); studs.push(q); }
+      for (const q of cercosCruz(x, o.anillos, o.ramas, o.sl)) { out.push(barra(q)); studs.push(q); }
     } else {
       for (const dl of o.anillos) {
         out.push(`<path class="cerco" d="${camino(contornoRect(x, dl), interior)}"/>`);
-        for (const q of cercosReticula(x, dl, o.ramas)) { out.push(barra(q)); studs.push(q); }
+        for (const q of cercosReticula(x, dl, o.nx, o.ny)) { out.push(barra(q)); studs.push(q); }
       }
     }
   }

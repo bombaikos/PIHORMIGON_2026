@@ -231,9 +231,32 @@ export const alPar = (n) => (n % 2 === 0 ? n : n + 1);
 export const BRAZOS = { interior: 4, borde: 3, esquina: 2 };
 export const nBrazos = (pos) => BRAZOS[pos] ?? 4;
 
-/** Ramas por perímetro = múltiplo que admite el esquema: cruz, brazos × ramas por brazo; retícula, par. */
-export const alMultiplo = (n, m) => Math.ceil(n / m - 1e-9) * m;
-export const multiploDe = (a, pos) => (a?.esq === 'cruz' ? nBrazos(pos) : 2);
+/** Ramas por perímetro de una retícula nx × ny: lados paralelos a x con nx ramas y paralelos a y con ny (las de las esquinas se comparten). */
+export function ramasReticula(pos, nx, ny) {
+  if (pos === 'interior') return 2 * nx + 2 * ny - 4;
+  if (pos === 'borde') return nx + 2 * ny - 2;
+  return nx + ny - 1;
+}
+
+/** Menor retícula (lo más cuadrada posible) con al menos n ramas por perímetro. */
+export function rejillaPara(pos, n) {
+  let mejor = null;
+  for (let nx = 2; nx <= 40; nx++) {
+    for (let ny = 2; ny <= 40; ny++) {
+      const tot = ramasReticula(pos, nx, ny);
+      if (tot < n) continue;
+      const clave = [tot, Math.abs(nx - ny)];
+      if (!mejor || clave[0] < mejor.clave[0] || (clave[0] === mejor.clave[0] && clave[1] < mejor.clave[1])) mejor = { nx, ny, ramas: tot, clave };
+    }
+  }
+  return mejor ? { nx: mejor.nx, ny: mejor.ny, ramas: mejor.ramas } : { nx: 40, ny: 40, ramas: ramasReticula(pos, 40, 40) };
+}
+
+/** Ramas por perímetro que dan el esquema de armado: cruz, las que se pidan (al menos una por brazo); retícula, nx × ny. */
+export function ramasDe(a, pos, nNecesario) {
+  if (a?.esq === 'ret') return rejillaPara(pos, Math.max(nNecesario, 4));
+  return { ramas: Math.max(Math.ceil(nNecesario - 1e-9), nBrazos(pos)) };
+}
 
 /** Semiancho de la cara del pilar (mm) y centro del pilar en el sistema del contorno (origen en la esquina inferior izquierda). */
 function pilarCentro(x) {
@@ -241,16 +264,17 @@ function pilarCentro(x) {
 }
 
 /**
- * Posiciones de los cercos en cruz: cada brazo sale por un eje del pilar, con `k` ramas en fila transversal (separación
- * `sl`) en cada perímetro, a las distancias δ de la cara.
+ * Posiciones de los cercos en cruz: `n` ramas por perímetro repartidas entre los brazos (los que salen por los ejes del
+ * pilar); las de cada brazo van en fila transversal (separación `sl`), a las distancias δ de la cara.
  */
-export function cercosCruz(x, deltas, k, sl) {
+export function cercosCruz(x, deltas, n, sl) {
   const { cx, cy, hx, hy } = pilarCentro(x);
   const brazos = [[1, 0], [0, 1]];
   if (x.pos !== 'esquina') brazos.push([-1, 0]);
   if (x.pos === 'interior') brazos.push([0, -1]);
   const pts = [];
-  for (const [ux, uy] of brazos) {
+  brazos.forEach(([ux, uy], i) => {
+    const k = Math.floor(n / brazos.length) + (i < n % brazos.length ? 1 : 0);
     const cara = Math.abs(ux) * hx + Math.abs(uy) * hy;
     for (const dl of deltas) {
       for (let j = 0; j < k; j++) {
@@ -258,7 +282,7 @@ export function cercosCruz(x, deltas, k, sl) {
         pts.push([cx + ux * (cara + dl) - uy * lat, cy + uy * (cara + dl) + ux * lat]);
       }
     }
-  }
+  });
   return pts;
 }
 
@@ -275,33 +299,31 @@ export function contornoRect(x, delta) {
 }
 
 /**
- * Cercos en retícula: n ramas por perímetro sobre el contorno rectangular, con ramas en las esquinas y el resto repartido
- * en los lados en proporción a su longitud.
+ * Cercos en retícula: nx ramas en cada lado paralelo a x y ny en cada lado paralelo a y (las esquinas se comparten), sobre el
+ * contorno rectangular a δ de la cara. Los lados que llegan al borde libre dejan media separación hasta él.
  */
-export function cercosReticula(x, delta, n) {
+export function cercosReticula(x, delta, nx, ny) {
   const c = contornoRect(x, delta);
-  const cerrado = x.pos === 'interior';
-  const lados = [];
-  for (let i = 1; i < c.length; i++) lados.push([c[i - 1], c[i]]);
-  const esq = cerrado ? c.length - 1 : c.length - 2;
-  const largo = lados.map(([a, b]) => Math.hypot(b[0] - a[0], b[1] - a[1]));
-  const L = largo.reduce((s, v) => s + v, 0);
-  const resto = Math.max(0, n - esq);
-  const base = largo.map((l) => Math.floor((resto * l) / L));
-  let faltan = resto - base.reduce((s, v) => s + v, 0);
-  const orden = largo.map((l, i) => [(resto * l) / L - base[i], i]).sort((a, b) => b[0] - a[0]);
-  for (let k = 0; faltan > 0; k = (k + 1) % orden.length, faltan--) base[orden[k][1]]++;
-  const pts = c.slice(0, cerrado ? -1 : undefined).filter((_, i) => cerrado || (i > 0 && i < c.length - 1));
-  lados.forEach(([a, b], i) => {
-    const m = base[i];
-    // lados con un extremo en el borde libre: la primera rama a partir de la esquina
-    const abierto = !cerrado && (i === 0 || i === lados.length - 1);
-    for (let j = 1; j <= m; j++) {
-      let f = j / (m + 1);
-      if (abierto) f = i === 0 ? 1 - j / (m + 0.5) : j / (m + 0.5);
-      pts.push([a[0] + f * (b[0] - a[0]), a[1] + f * (b[1] - a[1])]);
-    }
-  });
+  const { cx, cy, hx, hy } = pilarCentro(x);
+  const x0 = cx - hx - delta;
+  const x1 = cx + hx + delta;
+  const y0 = cy - hy - delta;
+  const y1 = cy + hy + delta;
+  void c;
+  const lin = (a, b, n) => Array.from({ length: n }, (_, i) => a + (n > 1 ? (i * (b - a)) / (n - 1) : 0));
+  // desde la esquina `a` hacia el borde libre `b`, con media separación al final
+  const haciaBorde = (a, b, n) => Array.from({ length: n }, (_, i) => a + (i * (b - a)) / (n - 0.5));
+  const pts = [];
+  if (x.pos === 'interior') {
+    for (const xx of lin(x0, x1, nx)) { pts.push([xx, y0]); pts.push([xx, y1]); }
+    for (const yy of lin(y0, y1, ny).slice(1, -1)) { pts.push([x0, yy]); pts.push([x1, yy]); }
+  } else if (x.pos === 'borde') {
+    for (const xx of lin(x0, x1, nx)) pts.push([xx, y1]);
+    for (const yy of haciaBorde(y1, 0, ny).slice(1)) { pts.push([x0, yy]); pts.push([x1, yy]); }
+  } else {
+    for (const xx of haciaBorde(x1, 0, nx)) pts.push([xx, y1]);
+    for (const yy of haciaBorde(y1, 0, ny).slice(1)) pts.push([x1, yy]);
+  }
   return pts;
 }
 
@@ -309,9 +331,9 @@ export function cercosReticula(x, delta, n) {
  * Perímetro exterior de la cruz: envolvente convexa de los círculos de radio `kd` alrededor del último cerco de cada brazo
  * (EC-2, fig. 6.22), recortada por los bordes libres. Devuelve sus vértices y su longitud sin el tramo sobre el borde libre.
  */
-export function envolventeCruz(x, dl, kd, k = 1, sl = 0) {
+export function envolventeCruz(x, dl, kd, n = 4, sl = 0) {
   const { hx, hy } = pilarCentro(x);
-  const centros = cercosCruz(x, [dl], k, sl);
+  const centros = cercosCruz(x, [dl], n, sl);
   const w = x.tipo === 'rect' ? [[0, 0], [x.c1, 0], [x.c1, x.c2], [0, x.c2]] : [];
   const cand = [...w];
   for (const [px, py] of centros) {
@@ -343,7 +365,7 @@ function cascoConvexo(P) {
 
 /** Longitud del perímetro exterior (a kd del último perímetro de cercos) según el esquema de armado. */
 export function uExterior(x, a, dl, kd, tope3d = 0) {
-  if (a?.esq === 'cruz') return envolventeCruz(x, dl, kd, Math.max(1, Math.round((a.ramas ?? 1) / nBrazos(x.pos))), a.sr).long;
+  if (a?.esq === 'cruz') return envolventeCruz(x, dl, kd, a.ramas ?? nBrazos(x.pos), a.sr).long;
   return perimetro(x, dl + kd, tope3d);
 }
 
