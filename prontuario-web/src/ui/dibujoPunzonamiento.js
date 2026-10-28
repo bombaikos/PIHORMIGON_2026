@@ -5,10 +5,11 @@
 import { fmt } from './formato.js';
 import { t } from './i18n.js';
 import { DEFS } from './dibujoSeccion.js';
-import { contorno, repartir } from '../norma/punzonamiento/comun.js';
+import { contorno, contornoRect, cercosCruz, cercosReticula, envolventeCruz, nBrazos } from '../norma/punzonamiento/comun.js';
 
-const ANCHO = 420;
-const ALTO = 300;
+const ANCHO = 290; // ancho de la planta
+const ALTO = 290;
+const VW = 650; // ancho total: planta a la izquierda y dos alzados a la derecha
 const mm = (v) => fmt(v, 0);
 
 /**
@@ -17,7 +18,7 @@ const mm = (v) => fmt(v, 0);
  *   perimetros: contornos a dibujar (clase 'ctrl' perímetro de control, 'ext' perímetro exterior); anillos: δ de cada perímetro de cercos
  */
 export function dibujoPunzonamiento(x, o) {
-  const aGrande = Math.max(...o.perimetros.map((p) => p.delta), ...(o.anillos ?? [0]), 1);
+  const aGrande = Math.max(...o.perimetros.map((p) => p.delta), ...(o.anillos ?? [0]), o.ext ? o.ext.dl + o.ext.kd : 0, 1);
   // Caja del dibujo: del contorno más lejano
   const grande = contorno(x, aGrande, 10);
   const xs = grande.map((p) => p[0]);
@@ -51,25 +52,145 @@ export function dibujoPunzonamiento(x, o) {
   for (const p of [...o.perimetros].sort((a, b) => b.delta - a.delta)) {
     out.push(`<path class="perim perim-${p.clase}" d="${camino(contorno(x, p.delta, paso), interior)}"/>`);
   }
-  // Perímetros de cercos: línea fina y ramas como puntos
-  if (!o.sinArmadura) {
-    for (const dl of o.anillos ?? []) {
-      const pts = contorno(x, dl, paso);
-      out.push(`<path class="cerco" d="${camino(pts, interior)}"/>`);
-      for (const [a, b] of repartir(pts, o.ramas, interior)) out.push(`<circle class="barra-ac" cx="${X(a).toFixed(1)}" cy="${Y(b).toFixed(1)}" r="2.6"/>`);
+  const studs = [];
+  let formaExt = null;
+  // Perímetro exterior (el que dan los cercos puestos): a kd del último; en cruz, envolvente de círculos (EC-2, fig. 6.22)
+  if (o.ext && !o.sinArmadura) {
+    if (o.esq === 'cruz') {
+      const env = envolventeCruz(x, o.ext.dl, o.ext.kd, o.ramas, o.sl);
+      const P = env.pts;
+      // Se arranca en un vértice del borde libre para no partir el trazo (en el interior, en cualquiera)
+      let ini = 0;
+      if (!interior) ini = Math.max(0, P.findIndex((q, i) => env.enBorde(q) && env.enBorde(P[(i + 1) % P.length])));
+      let dd = '';
+      let abierto = false;
+      for (let m = 0; m < P.length; m++) {
+        const a = P[(ini + m) % P.length];
+        const b = P[(ini + m + 1) % P.length];
+        if (env.enBorde(a) && env.enBorde(b)) { abierto = false; continue; }
+        if (!abierto) dd += `M${X(a[0]).toFixed(1)} ${Y(a[1]).toFixed(1)}`;
+        dd += `L${X(b[0]).toFixed(1)} ${Y(b[1]).toFixed(1)}`;
+        abierto = true;
+      }
+      out.push(`<path class="perim perim-ext" d="${dd}"/>`);
+      formaExt = P.filter((q) => !env.enBorde(q));
+    } else {
+      const cp = contorno(x, o.ext.dl + o.ext.kd, paso);
+      out.push(`<path class="perim perim-ext" d="${camino(cp, interior)}"/>`);
+      formaExt = cp;
+    }
+  }
+  // Cercos: en cruz, carriles por los ejes del pilar; en retícula, filas rectangulares paralelas a las caras
+  if (!o.sinArmadura && o.anillos?.length) {
+    const barra = ([a, b]) => `<circle class="barra-ac" cx="${X(a).toFixed(1)}" cy="${Y(b).toFixed(1)}" r="2.6"/>`;
+    if (o.esq === 'cruz') {
+      const ult = o.anillos[o.anillos.length - 1];
+      const cc = x.tipo === 'rect' ? { cx: x.c1 / 2, cy: x.c2 / 2, hx: x.c1 / 2, hy: x.c2 / 2 } : { cx: x.D / 2, cy: x.D / 2, hx: x.D / 2, hy: x.D / 2 };
+      const ejes = [[1, 0], [0, 1]];
+      if (x.pos !== 'esquina') ejes.push([-1, 0]);
+      if (x.pos === 'interior') ejes.push([0, -1]);
+      for (const [ux, uy] of ejes) {
+        const cara = Math.abs(ux) * cc.hx + Math.abs(uy) * cc.hy;
+        out.push(`<line class="cerco" x1="${X(cc.cx + ux * cara).toFixed(1)}" y1="${Y(cc.cy + uy * cara).toFixed(1)}" x2="${X(cc.cx + ux * (cara + ult)).toFixed(1)}" y2="${Y(cc.cy + uy * (cara + ult)).toFixed(1)}"/>`);
+      }
+      for (const q of cercosCruz(x, o.anillos, o.ramas, o.sl)) { out.push(barra(q)); studs.push(q); }
+    } else {
+      for (const dl of o.anillos) {
+        out.push(`<path class="cerco" d="${camino(contornoRect(x, dl), interior)}"/>`);
+        for (const q of cercosReticula(x, dl, o.nx, o.ny)) { out.push(barra(q)); studs.push(q); }
+      }
     }
   }
   // Pilar
   if (x.tipo === 'rect') out.push(`<rect class="pilar" x="${X(0).toFixed(1)}" y="${Y(x.c2).toFixed(1)}" width="${(x.c1 * sc).toFixed(1)}" height="${(x.c2 * sc).toFixed(1)}"/>`);
   else out.push(`<circle class="pilar" cx="${X(x.D / 2).toFixed(1)}" cy="${Y(x.D / 2).toFixed(1)}" r="${(x.D / 2 * sc).toFixed(1)}"/>`);
+  // Nombres de los perímetros sobre la planta, en la diagonal superior derecha para no tapar cercos ni ramas
+  const cc = x.tipo === 'rect' ? [x.c1 / 2, x.c2 / 2] : [x.D / 2, x.D / 2];
+  const diag = (pts) => pts.reduce((m, q) => (q[0] - cc[0] + (q[1] - cc[1]) > m[0] ? [q[0] - cc[0] + (q[1] - cc[1]), q] : m), [-Infinity, null])[1];
+  const nom = o.nombres ?? {};
+  const etiqueta = (q, txt, dx = 4, dy = -4, fin = false) => (q && txt ? out.push(`<text class="halo" x="${(X(q[0]) + dx).toFixed(1)}" y="${(Y(q[1]) + dy).toFixed(1)}"${fin ? ' text-anchor="end"' : ''}>${txt}</text>`) : 0);
+  etiqueta(x.tipo === 'rect' ? [x.c1, x.c2] : [cc[0] + x.D / 2 * Math.SQRT1_2, cc[1] + x.D / 2 * Math.SQRT1_2], nom.u0);
+  const ctrlD = (o.perimetros.find((p) => p.clase === 'ctrl') ?? {}).delta;
+  if (ctrlD) etiqueta(diag(contorno(x, ctrlD, paso * 2)), nom.ctrl, -3, -3, true);
+  if (formaExt) etiqueta(diag(formaExt), nom.ext, -3, -3, true);
+  if (o.h) out.push(alzados(x, o, studs, ctrlD));
   // Leyenda dentro del SVG: muestra de trazo y texto
   let yL = ALTO + 6;
   const muestras = { ctrl: '<line class="perim perim-ctrl" x1="0" y1="0" x2="22" y2="0"/>', ext: '<line class="perim perim-ext" x1="0" y1="0" x2="22" y2="0"/>',
     cercos: '<line class="cerco" x1="0" y1="0" x2="22" y2="0"/><circle class="barra-ac" cx="11" cy="0" r="2.6"/>', pilar: '<rect class="pilar" x="6" y="-5" width="10" height="10"/>' };
-  for (const [k, texto] of o.leyenda) {
-    out.push(`<g transform="translate(${margen} ${yL + 8})">${muestras[k] ?? ''}<text x="30" y="4">${texto}</text></g>`);
-    yL += 20;
-  }
+  // Leyenda en dos columnas para ocupar poco alto
+  const mitad = VW / 2;
+  o.leyenda.forEach(([k, texto], i) => {
+    const xx = margen + (i % 2) * (mitad - margen / 2);
+    const yy = yL + 8 + Math.floor(i / 2) * 20;
+    out.push(`<g transform="translate(${xx.toFixed(1)} ${yy})">${muestras[k] ?? ''}<text x="30" y="4">${texto}</text></g>`);
+  });
+  yL += Math.ceil(o.leyenda.length / 2) * 20;
   if (!interior) out.push(`<text x="${(Lx1 - 4).toFixed(1)}" y="${(Ly1 + 14).toFixed(1)}" text-anchor="end" class="rot">${t('pun.dib.borde')}</text>`);
-  return `<svg class="dib dib-pun" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${ANCHO} ${Math.ceil(yL + 4)}" role="img" aria-label="${t('pun.dib.aria', mm(w0), mm(h0))}">${out.join('')}</svg>`;
+  return `<svg class="dib dib-pun" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${VW} ${Math.ceil(yL + 4)}" role="img" aria-label="${t('pun.dib.aria', mm(w0), mm(h0))}">${out.join('')}</svg>`;
+}
+
+/** Dos alzados (cortes por el eje x y por el eje y del pilar), con espesor, perímetros y cercos. */
+function alzados(x, o, studs, ctrlD) {
+  const EW = VW - ANCHO - 16;
+  const EH = 148;
+  const x0 = ANCHO + 16;
+  const w = x.tipo === 'rect' ? [x.c1, x.c2] : [x.D, x.D];
+  const c = [w[0] / 2, w[1] / 2];
+  const E = Math.max(ctrlD ?? 0, o.ext ? o.ext.dl + o.ext.kd : 0, 1);
+  const salida = [];
+  ['x', 'y'].forEach((eje, i) => {
+    const k = eje === 'x' ? 0 : 1;
+    const dim = w[k];
+    const libre = (eje === 'x' && x.pos === 'esquina') || (eje === 'y' && x.pos !== 'interior');
+    const lo = libre ? 0 : -E;
+    const hi = dim + E;
+    const RES = 80;
+    const m = 6;
+    const se = (EW - RES - 2 * m) / (hi - lo);
+    const U = (v) => x0 + m + (v - lo) * se;
+    const sv = Math.min(se, 40 / o.h); // escala vertical: la del dibujo, salvo losas muy gruesas
+    const y0 = i * EH + 68;
+    const hs = o.h * sv;
+    const stub = 16;
+    const f = (v) => v.toFixed(1);
+    const g = [];
+    g.push(`<text class="tit" x="${x0}" y="${i * EH + 10}">${t(eje === 'x' ? 'pun.dib.alzX' : 'pun.dib.alzY')}</text>`);
+    g.push(`<rect class="hor" x="${f(U(lo))}" y="${f(y0)}" width="${f(U(hi) - U(lo))}" height="${f(hs)}"/>`);
+    if (libre) g.push(`<line class="borde-libre" x1="${f(U(0))}" y1="${f(y0 - 4)}" x2="${f(U(0))}" y2="${f(y0 + hs + 4)}"/>`);
+    g.push(`<rect class="pilar" x="${f(U(0))}" y="${f(y0 - stub)}" width="${f(dim * se)}" height="${f(hs + 2 * stub)}"/>`);
+    // cercos: los de la banda del corte, en trazo fuerte; el resto proyectados, más claros
+    const banda = o.esq === 'cruz' ? o.sl / 2 + 1 : 0.75 * o.sl;
+    const yz = (z) => y0 + (o.h - z) * sv;
+    const dd = Math.min(o.d ?? o.h, o.h);
+    const pos = studs.map((q) => [q[k], Math.abs(q[1 - k] - c[1 - k]) <= banda]);
+    const vistos = new Set();
+    for (const [u, en] of pos.sort((a, b) => a[1] - b[1])) {
+      const key = `${u.toFixed(0)}${en}`;
+      if (vistos.has(key)) continue;
+      vistos.add(key);
+      g.push(`<line class="${en ? 'cerco-v' : 'cerco-v tenue'}" x1="${f(U(u))}" y1="${f(yz(o.h - (o.h - dd)))}" x2="${f(U(u))}" y2="${f(yz(o.h - dd))}"/>`);
+    }
+    // perímetros: líneas verticales con su nombre arriba (no tapan los cercos: van a ambos lados de la losa)
+    const per = [[ctrlD, 'perim-ctrl', o.nombres?.ctrl], o.ext ? [o.ext.dl + o.ext.kd, 'perim-ext', o.nombres?.ext] : null].filter((p) => p && p[0]);
+    for (const [dl, cl, nm] of per) {
+      for (const [u, lado] of [[-dl, 'i'], [dim + dl, 'd']]) {
+        if (lado === 'i' && libre) continue;
+        g.push(`<line class="perim ${cl}" x1="${f(U(u))}" y1="${f(y0 - stub - (cl === 'perim-ext' ? 24 : 8))}" x2="${f(U(u))}" y2="${f(y0 + hs + 8)}"/>`);
+        if (nm) g.push(`<text class="halo" x="${f(U(u))}" y="${f(y0 - stub - (cl === 'perim-ext' ? 24 : 8))}" text-anchor="middle">${nm}</text>`);
+      }
+    }
+    // espesor
+    const xe = U(hi) + 12;
+    g.push(`<line class="cota" x1="${f(xe)}" y1="${f(y0)}" x2="${f(xe)}" y2="${f(y0 + hs)}"/><line class="cota" x1="${f(xe - 4)}" y1="${f(y0)}" x2="${f(xe + 4)}" y2="${f(y0)}"/><line class="cota" x1="${f(xe - 4)}" y1="${f(y0 + hs)}" x2="${f(xe + 4)}" y2="${f(y0 + hs)}"/>`);
+    g.push(`<text x="${f(xe + 7)}" y="${f(y0 + hs / 2 + 4)}">e = ${mm(o.h)}</text>`);
+    // armadura: a1 y sr sobre el brazo, bajo la losa
+    if (o.ext && o.anillos?.length) {
+      const yd = y0 + hs + stub + 12;
+      const a = o.anillos;
+      g.push(`<text x="${f(x0 + m)}" y="${f(yd + 3)}">${t('pun.dib.armaz', mm(o.fi), mm(a[0]), mm(o.sl))}</text>`);
+    }
+    salida.push(...g);
+  });
+  return salida.join('');
 }

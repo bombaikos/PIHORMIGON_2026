@@ -885,6 +885,34 @@ svg.dib-pun { min-width: 0; }
   .dib .pilar { fill: Canvas; stroke: CanvasText; }
   .dib .perim-ctrl, .dib .perim-ext, .dib .borde-libre { stroke: CanvasText; }
 }
+.pun-criticos { margin-top: var(--e3); }
+.pun-criticos td .ok { color: var(--ok, #1a7f37); font-weight: 600; }
+.pun-criticos td .no { color: var(--mal, #c62828); font-weight: 600; }
+.dib text.halo { paint-order: stroke; stroke: var(--hormigon); stroke-width: 3px; stroke-linejoin: round; font-weight: 650; }
+.dib .cerco-v { stroke: var(--acero); stroke-width: 1.8; }
+.dib .cerco-v.tenue { opacity: .3; }
+.dib .cota { stroke: var(--tinta-2); stroke-width: 1; }
+.tit-info { display: flex; align-items: center; gap: var(--e2); }
+.info-btn { flex: none; width: 18px; height: 18px; padding: 0; border: 1px solid var(--tinta-3); border-radius: 50%; background: none; font: 600 calc(12px + var(--mas))/16px var(--fuente, system-ui, sans-serif); color: var(--tinta-3); cursor: pointer; }
+.info-btn:hover, .info-btn:focus-visible, .info-btn[aria-expanded="true"] { color: var(--acento); border-color: var(--acento); outline: none; }
+.tarjeta:has(> .pun-info) { position: relative; }
+.pun-info { position: absolute; z-index: 30; top: 44px; left: 12px; right: 12px; max-height: calc(100% - 56px); overflow: auto; padding: var(--e2) var(--e3); border: 1px solid var(--linea-fuerte); border-radius: var(--r-campo); background: var(--hoja); box-shadow: var(--sombra); }
+.pun-info[hidden] { display: none; }
+.grupo legend .tick { display: inline-flex; align-items: center; gap: var(--e2); cursor: pointer; }
+.grupo legend .tick input { margin: 0; accent-color: var(--acento); }
+.cuerpo-arm { display: flex; flex-direction: column; gap: var(--hueco-campos); }
+.cuerpo-arm.inactivo { opacity: .55; }
+/* Guía de diseño común (bombaikos/guia-de-diseno, 28/10/2026) aplicada a Punzonamiento: campos blancos con borde azul grisáceo,
+   gris solo en lo desactivado y tablas en rejilla. */
+.est-guia { --campo: oklch(100% 0 0); --campo-borde: oklch(78% 0.05 252); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .est-guia { --campo: oklch(15.5% 0.02 250); --campo-borde: oklch(46% 0.06 252); } }
+:root[data-theme="dark"] .est-guia { --campo: oklch(15.5% 0.02 250); --campo-borde: oklch(46% 0.06 252); }
+.est-guia .caja { background: var(--campo); border: 1px solid var(--campo-borde); }
+.est-guia .caja:focus-within { border-color: var(--acento); }
+.est-guia .caja:has(input:disabled, select:disabled) { background: var(--hundido); border-color: var(--linea); }
+.est-guia .no-aplica > label { color: var(--tinta-3); }
+table.rejilla-res th, table.rejilla-res td { border: 1px solid var(--linea); }
+table.rejilla-res thead th { background: var(--hundido); }
 
 /* Rasante en juntas · alzado de la junta con el cosido */
 .dib .hor-2 { fill: color-mix(in oklch, var(--hormigon) 55%, var(--hoja)); }

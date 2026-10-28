@@ -3,11 +3,11 @@
 // No depende de una sección: losa (canto útil, cuantías), pilar y esfuerzo se escriben aquí y se guardan en el proyecto.
 
 import { nucleo } from '../../norma/punzonamiento/index.js';
-import { betaDe, anillos } from '../../norma/punzonamiento/comun.js';
+import { betaDe, anillos, nBrazos, uExterior, ramasReticula } from '../../norma/punzonamiento/comun.js';
 import { areaRama } from '../../norma/cortante/ehe08.js';
 import { t } from '../i18n.js';
 import { fmt, q, qh, ESP, serieDiametros } from '../formato.js';
-import { h, poner, campoNum, selector, segmentado, grupo, aviso, cifras, tabla } from '../campos.js';
+import { h, poner, campoNum as campoNumBase, selector, segmentado, grupo, aviso, cifras, tabla } from '../campos.js';
 import { veredicto } from './flexion.js';
 import { dibujoPunzonamiento } from '../dibujoPunzonamiento.js';
 
@@ -19,9 +19,9 @@ const est = { modo: 'comprobar', abiertos: new Set() };
 export function reiniciar() { est.abiertos = new Set(); }
 
 const INICIAL = () => ({
-  tipo: 'rect', pos: 'interior', c1: 300, c2: 300, D: 350, d: 210, hormigon: null, aceroCercos: null,
+  tipo: 'rect', pos: 'interior', c1: 300, c2: 300, D: 350, h: 250, d: 210, hormigon: null, aceroCercos: null,
   rhoX: 0.008, rhoY: 0.008, sigCd: 0, VEd: 400, exc: 'aprox', betaOtro: 1.15, Dlower: 20,
-  sin: false, fi: 10, ramas: 12, sr: 150, a1: 100, nPer: 3,
+  armadura: true, esq: 'cruz', nx: 5, ny: 5, fi: 10, ramas: 16, sr: 150, a1: 100, nPer: 3,
 });
 
 /** Datos de la pantalla (se guardan con el proyecto); materiales por omisión si el elegido ya no existe. */
@@ -34,7 +34,7 @@ function datosDe(p) {
 }
 
 const diametrosEntrada = () => serieDiametros().filter((x) => x >= 6 && x <= 25);
-const diametrosTabla = () => serieDiametros().filter((x) => x >= 8 && x <= 20);
+const diametrosTabla = () => serieDiametros().filter((x) => x >= 8 && x <= 16);
 
 /** Entrada común del núcleo en MPa, mm y kN. */
 function entrada(p, D, { dimensionando = false } = {}) {
@@ -45,12 +45,23 @@ function entrada(p, D, { dimensionando = false } = {}) {
   const x = {
     tipo: D.tipo, pos: D.pos, c1: D.c1, c2: D.c2, D: D.D, d: D.d, fck: hor.fck, fykCercos: ace.fyk,
     rhoX: D.rhoX, rhoY: D.rhoY, sigCd: es23(p) ? 0 : D.sigCd, beta: betaDe(N.id, D.exc, D.pos, D.betaOtro), VEd: D.VEd, Dlower: D.Dlower,
-    sinArmadura: !dimensionando && D.sin,
+    sinArmadura: !dimensionando && !D.armadura,
   };
-  x.arm = { fi: D.fi, ramas: D.ramas, sr: D.sr, a1: D.a1, nPer: D.nPer };
+  x.arm = { fi: D.fi, ramas: D.esq === 'ret' ? ramasReticula(D.pos, D.nx, D.ny) : D.ramas, nx: D.nx, ny: D.ny, sr: D.sr, a1: D.a1, nPer: D.nPer, esq: D.esq };
   return x;
 }
 
+/** Guía común: unidades entre corchetes en las cajas, y [-] en las adimensionales. */
+const campoNum = (o) => {
+  const c = campoNumBase(o);
+  const caja = c.querySelector('.caja');
+  const ud = caja?.querySelector('.ud');
+  const txt = ud?.textContent.trim();
+  if (txt) ud.textContent = `[${txt}]`;
+  else if (ud) ud.textContent = '[-]';
+  else caja?.append(h('span', { class: 'ud' }, '[-]'));
+  return c;
+};
 const mostrar = (c, v, d) => { const i = c.querySelector('input'); i.value = String(+v.toFixed(d)); return c; };
 const calculado = (c) => { const i = c.querySelector('input'); i.disabled = true; i.tabIndex = -1; c.classList.add('calculado'); return c; };
 const parejas = (campos) => {
@@ -66,6 +77,7 @@ const n1 = (v, d = 2) => fmt(v, d);
 
 export function datos(ctx, form) {
   const p = ctx.p;
+  form.classList.add('est-guia');
   poner(form, h('div', { class: 'cab' }, h('h1', {}, t('m.punzonamiento')), h('p', {}, t('pun.subtitulo'))));
   const N = nuc(p);
   if (!N) {
@@ -78,12 +90,12 @@ export function datos(ctx, form) {
   const set = (k) => (v) => { D[k] = v; cambio(); };
   const rect = D.tipo === 'rect';
     const beta = betaDe(N.id, D.exc, D.pos, D.betaOtro);
-  const arm = !D.sin || !comp;
+  const arm = true;
   poner(form,
     segmentado({ ancho: true, etiqueta: t('flex.modo'), opciones: [['comprobar', t('comprobar')], ['dimensionar', t('dimensionar')]], valor: est.modo, onCambio: (m) => { est.modo = m; ctx.pintar(); } }),
     grupo(t('pun.pilar'),
       segmentado({ ancho: true, etiqueta: t('pun.forma'), opciones: [['rect', t('pun.rect')], ['circ', t('pun.circ')]], valor: D.tipo, onCambio: (v) => { D.tipo = v; ctx.cambio({ estructura: true }); } }),
-      segmentado({ ancho: true, etiqueta: t('pun.pos'), opciones: [['interior', t('pun.interior')], ['borde', t('pun.borde')], ['esquina', t('pun.esquina')]], valor: D.pos, onCambio: (v) => { D.pos = v; ctx.cambio({ estructura: true }); } }),
+      segmentado({ ancho: true, etiqueta: t('pun.pos'), opciones: [['interior', t('pun.interior')], ['borde', t('pun.borde')], ['esquina', t('pun.esquina')]], valor: D.pos, onCambio: (v) => { D.pos = v; D.exc = 'aprox'; ctx.cambio({ estructura: true }); } }),
       ...(rect
         ? parejas([
           campoNum({ id: 'p-c1', etq: sub('c', '1'), ref: D.pos === 'interior' ? '' : t('pun.c1Ref'), valor: D.c1, mag: 'diam', paso: 25, min: 1, max: 5000, ayuda: t('pun.c1Ayuda'), onCambio: set('c1') }),
@@ -92,10 +104,9 @@ export function datos(ctx, form) {
         : parejas([campoNum({ id: 'p-D', etq: 'D', valor: D.D, mag: 'diam', paso: 25, min: 1, max: 5000, ayuda: t('pun.DAyuda'), onCambio: set('D') })])),
     ),
     grupo(t('pun.losa'),
-      h('div', { class: 'par2' },
-        selector({ id: 'p-hor', linea: true, etq: t('pun.hormigon'), opciones: p.hormigones.map((m) => [m.nombre, m.nombre]), valor: D.hormigon, onCambio: (v) => { D.hormigon = v; cambio(); } }),
-        selector({ id: 'p-ace', linea: true, etq: t('pun.acero'), opciones: p.aceros.map((m) => [m.nombre, m.nombre]), valor: D.aceroCercos, onCambio: (v) => { D.aceroCercos = v; cambio(); } })),
       ...parejas([
+        selector({ id: 'p-hor', linea: true, etq: t('pun.hormigon'), opciones: p.hormigones.map((m) => [m.nombre, m.nombre]), valor: D.hormigon, onCambio: (v) => { D.hormigon = v; cambio(); } }),
+        campoNum({ id: 'p-h', etq: 'e', valor: D.h, mag: 'diam', paso: 10, min: 50, max: 3000, ayuda: t('pun.hAyuda'), onCambio: set('h') }),
         campoNum({ id: 'p-d', etq: e23 ? sub('d', 'v') : 'd', valor: D.d, mag: 'diam', paso: 10, min: 20, max: 3000, ayuda: t('pun.dAyuda'), onCambio: set('d') }),
         e23 ? campoNum({ id: 'p-dlow', etq: t('pun.Dlower'), valor: D.Dlower, mag: 'diam', paso: 2, min: 4, max: 63, ayuda: t('pun.DlowerAyuda'), onCambio: set('Dlower') })
           : campoNum({ id: 'p-sig', etq: sub('σ', 'cd'), ref: t('pun.sigRef'), valor: D.sigCd, mag: 'tension', paso: 0.5, min: -20, max: 40, ayuda: t('pun.sigAyuda'), onCambio: set('sigCd') }),
@@ -104,20 +115,38 @@ export function datos(ctx, form) {
       ]),
       ...parejas([
         campoNum({ id: 'p-ved', etq: sub('V', 'Ed'), valor: D.VEd, mag: 'N', paso: 10, min: 0.01, max: 1e6, nombre: t('pun.VEdNombre'), ayuda: t('pun.VEdAyuda'), onCambio: set('VEd') }),
-        D.exc === 'otro'
-          ? campoNum({ id: 'p-beta', etq: e23 ? sub('β', 'e') : 'β', valor: D.betaOtro, mag: 'ratio', paso: 0.05, min: 1, max: 3, ayuda: t('pun.betaAyuda'), onCambio: set('betaOtro') })
-          : calculado(mostrar(campoNum({ id: 'p-beta', etq: e23 ? sub('β', 'e') : 'β', valor: beta, mag: 'ratio', paso: 0.05, min: 1, max: 3, ayuda: t('pun.betaAyuda'), onCambio: () => {} }), beta, 2)),
-      ]),
-      segmentado({ ancho: true, etiqueta: t('pun.exc'), opciones: [['sin', t('pun.excSin')], ['aprox', t('pun.excAprox')], ['otro', t('pun.excOtro')]], valor: D.exc, onCambio: (v) => { D.exc = v; ctx.cambio({ estructura: true }); } })),
-    grupo(t('pun.cercos'),
-      comp ? segmentado({ ancho: true, etiqueta: t('pun.cercos'), opciones: [['con', t('cor.conArm')], ['sin', t('cor.sinArm')]], valor: D.sin ? 'sin' : 'con', onCambio: (v) => { D.sin = v === 'sin'; ctx.pintar(); } }) : null,
-      ...(arm ? parejas([
-        comp ? selector({ id: 'p-fi', etq: t('cor.fi'), linea: true, opciones: diametrosEntrada().map((x) => [String(x), `ø${x}`]), valor: String(D.fi), onCambio: (v) => { D.fi = Number(v); cambio(); } }) : null,
-        comp ? campoNum({ id: 'p-ramas', etq: t('pun.ramas'), valor: D.ramas, mag: 'n', paso: 2, min: 1, max: 200, ayuda: t('pun.ramasAyuda'), onCambio: set('ramas') }) : null,
-        campoNum({ id: 'p-a1', etq: sub('a', '1'), valor: D.a1, mag: 'diam', paso: 5, min: 0, max: 2000, ayuda: t('pun.a1Ayuda'), onCambio: set('a1') }),
-        campoNum({ id: 'p-sr', etq: sub('s', 'r'), valor: D.sr, mag: 'diam', paso: 5, min: 20, max: 2000, ayuda: t('pun.srAyuda'), onCambio: set('sr') }),
-        comp ? campoNum({ id: 'p-nper', etq: t('pun.nPer'), valor: D.nPer, mag: 'n', paso: 1, min: 1, max: 30, ayuda: t('pun.nPerAyuda'), onCambio: set('nPer') }) : null,
-      ]) : [])));
+        campoNum({ id: 'p-beta', etq: e23 ? sub('β', 'e') : 'β', valor: beta, mag: 'ratio', paso: 0.05, min: 1, max: 3, ayuda: t('pun.betaAyuda'), onCambio: (v) => { D.betaOtro = v; D.exc = 'otro'; cambio(); } }),
+      ])),
+    armaduraGrupo(),
+  );
+  // Grupo de armadura: con un tick junto al título al comprobar (sin él se calcula la losa sin armadura)
+  function armaduraGrupo() {
+    const motivoDim = t('pun.motivoDim');
+    const apaga = (c, motivo) => { for (const el of c.querySelectorAll('input, select')) el.disabled = true; c.title = motivo; c.classList.add('no-aplica'); return c; };
+    const cruz = D.esq === 'cruz';
+    const campos = parejas([
+      selector({ id: 'p-ace', linea: true, etq: t('pun.acero'), opciones: p.aceros.map((m) => [m.nombre, m.nombre]), valor: D.aceroCercos, onCambio: (v) => { D.aceroCercos = v; cambio(); } }),
+      (() => { const c = selector({ id: 'p-fi', etq: t('cor.fi'), linea: true, opciones: diametrosEntrada().map((x) => [String(x), `ø${x}`]), valor: String(D.fi), onCambio: (v) => { D.fi = Number(v); cambio(); } }); return comp ? c : apaga(c, motivoDim); })(),
+      (() => { const c = campoNum({ id: 'p-nper', etq: t('pun.nPer'), valor: D.nPer, mag: 'n', paso: 1, min: 1, max: 30, ayuda: t('pun.nPerAyuda'), onCambio: set('nPer') }); return comp ? c : apaga(c, motivoDim); })(),
+      (() => { const c = campoNum({ id: 'p-ramas', etq: t('pun.ramas'), valor: D.ramas, mag: 'n', paso: 1, min: nBrazos(D.pos), max: 200, ayuda: t('pun.ramasAyuda', nBrazos(D.pos)), onCambio: set('ramas') }); return comp && cruz ? c : apaga(c, comp ? t('pun.motivoRet') : motivoDim); })(),
+      (() => { const c = campoNum({ id: 'p-nx', etq: sub('n', 'x'), valor: D.nx, mag: 'n', paso: 1, min: 2, max: 40, ayuda: t('pun.nxAyuda'), onCambio: set('nx') }); return comp && !cruz ? c : apaga(c, comp ? t('pun.motivoCruz') : motivoDim); })(),
+      (() => { const c = campoNum({ id: 'p-ny', etq: sub('n', 'y'), valor: D.ny, mag: 'n', paso: 1, min: 2, max: 40, ayuda: t('pun.nyAyuda'), onCambio: set('ny') }); return comp && !cruz ? c : apaga(c, comp ? t('pun.motivoCruz') : motivoDim); })(),
+      campoNum({ id: 'p-a1', etq: sub('a', '1'), valor: D.a1, mag: 'diam', paso: 5, min: 0, max: 2000, ayuda: t('pun.a1Ayuda'), onCambio: set('a1') }),
+      campoNum({ id: 'p-sr', etq: sub('s', 'r'), valor: D.sr, mag: 'diam', paso: 5, min: 20, max: 2000, ayuda: t('pun.srAyuda'), onCambio: set('sr') }),
+    ]);
+    const cuerpo = h('div', { class: 'cuerpo-arm' },
+      selector({ id: 'p-esq', etq: t('pun.esq'), opciones: [['cruz', t('pun.esqCruz')], ['ret', t('pun.esqRet')]], valor: D.esq, onCambio: (v) => { D.esq = v; ctx.cambio({ estructura: true }); } }),
+      ...campos);
+    const leyenda = h('legend', {}, comp
+      ? h('label', { class: 'tick' }, h('input', { type: 'checkbox', id: 'p-arm', checked: D.armadura, onchange: (e) => { D.armadura = e.target.checked; ctx.cambio({ estructura: true }); } }), h('span', { html: t('pun.cercos') }))
+      : h('span', { html: t('pun.cercos') }));
+    if (comp && !D.armadura) {
+      for (const el of cuerpo.querySelectorAll('input, select')) el.disabled = true;
+      cuerpo.classList.add('inactivo');
+      cuerpo.title = t('pun.sinArmNota');
+    }
+    return h('fieldset', { class: 'grupo' }, leyenda, cuerpo);
+  }
 }
 
 export function resultados(ctx, res) {
@@ -166,17 +195,24 @@ export function resultados(ctx, res) {
   if (avisos.length) res.append(h('div', { class: 'avisos' }, ...avisos));
 
   // Centro: planta
-  const dibujo = planta(p, x, r, comp, D, e23, ec);
-  poner(centro, h('h2', {}, t('pun.t.planta')), h('div', { class: 'lienzo', html: dibujo }), notas(p, D));
+  const dibujo = planta(p, x, r, comp, D, e23, ec, N);
+  const [infoBtn, infoPop] = notas(p, D);
+  poner(centro, h('h2', { class: 'tit-info' }, t('pun.t.planta'), infoBtn), infoPop, h('div', { class: 'lienzo', html: dibujo }));
 
   // Derecha: cifras, tabla (al dimensionar) y filas desplegables
   poner(dcha, h('h2', {}, t('cor.t.res')), cifras(cifrasDe(r, comp, e23)));
   if (!comp && r.tabla) {
-    const cab = e23 ? [t('cor.tabla.fi'), t('pun.tabla.ramas'), t('pun.tabla.asw'), t('pun.tabla.st'), t('pun.tabla.nPer')]
-      : [t('cor.tabla.fi'), t('pun.tabla.ramas'), t('pun.tabla.asw'), t('pun.tabla.st'), t('pun.tabla.vu')];
-    const filas = r.tabla.map((f) => [`ø${f.fi}`, String(f.ramas), fmt(f.Asw, 0), fmt(f.st, 0), e23 ? String(f.nPer) : fmt(f.Vu, 0)]);
-    poner(dcha, tabla(filas, { cabecera: cab }), h('p', { class: 'nota', html: t('pun.tabla.nota', fmt(r.sr, 0), fmt(r.a1, 0), fmt(r.nPer, 0)) }));
+    const cab = [t('pun.tabla.fi'), t('pun.tabla.ramas'), t('pun.tabla.asw'), t('pun.tabla.st'), t('pun.tabla.nPer'), t('pun.tabla.vu')];
+    const filas = r.tabla.map((f) => [`ø${f.fi}`, D.esq === 'ret' ? `${f.ramas} (${f.nx}×${f.ny})` : String(f.ramas), fmt(f.Asw, 0), fmt(f.st, 0), String(f.nPer), fmt(f.Vu, 0)]);
+    poner(dcha, titulos(tabla(filas, { cabecera: cab, clase: 'rejilla-res' }), ['pun.tt.fi', 'pun.tt.ramas', 'pun.tt.asw', 'pun.tt.st', 'pun.tt.nPer', 'pun.tt.vu']));
   }
+  // Comprobaciones explícitas en cada perímetro crítico (con los cercos pedidos, o los de la tabla al dimensionar)
+  let rc = comp ? r : null;
+  if (!comp && r.caso === 'calculo') {
+    const f = r.tabla.find((k) => k.fi === D.fi) ?? r.tabla[Math.floor(r.tabla.length / 2)];
+    try { rc = N.comprobar({ ...x, sinArmadura: false, arm: { ...x.arm, fi: f.fi, ramas: f.ramas, nPer: f.nPer, sr: r.sr, a1: r.a1 } }); } catch { rc = null; }
+  }
+  if (rc && !rc.sinArmadura) poner(dcha, criticos(rc, x, D, e23, ec));
   poner(dcha, h('div', { class: 'traza' }, ...trazas(r, x, comp, D, N.id).map((f) => {
     const det = h('details', { 'data-ref': f.id, open: est.abiertos.has(f.id) },
       h('summary', {}, h('span', { class: 'nom', html: f.nom }), h('span', { class: 'val', html: f.val })),
@@ -188,24 +224,63 @@ export function resultados(ctx, res) {
 }
 
 /** Planta con los perímetros que valen para la norma y la armadura (la pedida al comprobar o la de la tabla al dimensionar). */
-function planta(p, x, r, comp, D, e23, ec) {
+function planta(p, x, r, comp, D, e23, ec, N) {
   const d = x.d;
   const ctrl = e23 ? 0.5 * d : 2 * d;
+  const esq = D.esq;
   let arm = null;
-  if (comp) arm = r.sinArmadura ? null : { ramas: x.arm.ramas, an: anillos(x.arm), fi: x.arm.fi };
+  if (comp) arm = r.sinArmadura ? null : { ramas: x.arm.ramas, nx: x.arm.nx, ny: x.arm.ny, an: anillos(x.arm), fi: x.arm.fi };
   else if (r.caso === 'calculo') {
     const f = r.tabla.find((k) => k.fi === D.fi) ?? r.tabla[Math.floor(r.tabla.length / 2)];
-    arm = { ramas: f.ramas, an: anillos({ a1: r.a1, sr: r.sr, nPer: e23 ? f.nPer : r.nPer }), fi: f.fi };
+    arm = { ramas: f.ramas, nx: f.nx, ny: f.ny, an: anillos({ a1: r.a1, sr: r.sr, nPer: f.nPer }), fi: f.fi };
   }
   const perimetros = [{ delta: ctrl, clase: 'ctrl' }];
   const u = e23 ? r.u?.b05 : r.u?.u1;
   const leyenda = [['pilar', rectTexto(x)], ['ctrl', t(e23 ? 'pun.dib.b05' : 'pun.dib.u1', fmt(ctrl, 0), fmt(u ?? 0, 0))]];
+  let ext = null;
   if (arm) {
-    if (Number.isFinite(r.deltaExtReq) && r.deltaExtReq > ctrl) perimetros.push({ delta: r.deltaExtReq, clase: 'ext' });
-    leyenda.push(['cercos', t('pun.dib.cercos', fmt(arm.ramas, 0), fmt(arm.an.length, 0), arm.fi)]);
-    if (perimetros.length > 1) leyenda.push(['ext', t(e23 ? 'pun.dib.ext23' : ec ? 'pun.dib.extEC' : 'pun.dib.extEHE')]);
+    const dl = arm.an[arm.an.length - 1];
+    const kd = e23 ? 0.5 * (x.d - arm.fi) : 2 * d;
+    ext = { dl, kd };
+    const a = { ...(x.arm ?? {}), esq, sr: comp ? x.arm.sr : r.sr, ramas: arm.ramas };
+    const uProv = uExterior(x, a, dl, kd, e23 ? 3 * x.d : 0);
+    const uReq = e23 ? r.b05out ?? r.tabla?.find((g) => g.fi === arm.fi)?.b05out : (r.uOutReq ?? r.unReq);
+    leyenda.push(['cercos', t(esq === 'cruz' ? 'pun.dib.cercosCruz' : 'pun.dib.cercosRet', fmt(arm.ramas, 0), fmt(arm.an.length, 0), arm.fi, esq === 'ret' ? `${arm.nx}×${arm.ny}` : '')]);
+    leyenda.push(['ext', t(e23 ? 'pun.dib.ext23' : ec ? 'pun.dib.extEC' : 'pun.dib.extEHE', fmt(dl + kd, 0), fmt(uProv, 0), Number.isFinite(uReq) ? fmt(uReq, 0) : '—')]);
   }
-  return dibujoPunzonamiento(x, { perimetros, anillos: arm?.an ?? [], ramas: arm?.ramas ?? 0, sinArmadura: !arm, leyenda });
+  const sv = (a, b) => `${a}<tspan baseline-shift="sub" font-size="75%">${b}</tspan>`;
+  const nombres = e23 ? { u0: sv('b', '0'), ctrl: sv('b', '0,5'), ext: sv('b', '0,5,out') } : { u0: sv('u', '0'), ctrl: sv('u', '1'), ext: ec ? sv('u', 'out,ef') : sv('u', 'n,ef') };
+  return dibujoPunzonamiento(x, { perimetros, anillos: arm?.an ?? [], ramas: arm?.ramas ?? 0, sinArmadura: !arm, leyenda, esq, nx: arm?.nx, ny: arm?.ny, sl: comp ? x.arm.sr : r.sr, ext, h: D.h, d: x.d, fi: arm?.fi, nombres });
+}
+
+/** Ayuda emergente en las cabeceras de una tabla (guía de diseño § 3.3). */
+function titulos(tab, claves) {
+  tab.querySelectorAll('thead th').forEach((th, i) => { if (claves[i]) th.title = t(claves[i]); });
+  return tab;
+}
+
+/** Tabla de comprobación en los perímetros críticos: cara del pilar, perímetro de control y perímetro exterior. */
+function criticos(r, x, D, e23, ec) {
+  const d = x.d;
+  const ok = (b) => `<span class="${b ? 'ok' : 'no'}">${b ? '✓' : '✗'}</span>`;
+  const kN = (v) => fmt(v, 0);
+  const ctrl = e23 ? 0.5 * d : 2 * d;
+  const dl = r.deltaUltimo;
+  const kd = e23 ? 0.5 * r.dvOut : 2 * d;
+  const V = D.VEd;
+  const uCara = e23 ? r.u.b0 : r.u.u0;
+  const uCtrl = e23 ? r.u.b05 : r.u.u1;
+  const capCtrl = e23 ? r.VRdcs / r.beta : r.Vcs;
+  const uProv = e23 ? r.bExt : (r.uOutEf ?? r.unEf);
+  const uReq = e23 ? r.b05out : (r.uOutReq ?? r.unReq);
+  const nombre = (a, b) => `${sub(a, b)}`;
+  const filas = [
+    [t('pun.crit.cara'), '0', fmt(uCara, 0), `${kN(V)} ≤ ${kN(r.Vmax)} kN ${ok(V <= r.Vmax + 1e-9)}`],
+    [t('pun.crit.ctrl', e23 ? nombre('b', '0,5') : nombre('u', '1')), fmt(ctrl, 0), fmt(uCtrl, 0), `${kN(V)} ≤ ${kN(capCtrl)} kN ${ok(V <= capCtrl + 1e-9)}`],
+    [t('pun.crit.ext', e23 ? nombre('b', '0,5,out') : ec ? nombre('u', 'out,ef') : nombre('u', 'n,ef')), fmt(dl + kd, 0), fmt(uProv, 0), `${fmt(uProv, 0)} ≥ ${fmt(uReq, 0)} mm ${ok(uProv >= uReq - 1e-6)}`],
+  ];
+  return h('div', { class: 'pun-criticos' },
+    titulos(tabla(filas, { cabecera: [t('pun.crit.t'), t('pun.crit.dist'), t('pun.crit.long'), t('pun.crit.comp')], clase: 'rejilla-res' }), ['pun.tt.per', 'pun.tt.dist', 'pun.tt.long', 'pun.tt.comp']));
 }
 
 const rectTexto = (x) => (x.tipo === 'rect' ? t('pun.dib.pilarR', fmt(x.c1, 0), fmt(x.c2, 0), t(`pun.${x.pos}`).toLowerCase())
@@ -238,11 +313,11 @@ const filaPerim = (r, x, e23) => fila('per', t('pun.r.per'), e23 ? q(r.u.b05, 'd
 function trazasEHE(r, x, comp) {
   const P = r.P;
   const f = [filaPerim(r, x, false)];
-  f.push(fila('tau', t('pun.r.tau'), `${fmt(r.tau.tau, 3)}<span class="u">${ESP}MPa</span>`,
-    `<span class="f">${t('pun.f.tauEHE')}</span><span class="n">ξ = ${n1(P.xi, 3)} · ρ<sub>l</sub> = ${n1(P.rho * 1000, 2)} ‰ · f<sub>cv</sub> = ${n1(P.fcv, 0)} MPa · σ'<sub>cd</sub> = ${n1(P.sigCdLim)} MPa</span>`
-    + `<span class="n">${t('pun.v.concMin', fmt(r.tau.conc, 3), fmt(r.tau.min, 3))}</span>${art('46.3')}`));
+  f.push(fila('tau', t('pun.r.tau'), `${fmt(r.tau.tau, 2)}<span class="u">${ESP}MPa</span>`,
+    `<span class="f">${t('pun.f.tauEHE')}</span><span class="n">ξ = ${n1(P.xi, 2)} · ρ<sub>l</sub> = ${n1(P.rho * 1000, 2)} ‰ · f<sub>cv</sub> = ${n1(P.fcv, 0)} MPa · σ'<sub>cd</sub> = ${n1(P.sigCdLim)} MPa</span>`
+    + `<span class="n">${t('pun.v.concMin', fmt(r.tau.conc, 2), fmt(r.tau.min, 2))}</span>${art('46.3')}`));
   f.push(fila('vc', t('pun.r.vc'), q(r.Vc, 'N'),
-    `<span class="f">${t('pun.f.vcEHE')}</span><span class="n">${fmt(r.tau.tau, 3)} × ${n1(r.u.u1, 0)} × ${n1(x.d, 0)} / ${n1(r.beta, 2)} = ${q(r.Vc, 'N')}</span>${art('46.3')}`));
+    `<span class="f">${t('pun.f.vcEHE')}</span><span class="n">${fmt(r.tau.tau, 2)} × ${n1(r.u.u1, 0)} × ${n1(x.d, 0)} / ${n1(r.beta, 2)} = ${q(r.Vc, 'N')}</span>${art('46.3')}`));
   f.push(fila('vmax', t('pun.r.vmax'), q(r.Vmax, 'N'),
     `<span class="f">${t('pun.f.vmaxEHE')}</span><span class="n">${t('cor.f.f1cd', P.fck)} → ${n1(P.f1cd)} MPa · ${sub('u', '0')} = ${n1(r.u.u0, 0)} mm</span>${art('46.4.3')}`));
   if (comp && !r.sinArmadura) {
@@ -264,13 +339,13 @@ function trazasEHE(r, x, comp) {
 function trazasEC2(r, x, comp) {
   const P = r.P;
   const f = [filaPerim(r, x, false)];
-  f.push(fila('tau', t('pun.r.vRdc'), `${fmt(r.v.v, 3)}<span class="u">${ESP}MPa</span>`,
-    `<span class="f">${t('pun.f.vRdcEC')}</span><span class="n">k = ${n1(P.k, 3)} · ρ<sub>l</sub> = ${n1(P.rho * 1000, 2)} ‰ · σ<sub>cp</sub> = ${n1(P.sigCp)} MPa · ν<sub>mín</sub> = ${n1(r.v.nuMin, 3)} MPa</span>`
-    + `<span class="n">${t('pun.v.concMin', fmt(r.v.conc, 3), fmt(r.v.min, 3))}</span>${art('6.4.4(1), AN')}`));
+  f.push(fila('tau', t('pun.r.vRdc'), `${fmt(r.v.v, 2)}<span class="u">${ESP}MPa</span>`,
+    `<span class="f">${t('pun.f.vRdcEC')}</span><span class="n">k = ${n1(P.k, 2)} · ρ<sub>l</sub> = ${n1(P.rho * 1000, 2)} ‰ · σ<sub>cp</sub> = ${n1(P.sigCp)} MPa · ν<sub>mín</sub> = ${n1(r.v.nuMin, 2)} MPa</span>`
+    + `<span class="n">${t('pun.v.concMin', fmt(r.v.conc, 2), fmt(r.v.min, 2))}</span>${art('6.4.4(1), AN')}`));
   f.push(fila('vc', t('pun.r.vc'), q(r.Vc, 'N'),
-    `<span class="f">${t('pun.f.vcEC')}</span><span class="n">${fmt(r.v.v, 3)} × ${n1(r.u.u1, 0)} × ${n1(x.d, 0)} / ${n1(r.beta, 2)} = ${q(r.Vc, 'N')}</span>${art('6.4.3(2), (3)')}`));
+    `<span class="f">${t('pun.f.vcEC')}</span><span class="n">${fmt(r.v.v, 2)} × ${n1(r.u.u1, 0)} × ${n1(x.d, 0)} / ${n1(r.beta, 2)} = ${q(r.Vc, 'N')}</span>${art('6.4.3(2), (3)')}`));
   f.push(fila('vmax', t('pun.r.vmax'), q(r.Vmax, 'N'),
-    `<span class="f">${t('pun.f.vmaxEC')}</span><span class="n">ν = ${n1(P.nu, 3)} · f<sub>cd</sub> = ${n1(P.fcd)} MPa → v<sub>Rd,máx</sub> = ${n1(P.vRdMax)} MPa · ${sub('u', '0')} = ${n1(r.u.u0, 0)} mm</span>${art('6.4.5(3), AN')}`));
+    `<span class="f">${t('pun.f.vmaxEC')}</span><span class="n">ν = ${n1(P.nu, 2)} · f<sub>cd</sub> = ${n1(P.fcd)} MPa → v<sub>Rd,máx</sub> = ${n1(P.vRdMax)} MPa · ${sub('u', '0')} = ${n1(r.u.u0, 0)} mm</span>${art('6.4.5(3), AN')}`));
   if (comp && !r.sinArmadura) {
     f.push(fila('vcs', t('pun.r.vcs'), q(r.Vcs, 'N'),
       `<span class="f">${t('pun.f.vcsEC')}</span><span class="n">${sub('A', 'sw')} = ${n1(r.Asw, 0)} mm² · s<sub>r</sub> = ${n1(x.arm.sr, 0)} mm · f<sub>ywd,ef</sub> = ${n1(P.fywdEf, 0)} MPa (f<sub>ywd</sub> = ${n1(P.fywd, 0)})</span>`
@@ -294,17 +369,17 @@ function trazas23(r, x, comp) {
   const s = r.s;
   const f = [filaPerim(r, x, true)];
   f.push(fila('kpb', t('pun.r.kpb'), n1(s.kpb, 2),
-    `<span class="f">${t('pun.f.kpb')}</span><span class="n">${sub('b', '0')} = ${n1(r.u.b0, 0)} mm · ${sub('b', '0,5')} = ${n1(r.u.b05, 0)} mm → 3,6·(1 − ${n1(r.u.b0 / r.u.b05, 3)}) = ${n1(s.kpbBruto, 2)}</span>${art('8.4.3(1), (8.96)')}`));
-  f.push(fila('tau', t('pun.r.tau'), `${fmt(s.tau, 3)}<span class="u">${ESP}MPa</span>`,
+    `<span class="f">${t('pun.f.kpb')}</span><span class="n">${sub('b', '0')} = ${n1(r.u.b0, 0)} mm · ${sub('b', '0,5')} = ${n1(r.u.b05, 0)} mm → 3,6·(1 − ${n1(r.u.b0 / r.u.b05, 2)}) = ${n1(s.kpbBruto, 2)}</span>${art('8.4.3(1), (8.96)')}`));
+  f.push(fila('tau', t('pun.r.tau'), `${fmt(s.tau, 2)}<span class="u">${ESP}MPa</span>`,
     `<span class="f">${t('pun.f.tau23')}</span><span class="n">ρ<sub>l</sub> = ${n1(P.rho * 1000, 2)} ‰ · d<sub>dg</sub> = ${n1(P.ddg, 0)} mm · γ<sub>V</sub> = ${n1(P.gv, 1)} · d<sub>v</sub> = ${n1(x.d, 0)} mm</span>`
-    + `<span class="n">${t('pun.v.tau23', fmt(s.conc, 3), fmt(s.tope, 3))}</span>${art('8.4.3(1), (8.94)')}`));
+    + `<span class="n">${t('pun.v.tau23', fmt(s.conc, 2), fmt(s.tope, 2))}</span>${art('8.4.3(1), (8.94)')}`));
   f.push(fila('vc', t('pun.r.vRdc'), q(s.VRdc, 'N'),
-    `<span class="f">${t('pun.f.vRdc23')}</span><span class="n">${fmt(s.tau, 3)} × ${n1(r.u.b05, 0)} × ${n1(x.d, 0)} = ${q(s.VRdc, 'N')} → ${q(r.Vc, 'N')} (÷ β<sub>e</sub> = ${n1(r.beta, 2)})</span>${art('8.4.2(6), (8.92)')}`));
+    `<span class="f">${t('pun.f.vRdc23')}</span><span class="n">${fmt(s.tau, 2)} × ${n1(r.u.b05, 0)} × ${n1(x.d, 0)} = ${q(s.VRdc, 'N')} → ${q(r.Vc, 'N')} (÷ β<sub>e</sub> = ${n1(r.beta, 2)})</span>${art('8.4.2(6), (8.92)')}`));
   f.push(fila('vmax', t('pun.r.vmax'), q(r.Vmax, 'N'),
-    `<span class="f">${t('pun.f.vmax23')}</span><span class="n">η<sub>sys</sub> = ${n1(s.etaSys, 3)} (b<sub>0</sub>/d<sub>v</sub> = ${n1(r.u.b0 / x.d, 2)}) → V<sub>Rd,máx</sub> = ${q(s.VRdMax, 'N')}</span>${art('8.4.4(5), (8.111)')}`));
+    `<span class="f">${t('pun.f.vmax23')}</span><span class="n">η<sub>sys</sub> = ${n1(s.etaSys, 2)} (b<sub>0</sub>/d<sub>v</sub> = ${n1(r.u.b0 / x.d, 2)}) → V<sub>Rd,máx</sub> = ${q(s.VRdMax, 'N')}</span>${art('8.4.4(5), (8.111)')}`));
   if (comp && !r.sinArmadura) {
     f.push(fila('etas', t('pun.r.etas'), `${fmt(r.etaC, 2)} · ${fmt(r.etaS, 2)}`,
-      `<span class="f">${t('pun.f.etas')}</span><span class="n">V<sub>Ed,ef</sub> = ${n1(Number.isFinite(r.VEd) ? r.beta * r.VEd : r.VuEf, 0)} kN → η<sub>c</sub> = ${n1(r.etaC, 3)} · η<sub>s</sub> = ${n1(r.etaS, 3)} (≤ 0,8) · φ<sub>w</sub> = ${n1(x.arm.fi, 0)} mm</span>${art('8.4.4(1), (8.105), (8.106)')}`));
+      `<span class="f">${t('pun.f.etas')}</span><span class="n">V<sub>Ed,ef</sub> = ${n1(Number.isFinite(r.VEd) ? r.beta * r.VEd : r.VuEf, 0)} kN → η<sub>c</sub> = ${n1(r.etaC, 2)} · η<sub>s</sub> = ${n1(r.etaS, 2)} (≤ 0,8) · φ<sub>w</sub> = ${n1(x.arm.fi, 0)} mm</span>${art('8.4.4(1), (8.105), (8.106)')}`));
     f.push(fila('vcs', t('pun.r.vcs'), q(r.VuEf / r.beta, 'N'),
       `<span class="f">${t('pun.f.vcs23')}</span><span class="n">${sub('A', 'sw,per')} = ${n1(r.Asw, 0)} mm² · s<sub>r</sub> = ${n1(r.srEf, 0)} mm · f<sub>ywd</sub> = ${n1(P.fywd, 0)} MPa → V<sub>w</sub> = ${q(r.Vw, 'N')}</span>`
       + `<span class="n">${t('pun.v.vcs23', n1(r.VRdcs, 0), q(r.VuEf, 'N'))}</span>${art('8.4.4(1), (8.104), (8.107)')}`));
@@ -313,7 +388,7 @@ function trazas23(r, x, comp) {
     f.push(...filasDisp(r, x));
   } else if (!comp && r.caso === 'calculo') {
     f.push(fila('etas', t('pun.r.etas'), `${fmt(r.etaCEf, 2)}`,
-      `<span class="f">${t('pun.f.etasDim')}</span><span class="n">V<sub>Ed,ef</sub> = ${n1(r.Vef, 0)} kN → η<sub>c</sub> = ${n1(r.etaCEf, 3)}; η<sub>s</sub> por diámetro en la tabla</span>${art('8.4.4(1)')}`));
+      `<span class="f">${t('pun.f.etasDim')}</span><span class="n">V<sub>Ed,ef</sub> = ${n1(r.Vef, 0)} kN → η<sub>c</sub> = ${n1(r.etaCEf, 2)}; η<sub>s</sub> por diámetro en la tabla</span>${art('8.4.4(1)')}`));
     f.push(fila('nper', t('pun.r.nper'), String(r.nPer),
       `<span class="f">${t('pun.f.nper23')}</span><span class="n">${sub('b', '0,5,out')} → δ = ${n1(r.deltaOut, 0)} mm; a<sub>1</sub> = ${n1(r.a1, 0)} mm, s<sub>1</sub> = ${n1(r.sr, 0)} mm; mínimo 2 perímetros</span>${art('8.4.4(7), 12.5.1(2)')}`));
   }
@@ -330,10 +405,16 @@ function notas(p, D) {
   const e23 = es23(p);
   const ec = esEC2(p);
   const claves = [['pun.n.alcance', e23 ? 'pun.alcance23' : 'pun.alcance'], ['pun.n.perim', e23 ? 'pun.perim23' : 'pun.perim'], ['pun.n.beta', e23 ? 'pun.beta23' : 'pun.beta']];
+  claves.push(['pun.n.esq', 'pun.esqNota']);
   if (D.tipo === 'circ') claves.push(['pun.n.circ', 'pun.circNota']);
   claves.push(['pun.n.norma', e23 ? 'pun.nota23' : ec ? 'pun.notaEC' : 'pun.notaEHE']);
-  return h('div', { class: 'pun-notas' }, h('h3', {}, t('cor.notas')),
+  const pop = h('div', { class: 'pun-info', hidden: true, role: 'dialog', 'aria-label': t('cor.notas') },
     ...claves.map(([k, v]) => h('details', { class: 'pleg' }, h('summary', {}, h('span', { html: t(k) })), h('div', { class: 'cuenta' }, h('p', { class: 'nota', html: t(v) })))));
+  const cerrar = (e) => { if (!pop.contains(e.target) && !btn.contains(e.target)) fuera(); };
+  const fuera = () => { pop.hidden = true; btn.setAttribute('aria-expanded', 'false'); document.removeEventListener('click', cerrar); };
+  const btn = h('button', { type: 'button', class: 'info-btn', 'aria-label': t('cor.notas'), 'aria-expanded': 'false', title: t('cor.notas'),
+    onclick: () => { if (pop.hidden) { pop.hidden = false; btn.setAttribute('aria-expanded', 'true'); setTimeout(() => document.addEventListener('click', cerrar), 0); } else fuera(); } }, 'i');
+  return [btn, pop];
 }
 
 export function comandos(ctx) {

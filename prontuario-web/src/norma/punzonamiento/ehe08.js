@@ -10,7 +10,7 @@
 import { EHE08 } from '../normas.js';
 import { ErrorClave } from '../../core/errores.js';
 import { areaRama } from '../cortante/ehe08.js';
-import { perimetro, perimetroCara, deltaDePerimetro, validarPilar, validarArmadura, anillos, nPerimetrosExt, uExterior, alMultiplo, multiploDe } from './comun.js';
+import { perimetro, perimetroCara, deltaDePerimetro, validarPilar, validarArmadura, anillos, nPerimetrosExt, uExterior, ramasDe } from './comun.js';
 
 export { areaRama };
 export const ID = 'EHE-08';
@@ -145,11 +145,12 @@ export function dimensionar(x, VEd, { diametros = [8, 10, 12, 16, 20] } = {}) {
   r.nMinSt = nMinSt;
   r.tabla = diametros.map((fi) => {
     const Ab = areaRama(fi);
-    const n = alMultiplo(Math.max(Math.ceil(AswNec / Ab - 1e-9), nMinSt, 2), multiploDe(a, x.pos));
+    const gr = ramasDe(a, x.pos, Math.max(Math.ceil(AswNec / Ab - 1e-9), nMinSt, 2));
+    const n = gr.ramas;
     const Asw = n * Ab;
     const Fcs = 0.75 * F0 + (1.5 * (x.d / a.sr) * Asw * P.fyd) / 1000;
     const nPer = nPerimetrosExt(x, { ...a, ramas: n }, 2 * x.d, r.unReq, 1);
-    return { fi, ramas: n, nPer, Asw, st: u.u1 / n, Vu: Math.min(Fcs / beta, Fmax / beta) };
+    return { fi, ramas: n, nx: gr.nx, ny: gr.ny, nPer, Asw, st: u.u1 / n, Vu: Math.min(Fcs / beta, Fmax / beta) };
   });
   r.nPer = Math.max(...r.tabla.map((f) => f.nPer));
   return r;

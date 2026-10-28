@@ -25,3 +25,8 @@ Módulo construido el 20/10/2026 a partir de `analisis/punzonamiento-plan.md`, c
 - Ejemplo del plan: 533 / 533 / 298 kN (EC-2 2004 / EHE-08 / EC-2 2023 sin armadura). Test en `tests/punzonamiento.test.js`.
 - Puerto de TT3 (3.1) en `tests/ref31/tt3.js`, hecho desde la descripción del plan, no desde el Delphi original.
 - Encaje en pantalla (1536×730 y 1366×657) en `tools/encaje.mjs`, 9 pantallas.
+
+## Armadura y esquemas (28/10/2026, Pepiño)
+- Tick «Armadura de punzonamiento» (por defecto activo); sin tick se calcula sin armadura. Campos que no aplican, en gris.
+- Esquema de armado: Cruz (nº perímetros y ramas/perímetro) o Retícula (nº ramas x y y). Perímetro exterior: casco convexo (cruz) o contorno (retícula) a k·d del último cerco.
+- β editable (simplificado por defecto). Notas tras un (i) junto a «Planta».
