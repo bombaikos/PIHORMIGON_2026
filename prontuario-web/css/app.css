@@ -869,7 +869,7 @@ svg.dib-pun { min-width: 0; }
 .dib .cerco-v.tenue { opacity: .3; }
 .dib .cota { stroke: var(--tinta-2); stroke-width: 1; }
 .tit-info { display: flex; align-items: center; gap: var(--e2); }
-.info-btn { flex: none; width: 18px; height: 18px; padding: 0; border: 1px solid var(--tinta-3); border-radius: 50%; background: none; font: italic 600 calc(12px + var(--mas))/16px Georgia, serif; color: var(--tinta-3); cursor: pointer; }
+.info-btn { flex: none; width: 18px; height: 18px; padding: 0; border: 1px solid var(--tinta-3); border-radius: 50%; background: none; font: 600 calc(12px + var(--mas))/16px var(--fuente, system-ui, sans-serif); color: var(--tinta-3); cursor: pointer; }
 .info-btn:hover, .info-btn:focus-visible, .info-btn[aria-expanded="true"] { color: var(--acento); border-color: var(--acento); outline: none; }
 .tarjeta:has(> .pun-info) { position: relative; }
 .pun-info { position: absolute; z-index: 30; top: 44px; left: 12px; right: 12px; max-height: calc(100% - 56px); overflow: auto; padding: var(--e2) var(--e3); border: 1px solid var(--linea-fuerte); border-radius: var(--r-campo); background: var(--hoja); box-shadow: var(--sombra); }

@@ -21,7 +21,7 @@ export function reiniciar() { est.abiertos = new Set(); }
 const INICIAL = () => ({
   tipo: 'rect', pos: 'interior', c1: 300, c2: 300, D: 350, h: 250, d: 210, hormigon: null, aceroCercos: null,
   rhoX: 0.008, rhoY: 0.008, sigCd: 0, VEd: 400, exc: 'aprox', betaOtro: 1.15, Dlower: 20,
-  armadura: true, esq: 'cruz', nx: 5, ny: 5, fi: 10, ramas: 12, sr: 150, a1: 100, nPer: 3,
+  armadura: true, esq: 'cruz', nx: 5, ny: 5, fi: 10, ramas: 16, sr: 150, a1: 100, nPer: 3,
 });
 
 /** Datos de la pantalla (se guardan con el proyecto); materiales por omisión si el elegido ya no existe. */
