@@ -328,7 +328,7 @@ export default {
   'vig.esquema': 'Esquema', 'vig.giro': 'Giro', 'vig.flecha': 'Flecha', 'vig.convenio': 'M se dibuja sobre la parte traccionada (positivo hacia abajo) · V positivo hacia arriba · giro y flecha positivos hacia abajo · pasa el cursor para leer los valores.',
   'vig.flechaRel': (n) => `Flecha máxima = L / ${n}`, 'vig.err.luz': 'La luz debe ser mayor que cero.', 'vig.err.ei': 'La rigidez EI debe ser mayor que cero.', 'vig.err.inestable': 'Los apoyos no sostienen la viga (inestable).', 'vig.err.fuera': 'Hay una carga fuera de la viga.',
   'vig.err.posicion': (L) => `Debe estar entre 0 y ${L} m`,
-  'm.analisis': 'Análisis', 'm.elu': 'ELU', 'm.els': 'ELS', 'm.bielas': 'Bielas y tirantes', 'm.ejecucion': 'Ejecución y control', 'm.ayuda': '?',
+  'm.archivo': 'Archivo', 'm.analisis': 'Análisis', 'm.elu': 'ELU', 'm.els': 'ELS', 'm.bielas': 'Bielas y tirantes', 'm.ejecucion': 'Ejecución y control', 'm.ayuda': '?',
   'menu.pronto': 'Pendiente de migrar', 'menu.materiales': 'Crear y editar', 'menu.reologicas': 'Propiedades reológicas', 'menu.vigas1vano': 'Vigas de un vano',
   'menu.flexion': 'Flexión simple', 'menu.flexRecta': 'Flexión compuesta recta', 'menu.flexEsviada': 'Flexión compuesta esviada',
   'menu.cortante': 'Cortante', 'menu.torsion': 'Torsión', 'menu.punzonamiento': 'Punzonamiento', 'menu.anclaje': 'Anclaje y solapo',

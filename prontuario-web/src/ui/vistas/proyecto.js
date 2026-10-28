@@ -56,6 +56,14 @@ async function abrirJSON(ctx, e) {
   }
 }
 
+/** Acciones del menú Archivo (y de Ctrl+S / Ctrl+O): se usan también fuera de esta pantalla. */
+export const guardarProyecto = (ctx) => descargar(`${ctx.p.nombre || 'proyecto'}.json`, aJSON(ctx.p));
+export const nuevoProyecto = (ctx) => ctx.ponerProyecto(proyectoNuevo(t('pro.nuevoNombre')));
+export function abrirProyecto(ctx) {
+  const i = h('input', { type: 'file', accept: '.json,application/json', onchange: (e) => abrirJSON(ctx, e) });
+  i.click();
+}
+
 export function datos(ctx, form) {
   const p = ctx.p;
   const archivo = (id, texto, attrs, onchange) => [

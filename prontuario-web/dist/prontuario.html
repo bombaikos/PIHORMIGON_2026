@@ -905,8 +905,24 @@ svg.dib-ras { min-width: 0; }
   .dib .hor-2 { fill: Canvas; }
   .dib .junta, .dib .barra-cos, .dib .fuerza { stroke: CanvasText; }
 }
-.marca .app { letter-spacing: 0; white-space: nowrap; font-size: 10px; }
+.marca .app { letter-spacing: 0; white-space: nowrap; font-size: calc(10px + var(--mas)); }
 .marca .app .beta { color: #ff9a2e; font-weight: 700; }
+
+/* ---------- Barra superior de una línea, 52 px (guía común § 2.3) ---------- */
+@media (min-width: 1100px) and (min-height: 600px) {
+  .barra { flex-wrap: nowrap; gap: var(--e3); padding: 4px var(--e4); min-height: 52px; }
+  .barra .marca { flex: none; }
+  .barra .menu { flex: 1 1 auto; min-width: 0; gap: 0; }
+  .barra .menu button { padding: 3px 8px; }
+  .barra .menu button:disabled:not(:last-child) { display: none; } /* módulos aún no migrados: fuera de la barra */
+  .barra .lado { flex: none; flex-wrap: nowrap; margin-left: 0; gap: var(--e2); }
+  .barra .tecla { white-space: nowrap; }
+}
+.barra .pant-completa { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; border: 1px solid var(--banda-linea); border-radius: var(--r-campo); background: none; color: var(--banda-tinta-2); cursor: pointer; }
+.barra .pant-completa:hover { border-color: rgb(255 255 255 / .5); color: var(--banda-tinta); }
+.barra .pant-completa svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.5; }
+#menu-archivo button { display: flex; justify-content: space-between; gap: var(--e5); width: 100%; }
+#menu-archivo small { color: var(--tinta-3); }
 </style>
 
 <header class="barra">
@@ -918,6 +934,7 @@ svg.dib-ras { min-width: 0; }
   <div class="lado">
     <div id="seg-norma"></div>
     <button type="button" class="tecla" id="abrir-paleta"><span id="txt-comandos"></span> <kbd>Ctrl</kbd><kbd>K</kbd></button>
+    <button type="button" class="pant-completa" id="pant-completa" aria-label="Pantalla completa"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1 5V1h4M11 1h4v4M15 11v4h-4M5 15H1v-4"/></svg></button>
   </div>
 </header>
 <div class="cabeza-modulo" id="cabeza" hidden></div>
@@ -2995,6 +3012,7 @@ svg.dib-ras { min-width: 0; }
     "vig.err.inestable": "Los apoyos no sostienen la viga (inestable).",
     "vig.err.fuera": "Hay una carga fuera de la viga.",
     "vig.err.posicion": (L) => `Debe estar entre 0 y ${L} m`,
+    "m.archivo": "Archivo",
     "m.analisis": "An\xE1lisis",
     "m.elu": "ELU",
     "m.els": "ELS",
@@ -3977,6 +3995,7 @@ svg.dib-ras { min-width: 0; }
     "vig.err.inestable": "The supports do not hold the beam (unstable).",
     "vig.err.fuera": "A load lies outside the beam.",
     "vig.err.posicion": (L) => `Must be between 0 and ${L} m`,
+    "m.archivo": "File",
     "m.analisis": "Analysis",
     "m.elu": "ULS",
     "m.els": "SLS",
@@ -5551,8 +5570,11 @@ svg.dib-ras { min-width: 0; }
   // src/ui/vistas/proyecto.js
   var proyecto_exports = {};
   __export(proyecto_exports, {
+    abrirProyecto: () => abrirProyecto,
     comandos: () => comandos,
     datos: () => datos,
+    guardarProyecto: () => guardarProyecto,
+    nuevoProyecto: () => nuevoProyecto,
     resultados: () => resultados
   });
 
@@ -5932,9 +5954,15 @@ svg.dib-ras { min-width: 0; }
       ctx2.pintar();
     }
   }
+  var guardarProyecto = (ctx2) => descargar(`${ctx2.p.nombre || "proyecto"}.json`, aJSON(ctx2.p));
+  var nuevoProyecto = (ctx2) => ctx2.ponerProyecto(proyectoNuevo(t("pro.nuevoNombre")));
+  function abrirProyecto(ctx2) {
+    const i = h("input", { type: "file", accept: ".json,application/json", onchange: (e2) => abrirJSON(ctx2, e2) });
+    i.click();
+  }
   function datos(ctx2, form) {
     const p = ctx2.p;
-    const archivo = (id, texto, attrs, onchange) => [
+    const archivo2 = (id, texto, attrs, onchange) => [
       h("label", { class: "boton secundario", for: id }, texto),
       h("input", { id, type: "file", hidden: true, ...attrs, onchange })
     ];
@@ -5965,8 +5993,8 @@ svg.dib-ras { min-width: 0; }
         h(
           "div",
           { class: "fila-botones" },
-          ...archivo("imp-carpeta", t("pro.elegirCarpeta"), { webkitdirectory: true, multiple: true }, (e2) => leerArchivos(ctx2, e2.target.files)),
-          ...archivo("imp-archivos", t("pro.elegirArchivos"), { multiple: true, accept: ".ehe,.EHE,.sec,.SEC,.mat,.MAT" }, (e2) => leerArchivos(ctx2, e2.target.files))
+          ...archivo2("imp-carpeta", t("pro.elegirCarpeta"), { webkitdirectory: true, multiple: true }, (e2) => leerArchivos(ctx2, e2.target.files)),
+          ...archivo2("imp-archivos", t("pro.elegirArchivos"), { multiple: true, accept: ".ehe,.EHE,.sec,.SEC,.mat,.MAT" }, (e2) => leerArchivos(ctx2, e2.target.files))
         )
       ),
       grupo(
@@ -5975,7 +6003,7 @@ svg.dib-ras { min-width: 0; }
           "div",
           { class: "fila-botones" },
           boton(t("pro.guardar"), () => descargar(`${p.nombre || "proyecto"}.json`, aJSON(p)), ""),
-          ...archivo("abrir-json", t("pro.abrir"), { accept: ".json,application/json" }, (e2) => abrirJSON(ctx2, e2)),
+          ...archivo2("abrir-json", t("pro.abrir"), { accept: ".json,application/json" }, (e2) => abrirJSON(ctx2, e2)),
           boton(t("pro.nuevo"), () => ctx2.ponerProyecto(proyectoNuevo(t("pro.nuevoNombre"))), "discreto")
         )
       )
@@ -6504,7 +6532,7 @@ svg.dib-ras { min-width: 0; }
     const [x1, y1] = xy[i];
     return x1 === x0 ? y1 : y0 + (y1 - y0) * (x - x0) / (x1 - x0);
   }
-  function grafica({ series, puntos = [], ejeX, ejeY, archivo = "grafica", rejillaSec = null, invertirY = false, avisar: avisar2 = () => {
+  function grafica({ series, puntos = [], ejeX, ejeY, archivo: archivo2 = "grafica", rejillaSec = null, invertirY = false, avisar: avisar2 = () => {
   } }) {
     const sinDec = (e2) => /\((kN|kN·m|mm²)\)/.test(plano(e2.titulo)) ? { ...e2, d: 0, dt: 0 } : e2;
     ejeX = sinDec(ejeX);
@@ -6762,7 +6790,7 @@ svg.dib-ras { min-width: 0; }
         else copiar();
       }
     });
-    const copiar = () => copiarPNG(svg, W, H, archivo, avisar2);
+    const copiar = () => copiarPNG(svg, W, H, archivo2, avisar2);
     async function copiarTabla() {
       const num4 = (v2) => Number.isFinite(v2) ? String(Math.abs(v2) < 1e-6 ? 0 : +v2.toPrecision(6)).replace(".", decimalAlCopiar()) : "";
       const lineas = [];
@@ -6776,7 +6804,7 @@ svg.dib-ras { min-width: 0; }
         avisar2(t("graf.error"));
       }
     }
-    const guardar4 = (ext2) => guardar(svg, W, H, archivo, ext2, avisar2);
+    const guardar4 = (ext2) => guardar(svg, W, H, archivo2, ext2, avisar2);
     listo = true;
     if (typeof ResizeObserver === "function") new ResizeObserver(() => dibujar()).observe(caja);
     else queueMicrotask(dibujar);
@@ -16487,9 +16515,10 @@ svg.dib-ras { min-width: 0; }
     $("marca-ejemplo").hidden = !estado3.ejemplo;
     $("marca-ejemplo").textContent = t("ejemplo");
     $("txt-comandos").textContent = t("comandos");
+    $("pant-completa").title = $("pant-completa").ariaLabel = t(document.fullscreenElement ? "p.salirCompleta" : "p.completa");
     $("pie").textContent = t("pie");
     $("menu").setAttribute("aria-label", t("modulos"));
-    $("menu").replaceChildren(...MENU.map((m) => typeof m === "string" ? h("button", { type: "button", "aria-current": m === estado3.vista ? "page" : void 0, disabled: m in VISTAS ? void 0 : "", title: m in VISTAS ? void 0 : t("menu.pronto"), onclick: () => ctx.ir(m) }, t(`m.${m}`)) : desplegable(m)));
+    $("menu").replaceChildren(archivo(), ...MENU.map((m) => typeof m === "string" ? h("button", { type: "button", "aria-current": m === estado3.vista ? "page" : void 0, disabled: m in VISTAS ? void 0 : "", title: m in VISTAS ? void 0 : t("menu.pronto"), onclick: () => ctx.ir(m) }, t(`m.${m}`)) : desplegable(m)));
     const nombreNorma = (n) => h("span", { class: n.vigente ? "" : "no-vigente" }, n.corto);
     const lista = h(
       "div",
@@ -16524,6 +16553,32 @@ svg.dib-ras { min-width: 0; }
     document.getElementById("menu-norma")?.remove();
     document.body.append(lista);
     $("seg-norma").replaceChildren(chip);
+  }
+  function archivo() {
+    const acciones = [["pro.nuevo", "", nuevoProyecto], ["pro.abrir", "Ctrl+O", abrirProyecto], ["pro.guardar", "Ctrl+S", guardarProyecto]];
+    const lista = h(
+      "div",
+      { class: "menu-desp", id: "menu-archivo", popover: "auto", role: "menu" },
+      ...acciones.map(([k, atajo, f]) => h("button", { type: "button", role: "menuitem", onclick: () => {
+        lista.hidePopover?.();
+        f(ctx);
+      } }, t(k), atajo ? h("small", {}, atajo) : null))
+    );
+    const b = h("button", {
+      type: "button",
+      class: "con-desp",
+      "aria-haspopup": "menu",
+      onclick: () => {
+        if (!lista.showPopover) return;
+        const r = b.getBoundingClientRect();
+        lista.style.left = `${r.left}px`;
+        lista.style.top = `${r.bottom + 4}px`;
+        lista.togglePopover();
+      }
+    }, t("m.archivo"), h("span", { class: "flecha", "aria-hidden": "true" }, "\u25BE"));
+    document.getElementById("menu-archivo")?.remove();
+    document.body.append(lista);
+    return b;
   }
   function desplegable(m) {
     const id = `menu-${m.grupo}`;
@@ -16714,6 +16769,8 @@ svg.dib-ras { min-width: 0; }
     if (VISTAS[v2]) estado3.vista = v2;
     if (leerPref("densidad") === "comoda") document.documentElement.dataset.densidad = "comoda";
     if (leerPref("datos") === "plegado") document.documentElement.dataset.datos = "plegado";
+    $("pant-completa").onclick = pantallaCompleta;
+    document.addEventListener("fullscreenchange", pintar);
     comportamientoFormulario($("datos"));
     instalarFoco();
     instalarPaleta(comandos12, avisar);
@@ -16721,6 +16778,14 @@ svg.dib-ras { min-width: 0; }
       if ((e2.ctrlKey || e2.metaKey) && !e2.shiftKey && e2.key.toLowerCase() === "z" && !e2.target.closest("input, textarea")) {
         e2.preventDefault();
         deshacer();
+      }
+      if ((e2.ctrlKey || e2.metaKey) && !e2.shiftKey && !e2.altKey && e2.key.toLowerCase() === "s") {
+        e2.preventDefault();
+        guardarProyecto(ctx);
+      }
+      if ((e2.ctrlKey || e2.metaKey) && !e2.shiftKey && !e2.altKey && e2.key.toLowerCase() === "o") {
+        e2.preventDefault();
+        abrirProyecto(ctx);
       }
       if (e2.altKey && /^[1-9]$/.test(e2.key) && ORDEN[+e2.key - 1]) {
         e2.preventDefault();
