@@ -69,16 +69,16 @@ export function datos(ctx, form) {
     try { Object.assign(D, { EI: rigidezSeccion(p, s), sec: v }); } catch (e) { ctx.avisar(tx(e)); return; }
     ctx.cambio({ estructura: true });
   };
-  const apoyo = (k) => selector({ id: `v-${k}`, etq: t(`vig.${k}`), opciones: APOYOS.map((a) => [a, t(`vig.ap.${a}`)]), valor: D[k], onCambio: (v) => { D[k] = v; ctx.cambio({ estructura: true }); } });
+  const apoyo = (k) => selector({ id: `v-${k}`, etq: t(`vig.${k}`), linea: true, opciones: APOYOS.map((a) => [a, t(`vig.ap.${a}`)]), valor: D[k], onCambio: (v) => { D[k] = v; ctx.cambio({ estructura: true }); } });
 
-  poner(form,
+  poner(form, h('div', { class: 'vigas-datos' },
     h('div', { class: 'cab' }, h('h1', {}, t('menu.vigas1vano')), h('p', {}, t('vig.subtitulo'))),
     grupo(t('vig.viga'),
-      campoNum({ id: 'v-L', etq: sub('L', ''), ref: t('vig.luz'), valor: D.L, mag: 'm', paso: 0.5, min: 0.05, max: 1000, onCambio: (v) => { D.L = v; cambio(); } }),
+      campoNum({ id: 'v-L', etq: 'L [m]', nombre: 'L', sinUd: true, valor: D.L, mag: 'm', paso: 0.5, min: 0.05, max: 1000, onCambio: (v) => { D.L = v; cambio(); } }),
       par(apoyo('izq'), apoyo('der'))),
     grupo(t('vig.rigidez'),
-      selector({ id: 'v-sec', etq: t('seccion'), opciones: [['', t('vig.personalizada')], ...secs.map((s) => [s.nombre, s.nombre])], valor: D.sec ?? '', onCambio: elegir }),
-      campoNum({ id: 'v-EI', etq: 'EI', ref: t('vig.eiBruta'), valor: D.EI, mag: 'EI', paso: 1000, min: 1, max: 1e12, onCambio: (v) => {
+      selector({ id: 'v-sec', etq: t('seccion'), linea: true, opciones: [['', t('vig.personalizada')], ...secs.map((s) => [s.nombre, s.nombre])], valor: D.sec ?? '', onCambio: elegir }),
+      campoNum({ id: 'v-EI', etq: 'EI [kN·m²]', nombre: 'EI', sinUd: true, ayuda: t('vig.eiBruta'), valor: D.EI, mag: 'EI', paso: 1000, min: 1, max: 1e12, onCambio: (v) => {
         D.EI = v;
         // Sin repintar los datos (se perdería el foco al teclear): solo el selector pasa a «Personalizada»
         if (D.sec) { D.sec = null; const sel = document.getElementById('v-sec'); if (sel) sel.value = ''; }
@@ -87,21 +87,19 @@ export function datos(ctx, form) {
     grupo(t('vig.cargas'),
       h('p', { class: 'etq-rejilla compacta', html: t('vig.puntuales') }), rejillas.P(),
       h('p', { class: 'etq-rejilla compacta', html: t('vig.distribuidas') }), rejillas.q(),
-      h('p', { class: 'etq-rejilla compacta', html: t('vig.momentos') }), rejillas.M()));
+      h('p', { class: 'etq-rejilla compacta', html: t('vig.momentos') }), rejillas.M())));
 }
 
 /* ---------- resultados ---------- */
 
-const COLS = [['x', 'x [m]', 3, 1], ['M', 'M [kN·m]', MAG.M.d, 1], ['V', 'V [kN]', MAG.N.d, 1], ['giro', 'θ [mrad]', 1, 1000], ['flecha', 'δ [mm]', 1, 1000]];
-const est = { tabla: false };
-export function reiniciar() { est.tabla = false; }
+const COLS = [['x', 'x [m]', 3, 1], ['M', 'M [kN·m]', MAG.M.d, 1], ['V', 'V [kN]', MAG.N.d, 1], ['flecha', 'δ [mm]', 1, 1000], ['giro', 'θ [mrad]', 1, 1000]];
 
 export function resultados(ctx, res) {
   const p = ctx.p;
   const D = datosVigas(p);
   const r = analizarViga({ L: D.L, EI: D.EI, izq: D.izq, der: D.der, cargas: D.cargas });
   p.calculos.vigas1vano_resultado = { fecha: new Date().toISOString().slice(0, 10), EI: r.EI, reacciones: r.reacciones, maximos: r.maximos };
-  // Un solo lienzo con el esquema y las cuatro leyes, a todo el ancho; se dibuja al tamaño real
+  // Mitad de la pantalla para el dibujo (esquema y las cuatro leyes, al tamaño real) y la otra mitad para la tabla
   const lienzo = h('div', { class: 'lienzo vigas-leyes' });
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('class', 'graf vl');
@@ -113,32 +111,22 @@ export function resultados(ctx, res) {
   if (typeof ResizeObserver === 'function') new ResizeObserver(pintar).observe(lienzo);
   requestAnimationFrame(pintar);
 
+  const tecla = (txt, titulo, f) => h('button', { type: 'button', class: 'tecla', title: titulo, onclick: f }, txt);
+  const barraDib = h('div', { class: 'graf-barra' },
+    tecla(t('graf.copiar'), t('graf.copiarTit'), () => copiarPNG(svg, ...medida(), 'viga', ctx.avisar)),
+    tecla('PNG', t('graf.guardarPNG'), () => guardar(svg, ...medida(), 'viga', 'png', ctx.avisar)),
+    tecla('SVG', t('graf.guardarSVG'), () => guardar(svg, ...medida(), 'viga', 'svg', ctx.avisar)));
+
   // Tabla con todos los valores (se copia con el decimal del sistema, como las demás tablas)
-  const tabla = h('div', { class: 'graf-tabla', style: 'order:2', hidden: true, html: `<table><thead><tr>${COLS.map((c) => `<th>${c[1]}</th>`).join('')}</tr></thead><tbody>${
+  const tabla = h('div', { class: 'graf-tabla', html: `<table><thead><tr>${COLS.map((c) => `<th>${c[1]}</th>`).join('')}</tr></thead><tbody>${
     r.tabla.map((f) => `<tr>${COLS.map(([k, , d, m]) => `<td>${fmt(f[k] * m, d)}</td>`).join('')}</tr>`).join('')}</tbody></table>` });
   const copiarTabla = async () => {
     const num = (v) => (Number.isFinite(v) ? String(Math.abs(v) < 1e-6 ? 0 : +v.toPrecision(6)).replace('.', decimalAlCopiar()) : '');
     const lineas = [COLS.map((c) => c[1]).join('\t'), ...r.tabla.map((f) => COLS.map(([k, , , m]) => num(f[k] * m)).join('\t'))];
     try { await navigator.clipboard.writeText(lineas.join('\n')); ctx.avisar(t('graf.tablaCopiada')); } catch { ctx.avisar(t('graf.error')); }
   };
-  const tecla = (txt, titulo, f) => h('button', { type: 'button', class: 'tecla', title: titulo, onclick: f }, txt);
-  const bCopiar = tecla(t('graf.copiar'), t('graf.copiarTit'), () => (est.tabla ? copiarTabla() : copiarPNG(svg, ...medida(), 'viga', ctx.avisar)));
-  const bPNG = tecla('PNG', t('graf.guardarPNG'), () => guardar(svg, ...medida(), 'viga', 'png', ctx.avisar));
-  const bSVG = tecla('SVG', t('graf.guardarSVG'), () => guardar(svg, ...medida(), 'viga', 'svg', ctx.avisar));
-  const barra = h('div', { class: 'graf-barra' }, bCopiar, bPNG, bSVG);
-  const bG = h('button', { type: 'button', role: 'radio' }, t('graf.grafico'));
-  const bT = h('button', { type: 'button', role: 'radio' }, t('graf.tabla'));
-  const modo = (tab) => {
-    est.tabla = tab;
-    bG.setAttribute('aria-checked', String(!tab));
-    bT.setAttribute('aria-checked', String(tab));
-    lienzo.hidden = tab; tabla.hidden = !tab; bPNG.hidden = bSVG.hidden = tab;
-    bCopiar.title = tab ? t('graf.copiarTablaTit') : t('graf.copiarTit');
-    if (!tab) requestAnimationFrame(pintar);
-  };
-  bG.onclick = () => modo(false);
-  bT.onclick = () => modo(true);
-  const seg = h('div', { class: 'graf-modo', style: 'order:3' }, h('div', { class: 'seg', role: 'radiogroup' }, bG, bT));
-  res.append(h('article', { class: 'panel tarjeta' }, barra, lienzo, tabla, seg, h('p', { class: 'pista', style: 'order:4', html: `${t('vig.pistaCargas')} ${t('vig.convenio')}` })));
-  modo(est.tabla);
+  const barraTabla = h('div', { class: 'graf-barra' }, tecla(t('graf.copiar'), t('graf.copiarTablaTit'), copiarTabla));
+  res.append(h('div', { class: 'cuerpo mitad' },
+    h('article', { class: 'panel tarjeta' }, barraDib, lienzo),
+    h('article', { class: 'panel tarjeta' }, barraTabla, tabla)));
 }

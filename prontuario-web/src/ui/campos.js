@@ -55,10 +55,10 @@ function marco(id, etq, ref, caja, nota = '') {
  * Campo numérico. valor, min y max en unidades internas; se muestra en las de la magnitud.
  * Admite cuentas (2*150); ↑ ↓ varían según paso (en unidades de pantalla), Mayús ×10.
  */
-export function campoNum({ id, etq, ref, valor, mag, paso, min = -Infinity, max = Infinity, nombre, onCambio, ayuda }) {
+export function campoNum({ id, etq, ref, valor, mag, paso, min = -Infinity, max = Infinity, nombre, onCambio, ayuda, sinUd = false }) {
   const m = MAG[mag] ?? { ud: '', f: 1, d: 3 };
   const input = h('input', { id, inputmode: 'decimal', value: mag ? paraCampo(valor, mag) : String(valor ?? ''), 'data-paso': paso, autocomplete: 'off', title: ayuda, 'aria-describedby': `${id}-eco` });
-  const caja = h('div', { class: 'caja' }, input, m.ud ? h('span', { class: 'ud' }, m.ud) : null);
+  const caja = h('div', { class: 'caja' }, input, m.ud && !sinUd ? h('span', { class: 'ud' }, m.ud) : null); // sinUd: la unidad va en la etiqueta, entre corchetes
   const { c, marcar } = marco(id, etq, ref, caja);
   const leer = () => {
     const raw = input.value;
