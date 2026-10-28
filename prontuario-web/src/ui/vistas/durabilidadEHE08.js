@@ -12,7 +12,7 @@ import { designacionCE, CONSISTENCIAS, ASIENTO } from '../../norma/designacion.j
 import { tarjetonDesignacion, actualizarDesignacion, botonCopiar } from '../designacion.js';
 
 const sub = (a, b) => `${a}<sub>${b}</sub>`;
-const U = (ud) => ` <span class="u u-cab">(${ud})</span>`;
+const U = (ud) => ` <span class="u u-cab">[${ud}]</span>`;
 
 /** Condiciones del proyecto para la EHE-08; se parte de las clases de un proyecto antiguo si las había. */
 export function condiciones(p) {
@@ -115,8 +115,8 @@ export function resultados(ctx, res) {
       h('div', {}, h('h3', { title: t('eh.gErosionNota') }, t('eh.gErosion')), chipsClases(D, D8.EROSION, no, alternar))),
     h('div', { class: 'desc-clases' }, ...(D.clasesEHE.length ? D.clasesEHE.map((c) => h('p', { class: 'nota', html: `<b>${c}</b> · ${t(`eh.desc.${c}`)}` })) : [h('p', { class: 'nota' }, t('eh.sinClases'))])),
     plegable(t('eh.tablaQuimica'), tabla(
-      [['pH', '6,5–5,5', '5,5–4,5', '&lt; 4,5'], ['CO<sub>2</sub> agresivo (mg/l)', '15–40', '40–100', '&gt; 100'], ['SO<sub>4</sub><sup>2−</sup> agua (mg/l)', '200–600', '600–3000', '&gt; 3000'],
-        ['Mg<sup>2+</sup> (mg/l)', '300–1000', '1000–3000', '&gt; 3000'], ['NH<sub>4</sub><sup>+</sup> (mg/l)', '15–30', '30–60', '&gt; 60'], ['SO<sub>4</sub><sup>2−</sup> suelo (mg/kg)', '2000–3000', '3000–12000', '&gt; 12000']],
+      [['pH', '6,5–5,5', '5,5–4,5', '&lt; 4,5'], ['CO<sub>2</sub> agresivo [mg/l]', '15–40', '40–100', '&gt; 100'], ['SO<sub>4</sub><sup>2−</sup> agua [mg/l]', '200–600', '600–3000', '&gt; 3000'],
+        ['Mg<sup>2+</sup> [mg/l]', '300–1000', '1000–3000', '&gt; 3000'], ['NH<sub>4</sub><sup>+</sup> [mg/l]', '15–30', '30–60', '&gt; 60'], ['SO<sub>4</sub><sup>2−</sup> suelo (mg/kg)', '2000–3000', '3000–12000', '&gt; 12000']],
       { cabecera: ['', 'Qa', 'Qb', 'Qc'] })));
 
   // Derecha: lo que resulta y por qué

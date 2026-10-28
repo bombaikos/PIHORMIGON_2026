@@ -3129,7 +3129,7 @@ svg.dib-ras { min-width: 0; }
     "fu.geom": "recub. geom\xE9trico",
     "fu.barras8": "\u2265 8 barras",
     "fu.tablaTitulo": "Tabla de la norma",
-    "fu.tablaSub": (a) => `${a}. Cada celda es dimensi\xF3n m\xEDnima / distancia m\xEDnima equivalente al eje (mm); la fila elegida va resaltada.`,
+    "fu.tablaSub": (a) => `${a}. Cada celda es dimensi\xF3n m\xEDnima / distancia m\xEDnima equivalente al eje [mm]; la fila elegida va resaltada.`,
     "fu.unidades": "Valores en mm. * = manda el recubrimiento geom\xE9trico (durabilidad); ** = m\xEDnimo 8 barras. Si hay varias combinaciones, vale cualquiera de ellas.",
     "fu.requisitos": (r) => `M\xEDnimos para ${r}`,
     "fu.condiciones": "Condiciones que acompa\xF1an a la tabla",
@@ -4034,7 +4034,7 @@ svg.dib-ras { min-width: 0; }
     "fu.geom": "geometric cover governs",
     "fu.barras8": "at least 8 bars",
     "fu.tablaTitulo": "Code table",
-    "fu.tablaSub": (a) => `${a}. Each cell is minimum dimension / minimum axis distance (mm); the chosen row is highlighted.`,
+    "fu.tablaSub": (a) => `${a}. Each cell is minimum dimension / minimum axis distance [mm]; the chosen row is highlighted.`,
     "fu.unidades": "Values in mm. * = geometric cover (durability) governs; ** = at least 8 bars. With several combinations, any one is valid.",
     "fu.requisitos": (r) => `Minimums for ${r}`,
     "fu.condiciones": "Conditions attached to the table",
@@ -4282,11 +4282,11 @@ svg.dib-ras { min-width: 0; }
     "cor.t.res": "Resultados",
     "cor.t.tabla": "Cercos para V<sub>Ed</sub>",
     "cor.t.desplegar": "Despliega cada l\xEDnea para ver la f\xF3rmula, los valores y el art\xEDculo de la norma.",
-    "cor.tabla.fi": "\xF8 (mm)",
+    "cor.tabla.fi": "\xF8 [mm]",
     "cor.tabla.ramas": "Ramas",
-    "cor.tabla.s": "s (mm)",
+    "cor.tabla.s": "s [mm]",
     "cor.tabla.asw": "A<sub>sw</sub>/s (cm\xB2/m)",
-    "cor.tabla.vu": "V<sub>u</sub> (kN)",
+    "cor.tabla.vu": "V<sub>u</sub> [kN]",
     "cor.tabla.nota": (smax) => `Separaci\xF3n de 50 en 50 mm hasta ${smax} mm (m\xE1ximo propio de 300 mm y el de 44.2.3.4.1). \xAB\u2014\xBB = no llega con esa separaci\xF3n m\xEDnima de 50 mm.`,
     "cor.tabla.ramasNota": (n) => `${n} ramas`,
     "cor.r.Vu1": "Compresi\xF3n oblicua V<sub>u1</sub>",
@@ -4617,9 +4617,9 @@ svg.dib-ras { min-width: 0; }
     "pun.c.vext": sub7("V", "u") + " zona exterior",
     "pun.t.planta": "Planta",
     "pun.tabla.ramas": "Ramas",
-    "pun.tabla.asw": "A<sub>sw</sub> (mm\xB2)",
-    "pun.tabla.st": "s<sub>t</sub> (mm)",
-    "pun.tabla.vu": "V<sub>u</sub> (kN)",
+    "pun.tabla.asw": "A<sub>sw</sub> [mm\xB2]",
+    "pun.tabla.st": "s<sub>t</sub> [mm]",
+    "pun.tabla.vu": "V<sub>u</sub> [kN]",
     "pun.tabla.nPer": "Per\xEDm.",
     "pun.tabla.nota": (sr, a1, nPer) => `Ramas por per\xEDmetro (pares, y las que pide la separaci\xF3n tangencial), con a<sub>1</sub> = ${a1} mm y s<sub>r</sub> = ${sr} mm. Per\xEDmetros de cercos hasta la zona exterior: ${nPer}.`,
     // Dibujo
@@ -4868,7 +4868,7 @@ svg.dib-ras { min-width: 0; }
     "ras.bAyuda": "Ancho de contacto de la junta, medido en el plano de la junta y normal al esfuerzo rasante (p en la EHE-08, b_i en el EC-2). No cuentes zonas con paso menor de 20 mm o con recubrimiento menor de 30 mm",
     "ras.LAyuda": "Longitud de junta sobre la que act\xFAa el esfuerzo rasante R_Ed y de la que se comprueba la resistencia (A_i = b\xB7L)",
     "ras.REdNombre": "El esfuerzo rasante",
-    "ras.REdAyuda": "Esfuerzo rasante de c\xE1lculo que act\xFAa en la longitud L de la junta, paralelo a ella (kN). Se escribe directo; no se calcula a partir del cortante",
+    "ras.REdAyuda": "Esfuerzo rasante de c\xE1lculo que act\xFAa en la longitud L de la junta, paralelo a ella [kN]. Se escribe directo; no se calcula a partir del cortante",
     "ras.sigRef": "compresi\xF3n +",
     "ras.sigAyuda": "Tensi\xF3n normal al plano de la junta que act\xFAa a la vez que el rasante (m\xEDnima). Compresi\xF3n positiva; con tracci\xF3n la cohesi\xF3n se anula",
     "ras.hAyuda": "Canto de la secci\xF3n compuesta (EHE-08 47.3). Solo para comprobar la separaci\xF3n m\xE1xima del cosido. 0 = no se comprueba",
@@ -4904,8 +4904,8 @@ svg.dib-ras { min-width: 0; }
     "ras.c.estado": "Estado",
     "ras.c.muEstado": (n) => `\u03BC (estado ${n})`,
     "ras.tabla.ramas": "Barras",
-    "ras.tabla.asw": "A<sub>sw</sub> (mm\xB2)",
-    "ras.tabla.s": "s (mm)",
+    "ras.tabla.asw": "A<sub>sw</sub> [mm\xB2]",
+    "ras.tabla.s": "s [mm]",
     "ras.tabla.asws": "A<sub>sw</sub>/s (cm\xB2/m)",
     "ras.tabla.nota": (n, smax) => `${n} barras por secci\xF3n, separaci\xF3n de 25 en 25 mm hasta ${smax} mm. \xAB\u2014\xBB = ni con la separaci\xF3n m\xEDnima de 50 mm llega.`,
     // Dibujo
@@ -5005,7 +5005,7 @@ svg.dib-ras { min-width: 0; }
     "ras.bAyuda": "Contact width of the interface, in the plane of the joint and normal to the shear (p in EHE-08, b_i in EC-2). Leave out zones narrower than 20 mm or with cover under 30 mm",
     "ras.LAyuda": "Length of joint carrying the shear R_Ed and over which the resistance is checked (A_i = b\xB7L)",
     "ras.REdNombre": "The interface shear force",
-    "ras.REdAyuda": "Design shear force acting along length L of the joint, parallel to it (kN). Entered directly; not derived from the shear force",
+    "ras.REdAyuda": "Design shear force acting along length L of the joint, parallel to it [kN]. Entered directly; not derived from the shear force",
     "ras.sigRef": "compression +",
     "ras.sigAyuda": "Stress normal to the joint acting at the same time (the minimum one). Compression positive; with tension the cohesion is nil",
     "ras.hAyuda": "Depth of the composite section (EHE-08 47.3). Only used for the maximum tie spacing. 0 = not checked",
@@ -5040,8 +5040,8 @@ svg.dib-ras { min-width: 0; }
     "ras.c.estado": "State",
     "ras.c.muEstado": (n) => `\u03BC (state ${n})`,
     "ras.tabla.ramas": "Bars",
-    "ras.tabla.asw": "A<sub>sw</sub> (mm\xB2)",
-    "ras.tabla.s": "s (mm)",
+    "ras.tabla.asw": "A<sub>sw</sub> [mm\xB2]",
+    "ras.tabla.s": "s [mm]",
     "ras.tabla.asws": "A<sub>sw</sub>/s (cm\xB2/m)",
     "ras.tabla.nota": (n, smax) => `${n} bars per section, spacing in steps of 25 mm up to ${smax} mm. \xAB\u2014\xBB = not enough even at the 50 mm minimum spacing.`,
     "ras.dib.aria": "Elevation of the joint between two concretes with the tie bars",
@@ -5238,7 +5238,7 @@ svg.dib-ras { min-width: 0; }
   }
   var eje = (mag, nombre) => {
     const d = MAG[mag].d ?? 0;
-    return { titulo: nombre ? `${nombre} (${MAG[mag].ud})` : `(${MAG[mag].ud})`, d, dt: d === 0 && /^kN/.test(MAG[mag].ud) ? 0 : d + 1 };
+    return { titulo: nombre ? `${nombre} [${MAG[mag].ud}]` : `[${MAG[mag].ud}]`, d, dt: d === 0 && /^kN/.test(MAG[mag].ud) ? 0 : d + 1 };
   };
   function cifra(x, mag) {
     const m = MAG[mag];
@@ -6809,7 +6809,7 @@ svg.dib-ras { min-width: 0; }
   };
   var sub11 = (a, b) => `${a}<sub>${b}</sub>`;
   var sup = (a, b) => `${a}<sup>${b}</sup>`;
-  var U = (ud) => `${ESP}<span class="u u-cab">(${ud})</span>`;
+  var U = (ud) => `${ESP}<span class="u u-cab">[${ud}]</span>`;
   function nombreLibre(lista, base2) {
     if (!lista.some((m) => m.nombre === base2)) return base2;
     let k = 2;
@@ -7124,7 +7124,7 @@ svg.dib-ras { min-width: 0; }
         rejilla({
           id: "m-puntos",
           altoMax: 80,
-          columnas: [{ titulo: "\u03B5 (\u2030)", num: true }, { titulo: "\u03C3 (MPa)", num: true }],
+          columnas: [{ titulo: "\u03B5 [\u2030]", num: true }, { titulo: "\u03C3 [MPa]", num: true }],
           filas: (m.puntos ?? []).map(([e2, sg]) => [String(e2), String(sg)]),
           onCambio: (f) => {
             m.puntos = f.map((r) => [leerNumero(r[0]), leerNumero(r[1])]);
@@ -7345,7 +7345,7 @@ svg.dib-ras { min-width: 0; }
       const fckT = fckEdad(m.fck, e2.fcm, tt);
       return [fmt(tt, 0), fmt(e2.beta, 3), fmt(fckT, 1), fmt(e2.fcm, 1), fmt(q2.fcd * fckT / m.fck, 1), fmt(e2.fctm, 2), fmt(q2.fctk05 / q2.fctm * e2.fctm, 2), fmt(e2.Ecm, 0)];
     });
-    const H = (x, ud) => `${x}<br><span class="u u-cab">(${ud})</span>`;
+    const H = (x, ud) => `${x}<br><span class="u u-cab">[${ud}]</span>`;
     const tb = tabla(fil, { cabecera: [H("t", "d\xEDas"), sub11("\u03B2", "cc"), H(sub11("f", "ck"), "MPa"), H(sub11("f", "cm"), "MPa"), H(sub11("f", "cd"), "MPa"), H(sub11("f", "ct,m"), "MPa"), H(sub11("f", "ctk,0.05"), "MPa"), H(sub11("E", "cm"), "MPa")], clase: "num excel" });
     tb.querySelectorAll("tbody tr")[edades.indexOf(28)]?.classList.add("dia28");
     const bt = sub11("\u03B2", "cc");
@@ -7399,7 +7399,7 @@ svg.dib-ras { min-width: 0; }
   });
   var est2 = { hormigon: null, cemento: null, HR: 70, h0: 200, t0: 28, ts: null, modo: "final", t: 365, sigma: 0, pestana: "fluencia" };
   var sub12 = (a, b) => `${a}<sub>${b}</sub>`;
-  var U2 = (ud) => `${ESP}<span class="u u-cab">(${ud})</span>`;
+  var U2 = (ud) => `${ESP}<span class="u u-cab">[${ud}]</span>`;
   function reiniciar2() {
     Object.assign(est2, { hormigon: null, cemento: null, HR: 70, h0: 200, t0: 28, ts: null, modo: "final", t: 365, sigma: 0, pestana: "fluencia" });
   }
@@ -7493,7 +7493,7 @@ svg.dib-ras { min-width: 0; }
       return grafica({
         series: [{ nombre: "\u03C6(t, t\u2080)", xy, clase: "s1" }],
         puntos: [{ x: lg(tMax), y: xy.at(-1)[1], etq: "" }],
-        ejeX: { titulo: "log\u2081\u2080 t (d\xEDas)", d: 2 },
+        ejeX: { titulo: "log\u2081\u2080 t [d\xEDas]", d: 2 },
         ejeY: { titulo: "\u03C6(t, t\u2080)", d: 2 },
         archivo: "fluencia",
         avisar: ctx2.avisar
@@ -7506,8 +7506,8 @@ svg.dib-ras { min-width: 0; }
     return grafica({
       series: [{ nombre: t("rg.total"), xy: total, clase: "s1" }, { nombre: t("rg.secado"), xy: sec, clase: "s2" }, { nombre: t("rg.autogena"), xy: aut, clase: "ref" }],
       puntos: [{ x: lg(tMax), y: total.at(-1)[1], etq: "" }],
-      ejeX: { titulo: "log\u2081\u2080 t (d\xEDas)", d: 2 },
-      ejeY: { titulo: "\u03B5 (\u2030)", d: 3 },
+      ejeX: { titulo: "log\u2081\u2080 t [d\xEDas]", d: 2 },
+      ejeY: { titulo: "\u03B5 [\u2030]", d: 3 },
       archivo: "retraccion",
       avisar: ctx2.avisar
     });
@@ -8674,7 +8674,7 @@ svg.dib-ras { min-width: 0; }
   }
   var sub14 = (a, b) => `${a}<sub>${b}</sub>`;
   var sup2 = (a) => `<sup>${a}</sup>`;
-  var U3 = (mag) => `\xA0<span class="u u-cab">(${MAG[mag]?.ud ?? mag})</span>`;
+  var U3 = (mag) => `\xA0<span class="u u-cab">[${MAG[mag]?.ud ?? mag}]</span>`;
   var v = (x, mag) => q(x, mag, { ud: false });
   var resumenForma = (s) => {
     const g = s.geo;
@@ -8972,12 +8972,12 @@ svg.dib-ras { min-width: 0; }
           rejilla({
             id: "g-cont",
             altoMax: 210,
-            columnas: [{ titulo: "x (mm)", num: true }, { titulo: "y (mm)", num: true }, { titulo: t("geo.colArmado"), validar: validarCara }],
+            columnas: [{ titulo: "x [mm]", num: true }, { titulo: "y [mm]", num: true }, { titulo: t("geo.colArmado"), validar: validarCara }],
             filas: g.contorno.map(([x, y], i) => [celdaMm(x), celdaMm(y), caras.textos[i] ?? ""]),
             refFila: (i) => `c${i}`,
             numerar: true,
             // Longitud de la cara que sale de cada vértice (hasta el siguiente, y el último cierra con el primero)
-            calculada: { titulo: "L (mm)", f: (d, i) => {
+            calculada: { titulo: "L [mm]", f: (d, i) => {
               const a = d[i];
               const z = d[(i + 1) % d.length];
               const L2 = Math.hypot(leerNumero(z[0]) - leerNumero(a[0]), leerNumero(z[1]) - leerNumero(a[1]));
@@ -8997,7 +8997,7 @@ svg.dib-ras { min-width: 0; }
             rejilla({
               id: "g-hueco",
               altoMax: 80,
-              columnas: [{ titulo: "x (mm)", num: true }, { titulo: "y (mm)", num: true }],
+              columnas: [{ titulo: "x [mm]", num: true }, { titulo: "y [mm]", num: true }],
               filas: (g.huecos?.[0] ?? []).map(([x, y]) => [celdaMm(x), celdaMm(y)]),
               onCambio: (f) => {
                 g.huecos = f.length ? [f.map((r) => [leerNumero(r[0]) / 1e3, leerNumero(r[1]) / 1e3])] : [];
@@ -9701,7 +9701,7 @@ svg.dib-ras { min-width: 0; }
 
   // src/ui/vistas/durabilidadEHE08.js
   var sub15 = (a, b) => `${a}<sub>${b}</sub>`;
-  var U4 = (ud) => ` <span class="u u-cab">(${ud})</span>`;
+  var U4 = (ud) => ` <span class="u u-cab">[${ud}]</span>`;
   function condiciones(p) {
     const D = p.durabilidad ?? (p.durabilidad = {});
     D.tipoHor ?? (D.tipoHor = "armado");
@@ -9839,10 +9839,10 @@ svg.dib-ras { min-width: 0; }
       plegable(t("eh.tablaQuimica"), tabla(
         [
           ["pH", "6,5\u20135,5", "5,5\u20134,5", "&lt; 4,5"],
-          ["CO<sub>2</sub> agresivo (mg/l)", "15\u201340", "40\u2013100", "&gt; 100"],
-          ["SO<sub>4</sub><sup>2\u2212</sup> agua (mg/l)", "200\u2013600", "600\u20133000", "&gt; 3000"],
-          ["Mg<sup>2+</sup> (mg/l)", "300\u20131000", "1000\u20133000", "&gt; 3000"],
-          ["NH<sub>4</sub><sup>+</sup> (mg/l)", "15\u201330", "30\u201360", "&gt; 60"],
+          ["CO<sub>2</sub> agresivo [mg/l]", "15\u201340", "40\u2013100", "&gt; 100"],
+          ["SO<sub>4</sub><sup>2\u2212</sup> agua [mg/l]", "200\u2013600", "600\u20133000", "&gt; 3000"],
+          ["Mg<sup>2+</sup> [mg/l]", "300\u20131000", "1000\u20133000", "&gt; 3000"],
+          ["NH<sub>4</sub><sup>+</sup> [mg/l]", "15\u201330", "30\u201360", "&gt; 60"],
           ["SO<sub>4</sub><sup>2\u2212</sup> suelo (mg/kg)", "2000\u20133000", "3000\u201312000", "&gt; 12000"]
         ],
         { cabecera: ["", "Qa", "Qb", "Qc"] }
@@ -9929,7 +9929,7 @@ svg.dib-ras { min-width: 0; }
 
   // src/ui/vistas/durabilidadEC2.js
   var sub16 = (a, b) => `${a}<sub>${b}</sub>`;
-  var U5 = (ud) => ` <span class="u u-cab">(${ud})</span>`;
+  var U5 = (ud) => ` <span class="u u-cab">[${ud}]</span>`;
   function condiciones2(p) {
     const D = p.durabilidad ?? (p.durabilidad = {});
     D.tipoHor ?? (D.tipoHor = "armado");
@@ -10034,10 +10034,10 @@ svg.dib-ras { min-width: 0; }
       plegable(t("eh.tablaQuimica").replace("8.2.3.b", "CE 27.1.b"), tabla(
         [
           ["pH", "6,5\u20135,5", "5,5\u20134,5", "&lt; 4,5"],
-          ["CO<sub>2</sub> agresivo (mg/l)", "15\u201340", "40\u2013100", "&gt; 100"],
-          ["SO<sub>4</sub><sup>2\u2212</sup> agua (mg/l)", "200\u2013600", "600\u20133000", "&gt; 3000"],
-          ["Mg<sup>2+</sup> (mg/l)", "300\u20131000", "1000\u20133000", "&gt; 3000"],
-          ["NH<sub>4</sub><sup>+</sup> (mg/l)", "15\u201330", "30\u201360", "&gt; 60"],
+          ["CO<sub>2</sub> agresivo [mg/l]", "15\u201340", "40\u2013100", "&gt; 100"],
+          ["SO<sub>4</sub><sup>2\u2212</sup> agua [mg/l]", "200\u2013600", "600\u20133000", "&gt; 3000"],
+          ["Mg<sup>2+</sup> [mg/l]", "300\u20131000", "1000\u20133000", "&gt; 3000"],
+          ["NH<sub>4</sub><sup>+</sup> [mg/l]", "15\u201330", "30\u201360", "&gt; 60"],
           ["SO<sub>4</sub><sup>2\u2212</sup> suelo (mg/kg)", "2000\u20133000", "3000\u201312000", "&gt; 12000"]
         ],
         { cabecera: ["", "XA1", "XA2", "XA3"] }
@@ -10123,7 +10123,7 @@ svg.dib-ras { min-width: 0; }
 
   // src/ui/vistas/durabilidad.js
   var sub17 = (a, b) => `${a}<sub>${b}</sub>`;
-  var U6 = (ud) => `\xA0<span class="u u-cab">(${ud})</span>`;
+  var U6 = (ud) => `\xA0<span class="u u-cab">[${ud}]</span>`;
   function condiciones3(p) {
     if (!p.durabilidad) {
       const s = p.secciones.find((x) => x.durabilidad);
@@ -11284,7 +11284,7 @@ svg.dib-ras { min-width: 0; }
     const campoFi = () => {
       if (est5.modo === "dimensionar" || !c?.phi0) return null;
       const serie = [.../* @__PURE__ */ new Set([...serieDiametros(), c.phi0])].sort((x, y) => x - y);
-      return selector({ id: "fr-fi", etq: "\xF8 (mm)", linea: true, opciones: serie.map((x) => [x, fmt(x, 0)]), valor: est5.fi ?? c.phi0, onCambio: (v2) => {
+      return selector({ id: "fr-fi", etq: "\xF8 [mm]", linea: true, opciones: serie.map((x) => [x, fmt(x, 0)]), valor: est5.fi ?? c.phi0, onCambio: (v2) => {
         est5.fi = Number(v2);
         cambio();
       } });
@@ -11318,7 +11318,7 @@ svg.dib-ras { min-width: 0; }
         rejilla({
           id: "fr-esf",
           altoMax: 190,
-          columnas: [{ titulo: `${sub19("N", "Ed")} (kN)`, num: true }, { titulo: `${sub19("M", "Ed")} (kN\xB7m)`, num: true }],
+          columnas: [{ titulo: `${sub19("N", "Ed")} [kN]`, num: true }, { titulo: `${sub19("M", "Ed")} [kN\xB7m]`, num: true }],
           filas: est5.filas,
           calculada: { titulo: "\u03B3", f: coefFila },
           onCambio: (f) => {
@@ -11421,7 +11421,7 @@ svg.dib-ras { min-width: 0; }
       sigla(x.g),
       `<span class="${x.g >= 1 - 1e-6 ? "ok" : "no"}">${x.g >= 1 - 1e-6 ? t("fcr.dentroSello") : t("fcr.fueraSello")}</span>`
     ]);
-    const cont = h("div", {}, h("table", { class: "tabla", html: `<thead><tr>${["#", "N<sub>Ed</sub> (kN)", "M<sub>Ed</sub> (kN\xB7m)", "e (mm)", "\u03B3", ""].map((x) => `<th>${x}</th>`).join("")}</tr></thead><tbody>${filas.map((f) => `<tr>${f.map((x) => `<td>${x}</td>`).join("")}</tr>`).join("")}</tbody>` }));
+    const cont = h("div", {}, h("table", { class: "tabla", html: `<thead><tr>${["#", "N<sub>Ed</sub> [kN]", "M<sub>Ed</sub> [kN\xB7m]", "e [mm]", "\u03B3", ""].map((x) => `<th>${x}</th>`).join("")}</tr></thead><tbody>${filas.map((f) => `<tr>${f.map((x) => `<td>${x}</td>`).join("")}</tr>`).join("")}</tbody>` }));
     return cont;
   }
   function graficoNM(ctx2, d, dH, gam, s) {
@@ -11436,8 +11436,8 @@ svg.dib-ras { min-width: 0; }
     return h("div", { class: "lienzo" }, grafica({
       series,
       puntos,
-      ejeX: { titulo: `N (${MAG.N.ud}), ${t("fcr.compPos")}`, d: MAG.N.d, dt: MAG.N.d },
-      ejeY: { titulo: `M (${MAG.M.ud})`, d: MAG.M.d, dt: MAG.M.d },
+      ejeX: { titulo: `N [${MAG.N.ud}], ${t("fcr.compPos")}`, d: MAG.N.d, dt: MAG.N.d },
+      ejeY: { titulo: `M [${MAG.M.ud}]`, d: MAG.M.d, dt: MAG.M.d },
       archivo: `N-M ${s.nombre}`,
       avisar: ctx2.avisar
     }));
@@ -11517,7 +11517,7 @@ svg.dib-ras { min-width: 0; }
     const emax = Math.max(Math.abs(eps(0)), Math.abs(eps(geo.h)), 1e-3);
     const ke = 58 / emax;
     const X1 = (v2) => e0 + v2 * ke;
-    out.push(`<text class="tit" style="text-transform:none" x="${e0 - 58}" y="22">\u03B5 (\u2030)</text>`);
+    out.push(`<text class="tit" style="text-transform:none" x="${e0 - 58}" y="22">\u03B5 [\u2030]</text>`);
     out.push(`<line class="ref" x1="${e0}" y1="${y0 - 6}" x2="${e0}" y2="${y0 + hp + 6}"/>`);
     const poli = (cl3, y1, y2) => `<polygon class="${cl3}" points="${e0},${Y(y1)} ${X1(eps(y1))},${Y(y1)} ${X1(eps(y2))},${Y(y2)} ${e0},${Y(y2)}"/>`;
     if (e2.x > 0 && e2.x < geo.h) {
@@ -11529,7 +11529,7 @@ svg.dib-ras { min-width: 0; }
     const t0 = e0 + 185;
     const fcd = Math.max(...matH.comp.map((v2) => -v2[1]), 1);
     const kc = 64 / fcd;
-    out.push(`<text class="tit" style="text-transform:none" x="${t0 - 64}" y="22">\u03C3 (MPa)</text>`);
+    out.push(`<text class="tit" style="text-transform:none" x="${t0 - 64}" y="22">\u03C3 [MPa]</text>`);
     out.push(`<line class="ref" x1="${t0}" y1="${y0 - 6}" x2="${t0}" y2="${y0 + hp + 6}"/>`);
     const pts = [];
     const ys = [];
@@ -12343,7 +12343,7 @@ svg.dib-ras { min-width: 0; }
       h(
         "tr",
         {},
-        h("th", { rowspan: "2", html: `${t("an.col.d")}${ESP}<span class="u u-cab">(mm)</span>` }),
+        h("th", { rowspan: "2", html: `${t("an.col.d")}${ESP}<span class="u u-cab">[mm]</span>` }),
         h("th", { colspan: comp ? "2" : "4", html: t("an.col.anclaje", esf.toLowerCase()) }),
         h("th", { colspan: "2", html: t("an.col.solapo", esf.toLowerCase()) })
       ),
@@ -12366,7 +12366,7 @@ svg.dib-ras { min-width: 0; }
     const extraA = ehe ? D.lejos ? t("an.aLejos") : t("an.aCerca") : "";
     const ficha = t("an.ficha", r.hor.nombre, r.ace.nombre, esf.toLowerCase(), fmt(D.r, 0), D.cd > 0 ? t("an.cdVal", fmt(D.cd, 0)) : t("an.cdSin"), fmt(D.pct, 0), extraA);
     const hdr = [
-      `${t("an.col.d")} (mm)`,
+      `${t("an.col.d")} [mm]`,
       ...comp ? [`${t("an.col.anclaje", esf.toLowerCase()).replace(/<[^>]+>/g, "")} ${t("an.col.I")}`, `${t("an.col.anclaje", esf.toLowerCase()).replace(/<[^>]+>/g, "")} ${t("an.col.II")}`] : ["I recta", "I patilla", "II recta", "II patilla"].map((c) => `${t("an.col.anclaje", esf.toLowerCase()).replace(/<[^>]+>/g, "")} ${c}`),
       `${t("an.col.solapo", esf.toLowerCase()).replace(/<[^>]+>/g, "")} I`,
       `${t("an.col.solapo", esf.toLowerCase()).replace(/<[^>]+>/g, "")} II`
@@ -16141,7 +16141,7 @@ svg.dib-ras { min-width: 0; }
       g.append(e("path", { d: `M${X(v2)} ${yEje} v5`, class: "vl-eje" }));
       g.append(e("text", { x: X(v2), y: yEje + 17, "text-anchor": "middle", class: "vl-eje-n" }, fmt(v2, paso2 < 1 ? 1 : Number.isInteger(v2) ? 0 : 2)));
     }
-    g.append(e("text", { x: W - 2, y: yEje + 17, "text-anchor": "end", class: "vl-eje-n" }, "x (m)"));
+    g.append(e("text", { x: W - 2, y: yEje + 17, "text-anchor": "end", class: "vl-eje-n" }, "x [m]"));
     BANDAS.forEach((B) => {
       const h2 = resto * B.peso / pesoTot;
       const top = y0, bot = y0 + h2;
@@ -16154,7 +16154,7 @@ svg.dib-ras { min-width: 0; }
       const y00 = ymap(0);
       g.append(e("path", { d: `M${PAD - 30} ${bot + gap / 2 - 0.5} H${W - PAD + 30}`, class: "vl-sep" }));
       const tit2 = e("text", { x: PAD - 30, y: top + 13, class: `vl-tit vl-${B.k}` });
-      tit2.textContent = `${TIT[B.k]} (${B.ud})`;
+      tit2.textContent = `${TIT[B.k]} [${B.ud}]`;
       g.append(tit2);
       const lee = e("text", { x: PAD + 100, y: top + 13, "text-anchor": "start", class: `vl-tit vl-${B.k} lectura` });
       g.append(lee);
@@ -16247,7 +16247,7 @@ svg.dib-ras { min-width: 0; }
       P: () => rejilla({
         id: "v-puntual",
         altoMax: 90,
-        columnas: [{ titulo: "a (m)", num: true, validar: posicion }, { titulo: "P (kN)", num: true }],
+        columnas: [{ titulo: "a [m]", num: true, validar: posicion }, { titulo: "P [kN]", num: true }],
         filas: tipo("puntual").map((c) => [num3(c.a), num3(c.P)]),
         onCambio: (f) => poner_("puntual", f.map((r) => ({ tipo: "puntual", a: nv2(r[0]), P: nv2(r[1]) })))
       }),
@@ -16255,10 +16255,10 @@ svg.dib-ras { min-width: 0; }
         id: "v-distrib",
         altoMax: 90,
         columnas: [
-          { titulo: "a (m)", num: true, validar: posicion },
-          { titulo: "b (m)", num: true, validar: posicion },
-          { titulo: `${"q"}<sub>1</sub> (kN/m)`, num: true },
-          { titulo: `q<sub>2</sub> (kN/m)`, num: true }
+          { titulo: "a [m]", num: true, validar: posicion },
+          { titulo: "b [m]", num: true, validar: posicion },
+          { titulo: `${"q"}<sub>1</sub> [kN/m]`, num: true },
+          { titulo: `q<sub>2</sub> [kN/m]`, num: true }
         ],
         filas: tipo("distribuida").map((c) => [num3(c.a), num3(c.b), num3(c.q1), num3(c.q2)]),
         onCambio: (f) => poner_("distribuida", f.map((r) => ({ tipo: "distribuida", a: nv2(r[0]), b: nv2(r[1]), q1: nv2(r[2]), q2: nv2(r[3]) })))
@@ -16266,7 +16266,7 @@ svg.dib-ras { min-width: 0; }
       M: () => rejilla({
         id: "v-momento",
         altoMax: 90,
-        columnas: [{ titulo: "a (m)", num: true, validar: posicion }, { titulo: "M (kN\xB7m)", num: true }],
+        columnas: [{ titulo: "a [m]", num: true, validar: posicion }, { titulo: "M [kN\xB7m]", num: true }],
         filas: tipo("momento").map((c) => [num3(c.a), num3(c.C)]),
         onCambio: (f) => poner_("momento", f.map((r) => ({ tipo: "momento", a: nv2(r[0]), C: nv2(r[1]) })))
       })
@@ -16325,7 +16325,7 @@ svg.dib-ras { min-width: 0; }
       )
     );
   }
-  var COLS = [["x", "x (m)", 3, 1], ["M", "M (kN\xB7m)", MAG.M.d, 1], ["V", "V (kN)", MAG.N.d, 1], ["giro", "\u03B8 (mrad)", 1, 1e3], ["flecha", "\u03B4 (mm)", 1, 1e3]];
+  var COLS = [["x", "x [m]", 3, 1], ["M", "M [kN\xB7m]", MAG.M.d, 1], ["V", "V [kN]", MAG.N.d, 1], ["giro", "\u03B8 [mrad]", 1, 1e3], ["flecha", "\u03B4 [mm]", 1, 1e3]];
   var est9 = { tabla: false };
   function reiniciar9() {
     est9.tabla = false;

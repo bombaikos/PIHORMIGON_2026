@@ -391,7 +391,7 @@ export default {
   'fu.tabla': 'tabla', 'fu.minimo': 'Mínimo', 'fu.sinValor': 'La norma no da valor para esta combinación; hace falta un estudio específico.',
   'fu.opciones': (n) => `${n} combinaciones posibles · `, 'fu.combinacion': 'Combinación', 'fu.minimos': 'Mínimos',
   'fu.geom': 'recub. geométrico', 'fu.barras8': '≥ 8 barras',
-  'fu.tablaTitulo': 'Tabla de la norma', 'fu.tablaSub': (a) => `${a}. Cada celda es dimensión mínima / distancia mínima equivalente al eje (mm); la fila elegida va resaltada.`,
+  'fu.tablaTitulo': 'Tabla de la norma', 'fu.tablaSub': (a) => `${a}. Cada celda es dimensión mínima / distancia mínima equivalente al eje [mm]; la fila elegida va resaltada.`,
   'fu.unidades': 'Valores en mm. * = manda el recubrimiento geométrico (durabilidad); ** = mínimo 8 barras. Si hay varias combinaciones, vale cualquiera de ellas.',
   'fu.requisitos': (r) => `Mínimos para ${r}`, 'fu.condiciones': 'Condiciones que acompañan a la tabla',
   'fu.am': 'a<sub>min</sub> es la distancia equivalente al eje de las armaduras (a<sub>m</sub>), ponderada por área y límite elástico, medida hasta el paramento expuesto. Los recubrimientos de durabilidad pueden pedir valores mayores.',

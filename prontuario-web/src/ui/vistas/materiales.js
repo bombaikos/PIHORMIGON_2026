@@ -40,7 +40,7 @@ const cargar = (tipo, m) => {
 const sub = (a, b) => `${a}<sub>${b}</sub>`;
 const sup = (a, b) => `${a}<sup>${b}</sup>`;
 // Guía § 13: la unidad va en la cabecera (de la columna o de la fila en las tablas de etiqueta y valor)
-const U = (ud) => `${ESP}<span class="u u-cab">(${ud})</span>`;
+const U = (ud) => `${ESP}<span class="u u-cab">[${ud}]</span>`;
 
 /* ---------- borrador ---------- */
 
@@ -287,7 +287,7 @@ function gruposHormigon(m, N, cambio, repintar) {
       selector({ id: 'm-ref', etq: t('mat.refDiag'), opciones: [['fcm', `${sub('f', 'cm')} · ${t('mat.refPorDefecto')}`], ['fck', sub('f', 'ck')], ['fcd', sub('f', 'cd')]], valor: m.refDiag ?? 'fcm', onCambio: (v) => { poneOBorra(m, 'refDiag', v, 'fcm'); cambio(); } }),
       h('p', { class: 'pista', html: t('mat.notaEC2', N.corto) }),
     ] : diag === 'puntos' ? [
-      rejilla({ id: 'm-puntos', altoMax: 80, columnas: [{ titulo: 'ε (‰)', num: true }, { titulo: 'σ (MPa)', num: true }],
+      rejilla({ id: 'm-puntos', altoMax: 80, columnas: [{ titulo: 'ε [‰]', num: true }, { titulo: 'σ [MPa]', num: true }],
         filas: (m.puntos ?? []).map(([e, sg]) => [String(e), String(sg)]),
         onCambio: (f) => { m.puntos = f.map((r) => [leerNumero(r[0]), leerNumero(r[1])]); cambio(); } }),
       h('p', { class: 'pista', html: t('mat.notaPuntos') }),
@@ -491,7 +491,7 @@ function tablaEdad(m, N, q) {
     const fckT = fckEdad(m.fck, e.fcm, tt);
     return [fmt(tt, 0), fmt(e.beta, 3), fmt(fckT, 1), fmt(e.fcm, 1), fmt((q.fcd * fckT) / m.fck, 1), fmt(e.fctm, 2), fmt((q.fctk05 / q.fctm) * e.fctm, 2), fmt(e.Ecm, 0)];
   });
-  const H = (x, ud) => `${x}<br><span class="u u-cab">(${ud})</span>`;
+  const H = (x, ud) => `${x}<br><span class="u u-cab">[${ud}]</span>`;
   const tb = tabla(fil, { cabecera: [H('t', 'días'), sub('β', 'cc'), H(sub('f', 'ck'), 'MPa'), H(sub('f', 'cm'), 'MPa'), H(sub('f', 'cd'), 'MPa'), H(sub('f', 'ct,m'), 'MPa'), H(sub('f', 'ctk,0.05'), 'MPa'), H(sub('E', 'cm'), 'MPa')], clase: 'num excel' });
   // Los 28 días son la edad de referencia: su fila va en gris
   tb.querySelectorAll('tbody tr')[edades.indexOf(28)]?.classList.add('dia28');
