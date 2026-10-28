@@ -4,7 +4,7 @@
 const sub = (a, b) => `${a}<sub>${b}</sub>`;
 
 export default {
-  app: 'Prontuario informático del hormigón · 2026',
+  app: 'Prontuario Informático del Hormigón 2026 <b class="beta">BETA a</b>',
   ejemplo: 'ejemplo',
   ejemploNombre: 'Ejemplo',
   sinNombre: 'Sin nombre',
@@ -205,7 +205,7 @@ export default {
   'fcr.coefSeg': 'Coeficiente de seguridad', 'fcr.puntos': 'Esfuerzos', 'fcr.dentro': 'dentro del diagrama', 'fcr.dentroSello': 'Dentro', 'fcr.fueraSello': 'Fuera', 'fcr.hormigon': 'Hormigón solo', 'fcr.contorno': 'Contorno N-M', 'fcr.puntosCont': 'puntos',
   'fcr.f.env': 'Misma sección sin armadura: resistencia del hormigón solo (sin tracción), para ver cuánto aporta el acero.',
   'fcr.pista': 'Compresión +, tracción −. Armadura simétrica: solo M ≥ 0 (el signo de M no importa). γ = |OQ|/|OP| a excentricidad constante (verde ≥ 1, rojo < 1).',
-  'fcr.resumenRes': (n, g) => `Resultados y esfuerzos (${n} · γ mín. ${g})`, 'fcr.subtitulo': 'Diagrama de interacción N-M en rotura', 'fcr.sinSec': 'Crea una sección en el módulo Secciones.', 'fcr.compPos': 'compresión +', 'fcr.mSigno': '+ comprime la cara superior', 'fcr.axil': 'El axil',
+  'fcr.resumenRes': (n, g) => `Resultados y esfuerzos (${n} · γ mín. ${g})`, 'fcr.modoDiagrama': 'Diagrama', 'fcr.pista1': 'Compresión +, tracción −. Armadura simétrica: el signo de M no importa. γ = |OQ|/|OP| a excentricidad constante.', 'fcr.dibujoSub': 'Sección, deformaciones y tensiones en el estado último al mismo e = M/N, a la misma escala vertical', 'fcr.dibujoAria': 'Sección, plano de deformaciones y tensiones en rotura', 'fcr.fiCalc': 'diámetro de cálculo', 'fcr.fiSec': (f) => `Sección: ø${f}. Aquí se puede cambiar sin tocar Secciones.`, 'fcr.fiProp': 'Diámetro propuesto', 'fcr.fiArm': (fe, a, ae, g) => `ø estricto ${fe} mm · A<sub>s</sub> ${a} (estricta ${ae}) para γ ≥ ${g}.`, 'fcr.estricto': 'estricto', 'fcr.propuesto': 'propuesto', 'fcr.bajoMin': (a, m) => `Armadura dispuesta ${a} menor que la cuantía mínima ${m}: aunque cumpla el cálculo, no cumple el mínimo.`, 'fcr.mandaMin': (m) => `Manda la cuantía mínima (${m}), no la resistencia.`, 'fcr.subeEmin': (e) => `* M elevado a N·e<sub>mín</sub> (e<sub>mín</sub> = ${e} mm).`, 'fcr.subtitulo': 'Diagrama de interacción N-M en rotura', 'fcr.sinSec': 'Crea una sección en el módulo Secciones.', 'fcr.compPos': 'compresión +', 'fcr.mSigno': '+ comprime la cara superior', 'fcr.axil': 'El axil',
   'fcr.fueraAxil': (l) => `El axil supera la capacidad de la sección (límite ${l}).`, 'fcr.diagrama': 'Diagrama de interacción', 'fcr.diagramaSub': 'Contorno N-M en rotura con los diagramas de cálculo; M respecto al c.d.g. del hormigón',
   'fcr.f.contorno': 'M<sub>Rd</sub> del contorno con el axil N<sub>Ed</sub> (estado último: máxima curvatura con plano admisible que equilibra N<sub>Ed</sub>)', 'fcr.f.ref': (y) => `Momentos respecto al c.d.g. del hormigón bruto, a ${y} de la cara superior.`,
   'fcr.f.nrd': 'Compresión centrada: toda la sección a ε = −ε<sub>c2</sub>', 'fcr.f.rayo': 'γ = |OQ| / |OP| a excentricidad constante: P = (N<sub>Ed</sub>, M<sub>Ed</sub>); Q = corte con el contorno de la recta que une el origen con P',
@@ -328,7 +328,7 @@ export default {
   'vig.esquema': 'Esquema', 'vig.giro': 'Giro', 'vig.flecha': 'Flecha', 'vig.convenio': 'M se dibuja sobre la parte traccionada (positivo hacia abajo) · V positivo hacia arriba · giro y flecha positivos hacia abajo · pasa el cursor para leer los valores.',
   'vig.flechaRel': (n) => `Flecha máxima = L / ${n}`, 'vig.err.luz': 'La luz debe ser mayor que cero.', 'vig.err.ei': 'La rigidez EI debe ser mayor que cero.', 'vig.err.inestable': 'Los apoyos no sostienen la viga (inestable).', 'vig.err.fuera': 'Hay una carga fuera de la viga.',
   'vig.err.posicion': (L) => `Debe estar entre 0 y ${L} m`,
-  'm.analisis': 'Análisis', 'm.elu': 'ELU', 'm.els': 'ELS', 'm.bielas': 'Bielas y tirantes', 'm.ejecucion': 'Ejecución y control', 'm.ayuda': '?',
+  'm.archivo': 'Archivo', 'm.analisis': 'Análisis', 'm.elu': 'ELU', 'm.els': 'ELS', 'm.bielas': 'Bielas y tirantes', 'm.ejecucion': 'Ejecución y control', 'm.ayuda': '?',
   'menu.pronto': 'Pendiente de migrar', 'menu.materiales': 'Crear y editar', 'menu.reologicas': 'Propiedades reológicas', 'menu.vigas1vano': 'Vigas de un vano',
   'menu.flexion': 'Flexión simple', 'menu.flexRecta': 'Flexión compuesta recta', 'menu.flexEsviada': 'Flexión compuesta esviada',
   'menu.cortante': 'Cortante', 'menu.torsion': 'Torsión', 'menu.punzonamiento': 'Punzonamiento', 'menu.anclaje': 'Anclaje y solapo',
@@ -391,7 +391,7 @@ export default {
   'fu.tabla': 'tabla', 'fu.minimo': 'Mínimo', 'fu.sinValor': 'La norma no da valor para esta combinación; hace falta un estudio específico.',
   'fu.opciones': (n) => `${n} combinaciones posibles · `, 'fu.combinacion': 'Combinación', 'fu.minimos': 'Mínimos',
   'fu.geom': 'recub. geométrico', 'fu.barras8': '≥ 8 barras',
-  'fu.tablaTitulo': 'Tabla de la norma', 'fu.tablaSub': (a) => `${a}. Cada celda es dimensión mínima / distancia mínima equivalente al eje (mm); la fila elegida va resaltada.`,
+  'fu.tablaTitulo': 'Tabla de la norma', 'fu.tablaSub': (a) => `${a}. Cada celda es dimensión mínima / distancia mínima equivalente al eje [mm]; la fila elegida va resaltada.`,
   'fu.unidades': 'Valores en mm. * = manda el recubrimiento geométrico (durabilidad); ** = mínimo 8 barras. Si hay varias combinaciones, vale cualquiera de ellas.',
   'fu.requisitos': (r) => `Mínimos para ${r}`, 'fu.condiciones': 'Condiciones que acompañan a la tabla',
   'fu.am': 'a<sub>min</sub> es la distancia equivalente al eje de las armaduras (a<sub>m</sub>), ponderada por área y límite elástico, medida hasta el paramento expuesto. Los recubrimientos de durabilidad pueden pedir valores mayores.',

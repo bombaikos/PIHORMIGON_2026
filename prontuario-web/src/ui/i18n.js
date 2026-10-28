@@ -9,8 +9,10 @@ import cortanteEs from '../i18n/cortante.es.js';
 import cortanteEn from '../i18n/cortante.en.js';
 import punzonamientoEs from '../i18n/punzonamiento.es.js';
 import punzonamientoEn from '../i18n/punzonamiento.en.js';
+import rasanteEs from '../i18n/rasante.es.js';
+import rasanteEn from '../i18n/rasante.en.js';
 
-const DICC = { es: { ...es, ...anclajeEs, ...cortanteEs, ...punzonamientoEs }, en: { ...en, ...anclajeEn, ...cortanteEn, ...punzonamientoEn } };
+const DICC = { es: { ...es, ...anclajeEs, ...cortanteEs, ...punzonamientoEs, ...rasanteEs }, en: { ...en, ...anclajeEn, ...cortanteEn, ...punzonamientoEn, ...rasanteEn } };
 const CLAVE = 'prontuario-web:lengua';
 let lengua = 'es';
 try { lengua = localStorage.getItem(CLAVE) === 'en' ? 'en' : 'es'; } catch { /* sin almacenamiento */ }

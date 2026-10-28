@@ -14,7 +14,7 @@ import * as EHE08 from './durabilidadEHE08.js';
 import * as EC2 from './durabilidadEC2.js';
 
 const sub = (a, b) => `${a}<sub>${b}</sub>`;
-const U = (ud) => ` <span class="u u-cab">(${ud})</span>`;
+const U = (ud) => ` <span class="u u-cab">[${ud}]</span>`;
 
 /** Condiciones del proyecto; las primeras veces se toman de la primera sección que las tenía. */
 function condiciones(p) {

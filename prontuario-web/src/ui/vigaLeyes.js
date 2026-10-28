@@ -143,7 +143,7 @@ export function dibujarLeyes(svg, W, H, D, r) {
     g.append(e('path', { d: `M${X(v)} ${yEje} v5`, class: 'vl-eje' }));
     g.append(e('text', { x: X(v), y: yEje + 17, 'text-anchor': 'middle', class: 'vl-eje-n' }, fmt(v, paso < 1 ? 1 : (Number.isInteger(v) ? 0 : 2))));
   }
-  g.append(e('text', { x: W - 2, y: yEje + 17, 'text-anchor': 'end', class: 'vl-eje-n' }, 'x (m)'));
+  g.append(e('text', { x: W - 2, y: yEje + 17, 'text-anchor': 'end', class: 'vl-eje-n' }, 'x [m]'));
   BANDAS.forEach((B) => {
     const h = (resto * B.peso) / pesoTot;
     const top = y0, bot = y0 + h;
@@ -156,7 +156,7 @@ export function dibujarLeyes(svg, W, H, D, r) {
     const y00 = ymap(0);
     g.append(e('path', { d: `M${PAD - 30} ${bot + gap / 2 - 0.5} H${W - PAD + 30}`, class: 'vl-sep' }));
     const tit = e('text', { x: PAD - 30, y: top + 13, class: `vl-tit vl-${B.k}` });
-    tit.textContent = `${TIT[B.k]} (${B.ud})`;
+    tit.textContent = `${TIT[B.k]} [${B.ud}]`;
     g.append(tit);
     const lee = e('text', { x: PAD + 100, y: top + 13, 'text-anchor': 'start', class: `vl-tit vl-${B.k} lectura` });
     g.append(lee);

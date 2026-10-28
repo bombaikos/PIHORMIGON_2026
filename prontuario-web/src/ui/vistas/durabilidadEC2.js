@@ -14,7 +14,7 @@ import { filasPlegables } from '../filasPlegables.js';
 import { plegable } from './durabilidadEHE08.js';
 
 const sub = (a, b) => `${a}<sub>${b}</sub>`;
-const U = (ud) => ` <span class="u u-cab">(${ud})</span>`;
+const U = (ud) => ` <span class="u u-cab">[${ud}]</span>`;
 
 export function condiciones(p) {
   const D = p.durabilidad ?? (p.durabilidad = {});
@@ -99,8 +99,8 @@ export function resultados(ctx, res) {
     h('div', { class: 'grupos-esp grupos-flex' }, g('X0', DE.X0), g('XC', DE.XC), g('XD', DE.XD), g('XS', DE.XS), g('XF', DE.XF), g('XA', DE.XA), g('XM', DE.XM)),
     h('div', { class: 'desc-clases' }, ...(D.clasesEC.length ? D.clasesEC.map((c) => h('p', { class: 'nota', html: `<b>${c}</b> · ${t(`ec.desc.${c}`)}` })) : [h('p', { class: 'nota' }, t('eh.sinClases'))])),
     plegable(t('eh.tablaQuimica').replace('8.2.3.b', 'CE 27.1.b'), tabla(
-      [['pH', '6,5–5,5', '5,5–4,5', '&lt; 4,5'], ['CO<sub>2</sub> agresivo (mg/l)', '15–40', '40–100', '&gt; 100'], ['SO<sub>4</sub><sup>2−</sup> agua (mg/l)', '200–600', '600–3000', '&gt; 3000'],
-        ['Mg<sup>2+</sup> (mg/l)', '300–1000', '1000–3000', '&gt; 3000'], ['NH<sub>4</sub><sup>+</sup> (mg/l)', '15–30', '30–60', '&gt; 60'], ['SO<sub>4</sub><sup>2−</sup> suelo (mg/kg)', '2000–3000', '3000–12000', '&gt; 12000']],
+      [['pH', '6,5–5,5', '5,5–4,5', '&lt; 4,5'], ['CO<sub>2</sub> agresivo [mg/l]', '15–40', '40–100', '&gt; 100'], ['SO<sub>4</sub><sup>2−</sup> agua [mg/l]', '200–600', '600–3000', '&gt; 3000'],
+        ['Mg<sup>2+</sup> [mg/l]', '300–1000', '1000–3000', '&gt; 3000'], ['NH<sub>4</sub><sup>+</sup> [mg/l]', '15–30', '30–60', '&gt; 60'], ['SO<sub>4</sub><sup>2−</sup> suelo (mg/kg)', '2000–3000', '3000–12000', '&gt; 12000']],
       { cabecera: ['', 'XA1', 'XA2', 'XA3'] })));
 
   const dcha = h('article', { class: 'panel tarjeta' });

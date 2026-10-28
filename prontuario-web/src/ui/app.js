@@ -20,7 +20,9 @@ import * as fuego from './vistas/fuego.js';
 import * as anclaje from './vistas/anclaje.js';
 import * as cortante from './vistas/cortante.js';
 import * as punzonamiento from './vistas/punzonamiento.js';
+import * as rasante from './vistas/rasante.js';
 import * as vigas1vano from './vistas/vigas.js';
+import { guardarProyecto, abrirProyecto, nuevoProyecto } from './vistas/proyecto.js';
 
 // Crear y editar y Diagramas son el mismo módulo de secciones con la misma sección activa;
 // cada entrada fija lo que muestra antes de pintar
@@ -29,7 +31,7 @@ function vistaSecciones(m, propia) {
   const v = { cabeza: fijar(secciones.cabeza), datos: fijar(secciones.datos), resultados: fijar(secciones.resultados) };
   return propia ? { ...secciones, ...v } : v;
 }
-const VISTAS = { proyecto, materiales, reologicas, secciones: vistaSecciones('seccion', true), durabilidad, diagramas: vistaSecciones('mk', false), vigas1vano, flexion, flexRecta, fuego, anclaje, cortante, punzonamiento };
+const VISTAS = { proyecto, materiales, reologicas, secciones: vistaSecciones('seccion', true), durabilidad, diagramas: vistaSecciones('mk', false), vigas1vano, flexion, flexRecta, fuego, anclaje, cortante, punzonamiento, rasante };
 // Menú principal. Una entrada es un módulo suelto o un grupo con submenú; '|' separa familias dentro del
 // submenú. Lo que aún no está en VISTAS sale atenuado y sin acción, y se activa solo al migrarlo.
 const MENU = [
@@ -114,14 +116,15 @@ function deshacer() {
 
 function pintarCabecera() {
   const p = estado.proyecto;
-  $('marca-app').textContent = t('app');
+  $('marca-app').innerHTML = t('app');
   $('nombre-proyecto').textContent = p.nombre || t('sinNombre');
   $('marca-ejemplo').hidden = !estado.ejemplo;
   $('marca-ejemplo').textContent = t('ejemplo');
   $('txt-comandos').textContent = t('comandos');
+  $('pant-completa').title = $('pant-completa').ariaLabel = t(document.fullscreenElement ? 'p.salirCompleta' : 'p.completa');
   $('pie').textContent = t('pie');
   $('menu').setAttribute('aria-label', t('modulos'));
-  $('menu').replaceChildren(...MENU.map((m) => (typeof m === 'string'
+  $('menu').replaceChildren(archivo(), ...MENU.map((m) => (typeof m === 'string'
     ? h('button', { type: 'button', 'aria-current': m === estado.vista ? 'page' : undefined, disabled: m in VISTAS ? undefined : '', title: m in VISTAS ? undefined : t('menu.pronto'), onclick: () => ctx.ir(m) }, t(`m.${m}`))
     : desplegable(m))));
   // Guía § 14: la norma es un ajuste de todo el proyecto, en un chip con su nombre delante
@@ -141,6 +144,24 @@ function pintarCabecera() {
   document.getElementById('menu-norma')?.remove();
   document.body.append(lista);
   $('seg-norma').replaceChildren(chip);
+}
+
+/** Menú Archivo (guía común § 2.3): Nuevo, Abrir y Guardar, con sus atajos. */
+function archivo() {
+  const acciones = [['pro.nuevo', '', nuevoProyecto], ['pro.abrir', 'Ctrl+O', abrirProyecto], ['pro.guardar', 'Ctrl+S', guardarProyecto]];
+  const lista = h('div', { class: 'menu-desp', id: 'menu-archivo', popover: 'auto', role: 'menu' },
+    ...acciones.map(([k, atajo, f]) => h('button', { type: 'button', role: 'menuitem', onclick: () => { lista.hidePopover?.(); f(ctx); } }, t(k), atajo ? h('small', {}, atajo) : null)));
+  const b = h('button', { type: 'button', class: 'con-desp', 'aria-haspopup': 'menu',
+    onclick: () => {
+      if (!lista.showPopover) return;
+      const r = b.getBoundingClientRect();
+      lista.style.left = `${r.left}px`;
+      lista.style.top = `${r.bottom + 4}px`;
+      lista.togglePopover();
+    } }, t('m.archivo'), h('span', { class: 'flecha', 'aria-hidden': 'true' }, '▾'));
+  document.getElementById('menu-archivo')?.remove();
+  document.body.append(lista);
+  return b;
 }
 
 /** Entrada del menú con submenú: el botón abre una lista (popover, para que el menú no la recorte). */
@@ -295,11 +316,15 @@ export function iniciar() {
   // La compacta es la normal (guía § 5); la cómoda es opcional
   if (leerPref('densidad') === 'comoda') document.documentElement.dataset.densidad = 'comoda';
   if (leerPref('datos') === 'plegado') document.documentElement.dataset.datos = 'plegado';
+  $('pant-completa').onclick = pantallaCompleta;
+  document.addEventListener('fullscreenchange', pintar);
   comportamientoFormulario($('datos'));
   instalarFoco();
   instalarPaleta(comandos, avisar);
   document.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === 'z' && !e.target.closest('input, textarea')) { e.preventDefault(); deshacer(); }
+    if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 's') { e.preventDefault(); guardarProyecto(ctx); }
+    if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 'o') { e.preventDefault(); abrirProyecto(ctx); }
     if (e.altKey && /^[1-9]$/.test(e.key) && ORDEN[+e.key - 1]) { e.preventDefault(); ctx.ir(ORDEN[+e.key - 1]); }
     if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === 'b') { e.preventDefault(); plegarDatos(); }
   });

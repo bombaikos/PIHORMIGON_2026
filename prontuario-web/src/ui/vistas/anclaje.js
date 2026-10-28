@@ -131,7 +131,7 @@ export function resultados(ctx, res) {
   // Cabecera con dos filas: grupos (anclaje, solapo) y posiciones
   const esf = comp ? t('an.compresion') : t('an.traccion');
   const cab = h('thead', {},
-    h('tr', {}, h('th', { rowspan: '2', html: `${t('an.col.d')}${ESP}<span class="u u-cab">(mm)</span>` }),
+    h('tr', {}, h('th', { rowspan: '2', html: `${t('an.col.d')}${ESP}<span class="u u-cab">[mm]</span>` }),
       h('th', { colspan: comp ? '2' : '4', html: t('an.col.anclaje', esf.toLowerCase()) }),
       h('th', { colspan: '2', html: t('an.col.solapo', esf.toLowerCase()) })),
     h('tr', {}, ...(comp
@@ -145,7 +145,7 @@ export function resultados(ctx, res) {
     h('td', {}, num(f.sI)), h('td', {}, num(f.sII)))));
   const extraA = ehe ? (D.lejos ? t('an.aLejos') : t('an.aCerca')) : '';
   const ficha = t('an.ficha', r.hor.nombre, r.ace.nombre, esf.toLowerCase(), fmt(D.r, 0), D.cd > 0 ? t('an.cdVal', fmt(D.cd, 0)) : t('an.cdSin'), fmt(D.pct, 0), extraA);
-  const hdr = [`${t('an.col.d')} (mm)`, ...(comp ? [`${t('an.col.anclaje', esf.toLowerCase()).replace(/<[^>]+>/g, '')} ${t('an.col.I')}`, `${t('an.col.anclaje', esf.toLowerCase()).replace(/<[^>]+>/g, '')} ${t('an.col.II')}`]
+  const hdr = [`${t('an.col.d')} [mm]`, ...(comp ? [`${t('an.col.anclaje', esf.toLowerCase()).replace(/<[^>]+>/g, '')} ${t('an.col.I')}`, `${t('an.col.anclaje', esf.toLowerCase()).replace(/<[^>]+>/g, '')} ${t('an.col.II')}`]
     : ['I recta', 'I patilla', 'II recta', 'II patilla'].map((c) => `${t('an.col.anclaje', esf.toLowerCase()).replace(/<[^>]+>/g, '')} ${c}`)),
     `${t('an.col.solapo', esf.toLowerCase()).replace(/<[^>]+>/g, '')} I`, `${t('an.col.solapo', esf.toLowerCase()).replace(/<[^>]+>/g, '')} II`];
   const texto = () => [ficha.replace(/<[^>]+>/g, '').replace(/ /g, ' '), hdr.join('\t'),

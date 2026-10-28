@@ -105,7 +105,7 @@ function borrar(ctx, b) {
 const sub = (a, b) => `${a}<sub>${b}</sub>`;
 const sup = (a) => `<sup>${a}</sup>`;
 // Guía § 13: la unidad va en la cabecera (de la columna, o de la fila en las tablas de etiqueta y valor)
-const U = (mag) => `\u00a0<span class="u u-cab">(${MAG[mag]?.ud ?? mag})</span>`;
+const U = (mag) => `\u00a0<span class="u u-cab">[${MAG[mag]?.ud ?? mag}]</span>`;
 const v = (x, mag) => q(x, mag, { ud: false });
 
 /* ---------- utilidades ---------- */
@@ -360,12 +360,12 @@ function datosSeccion(ctx, form, s, cambio) {
         h('p', { class: 'etq-rejilla', html: t('geo.contornoCaras') }),
         rejilla({
           id: 'g-cont', altoMax: 210,
-          columnas: [{ titulo: 'x (mm)', num: true }, { titulo: 'y (mm)', num: true }, { titulo: t('geo.colArmado'), validar: validarCara }],
+          columnas: [{ titulo: 'x [mm]', num: true }, { titulo: 'y [mm]', num: true }, { titulo: t('geo.colArmado'), validar: validarCara }],
           filas: g.contorno.map(([x, y], i) => [celdaMm(x), celdaMm(y), caras.textos[i] ?? '']),
           refFila: (i) => `c${i}`,
           numerar: true,
           // Longitud de la cara que sale de cada vértice (hasta el siguiente, y el último cierra con el primero)
-          calculada: { titulo: 'L (mm)', f: (d, i) => {
+          calculada: { titulo: 'L [mm]', f: (d, i) => {
             const a = d[i];
             const z = d[(i + 1) % d.length];
             const L = Math.hypot(leerNumero(z[0]) - leerNumero(a[0]), leerNumero(z[1]) - leerNumero(a[1]));
@@ -381,7 +381,7 @@ function datosSeccion(ctx, form, s, cambio) {
         h('details', { class: 'nota-plegada' }, h('summary', {}, g.huecos?.length ? t('geo.huecoN', g.huecos.length, g.huecos.reduce((n, q) => n + q.length, 0)) : t('geo.huecoOpc')),
         rejilla({
           id: 'g-hueco', altoMax: 80,
-          columnas: [{ titulo: 'x (mm)', num: true }, { titulo: 'y (mm)', num: true }],
+          columnas: [{ titulo: 'x [mm]', num: true }, { titulo: 'y [mm]', num: true }],
           filas: (g.huecos?.[0] ?? []).map(([x, y]) => [celdaMm(x), celdaMm(y)]),
           onCambio: (f) => { g.huecos = f.length ? [f.map((r) => [leerNumero(r[0]) / 1000, leerNumero(r[1]) / 1000])] : []; cambio(); },
         })),

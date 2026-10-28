@@ -10,7 +10,7 @@ import { filasPlegables } from '../filasPlegables.js';
 import { dibujoFuego } from '../dibujoFuego.js';
 
 const sub = (a, b) => `${a}<sub>${b}</sub>`;
-const U = (ud) => ` <span class="u u-cab">(${ud})</span>`;
+const U = (ud) => ` <span class="u u-cab">[${ud}]</span>`;
 
 const INICIAL = () => ({ elemento: 'viga', R: 90, arido: 'siliceo', carasPilar: 4, carasMuro: 1, carasViga: 3, eta: 0.7, portante: true, continua: false, dir: 'uni', metodo: 'A', n: 0.5, omega: 0.5 });
 
