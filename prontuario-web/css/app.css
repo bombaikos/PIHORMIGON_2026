@@ -487,8 +487,8 @@ table.rejilla tr.foco td { background: var(--acento-suave); }
 .graf .punto-calculo { fill: var(--hoja); stroke: var(--tinta); stroke-width: 2; }
 .graf .punto-calculo.ok { fill: var(--ok); stroke: var(--hoja); }
 .graf .punto-calculo.no { fill: var(--no); stroke: var(--hoja); }
-.graf .rej { stroke: var(--linea); stroke-width: 1; }
-.graf .rej2 { stroke: var(--linea); stroke-width: 1; opacity: .6; }
+.graf .rej { stroke: var(--linea-fuerte); stroke-width: 1; }
+.graf .rej2 { stroke: var(--linea); stroke-width: 1; opacity: .7; }
 .graf .marco { fill: none; stroke: var(--linea-fuerte); stroke-width: 1; }
 .graf .eje0 { stroke: var(--tinta-3); stroke-width: 1; }
 .graf .serie { fill: none; stroke-width: 2; stroke-linejoin: round; }
