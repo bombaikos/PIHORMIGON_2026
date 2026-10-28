@@ -54,7 +54,7 @@ function interpolar(xy, x) {
  * @returns {HTMLElement}
  */
 export function grafica({ series, puntos = [], ejeX, ejeY, archivo = 'grafica', rejillaSec = null, invertirY = false, avisar = () => {} }) {
-  // Guía § 1: fuerzas (kN), momentos (kN·m) y áreas de armadura (mm²) sin decimales, también en la cruz y en la tabla, diga lo que diga el módulo
+  // Guía § 1: fuerzas [kN], momentos [kN·m] y áreas de armadura [mm²] sin decimales, también en la cruz y en la tabla, diga lo que diga el módulo
   const sinDec = (e) => (/\((kN|kN·m|mm²)\)/.test(plano(e.titulo)) ? { ...e, d: 0, dt: 0 } : e);
   ejeX = sinDec(ejeX);
   ejeY = sinDec(ejeY);

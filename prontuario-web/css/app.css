@@ -4,6 +4,7 @@
   --suelo: oklch(96.4% 0.005 240);
   --hoja: oklch(99.6% 0.002 240);
   --hundido: oklch(95.2% 0.006 240);
+  --campo: oklch(100% 0 0); --campo-borde: oklch(78% 0.05 252);
   --nota: oklch(94.8% 0.014 78); --nota-borde: oklch(85.5% 0.024 75);
   --tinta: oklch(24% 0.02 248);
   --tinta-2: oklch(44% 0.02 248);
@@ -31,18 +32,19 @@
   --f: system-ui, 'Segoe UI Variable Text', 'Segoe UI', -apple-system, Roboto, 'Helvetica Neue', Arial, sans-serif;
 
   /* Serie tipográfica 10 · 12 · 14; solo el resultado principal va grande (28) */
-  --mas: 2px; /* +2 px de texto y de alto de controles (pedido de Pepiño, 19/10); se anula en pantallas pequeñas */
+  --mas: 2px; /* +2 px de texto y de alto de controles (Pepiño, 19/10); en todas las pantallas (28/10) */
   --t-xs: calc(10px + var(--mas)); --t-s: calc(12px + var(--mas)); --t-m: calc(14px + var(--mas)); --t-l: calc(14px + var(--mas)); --t-xl: calc(14px + var(--mas)); --t-xxl: 28px;
   --e1: 4px; --e2: 8px; --e3: 12px; --e4: 16px; --e5: 24px; --e6: 32px;
   --r-panel: 10px; --r-campo: 6px; --r-chip: 4px;
   --alto-campo: calc(24px + var(--mas));
   --hueco-campos: 4px;
 }
-@media (max-width: 1500px), (max-height: 700px) { :root { --mas: 0px; } }
+/* Pantallas bajas (1366×657): mismo texto, menos aire vertical */
+@media (max-height: 700px) { :root { --alto-campo: 24px; --hueco-campos: 2px; } body { line-height: 1.3; } }
 :root[data-densidad="comoda"] { --alto-campo: 32px; --hueco-campos: 10px; }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --suelo: oklch(17% 0.012 245); --hoja: oklch(21% 0.014 245); --hundido: oklch(18.5% 0.012 245); --nota: oklch(25.5% 0.014 72); --nota-borde: oklch(36% 0.022 70);
+    --suelo: oklch(17% 0.012 245); --hoja: oklch(21% 0.014 245); --hundido: oklch(18.5% 0.012 245); --campo: oklch(15.5% 0.02 250); --campo-borde: oklch(46% 0.06 252); --nota: oklch(25.5% 0.014 72); --nota-borde: oklch(36% 0.022 70);
     --tinta: oklch(93% 0.008 240); --tinta-2: oklch(78% 0.012 240); --tinta-3: oklch(66% 0.014 240);
     --linea: oklch(29% 0.014 245); --linea-fuerte: oklch(38% 0.016 245);
     --acento: oklch(74% 0.11 250); --acento-suave: oklch(30% 0.05 252);
@@ -57,7 +59,7 @@
   }
 }
 :root[data-theme="dark"] {
-  --suelo: oklch(17% 0.012 245); --hoja: oklch(21% 0.014 245); --hundido: oklch(18.5% 0.012 245); --nota: oklch(25.5% 0.014 72); --nota-borde: oklch(36% 0.022 70);
+  --suelo: oklch(17% 0.012 245); --hoja: oklch(21% 0.014 245); --hundido: oklch(18.5% 0.012 245); --campo: oklch(15.5% 0.02 250); --campo-borde: oklch(46% 0.06 252); --nota: oklch(25.5% 0.014 72); --nota-borde: oklch(36% 0.022 70);
   --tinta: oklch(93% 0.008 240); --tinta-2: oklch(78% 0.012 240); --tinta-3: oklch(66% 0.014 240);
   --linea: oklch(29% 0.014 245); --linea-fuerte: oklch(38% 0.016 245);
   --acento: oklch(74% 0.11 250); --acento-suave: oklch(30% 0.05 252);
@@ -131,11 +133,11 @@ kbd { font: calc(11px + var(--mas)) var(--f); border: 1px solid var(--linea-fuer
 .campo > label { font-size: var(--t-s); color: var(--tinta-2); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .campo > label .ref { color: var(--tinta-3); font-size: var(--t-xs); float: right; margin-top: 1px; }
 .caja {
-  display: flex; align-items: center; height: var(--alto-campo); background: var(--hundido);
-  border: 1px solid var(--linea); border-radius: var(--r-campo); transition: border-color .12s, background-color .12s;
+  display: flex; align-items: center; height: var(--alto-campo); background: var(--campo);
+  border: 1px solid var(--campo-borde); border-radius: var(--r-campo); transition: border-color .12s, background-color .12s;
 }
-.caja:hover { border-color: var(--linea-fuerte); }
-.caja:focus-within { border-color: var(--acento); background: var(--hoja); box-shadow: 0 0 0 3px var(--acento-suave); }
+.caja:hover { border-color: var(--acento); }
+.caja:focus-within { border-color: var(--acento); background: var(--campo); box-shadow: 0 0 0 3px var(--acento-suave); }
 .caja input { font-size: var(--t-m); }
 .caja input, .caja select { flex: 1; min-width: 0; height: 100%; border: 0; background: none; padding: 0 9px; outline: none; }
 .caja input { text-align: right; }
@@ -329,6 +331,17 @@ dialog.paleta::backdrop { background: oklch(20% 0.02 250 / .25); }
   .lienzo { flex: 1; min-height: 0; overflow: hidden; }
   svg.dib { height: 100%; min-width: 0; }
   .aviso { padding: 3px 8px; }
+}
+/* Pantallas bajas (1366×657): mismo texto 12/14/16, menos aire entre bloques */
+@media (min-width: 1100px) and (min-height: 600px) and (max-height: 700px) {
+  .tarjeta { padding: 6px 12px; gap: 4px; }
+  .tarjeta h3 { margin: 4px 0 0; }
+  .datos { padding: 8px 12px; gap: 4px; }
+  .datos .grupo, :root:not([data-densidad="comoda"]) .datos .grupo { padding-top: 4px; }
+  .trabajo { gap: 6px; padding: 6px 10px; }
+  .cifra { padding: 2px 8px; }
+  th, td { padding: 0 6px; }
+  td { line-height: 1.25; }
 }
 @media (forced-colors: active) {
   .dib .hor { fill: Canvas; stroke: CanvasText; }
@@ -585,7 +598,7 @@ span.bien { color: var(--ok); font-weight: 600; }
 .menu-desp button[aria-checked="true"] { color: var(--acento); font-weight: 600; }
 /* Campos alineados: en densidad compacta todas las cajas miden 130 px y forman una columna a la derecha */
 :root:not([data-densidad="comoda"]) .campo:not(.columna) > label { flex: 1 1 auto; max-width: calc(100% - 138px); }
-:root:not([data-densidad="comoda"]) .campo:not(.columna) .caja { flex: 0 0 130px; width: 130px; margin-left: auto; }
+:root:not([data-densidad="comoda"]) .campo:not(.columna) .caja { flex: 0 0 150px; width: 150px; margin-left: auto; }
 :root:not([data-densidad="comoda"]) .par { grid-template-columns: minmax(0, 1fr); }
 :root:not([data-densidad="comoda"]) .fila-arm { grid-template-columns: minmax(0, 1fr); gap: var(--hueco-campos); }
 @media (max-width: 1099px), (max-height: 599px) {
@@ -811,7 +824,7 @@ details.an-ce { margin-top: var(--e2); }
 .dib .cordon { stroke: var(--linea-fuerte); stroke-width: 2.4; fill: none; }
 .dib .biela { fill: none; stroke: var(--compr); stroke-width: 2.2; }
 .dib .tirante { fill: none; stroke: var(--acero); stroke-width: 1.6; }
-.cor-notas { display: flex; flex-direction: column; gap: 2px; order: 3; }
+.cor-notas, .pun-notas { display: flex; flex-direction: column; gap: 2px; order: 3; }
 
 /* Cortante · etiqueta delante de un segmentado, campo calculado, cotg θ con su botón y aclaraciones junto al dibujo */
 .fu-campo.en-linea { flex-direction: row; align-items: center; gap: 8px; }
@@ -848,3 +861,40 @@ details.an-ce { margin-top: var(--e2); }
 .plegable-res > summary { cursor: pointer; font-size: var(--t-s); color: var(--tinta-2); font-weight: 600; }
 .plegable-res[open] { display: flex; flex-direction: column; gap: var(--e2); }
 .plegable-res .res-plegado { display: flex; flex-direction: column; gap: var(--e3); }
+
+/* Flexión compuesta recta, modo Diagrama: todo a la vista (diagrama, nota de resultados, sección pequeña y tabla) */
+.fcr-diag { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--e4); flex: 1; min-height: 0; }
+@media (min-width: 1100px) and (min-height: 600px) { .fcr-diag { grid-template-columns: minmax(0, 1fr) minmax(220px, 300px); } }
+.fcr-graf { display: flex; flex-direction: column; gap: var(--e2); min-width: 0; min-height: 0; }
+.fcr-graf > .lienzo { flex: 1; min-height: 0; }
+.nota-diag { margin: 0; font-size: var(--t-s); color: var(--tinta-2); line-height: 1.5; flex-shrink: 0; }
+.fcr-lado { display: flex; flex-direction: column; gap: var(--e3); min-width: 0; min-height: 0; overflow: auto; }
+.fcr-sec svg { width: 100%; height: auto; max-height: 190px; }
+.fcr-lado table { width: 100%; }
+
+/* Punzonamiento · planta con perímetros de control, perímetro exterior y ramas de cercos */
+.dib .perim { fill: none; stroke-width: 1.6; }
+.dib .perim-ctrl { stroke: var(--tinta); stroke-dasharray: 7 4; }
+.dib .perim-ext { stroke: var(--tinta-3); stroke-dasharray: 2 4; stroke-linecap: round; stroke-width: 2.2; }
+.dib .pilar { fill: var(--linea-fuerte); stroke: var(--tinta); stroke-width: 1.2; }
+.dib .borde-libre { stroke: var(--tinta); stroke-width: 3; fill: none; }
+.dib .rot { font-size: calc((10px + var(--mas)) / var(--k, 1)); }
+svg.dib-pun { min-width: 0; }
+@media (forced-colors: active) {
+  .dib .pilar { fill: Canvas; stroke: CanvasText; }
+  .dib .perim-ctrl, .dib .perim-ext, .dib .borde-libre { stroke: CanvasText; }
+}
+
+/* Rasante en juntas · alzado de la junta con el cosido */
+.dib .hor-2 { fill: color-mix(in oklch, var(--hormigon) 55%, var(--hoja)); }
+.dib .junta { fill: none; stroke: var(--tinta); stroke-width: 1.6; }
+.dib .barra-cos { stroke: var(--acero); stroke-width: 3.2; stroke-linecap: round; }
+.dib .fuerza { stroke: var(--acento); stroke-width: 2; fill: none; }
+.dib .fuerza + text, .dib text.fuerza-t { fill: var(--acento); }
+svg.dib-ras { min-width: 0; }
+@media (forced-colors: active) {
+  .dib .hor-2 { fill: Canvas; }
+  .dib .junta, .dib .barra-cos, .dib .fuerza { stroke: CanvasText; }
+}
+.marca .app { letter-spacing: 0; white-space: nowrap; font-size: 10px; }
+.marca .app .beta { color: #ff9a2e; font-weight: 700; }

@@ -13,7 +13,7 @@ import { grafica } from '../grafica.js';
 
 const est = { hormigon: null, cemento: null, HR: 70, h0: 200, t0: 28, ts: null, modo: 'final', t: 365, sigma: 0, pestana: 'fluencia' };
 const sub = (a, b) => `${a}<sub>${b}</sub>`;
-const U = (ud) => `${ESP}<span class="u u-cab">(${ud})</span>`;
+const U = (ud) => `${ESP}<span class="u u-cab">[${ud}]</span>`;
 
 export function reiniciar() { Object.assign(est, { hormigon: null, cemento: null, HR: 70, h0: 200, t0: 28, ts: null, modo: 'final', t: 365, sigma: 0, pestana: 'fluencia' }); }
 
@@ -73,7 +73,7 @@ function curvas(ctx, E, N) {
   if (ver === 'fluencia') {
     const xy = ts.map((tt) => [lg(tt), fluencia(E.norma, { ...E.base, t: tt }).phi]);
     return grafica({ series: [{ nombre: 'φ(t, t₀)', xy, clase: 's1' }], puntos: [{ x: lg(tMax), y: xy.at(-1)[1], etq: '' }],
-      ejeX: { titulo: 'log₁₀ t (días)', d: 2 }, ejeY: { titulo: 'φ(t, t₀)', d: 2 }, archivo: 'fluencia', avisar: ctx.avisar });
+      ejeX: { titulo: 'log₁₀ t [días]', d: 2 }, ejeY: { titulo: 'φ(t, t₀)', d: 2 }, archivo: 'fluencia', avisar: ctx.avisar });
   }
   const r = (tt) => retraccion(E.norma, { ...E.base, t: tt, ts: E.ts });
   const total = ts.map((tt) => [lg(tt), r(tt).total * 1000]);
@@ -81,7 +81,7 @@ function curvas(ctx, E, N) {
   const aut = ts.map((tt) => [lg(tt), r(tt).autogena * 1000]);
   return grafica({ series: [{ nombre: t('rg.total'), xy: total, clase: 's1' }, { nombre: t('rg.secado'), xy: sec, clase: 's2' }, { nombre: t('rg.autogena'), xy: aut, clase: 'ref' }],
     puntos: [{ x: lg(tMax), y: total.at(-1)[1], etq: '' }],
-    ejeX: { titulo: 'log₁₀ t (días)', d: 2 }, ejeY: { titulo: 'ε (‰)', d: 3 }, archivo: 'retraccion', avisar: ctx.avisar });
+    ejeX: { titulo: 'log₁₀ t [días]', d: 2 }, ejeY: { titulo: 'ε [‰]', d: 3 }, archivo: 'retraccion', avisar: ctx.avisar });
 }
 
 export function resultados(ctx, res) {

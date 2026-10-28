@@ -35,7 +35,7 @@ export default {
   'cor.c.Vu1': sub('V', 'u1'), 'cor.c.Vu2': sub('V', 'u2'), 'cor.c.Vcu': sub('V', 'cu'), 'cor.c.Vsu': sub('V', 'su'),
   'cor.c.Vu': sub('V', 'u'), 'cor.c.Asw': 'A<sub>sw</sub>/s', 'cor.c.beta': 'β',
   'cor.t.dibujo': 'Sección y celosía', 'cor.t.res': 'Resultados', 'cor.t.tabla': 'Cercos para V<sub>Ed</sub>', 'cor.t.desplegar': 'Despliega cada línea para ver la fórmula, los valores y el artículo de la norma.',
-  'cor.tabla.fi': 'ø (mm)', 'cor.tabla.ramas': 'Ramas', 'cor.tabla.s': 's (mm)', 'cor.tabla.asw': 'A<sub>sw</sub>/s (cm²/m)', 'cor.tabla.vu': 'V<sub>u</sub> (kN)',
+  'cor.tabla.fi': 'ø [mm]', 'cor.tabla.ramas': 'Ramas', 'cor.tabla.s': 's [mm]', 'cor.tabla.asw': 'A<sub>sw</sub>/s (cm²/m)', 'cor.tabla.vu': 'V<sub>u</sub> [kN]',
   'cor.tabla.nota': (smax) => `Separación de 50 en 50 mm hasta ${smax} mm (máximo propio de 300 mm y el de 44.2.3.4.1). «—» = no llega con esa separación mínima de 50 mm.`,
   'cor.tabla.ramasNota': (n) => `${n} ramas`,
   'cor.r.Vu1': 'Compresión oblicua V<sub>u1</sub>', 'cor.r.Vcu': 'Hormigón V<sub>cu</sub>', 'cor.r.Vsu': 'Cercos V<sub>su</sub>', 'cor.r.Vu2': 'Tracción en el alma V<sub>u2</sub>',

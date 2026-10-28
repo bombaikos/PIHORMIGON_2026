@@ -3,7 +3,7 @@
 const sub = (a, b) => `${a}<sub>${b}</sub>`;
 
 export default {
-  app: 'Concrete design handbook · 2026',
+  app: 'Concrete Design Handbook 2026 <b class="beta">BETA a</b>',
   ejemplo: 'example',
   ejemploNombre: 'Example',
   sinNombre: 'Untitled',
@@ -196,7 +196,7 @@ export default {
   'fcr.coefSeg': 'Safety factor', 'fcr.puntos': 'Actions', 'fcr.dentro': 'inside the diagram', 'fcr.dentroSello': 'Inside', 'fcr.fueraSello': 'Outside', 'fcr.hormigon': 'Concrete only', 'fcr.contorno': 'N-M envelope', 'fcr.puntosCont': 'points',
   'fcr.f.env': 'Same section without reinforcement: concrete-only capacity (no tension), to show what the steel adds.',
   'fcr.pista': 'Compression +, tension −. Symmetric reinforcement: only M ≥ 0 (the sign of M is ignored). γ = |OQ|/|OP| at constant eccentricity (green ≥ 1, red < 1).',
-  'fcr.resumenRes': (n, g) => `Results and actions (${n} · min. γ ${g})`, 'fcr.subtitulo': 'N-M interaction diagram at ultimate', 'fcr.sinSec': 'Create a section in the Sections module.', 'fcr.compPos': 'compression +', 'fcr.mSigno': '+ compresses the top face', 'fcr.axil': 'The axial force',
+  'fcr.resumenRes': (n, g) => `Results and actions (${n} · min. γ ${g})`, 'fcr.modoDiagrama': 'Diagram', 'fcr.pista1': 'Compression +, tension −. Symmetric reinforcement: the sign of M is ignored. γ = |OQ|/|OP| at constant eccentricity.', 'fcr.dibujoSub': 'Section, strains and stresses at the ultimate state at the same e = M/N, same vertical scale', 'fcr.dibujoAria': 'Section, strain plane and stresses at failure', 'fcr.fiCalc': 'design diameter', 'fcr.fiSec': (f) => `Section: ø${f}. It can be changed here without touching Sections.`, 'fcr.fiProp': 'Proposed diameter', 'fcr.fiArm': (fe, a, ae, g) => `strict ø ${fe} mm · A<sub>s</sub> ${a} (strict ${ae}) for γ ≥ ${g}.`, 'fcr.estricto': 'strict', 'fcr.propuesto': 'proposed', 'fcr.bajoMin': (a, m) => `Provided reinforcement ${a} is below the minimum ${m}: it passes the calculation but not the minimum.`, 'fcr.mandaMin': (m) => `The minimum reinforcement (${m}) governs, not strength.`, 'fcr.subeEmin': (e) => `* M raised to N·e<sub>min</sub> (e<sub>min</sub> = ${e} mm).`, 'fcr.subtitulo': 'N-M interaction diagram at ultimate', 'fcr.sinSec': 'Create a section in the Sections module.', 'fcr.compPos': 'compression +', 'fcr.mSigno': '+ compresses the top face', 'fcr.axil': 'The axial force',
   'fcr.fueraAxil': (l) => `The axial force exceeds the section capacity (limit ${l}).`, 'fcr.diagrama': 'Interaction diagram', 'fcr.diagramaSub': 'N-M ultimate envelope with the design diagrams; M about the centroid of the concrete',
   'fcr.f.contorno': 'M<sub>Rd</sub> on the envelope at N<sub>Ed</sub> (ultimate state: largest curvature with an admissible plane balancing N<sub>Ed</sub>)', 'fcr.f.ref': (y) => `Moments about the gross concrete centroid, at ${y} from the top face.`,
   'fcr.f.nrd': 'Concentric compression: whole section at ε = −ε<sub>c2</sub>', 'fcr.f.rayo': 'γ = |OQ| / |OP| at constant eccentricity: P = (N<sub>Ed</sub>, M<sub>Ed</sub>); Q = where the line from the origin through P cuts the envelope',
@@ -333,7 +333,7 @@ export default {
   'fu.tabla': 'table', 'fu.minimo': 'Minimum', 'fu.sinValor': 'The code gives no value for this combination; a specific study is needed.',
   'fu.opciones': (n) => `${n} possible combinations · `, 'fu.combinacion': 'Combination', 'fu.minimos': 'Minimums',
   'fu.geom': 'geometric cover governs', 'fu.barras8': 'at least 8 bars',
-  'fu.tablaTitulo': 'Code table', 'fu.tablaSub': (a) => `${a}. Each cell is minimum dimension / minimum axis distance (mm); the chosen row is highlighted.`,
+  'fu.tablaTitulo': 'Code table', 'fu.tablaSub': (a) => `${a}. Each cell is minimum dimension / minimum axis distance [mm]; the chosen row is highlighted.`,
   'fu.unidades': 'Values in mm. * = geometric cover (durability) governs; ** = at least 8 bars. With several combinations, any one is valid.',
   'fu.requisitos': (r) => `Minimums for ${r}`, 'fu.condiciones': 'Conditions attached to the table',
   'fu.am': 'a<sub>min</sub> is the equivalent axis distance of the reinforcement (a<sub>m</sub>), weighted by area and yield strength, measured to the exposed face. Durability covers may require larger values.',

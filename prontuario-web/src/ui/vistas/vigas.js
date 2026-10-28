@@ -28,7 +28,7 @@ function datosVigas(p) {
   return D;
 }
 
-/** EI bruta (kN·m²) de una sección del proyecto: Ec·I con el Ec del hormigón según la norma activa. */
+/** EI bruta [kN·m²] de una sección del proyecto: Ec·I con el Ec del hormigón según la norma activa. */
 function rigidezSeccion(p, s) {
   const { hormigon } = materialesSeccion(p, s);
   return Math.round(hormigon.E * bruta(geometriaDe(p, s)).Ix);
@@ -47,16 +47,16 @@ export function datos(ctx, form) {
 
   const rejillas = {
     P: () => rejilla({ id: 'v-puntual', altoMax: 90,
-      columnas: [{ titulo: 'a (m)', num: true, validar: posicion }, { titulo: 'P (kN)', num: true }],
+      columnas: [{ titulo: 'a [m]', num: true, validar: posicion }, { titulo: 'P [kN]', num: true }],
       filas: tipo('puntual').map((c) => [num(c.a), num(c.P)]),
       onCambio: (f) => poner_('puntual', f.map((r) => ({ tipo: 'puntual', a: nv(r[0]), P: nv(r[1]) }))) }),
     q: () => rejilla({ id: 'v-distrib', altoMax: 90,
-      columnas: [{ titulo: 'a (m)', num: true, validar: posicion }, { titulo: 'b (m)', num: true, validar: posicion },
-        { titulo: `${'q'}<sub>1</sub> (kN/m)`, num: true }, { titulo: `q<sub>2</sub> (kN/m)`, num: true }],
+      columnas: [{ titulo: 'a [m]', num: true, validar: posicion }, { titulo: 'b [m]', num: true, validar: posicion },
+        { titulo: `${'q'}<sub>1</sub> [kN/m]`, num: true }, { titulo: `q<sub>2</sub> [kN/m]`, num: true }],
       filas: tipo('distribuida').map((c) => [num(c.a), num(c.b), num(c.q1), num(c.q2)]),
       onCambio: (f) => poner_('distribuida', f.map((r) => ({ tipo: 'distribuida', a: nv(r[0]), b: nv(r[1]), q1: nv(r[2]), q2: nv(r[3]) }))) }),
     M: () => rejilla({ id: 'v-momento', altoMax: 90,
-      columnas: [{ titulo: 'a (m)', num: true, validar: posicion }, { titulo: 'M (kN·m)', num: true }],
+      columnas: [{ titulo: 'a [m]', num: true, validar: posicion }, { titulo: 'M [kN·m]', num: true }],
       filas: tipo('momento').map((c) => [num(c.a), num(c.C)]),
       onCambio: (f) => poner_('momento', f.map((r) => ({ tipo: 'momento', a: nv(r[0]), C: nv(r[1]) }))) }),
   };
@@ -92,7 +92,7 @@ export function datos(ctx, form) {
 
 /* ---------- resultados ---------- */
 
-const COLS = [['x', 'x (m)', 3, 1], ['M', 'M (kN·m)', MAG.M.d, 1], ['V', 'V (kN)', MAG.N.d, 1], ['giro', 'θ (mrad)', 1, 1000], ['flecha', 'δ (mm)', 1, 1000]];
+const COLS = [['x', 'x [m]', 3, 1], ['M', 'M [kN·m]', MAG.M.d, 1], ['V', 'V [kN]', MAG.N.d, 1], ['giro', 'θ [mrad]', 1, 1000], ['flecha', 'δ [mm]', 1, 1000]];
 const est = { tabla: false };
 export function reiniciar() { est.tabla = false; }
 
