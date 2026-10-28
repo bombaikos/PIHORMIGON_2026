@@ -961,9 +961,10 @@ svg.dib-ras { min-width: 0; }
 .marca .logo { padding-right: var(--e3); border-right: 1px solid var(--banda-linea); box-sizing: content-box; }
 #menu-archivo button { display: flex; justify-content: space-between; gap: var(--e5); width: 100%; }
 #menu-archivo small { color: var(--tinta-3); }
-/* Edición bajo la marca: BETA y, debajo, la fecha de emisión */
-.marca .ed { display: flex; flex-direction: column; line-height: 1.2; color: var(--banda-tinta-2); font-size: calc(10px + var(--mas)); white-space: nowrap; }
-.marca .ed .beta { color: #ff9a2e; font-weight: 700; }
+/* Edición bajo la marca, como en VLASTA: BETA en recuadro naranja y debajo la fecha dd.mm.aa del mismo ancho */
+.marca .ed { display: flex; flex-direction: column; align-items: stretch; flex: none; }
+.marca .ed .beta { font: 700 calc(10px + var(--mas))/1 var(--f); letter-spacing: .14em; text-transform: uppercase; color: #ff9a2e; border: 1px solid #ff9a2e; border-radius: 3px; padding: 2px 5px 1px; text-align: center; white-space: nowrap; }
+.marca .ed #marca-fecha { font: 500 10px/1 var(--f); letter-spacing: .04em; color: #ff9a2e; text-align: center; white-space: nowrap; width: 0; min-width: 100%; margin-top: 2px; }
 </style>
 
 <header class="barra">
@@ -16839,7 +16840,7 @@ svg.dib-ras { min-width: 0; }
   }
 
   // src/ui/app.js
-  var EMISION = "28/10/2026";
+  var EMISION = "28.10.26";
   function vistaSecciones(m, propia) {
     const fijar = (f) => (...a) => {
       modo(m);

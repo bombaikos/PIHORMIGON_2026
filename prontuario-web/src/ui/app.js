@@ -24,7 +24,7 @@ import * as rasante from './vistas/rasante.js';
 import * as vigas1vano from './vistas/vigas.js';
 import { guardarProyecto, abrirProyecto, nuevoProyecto } from './vistas/proyecto.js';
 
-const EMISION = '28/10/2026'; // fecha de emisión de la versión BETA
+const EMISION = '28.10.26'; // fecha de emisión de la versión BETA
 
 // Crear y editar y Diagramas son el mismo módulo de secciones con la misma sección activa;
 // cada entrada fija lo que muestra antes de pintar
