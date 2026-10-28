@@ -4,7 +4,7 @@
   --suelo: oklch(96.4% 0.005 240);
   --hoja: oklch(99.6% 0.002 240);
   --hundido: oklch(95.2% 0.006 240);
-  --campo: oklch(100% 0 0); --campo-borde: oklch(78% 0.05 252);
+  --campo: oklch(100% 0 0); --campo-borde: oklch(78% 0.05 252); --viga: oklch(32% 0.09 255);
   --nota: oklch(94.8% 0.014 78); --nota-borde: oklch(85.5% 0.024 75);
   --tinta: oklch(24% 0.02 248);
   --tinta-2: oklch(44% 0.02 248);
@@ -44,7 +44,7 @@
 :root[data-densidad="comoda"] { --alto-campo: 32px; --hueco-campos: 10px; }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --suelo: oklch(17% 0.012 245); --hoja: oklch(21% 0.014 245); --hundido: oklch(18.5% 0.012 245); --campo: oklch(15.5% 0.02 250); --campo-borde: oklch(46% 0.06 252); --nota: oklch(25.5% 0.014 72); --nota-borde: oklch(36% 0.022 70);
+    --suelo: oklch(17% 0.012 245); --hoja: oklch(21% 0.014 245); --hundido: oklch(18.5% 0.012 245); --campo: oklch(15.5% 0.02 250); --campo-borde: oklch(46% 0.06 252); --viga: oklch(72% 0.09 250); --nota: oklch(25.5% 0.014 72); --nota-borde: oklch(36% 0.022 70);
     --tinta: oklch(93% 0.008 240); --tinta-2: oklch(78% 0.012 240); --tinta-3: oklch(66% 0.014 240);
     --linea: oklch(29% 0.014 245); --linea-fuerte: oklch(38% 0.016 245);
     --acento: oklch(74% 0.11 250); --acento-suave: oklch(30% 0.05 252);
@@ -59,7 +59,7 @@
   }
 }
 :root[data-theme="dark"] {
-  --suelo: oklch(17% 0.012 245); --hoja: oklch(21% 0.014 245); --hundido: oklch(18.5% 0.012 245); --campo: oklch(15.5% 0.02 250); --campo-borde: oklch(46% 0.06 252); --nota: oklch(25.5% 0.014 72); --nota-borde: oklch(36% 0.022 70);
+  --suelo: oklch(17% 0.012 245); --hoja: oklch(21% 0.014 245); --hundido: oklch(18.5% 0.012 245); --campo: oklch(15.5% 0.02 250); --campo-borde: oklch(46% 0.06 252); --viga: oklch(72% 0.09 250); --nota: oklch(25.5% 0.014 72); --nota-borde: oklch(36% 0.022 70);
   --tinta: oklch(93% 0.008 240); --tinta-2: oklch(78% 0.012 240); --tinta-3: oklch(66% 0.014 240);
   --linea: oklch(29% 0.014 245); --linea-fuerte: oklch(38% 0.016 245);
   --acento: oklch(74% 0.11 250); --acento-suave: oklch(30% 0.05 252);
@@ -739,7 +739,7 @@ svg.vl { display: block; width: 100%; height: 100%; }
 .vl text { fill: var(--tinta-2); font: calc(12px + var(--mas)) var(--f); font-variant-numeric: tabular-nums; }
 .vl .vl-tit { font-weight: 600; }
 .vl .vl-tit.lectura { font-weight: 500; }
-.vl .vl-M { --c: var(--serie-m); } .vl .vl-V { --c: var(--serie-v); } .vl .vl-giro { --c: var(--serie-giro); } .vl .vl-flecha { --c: var(--serie-flecha); }
+.vl .vl-M, .vl .vl-V, .vl .vl-flecha { --c: var(--tinta); } .vl .vl-giro { --c: var(--tinta-2); } /* sin colores (José Luis, 28/10): tinta, y θ en gris oscuro */
 .vl text.vl-M, .vl text.vl-V, .vl text.vl-giro, .vl text.vl-flecha { fill: var(--c); }
 .vl .vl-curva { fill: none; stroke: var(--c); stroke-width: 2; stroke-linejoin: round; }
 .vl .vl-area { stroke: none; }
@@ -747,8 +747,8 @@ svg.vl { display: block; width: 100%; height: 100%; }
 .vl .vl-num { font-weight: 600; paint-order: stroke; stroke: var(--hoja); stroke-width: 3px; stroke-linejoin: round; }
 .vl .vl-num.carga { fill: var(--tinta-2); }
 .vl .vl-num.rea { fill: var(--tinta); }
-.vl .vl-viga { stroke: var(--tinta); stroke-width: 5; fill: none; }
-.vl .vl-viga.fina { stroke: var(--tinta-3); stroke-width: 3; }
+.vl .vl-viga { stroke: var(--viga); stroke-width: 5; fill: none; }
+.vl .vl-viga.fina { stroke: var(--viga); stroke-width: 3; opacity: .7; }
 .vl .vl-apoyo { fill: var(--hormigon); stroke: var(--hormigon-borde); }
 .vl .vl-empot { stroke: var(--hormigon-borde); stroke-width: 2; fill: none; }
 .vl .vl-empot.fino { stroke-width: 1; }
@@ -899,6 +899,22 @@ svg.dib-ras { min-width: 0; }
 }
 .marca .app { letter-spacing: 0; white-space: nowrap; font-size: calc(10px + var(--mas)); }
 .marca .app .beta { color: #ff9a2e; font-weight: 700; }
+
+/* Análisis · vigas: la mitad de la pantalla para el dibujo y la otra mitad para la tabla */
+@media (min-width: 1100px) and (min-height: 600px) {
+  .trabajo:has(.cuerpo.mitad) { grid-template-columns: 324px minmax(0, 65fr) minmax(0, 35fr); }
+}
+.cuerpo.mitad .graf-tabla { flex: 1; min-height: 0; }
+.cuerpo.mitad .graf-tabla table { width: 100%; }
+
+/* Análisis · vigas: columna de datos según la guía común (28/10): campos blancos con borde azul grisáceo, unidades [entre corchetes] en etiquetas y cabeceras, textos de 12 px como mínimo */
+.vigas-datos { display: flex; flex-direction: column; gap: var(--e3); }
+.vigas-datos .caja { background: var(--campo); border-color: var(--campo-borde); }
+.vigas-datos .caja:focus-within { border-color: var(--acento); }
+.vigas-datos .grupo legend, .vigas-datos .campo .eco, .vigas-datos .etq-rejilla { font-size: 12px; }
+.vigas-datos table.rejilla td, .vigas-datos table.rejilla tr.nueva td { background: var(--campo); } /* celdas de datos en blanco; solo la cabecera en gris */
+.vigas-datos table.rejilla td.sel, .vigas-datos table.rejilla tr.foco td { background: var(--acento-suave); }
+.vigas-datos .marco-rejilla { border-color: var(--campo-borde); }
 
 /* ---------- Barra superior de una línea, 52 px (guía común § 2.3) ---------- */
 @media (min-width: 1100px) and (min-height: 600px) {

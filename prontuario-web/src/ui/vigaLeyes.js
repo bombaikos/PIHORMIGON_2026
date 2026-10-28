@@ -13,10 +13,13 @@ const PAD = 44; // margen horizontal: caben los apoyos y los rótulos de los ext
 const BANDAS = [
   { k: 'M', f: 1, d: MAG.M.d, ud: 'kN·m', abajo: true, rayado: true, fuente: 'diagrama', peso: 1.35 },
   { k: 'V', f: 1, d: MAG.N.d, ud: 'kN', abajo: false, rayado: true, fuente: 'diagrama', peso: 1.1 },
-  { k: 'giro', f: 1000, d: 1, ud: 'mrad', abajo: true, rayado: false, fuente: 'puntos', peso: 1 },
   { k: 'flecha', f: 1000, d: 1, ud: 'mm', abajo: true, rayado: false, fuente: 'puntos', peso: 1.1 },
+  { k: 'giro', f: 1000, d: 1, ud: 'mrad', abajo: true, rayado: false, fuente: 'puntos', peso: 1 },
 ];
 const TIT = { M: 'M', V: 'V', giro: 'θ', flecha: 'δ' };
+
+// Cargas dadas por el usuario: tal cual se escribieron, sin ceros de relleno (23, 12.5)
+const dato = (v) => fmt(v, Number.isInteger(+v.toFixed(1)) ? 0 : 1);
 
 const e = (tag, attrs = {}, txt) => {
   const el = document.createElementNS(NS, tag);
@@ -39,10 +42,13 @@ function apoyo(g, x, y, tp, pequeno) {
 
 /** Esquema: viga, cargas, apoyos y reacciones escritas. */
 function esquema(g, D, r, W, top, h, X) {
+  const rotulo = top; // el título ocupa la primera fila; el dibujo empieza debajo
+  top += 16;
+  h -= 16;
   const nMomR = D.der === 'empotramiento' || D.izq === 'empotramiento';
   const yv = top + h - (nMomR ? 52 : 40);
   const alto = Math.max(20, Math.min(46, yv - top - 20));
-  g.append(e('text', { x: PAD - 30, y: top + 12, class: 'vl-tit' }, `${t('vig.esquema')} · L = ${fmt(D.L, 2)} m`));
+  g.append(e('text', { x: PAD - 30, y: rotulo + 12, class: 'vl-tit' }, `${t('vig.esquema')} · L = ${fmt(D.L, 2)} m`));
   const dist = D.cargas.filter((c) => c.tipo === 'distribuida');
   const qmax = Math.max(1e-9, ...dist.map((c) => Math.max(Math.abs(c.q1), Math.abs(c.q2))));
   // Alturas con signo: positivo (hacia abajo) por encima de la viga y negativo por debajo; si cambia de signo se corta en el cero
@@ -58,10 +64,10 @@ function esquema(g, D, r, W, top, h, X) {
     } else g.append(e('path', { d: `M${a} ${yb} V${yb - ha} L${b} ${yb - hb} V${yb} z`, class: 'vl-distr' }));
     // Valores en los extremos, fuera de la figura
     const fuera = (hh) => (hh >= 0 ? yb - hh - 4 : yb - hh + 13);
-    if (c.q1 === c.q2) g.append(e('text', { x: (a + b) / 2, y: fuera(ha), 'text-anchor': 'middle', class: 'vl-num carga' }, `${fmt(c.q1, 1)} kN/m`));
+    if (c.q1 === c.q2) g.append(e('text', { x: (a + b) / 2, y: fuera(ha), 'text-anchor': 'middle', class: 'vl-num carga' }, `${dato(c.q1)} kN/m`));
     else {
-      g.append(e('text', { x: a, y: fuera(ha), 'text-anchor': 'start', class: 'vl-num carga' }, `${fmt(c.q1, 1)} kN/m`));
-      g.append(e('text', { x: b, y: fuera(hb), 'text-anchor': 'end', class: 'vl-num carga' }, `${fmt(c.q2, 1)} kN/m`));
+      g.append(e('text', { x: a, y: fuera(ha), 'text-anchor': 'start', class: 'vl-num carga' }, `${dato(c.q1)} kN/m`));
+      g.append(e('text', { x: b, y: fuera(hb), 'text-anchor': 'end', class: 'vl-num carga' }, `${dato(c.q2)} kN/m`));
     }
   }
   // Las flechas de P son más altas que las distribuidas para que sus rótulos no coincidan en altura
@@ -69,14 +75,17 @@ function esquema(g, D, r, W, top, h, X) {
   for (const c of D.cargas.filter((z) => z.tipo === 'puntual')) {
     const x = X(c.a), s = c.P >= 0 ? 1 : -1;
     g.append(e('path', { d: `M${x} ${yv - 3 - s * palto} V${yv - 3} m-4.5 ${-8 * s} l4.5 ${8 * s} l4.5 ${-8 * s}`, class: 'vl-carga puntual' }));
-    g.append(e('text', { x, y: s > 0 ? yv - palto - 8 : yv + palto + 12, 'text-anchor': 'middle', class: 'vl-num carga' }, `${fmt(c.P, MAG.F.d)} kN`));
+    g.append(e('text', { x, y: s > 0 ? yv - palto - 8 : yv + palto + 12, 'text-anchor': 'middle', class: 'vl-num carga' }, `${dato(c.P)} kN`));
   }
   // El rótulo del momento va por encima del de las distribuidas (alto + 18) para que no coincidan
   for (const c of D.cargas.filter((z) => z.tipo === 'momento')) {
     const x = X(c.a), s = c.C >= 0 ? 1 : -1;
     const r = 17, cy = yv - 8;
     g.append(e('path', { d: `M${x - r * s} ${cy} a${r} ${r} 0 1 1 ${2 * r * s} 0 m${-4 * s} ${-5} l${4 * s} 5 l${-5 * s} 2`, class: 'vl-carga', fill: 'none' }));
-    g.append(e('text', { x, y: yv - 3 - alto - 18, 'text-anchor': 'middle', class: 'vl-num carga' }, `${fmt(c.C, MAG.M.d)} kN·m`));
+    // Si hay una P cerca, el rótulo se aparta de ella para no pisarla
+    const cerca = D.cargas.filter((z) => z.tipo === 'puntual').map((z) => X(z.a) - x).filter((d) => Math.abs(d) < 70);
+    const anc = cerca.some((d) => d > 0) ? 'end' : cerca.some((d) => d < 0) ? 'start' : 'middle';
+    g.append(e('text', { x: anc === 'end' ? x + 10 : anc === 'start' ? x - 10 : x, y: yv - 3 - alto - 18, 'text-anchor': anc, class: 'vl-num carga' }, `${dato(c.C)} kN·m`));
   }
   g.append(e('path', { d: `M${X(0)} ${yv} H${X(D.L)}`, class: 'vl-viga' }));
   apoyo(g, X(0), yv, D.izq);
@@ -143,7 +152,7 @@ export function dibujarLeyes(svg, W, H, D, r) {
     g.append(e('path', { d: `M${X(v)} ${yEje} v5`, class: 'vl-eje' }));
     g.append(e('text', { x: X(v), y: yEje + 17, 'text-anchor': 'middle', class: 'vl-eje-n' }, fmt(v, paso < 1 ? 1 : (Number.isInteger(v) ? 0 : 2))));
   }
-  g.append(e('text', { x: W - 2, y: yEje + 17, 'text-anchor': 'end', class: 'vl-eje-n' }, 'x [m]'));
+  g.append(e('text', { x: W - 2, y: yEje + 17, 'text-anchor': 'end', class: 'vl-eje-n' }, '[m]'));
   BANDAS.forEach((B) => {
     const h = (resto * B.peso) / pesoTot;
     const top = y0, bot = y0 + h;

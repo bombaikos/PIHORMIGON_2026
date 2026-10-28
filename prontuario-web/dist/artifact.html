@@ -6,7 +6,7 @@
   --suelo: oklch(96.4% 0.005 240);
   --hoja: oklch(99.6% 0.002 240);
   --hundido: oklch(95.2% 0.006 240);
-  --campo: oklch(100% 0 0); --campo-borde: oklch(78% 0.05 252);
+  --campo: oklch(100% 0 0); --campo-borde: oklch(78% 0.05 252); --viga: oklch(32% 0.09 255);
   --nota: oklch(94.8% 0.014 78); --nota-borde: oklch(85.5% 0.024 75);
   --tinta: oklch(24% 0.02 248);
   --tinta-2: oklch(44% 0.02 248);
@@ -46,7 +46,7 @@
 :root[data-densidad="comoda"] { --alto-campo: 32px; --hueco-campos: 10px; }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --suelo: oklch(17% 0.012 245); --hoja: oklch(21% 0.014 245); --hundido: oklch(18.5% 0.012 245); --campo: oklch(15.5% 0.02 250); --campo-borde: oklch(46% 0.06 252); --nota: oklch(25.5% 0.014 72); --nota-borde: oklch(36% 0.022 70);
+    --suelo: oklch(17% 0.012 245); --hoja: oklch(21% 0.014 245); --hundido: oklch(18.5% 0.012 245); --campo: oklch(15.5% 0.02 250); --campo-borde: oklch(46% 0.06 252); --viga: oklch(72% 0.09 250); --nota: oklch(25.5% 0.014 72); --nota-borde: oklch(36% 0.022 70);
     --tinta: oklch(93% 0.008 240); --tinta-2: oklch(78% 0.012 240); --tinta-3: oklch(66% 0.014 240);
     --linea: oklch(29% 0.014 245); --linea-fuerte: oklch(38% 0.016 245);
     --acento: oklch(74% 0.11 250); --acento-suave: oklch(30% 0.05 252);
@@ -61,7 +61,7 @@
   }
 }
 :root[data-theme="dark"] {
-  --suelo: oklch(17% 0.012 245); --hoja: oklch(21% 0.014 245); --hundido: oklch(18.5% 0.012 245); --campo: oklch(15.5% 0.02 250); --campo-borde: oklch(46% 0.06 252); --nota: oklch(25.5% 0.014 72); --nota-borde: oklch(36% 0.022 70);
+  --suelo: oklch(17% 0.012 245); --hoja: oklch(21% 0.014 245); --hundido: oklch(18.5% 0.012 245); --campo: oklch(15.5% 0.02 250); --campo-borde: oklch(46% 0.06 252); --viga: oklch(72% 0.09 250); --nota: oklch(25.5% 0.014 72); --nota-borde: oklch(36% 0.022 70);
   --tinta: oklch(93% 0.008 240); --tinta-2: oklch(78% 0.012 240); --tinta-3: oklch(66% 0.014 240);
   --linea: oklch(29% 0.014 245); --linea-fuerte: oklch(38% 0.016 245);
   --acento: oklch(74% 0.11 250); --acento-suave: oklch(30% 0.05 252);
@@ -741,7 +741,7 @@ svg.vl { display: block; width: 100%; height: 100%; }
 .vl text { fill: var(--tinta-2); font: calc(12px + var(--mas)) var(--f); font-variant-numeric: tabular-nums; }
 .vl .vl-tit { font-weight: 600; }
 .vl .vl-tit.lectura { font-weight: 500; }
-.vl .vl-M { --c: var(--serie-m); } .vl .vl-V { --c: var(--serie-v); } .vl .vl-giro { --c: var(--serie-giro); } .vl .vl-flecha { --c: var(--serie-flecha); }
+.vl .vl-M, .vl .vl-V, .vl .vl-flecha { --c: var(--tinta); } .vl .vl-giro { --c: var(--tinta-2); } /* sin colores (José Luis, 28/10): tinta, y θ en gris oscuro */
 .vl text.vl-M, .vl text.vl-V, .vl text.vl-giro, .vl text.vl-flecha { fill: var(--c); }
 .vl .vl-curva { fill: none; stroke: var(--c); stroke-width: 2; stroke-linejoin: round; }
 .vl .vl-area { stroke: none; }
@@ -749,8 +749,8 @@ svg.vl { display: block; width: 100%; height: 100%; }
 .vl .vl-num { font-weight: 600; paint-order: stroke; stroke: var(--hoja); stroke-width: 3px; stroke-linejoin: round; }
 .vl .vl-num.carga { fill: var(--tinta-2); }
 .vl .vl-num.rea { fill: var(--tinta); }
-.vl .vl-viga { stroke: var(--tinta); stroke-width: 5; fill: none; }
-.vl .vl-viga.fina { stroke: var(--tinta-3); stroke-width: 3; }
+.vl .vl-viga { stroke: var(--viga); stroke-width: 5; fill: none; }
+.vl .vl-viga.fina { stroke: var(--viga); stroke-width: 3; opacity: .7; }
 .vl .vl-apoyo { fill: var(--hormigon); stroke: var(--hormigon-borde); }
 .vl .vl-empot { stroke: var(--hormigon-borde); stroke-width: 2; fill: none; }
 .vl .vl-empot.fino { stroke-width: 1; }
@@ -901,6 +901,22 @@ svg.dib-ras { min-width: 0; }
 }
 .marca .app { letter-spacing: 0; white-space: nowrap; font-size: calc(10px + var(--mas)); }
 .marca .app .beta { color: #ff9a2e; font-weight: 700; }
+
+/* Análisis · vigas: la mitad de la pantalla para el dibujo y la otra mitad para la tabla */
+@media (min-width: 1100px) and (min-height: 600px) {
+  .trabajo:has(.cuerpo.mitad) { grid-template-columns: 324px minmax(0, 65fr) minmax(0, 35fr); }
+}
+.cuerpo.mitad .graf-tabla { flex: 1; min-height: 0; }
+.cuerpo.mitad .graf-tabla table { width: 100%; }
+
+/* Análisis · vigas: columna de datos según la guía común (28/10): campos blancos con borde azul grisáceo, unidades [entre corchetes] en etiquetas y cabeceras, textos de 12 px como mínimo */
+.vigas-datos { display: flex; flex-direction: column; gap: var(--e3); }
+.vigas-datos .caja { background: var(--campo); border-color: var(--campo-borde); }
+.vigas-datos .caja:focus-within { border-color: var(--acento); }
+.vigas-datos .grupo legend, .vigas-datos .campo .eco, .vigas-datos .etq-rejilla { font-size: 12px; }
+.vigas-datos table.rejilla td, .vigas-datos table.rejilla tr.nueva td { background: var(--campo); } /* celdas de datos en blanco; solo la cabecera en gris */
+.vigas-datos table.rejilla td.sel, .vigas-datos table.rejilla tr.foco td { background: var(--acento-suave); }
+.vigas-datos .marco-rejilla { border-color: var(--campo-borde); }
 
 /* ---------- Barra superior de una línea, 52 px (guía común § 2.3) ---------- */
 @media (min-width: 1100px) and (min-height: 600px) {
@@ -5317,10 +5333,10 @@ svg.dib-ras { min-width: 0; }
     };
     return { c, marcar };
   }
-  function campoNum({ id, etq, ref: ref3, valor, mag, paso: paso2, min = -Infinity, max = Infinity, nombre, onCambio, ayuda }) {
+  function campoNum({ id, etq, ref: ref3, valor, mag, paso: paso2, min = -Infinity, max = Infinity, nombre, onCambio, ayuda, sinUd = false }) {
     const m = MAG[mag] ?? { ud: "", f: 1, d: 3 };
     const input = h("input", { id, inputmode: "decimal", value: mag ? paraCampo(valor, mag) : String(valor ?? ""), "data-paso": paso2, autocomplete: "off", title: ayuda, "aria-describedby": `${id}-eco` });
-    const caja = h("div", { class: "caja" }, input, m.ud ? h("span", { class: "ud" }, m.ud) : null);
+    const caja = h("div", { class: "caja" }, input, m.ud && !sinUd ? h("span", { class: "ud" }, m.ud) : null);
     const { c, marcar } = marco(id, etq, ref3, caja);
     const leer = () => {
       const raw = input.value;
@@ -9758,9 +9774,9 @@ svg.dib-ras { min-width: 0; }
     const p = ctx2.p;
     const D = condiciones(p);
     const cambio = (estructura) => ctx2.cambio(estructura ? { estructura: true } : void 0);
-    const set = (k, est10) => (v2) => {
+    const set = (k, est9) => (v2) => {
       D[k] = v2;
-      cambio(est10);
+      cambio(est9);
     };
     const seg = (k, lista, etq) => h(
       "div",
@@ -11964,13 +11980,13 @@ svg.dib-ras { min-width: 0; }
     const D = estado(p);
     const ehe = p.norma === "EHE-08" || p.norma === "EHE-98";
     const cambio = (estructura) => ctx2.cambio(estructura ? { estructura: true } : void 0);
-    const seg = (k, opciones, etq, est10 = true) => h(
+    const seg = (k, opciones, etq, est9 = true) => h(
       "div",
       { class: "fu-campo" },
       h("span", { class: "etq-grupo" }, etq),
       segmentado({ opciones, valor: D[k], ancho: true, etiqueta: etq, onCambio: (v2) => {
         D[k] = v2;
-        cambio(est10);
+        cambio(est9);
       } })
     );
     poner(form, h("div", { class: "cab" }, h("h1", {}, t("m.fuego")), h("p", {}, t("fu.subtitulo"))));
@@ -12242,13 +12258,13 @@ svg.dib-ras { min-width: 0; }
       D[k] = v2;
       cambio();
     };
-    const seg = (k, opciones, etq, est10 = true) => h(
+    const seg = (k, opciones, etq, est9 = true) => h(
       "div",
       { class: "fu-campo" },
       h("span", { class: "etq-grupo" }, etq),
       segmentado({ opciones, valor: D[k], ancho: true, etiqueta: etq, onCambio: (v2) => {
         D[k] = v2;
-        cambio(est10);
+        cambio(est9);
       } })
     );
     poner(form, h("div", { class: "cab" }, h("h1", {}, t("m.anclaje")), h("p", {}, t("an.subtitulo"))));
@@ -15872,7 +15888,6 @@ svg.dib-ras { min-width: 0; }
   var vigas_exports = {};
   __export(vigas_exports, {
     datos: () => datos15,
-    reiniciar: () => reiniciar9,
     resultados: () => resultados15
   });
 
@@ -16052,10 +16067,11 @@ svg.dib-ras { min-width: 0; }
   var BANDAS = [
     { k: "M", f: 1, d: MAG.M.d, ud: "kN\xB7m", abajo: true, rayado: true, fuente: "diagrama", peso: 1.35 },
     { k: "V", f: 1, d: MAG.N.d, ud: "kN", abajo: false, rayado: true, fuente: "diagrama", peso: 1.1 },
-    { k: "giro", f: 1e3, d: 1, ud: "mrad", abajo: true, rayado: false, fuente: "puntos", peso: 1 },
-    { k: "flecha", f: 1e3, d: 1, ud: "mm", abajo: true, rayado: false, fuente: "puntos", peso: 1.1 }
+    { k: "flecha", f: 1e3, d: 1, ud: "mm", abajo: true, rayado: false, fuente: "puntos", peso: 1.1 },
+    { k: "giro", f: 1e3, d: 1, ud: "mrad", abajo: true, rayado: false, fuente: "puntos", peso: 1 }
   ];
   var TIT = { M: "M", V: "V", giro: "\u03B8", flecha: "\u03B4" };
+  var dato = (v2) => fmt(v2, Number.isInteger(+v2.toFixed(1)) ? 0 : 1);
   var e = (tag, attrs = {}, txt) => {
     const el = document.createElementNS(NS3, tag);
     for (const [k, v2] of Object.entries(attrs)) el.setAttribute(k, v2);
@@ -16073,10 +16089,13 @@ svg.dib-ras { min-width: 0; }
     }
   }
   function esquema(g, D, r, W, top, h2, X) {
+    const rotulo = top;
+    top += 16;
+    h2 -= 16;
     const nMomR = D.der === "empotramiento" || D.izq === "empotramiento";
     const yv = top + h2 - (nMomR ? 52 : 40);
     const alto = Math.max(20, Math.min(46, yv - top - 20));
-    g.append(e("text", { x: PAD - 30, y: top + 12, class: "vl-tit" }, `${t("vig.esquema")} \xB7 L = ${fmt(D.L, 2)} m`));
+    g.append(e("text", { x: PAD - 30, y: rotulo + 12, class: "vl-tit" }, `${t("vig.esquema")} \xB7 L = ${fmt(D.L, 2)} m`));
     const dist = D.cargas.filter((c) => c.tipo === "distribuida");
     const qmax = Math.max(1e-9, ...dist.map((c) => Math.max(Math.abs(c.q1), Math.abs(c.q2))));
     const yb = yv - 3;
@@ -16090,23 +16109,25 @@ svg.dib-ras { min-width: 0; }
         g.append(e("path", { d: `M${xc} ${yb} L${b} ${yb - hb} V${yb} z`, class: "vl-distr" }));
       } else g.append(e("path", { d: `M${a} ${yb} V${yb - ha} L${b} ${yb - hb} V${yb} z`, class: "vl-distr" }));
       const fuera = (hh) => hh >= 0 ? yb - hh - 4 : yb - hh + 13;
-      if (c.q1 === c.q2) g.append(e("text", { x: (a + b) / 2, y: fuera(ha), "text-anchor": "middle", class: "vl-num carga" }, `${fmt(c.q1, 1)} kN/m`));
+      if (c.q1 === c.q2) g.append(e("text", { x: (a + b) / 2, y: fuera(ha), "text-anchor": "middle", class: "vl-num carga" }, `${dato(c.q1)} kN/m`));
       else {
-        g.append(e("text", { x: a, y: fuera(ha), "text-anchor": "start", class: "vl-num carga" }, `${fmt(c.q1, 1)} kN/m`));
-        g.append(e("text", { x: b, y: fuera(hb), "text-anchor": "end", class: "vl-num carga" }, `${fmt(c.q2, 1)} kN/m`));
+        g.append(e("text", { x: a, y: fuera(ha), "text-anchor": "start", class: "vl-num carga" }, `${dato(c.q1)} kN/m`));
+        g.append(e("text", { x: b, y: fuera(hb), "text-anchor": "end", class: "vl-num carga" }, `${dato(c.q2)} kN/m`));
       }
     }
     const palto = Math.max(alto + 6, Math.min(yv - top - 22, alto + 24));
     for (const c of D.cargas.filter((z) => z.tipo === "puntual")) {
       const x = X(c.a), s = c.P >= 0 ? 1 : -1;
       g.append(e("path", { d: `M${x} ${yv - 3 - s * palto} V${yv - 3} m-4.5 ${-8 * s} l4.5 ${8 * s} l4.5 ${-8 * s}`, class: "vl-carga puntual" }));
-      g.append(e("text", { x, y: s > 0 ? yv - palto - 8 : yv + palto + 12, "text-anchor": "middle", class: "vl-num carga" }, `${fmt(c.P, MAG.F.d)} kN`));
+      g.append(e("text", { x, y: s > 0 ? yv - palto - 8 : yv + palto + 12, "text-anchor": "middle", class: "vl-num carga" }, `${dato(c.P)} kN`));
     }
     for (const c of D.cargas.filter((z) => z.tipo === "momento")) {
       const x = X(c.a), s = c.C >= 0 ? 1 : -1;
       const r2 = 17, cy = yv - 8;
       g.append(e("path", { d: `M${x - r2 * s} ${cy} a${r2} ${r2} 0 1 1 ${2 * r2 * s} 0 m${-4 * s} ${-5} l${4 * s} 5 l${-5 * s} 2`, class: "vl-carga", fill: "none" }));
-      g.append(e("text", { x, y: yv - 3 - alto - 18, "text-anchor": "middle", class: "vl-num carga" }, `${fmt(c.C, MAG.M.d)} kN\xB7m`));
+      const cerca = D.cargas.filter((z) => z.tipo === "puntual").map((z) => X(z.a) - x).filter((d) => Math.abs(d) < 70);
+      const anc = cerca.some((d) => d > 0) ? "end" : cerca.some((d) => d < 0) ? "start" : "middle";
+      g.append(e("text", { x: anc === "end" ? x + 10 : anc === "start" ? x - 10 : x, y: yv - 3 - alto - 18, "text-anchor": anc, class: "vl-num carga" }, `${dato(c.C)} kN\xB7m`));
     }
     g.append(e("path", { d: `M${X(0)} ${yv} H${X(D.L)}`, class: "vl-viga" }));
     apoyo(g, X(0), yv, D.izq);
@@ -16166,7 +16187,7 @@ svg.dib-ras { min-width: 0; }
       g.append(e("path", { d: `M${X(v2)} ${yEje} v5`, class: "vl-eje" }));
       g.append(e("text", { x: X(v2), y: yEje + 17, "text-anchor": "middle", class: "vl-eje-n" }, fmt(v2, paso2 < 1 ? 1 : Number.isInteger(v2) ? 0 : 2)));
     }
-    g.append(e("text", { x: W - 2, y: yEje + 17, "text-anchor": "end", class: "vl-eje-n" }, "x [m]"));
+    g.append(e("text", { x: W - 2, y: yEje + 17, "text-anchor": "end", class: "vl-eje-n" }, "[m]"));
     BANDAS.forEach((B) => {
       const h2 = resto * B.peso / pesoTot;
       const top = y0, bot = y0 + h2;
@@ -16236,7 +16257,6 @@ svg.dib-ras { min-width: 0; }
   }
 
   // src/ui/vistas/vigas.js
-  var sub27 = (a, b) => `${a}<sub>${b}</sub>`;
   var num3 = (x) => String(+Number(x).toFixed(4));
   var nv2 = (txt) => leerNumero(txt);
   var INICIAL5 = () => ({ L: 6, izq: "apoyo", der: "apoyo", sec: null, EI: 48e3, cargas: [{ tipo: "distribuida", a: 0, b: 6, q1: 20, q2: 20 }] });
@@ -16311,16 +16331,17 @@ svg.dib-ras { min-width: 0; }
       }
       ctx2.cambio({ estructura: true });
     };
-    const apoyo2 = (k) => selector({ id: `v-${k}`, etq: t(`vig.${k}`), opciones: APOYOS.map((a) => [a, t(`vig.ap.${a}`)]), valor: D[k], onCambio: (v2) => {
+    const apoyo2 = (k) => selector({ id: `v-${k}`, etq: t(`vig.${k}`), linea: true, opciones: APOYOS.map((a) => [a, t(`vig.ap.${a}`)]), valor: D[k], onCambio: (v2) => {
       D[k] = v2;
       ctx2.cambio({ estructura: true });
     } });
-    poner(
-      form,
+    poner(form, h(
+      "div",
+      { class: "vigas-datos" },
       h("div", { class: "cab" }, h("h1", {}, t("menu.vigas1vano")), h("p", {}, t("vig.subtitulo"))),
       grupo(
         t("vig.viga"),
-        campoNum({ id: "v-L", etq: sub27("L", ""), ref: t("vig.luz"), valor: D.L, mag: "m", paso: 0.5, min: 0.05, max: 1e3, onCambio: (v2) => {
+        campoNum({ id: "v-L", etq: "L [m]", nombre: "L", sinUd: true, valor: D.L, mag: "m", paso: 0.5, min: 0.05, max: 1e3, onCambio: (v2) => {
           D.L = v2;
           cambio();
         } }),
@@ -16328,8 +16349,8 @@ svg.dib-ras { min-width: 0; }
       ),
       grupo(
         t("vig.rigidez"),
-        selector({ id: "v-sec", etq: t("seccion"), opciones: [["", t("vig.personalizada")], ...secs.map((s) => [s.nombre, s.nombre])], valor: D.sec ?? "", onCambio: elegir3 }),
-        campoNum({ id: "v-EI", etq: "EI", ref: t("vig.eiBruta"), valor: D.EI, mag: "EI", paso: 1e3, min: 1, max: 1e12, onCambio: (v2) => {
+        selector({ id: "v-sec", etq: t("seccion"), linea: true, opciones: [["", t("vig.personalizada")], ...secs.map((s) => [s.nombre, s.nombre])], valor: D.sec ?? "", onCambio: elegir3 }),
+        campoNum({ id: "v-EI", etq: "EI [kN\xB7m\xB2]", nombre: "EI", sinUd: true, ayuda: t("vig.eiBruta"), valor: D.EI, mag: "EI", paso: 1e3, min: 1, max: 1e12, onCambio: (v2) => {
           D.EI = v2;
           if (D.sec) {
             D.sec = null;
@@ -16348,13 +16369,9 @@ svg.dib-ras { min-width: 0; }
         h("p", { class: "etq-rejilla compacta", html: t("vig.momentos") }),
         rejillas.M()
       )
-    );
+    ));
   }
-  var COLS = [["x", "x [m]", 3, 1], ["M", "M [kN\xB7m]", MAG.M.d, 1], ["V", "V [kN]", MAG.N.d, 1], ["giro", "\u03B8 [mrad]", 1, 1e3], ["flecha", "\u03B4 [mm]", 1, 1e3]];
-  var est9 = { tabla: false };
-  function reiniciar9() {
-    est9.tabla = false;
-  }
+  var COLS = [["x", "x [m]", 3, 1], ["M", "M [kN\xB7m]", MAG.M.d, 1], ["V", "V [kN]", MAG.N.d, 1], ["flecha", "\u03B4 [mm]", 1, 1e3], ["giro", "\u03B8 [mrad]", 1, 1e3]];
   function resultados15(ctx2, res) {
     const p = ctx2.p;
     const D = datosVigas(p);
@@ -16373,7 +16390,15 @@ svg.dib-ras { min-width: 0; }
     };
     if (typeof ResizeObserver === "function") new ResizeObserver(pintar2).observe(lienzo);
     requestAnimationFrame(pintar2);
-    const tabla3 = h("div", { class: "graf-tabla", style: "order:2", hidden: true, html: `<table><thead><tr>${COLS.map((c) => `<th>${c[1]}</th>`).join("")}</tr></thead><tbody>${r.tabla.map((f) => `<tr>${COLS.map(([k, , d, m]) => `<td>${fmt(f[k] * m, d)}</td>`).join("")}</tr>`).join("")}</tbody></table>` });
+    const tecla = (txt, titulo, f) => h("button", { type: "button", class: "tecla", title: titulo, onclick: f }, txt);
+    const barraDib = h(
+      "div",
+      { class: "graf-barra" },
+      tecla(t("graf.copiar"), t("graf.copiarTit"), () => copiarPNG(svg, ...medida(), "viga", ctx2.avisar)),
+      tecla("PNG", t("graf.guardarPNG"), () => guardar(svg, ...medida(), "viga", "png", ctx2.avisar)),
+      tecla("SVG", t("graf.guardarSVG"), () => guardar(svg, ...medida(), "viga", "svg", ctx2.avisar))
+    );
+    const tabla3 = h("div", { class: "graf-tabla", html: `<table><thead><tr>${COLS.map((c) => `<th>${c[1]}</th>`).join("")}</tr></thead><tbody>${r.tabla.map((f) => `<tr>${COLS.map(([k, , d, m]) => `<td>${fmt(f[k] * m, d)}</td>`).join("")}</tr>`).join("")}</tbody></table>` });
     const copiarTabla = async () => {
       const num4 = (v2) => Number.isFinite(v2) ? String(Math.abs(v2) < 1e-6 ? 0 : +v2.toPrecision(6)).replace(".", decimalAlCopiar()) : "";
       const lineas = [COLS.map((c) => c[1]).join("	"), ...r.tabla.map((f) => COLS.map(([k, , , m]) => num4(f[k] * m)).join("	"))];
@@ -16384,28 +16409,13 @@ svg.dib-ras { min-width: 0; }
         ctx2.avisar(t("graf.error"));
       }
     };
-    const tecla = (txt, titulo, f) => h("button", { type: "button", class: "tecla", title: titulo, onclick: f }, txt);
-    const bCopiar = tecla(t("graf.copiar"), t("graf.copiarTit"), () => est9.tabla ? copiarTabla() : copiarPNG(svg, ...medida(), "viga", ctx2.avisar));
-    const bPNG = tecla("PNG", t("graf.guardarPNG"), () => guardar(svg, ...medida(), "viga", "png", ctx2.avisar));
-    const bSVG = tecla("SVG", t("graf.guardarSVG"), () => guardar(svg, ...medida(), "viga", "svg", ctx2.avisar));
-    const barra3 = h("div", { class: "graf-barra" }, bCopiar, bPNG, bSVG);
-    const bG = h("button", { type: "button", role: "radio" }, t("graf.grafico"));
-    const bT = h("button", { type: "button", role: "radio" }, t("graf.tabla"));
-    const modo2 = (tab) => {
-      est9.tabla = tab;
-      bG.setAttribute("aria-checked", String(!tab));
-      bT.setAttribute("aria-checked", String(tab));
-      lienzo.hidden = tab;
-      tabla3.hidden = !tab;
-      bPNG.hidden = bSVG.hidden = tab;
-      bCopiar.title = tab ? t("graf.copiarTablaTit") : t("graf.copiarTit");
-      if (!tab) requestAnimationFrame(pintar2);
-    };
-    bG.onclick = () => modo2(false);
-    bT.onclick = () => modo2(true);
-    const seg = h("div", { class: "graf-modo", style: "order:3" }, h("div", { class: "seg", role: "radiogroup" }, bG, bT));
-    res.append(h("article", { class: "panel tarjeta" }, barra3, lienzo, tabla3, seg, h("p", { class: "pista", style: "order:4", html: `${t("vig.pistaCargas")} ${t("vig.convenio")}` })));
-    modo2(est9.tabla);
+    const barraTabla = h("div", { class: "graf-barra" }, tecla(t("graf.copiar"), t("graf.copiarTablaTit"), copiarTabla));
+    res.append(h(
+      "div",
+      { class: "cuerpo mitad" },
+      h("article", { class: "panel tarjeta" }, barraDib, lienzo),
+      h("article", { class: "panel tarjeta" }, barraTabla, tabla3)
+    ));
   }
 
   // src/ui/app.js
