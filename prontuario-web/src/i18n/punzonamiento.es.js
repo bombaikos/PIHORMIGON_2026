@@ -23,7 +23,7 @@ export default {
   'pun.VEdNombre': 'El esfuerzo de punzonamiento',
   'pun.VEdAyuda': 'Reacción del pilar; se pueden descontar las cargas que actúan dentro del perímetro situado a h/2 (EHE-08 46.3) o dentro del perímetro de control (EC-2)',
   'pun.exc': 'Momento transferido', 'pun.excSin': 'Sin momento', 'pun.excAprox': 'Simplificado', 'pun.excOtro': 'Otro β',
-  'pun.betaAyuda': 'Coeficiente de excentricidad de la carga. Sin momento: 1,00. Con momento: 1,15 interior, 1,40 borde, 1,50 esquina. «Otro β» permite escribir el valor calculado',
+  'pun.betaAyuda': 'Coeficiente de excentricidad de la carga. Valor simplificado según la posición del pilar (1,15 interior, 1,40 borde, 1,50 esquina); se puede escribir otro',
   'pun.cercos': 'Cercos de punzonamiento',
   'pun.ramas': 'Ramas', 'pun.ramasAyuda': 'Ramas verticales de cada perímetro de cercos, repartidas alrededor del pilar',
   'pun.a1Ayuda': 'Distancia de la cara del pilar al primer perímetro de cercos (máximo d/2)',
@@ -43,7 +43,7 @@ export default {
   'pun.tabla.nota': (sr, a1, nPer) => `a<sub>1</sub> = ${a1} mm, s<sub>r</sub> = ${sr} mm; ramas por perímetro; perímetros hasta la zona exterior: ${nPer}.`,
   // Dibujo
   'pun.esq': 'Esquema de armado', 'pun.esqCruz': 'En cruz', 'pun.esqRet': 'Retícula',
-  'pun.ramasBrazo': 'Ramas/brazo', 'pun.ramasBrazoAyuda': (n) => `Ramas de cada brazo en cada perímetro (${n} brazos según la posición del pilar), en fila transversal a la separación sr`,
+  'pun.ramasBrazo': 'Ramas', 'pun.ramasBrazoAyuda': (n) => `0 = sin cercos. Ramas de cada brazo en cada perímetro (${n} brazos según la posición del pilar), en fila transversal a la separación sr`,
   'pun.dib.cercosCruz': (n, per, fi, k, b) => `Cruz ${b}×${k} ramas ø${fi}, ${per} perím.`,
   'pun.dib.cercosRet': (n, per, fi) => `Retícula ${n} ramas ø${fi}, ${per} perím.`,
   'pun.dib.extEHE': (dl, u, req) => `${sv('u', 'n,ef')} a ${dl} mm: ${u} ≥ ${req}`,

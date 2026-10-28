@@ -870,6 +870,12 @@ svg.dib-pun { min-width: 0; }
 .dib .cerco-v { stroke: var(--acero); stroke-width: 1.8; }
 .dib .cerco-v.tenue { opacity: .3; }
 .dib .cota { stroke: var(--tinta-2); stroke-width: 1; }
+.tit-info { display: flex; align-items: center; gap: var(--e2); }
+.info-btn { flex: none; width: 18px; height: 18px; padding: 0; border: 1px solid var(--tinta-3); border-radius: 50%; background: none; font: italic 600 calc(12px + var(--mas))/16px Georgia, serif; color: var(--tinta-3); cursor: pointer; }
+.info-btn:hover, .info-btn:focus-visible, .info-btn[aria-expanded="true"] { color: var(--acento); border-color: var(--acento); outline: none; }
+.tarjeta:has(> .pun-info) { position: relative; }
+.pun-info { position: absolute; z-index: 30; top: 44px; left: 12px; right: 12px; max-height: calc(100% - 56px); overflow: auto; padding: var(--e2) var(--e3); border: 1px solid var(--linea-fuerte); border-radius: var(--r-campo); background: var(--hoja); box-shadow: var(--sombra); }
+.pun-info[hidden] { display: none; }
 </style>
 
 <header class="barra">
@@ -4529,7 +4535,7 @@ svg.dib-pun { min-width: 0; }
     "pun.excSin": "Sin momento",
     "pun.excAprox": "Simplificado",
     "pun.excOtro": "Otro \u03B2",
-    "pun.betaAyuda": "Coeficiente de excentricidad de la carga. Sin momento: 1,00. Con momento: 1,15 interior, 1,40 borde, 1,50 esquina. \xABOtro \u03B2\xBB permite escribir el valor calculado",
+    "pun.betaAyuda": "Coeficiente de excentricidad de la carga. Valor simplificado seg\xFAn la posici\xF3n del pilar (1,15 interior, 1,40 borde, 1,50 esquina); se puede escribir otro",
     "pun.cercos": "Cercos de punzonamiento",
     "pun.ramas": "Ramas",
     "pun.ramasAyuda": "Ramas verticales de cada per\xEDmetro de cercos, repartidas alrededor del pilar",
@@ -4563,8 +4569,8 @@ svg.dib-pun { min-width: 0; }
     "pun.esq": "Esquema de armado",
     "pun.esqCruz": "En cruz",
     "pun.esqRet": "Ret\xEDcula",
-    "pun.ramasBrazo": "Ramas/brazo",
-    "pun.ramasBrazoAyuda": (n) => `Ramas de cada brazo en cada per\xEDmetro (${n} brazos seg\xFAn la posici\xF3n del pilar), en fila transversal a la separaci\xF3n sr`,
+    "pun.ramasBrazo": "Ramas",
+    "pun.ramasBrazoAyuda": (n) => `0 = sin cercos. Ramas de cada brazo en cada per\xEDmetro (${n} brazos seg\xFAn la posici\xF3n del pilar), en fila transversal a la separaci\xF3n sr`,
     "pun.dib.cercosCruz": (n, per, fi, k, b) => `Cruz ${b}\xD7${k} ramas \xF8${fi}, ${per} per\xEDm.`,
     "pun.dib.cercosRet": (n, per, fi) => `Ret\xEDcula ${n} ramas \xF8${fi}, ${per} per\xEDm.`,
     "pun.dib.extEHE": (dl, u, req) => `${sv("u", "n,ef")} a ${dl} mm: ${u} \u2265 ${req}`,
@@ -4711,7 +4717,7 @@ svg.dib-pun { min-width: 0; }
     "pun.excSin": "No moment",
     "pun.excAprox": "Simplified",
     "pun.excOtro": "Other \u03B2",
-    "pun.betaAyuda": 'Load eccentricity factor. No moment: 1.00. With moment: 1.15 internal, 1.40 edge, 1.50 corner. "Other \u03B2" lets you type a calculated value',
+    "pun.betaAyuda": "Load eccentricity factor. Simplified value by column position (1.15 internal, 1.40 edge, 1.50 corner); type another to override",
     "pun.cercos": "Punching links",
     "pun.ramas": "Legs",
     "pun.ramasAyuda": "Vertical legs of each link perimeter, spread around the column",
@@ -4739,8 +4745,8 @@ svg.dib-pun { min-width: 0; }
     "pun.esq": "Link layout",
     "pun.esqCruz": "Cross",
     "pun.esqRet": "Rectangular grid",
-    "pun.ramasBrazo": "Legs/arm",
-    "pun.ramasBrazoAyuda": (n) => `Legs of each arm in each perimeter (${n} arms depending on the column position), in a transverse row at spacing sr`,
+    "pun.ramasBrazo": "Legs",
+    "pun.ramasBrazoAyuda": (n) => `0 = no links. Legs of each arm in each perimeter (${n} arms depending on the column position), in a transverse row at spacing sr`,
     "pun.dib.cercosCruz": (n, per, fi, k, b) => `Cross ${b}\xD7${k} legs \xF8${fi}, ${per} perim.`,
     "pun.dib.cercosRet": (n, per, fi) => `Grid ${n} legs \xF8${fi}, ${per} perim.`,
     "pun.dib.extEHE": (dl, u, req) => `${sv2("u", "n,ef")} at ${dl} mm: ${u} \u2265 ${req}`,
@@ -14223,6 +14229,8 @@ svg.dib-pun { min-width: 0; }
     var _a;
     const D = (_a = p.calculos).punzonamiento ?? (_a.punzonamiento = {});
     for (const [k, v2] of Object.entries(INICIAL3())) if (D[k] === void 0) D[k] = v2;
+    D.esq = "cruz";
+    D.sin = false;
     if (!p.hormigones.some((m) => m.nombre === D.hormigon)) D.hormigon = (p.hormigones.find((m) => /30/.test(m.nombre)) ?? p.hormigones[0])?.nombre ?? null;
     if (!p.aceros.some((m) => m.nombre === D.aceroCercos)) D.aceroCercos = (p.aceros.find((m) => /500/.test(m.nombre)) ?? p.aceros[0])?.nombre ?? null;
     return D;
@@ -14249,23 +14257,11 @@ svg.dib-pun { min-width: 0; }
       beta: betaDe(N.id, D.exc, D.pos, D.betaOtro),
       VEd: D.VEd,
       Dlower: D.Dlower,
-      sinArmadura: !dimensionando && D.sin
+      sinArmadura: !dimensionando && (D.sin || D.ramasBrazo === 0)
     };
     x.arm = { fi: D.fi, ramas: D.esq === "cruz" ? nBrazos(D.pos) * D.ramasBrazo : D.ramas, sr: D.sr, a1: D.a1, nPer: D.nPer, esq: D.esq };
     return x;
   }
-  var mostrar2 = (c, v2, d) => {
-    const i = c.querySelector("input");
-    i.value = String(+v2.toFixed(d));
-    return c;
-  };
-  var calculado2 = (c) => {
-    const i = c.querySelector("input");
-    i.disabled = true;
-    i.tabIndex = -1;
-    c.classList.add("calculado");
-    return c;
-  };
   var parejas2 = (campos) => {
     const c = campos.filter(Boolean);
     const filas = [];
@@ -14293,7 +14289,7 @@ svg.dib-pun { min-width: 0; }
     };
     const rect2 = D.tipo === "rect";
     const beta2 = betaDe(N.id, D.exc, D.pos, D.betaOtro);
-    const arm = !D.sin || !comp;
+    const arm = true;
     poner(
       form,
       segmentado({ ancho: true, etiqueta: t("flex.modo"), opciones: [["comprobar", t("comprobar")], ["dimensionar", t("dimensionar")]], valor: est7.modo, onCambio: (m) => {
@@ -14308,6 +14304,7 @@ svg.dib-pun { min-width: 0; }
         } }),
         segmentado({ ancho: true, etiqueta: t("pun.pos"), opciones: [["interior", t("pun.interior")], ["borde", t("pun.borde")], ["esquina", t("pun.esquina")]], valor: D.pos, onCambio: (v2) => {
           D.pos = v2;
+          D.exc = "aprox";
           ctx2.cambio({ estructura: true });
         } }),
         ...rect2 ? parejas2([
@@ -14330,24 +14327,15 @@ svg.dib-pun { min-width: 0; }
         ]),
         ...parejas2([
           campoNum({ id: "p-ved", etq: sub22("V", "Ed"), valor: D.VEd, mag: "N", paso: 10, min: 0.01, max: 1e6, nombre: t("pun.VEdNombre"), ayuda: t("pun.VEdAyuda"), onCambio: set("VEd") }),
-          D.exc === "otro" ? campoNum({ id: "p-beta", etq: e23 ? sub22("\u03B2", "e") : "\u03B2", valor: D.betaOtro, mag: "ratio", paso: 0.05, min: 1, max: 3, ayuda: t("pun.betaAyuda"), onCambio: set("betaOtro") }) : calculado2(mostrar2(campoNum({ id: "p-beta", etq: e23 ? sub22("\u03B2", "e") : "\u03B2", valor: beta2, mag: "ratio", paso: 0.05, min: 1, max: 3, ayuda: t("pun.betaAyuda"), onCambio: () => {
-          } }), beta2, 2))
-        ]),
-        segmentado({ ancho: true, etiqueta: t("pun.exc"), opciones: [["sin", t("pun.excSin")], ["aprox", t("pun.excAprox")], ["otro", t("pun.excOtro")]], valor: D.exc, onCambio: (v2) => {
-          D.exc = v2;
-          ctx2.cambio({ estructura: true });
-        } })
+          campoNum({ id: "p-beta", etq: e23 ? sub22("\u03B2", "e") : "\u03B2", valor: beta2, mag: "ratio", paso: 0.05, min: 1, max: 3, ayuda: t("pun.betaAyuda"), onCambio: (v2) => {
+            D.betaOtro = v2;
+            D.exc = "otro";
+            cambio();
+          } })
+        ])
       ),
       grupo(
         t("pun.cercos"),
-        comp ? segmentado({ ancho: true, etiqueta: t("pun.cercos"), opciones: [["con", t("cor.conArm")], ["sin", t("cor.sinArm")]], valor: D.sin ? "sin" : "con", onCambio: (v2) => {
-          D.sin = v2 === "sin";
-          ctx2.pintar();
-        } }) : null,
-        segmentado({ ancho: true, etiqueta: t("pun.esq"), opciones: [["cruz", t("pun.esqCruz")], ["ret", t("pun.esqRet")]], valor: D.esq, onCambio: (v2) => {
-          D.esq = v2;
-          ctx2.cambio({ estructura: true });
-        } }),
         ...parejas2([
           selector({ id: "p-ace", linea: true, etq: t("pun.acero"), opciones: p.aceros.map((m) => [m.nombre, m.nombre]), valor: D.aceroCercos, onCambio: (v2) => {
             D.aceroCercos = v2;
@@ -14357,7 +14345,7 @@ svg.dib-pun { min-width: 0; }
             D.fi = Number(v2);
             cambio();
           } }) : null,
-          arm && comp ? D.esq === "cruz" ? campoNum({ id: "p-rb", etq: t("pun.ramasBrazo"), valor: D.ramasBrazo, mag: "n", paso: 1, min: 1, max: 20, ayuda: t("pun.ramasBrazoAyuda", nBrazos(D.pos)), onCambio: set("ramasBrazo") }) : campoNum({ id: "p-ramas", etq: t("pun.ramas"), valor: D.ramas, mag: "n", paso: 2, min: 1, max: 200, ayuda: t("pun.ramasAyuda"), onCambio: set("ramas") }) : null,
+          arm && comp ? D.esq === "cruz" ? campoNum({ id: "p-rb", etq: t("pun.ramasBrazo"), valor: D.ramasBrazo, mag: "n", paso: 1, min: 0, max: 20, ayuda: t("pun.ramasBrazoAyuda", nBrazos(D.pos)), onCambio: set("ramasBrazo") }) : campoNum({ id: "p-ramas", etq: t("pun.ramas"), valor: D.ramas, mag: "n", paso: 2, min: 1, max: 200, ayuda: t("pun.ramasAyuda"), onCambio: set("ramas") }) : null,
           arm && comp ? campoNum({ id: "p-nper", etq: t("pun.nPer"), valor: D.nPer, mag: "n", paso: 1, min: 1, max: 30, ayuda: t("pun.nPerAyuda"), onCambio: set("nPer") }) : null,
           arm ? campoNum({ id: "p-a1", etq: sub22("a", "1"), valor: D.a1, mag: "diam", paso: 5, min: 0, max: 2e3, ayuda: t("pun.a1Ayuda"), onCambio: set("a1") }) : null,
           arm ? campoNum({ id: "p-sr", etq: sub22("s", "r"), valor: D.sr, mag: "diam", paso: 5, min: 20, max: 2e3, ayuda: t("pun.srAyuda"), onCambio: set("sr") }) : null
@@ -14426,7 +14414,8 @@ svg.dib-pun { min-width: 0; }
     }
     if (avisos.length) res.append(h("div", { class: "avisos" }, ...avisos));
     const dibujo = planta(p, x, r, comp, D, e23, ec, N);
-    poner(centro, h("h2", {}, t("pun.t.planta")), h("div", { class: "lienzo", html: dibujo }), notas2(p, D));
+    const [infoBtn, infoPop] = notas2(p, D);
+    poner(centro, h("h2", { class: "tit-info" }, t("pun.t.planta"), infoBtn), infoPop, h("div", { class: "lienzo", html: dibujo }));
     poner(dcha, h("h2", {}, t("cor.t.res")), cifras(cifrasDe(r, comp, e23)));
     if (!comp && r.tabla) {
       const cab = [t("cor.tabla.fi"), t("pun.tabla.ramas"), t("pun.tabla.asw"), t("pun.tabla.st"), t("pun.tabla.nPer"), t("pun.tabla.vu")];
@@ -14715,12 +14704,34 @@ svg.dib-pun { min-width: 0; }
     const claves = [["pun.n.alcance", e23 ? "pun.alcance23" : "pun.alcance"], ["pun.n.perim", e23 ? "pun.perim23" : "pun.perim"], ["pun.n.beta", e23 ? "pun.beta23" : "pun.beta"]];
     if (D.tipo === "circ") claves.push(["pun.n.circ", "pun.circNota"]);
     claves.push(["pun.n.norma", e23 ? "pun.nota23" : ec ? "pun.notaEC" : "pun.notaEHE"]);
-    return h(
+    const pop = h(
       "div",
-      { class: "pun-notas" },
-      h("h3", {}, t("cor.notas")),
+      { class: "pun-info", hidden: true, role: "dialog", "aria-label": t("cor.notas") },
       ...claves.map(([k, v2]) => h("details", { class: "pleg" }, h("summary", {}, h("span", { html: t(k) })), h("div", { class: "cuenta" }, h("p", { class: "nota", html: t(v2) }))))
     );
+    const cerrar3 = (e2) => {
+      if (!pop.contains(e2.target) && !btn.contains(e2.target)) fuera();
+    };
+    const fuera = () => {
+      pop.hidden = true;
+      btn.setAttribute("aria-expanded", "false");
+      document.removeEventListener("click", cerrar3);
+    };
+    const btn = h("button", {
+      type: "button",
+      class: "info-btn",
+      "aria-label": t("cor.notas"),
+      "aria-expanded": "false",
+      title: t("cor.notas"),
+      onclick: () => {
+        if (pop.hidden) {
+          pop.hidden = false;
+          btn.setAttribute("aria-expanded", "true");
+          setTimeout(() => document.addEventListener("click", cerrar3), 0);
+        } else fuera();
+      }
+    }, "i");
+    return [btn, pop];
   }
   function comandos10(ctx2) {
     return [

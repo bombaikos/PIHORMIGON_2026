@@ -28,6 +28,8 @@ const INICIAL = () => ({
 function datosDe(p) {
   const D = (p.calculos.punzonamiento ??= {});
   for (const [k, v] of Object.entries(INICIAL())) if (D[k] === undefined) D[k] = v;
+  D.esq = 'cruz'; // la retícula se retiró (José Luis, 28/10); sin cercos = 0 ramas por brazo
+  D.sin = false;
   if (!p.hormigones.some((m) => m.nombre === D.hormigon)) D.hormigon = (p.hormigones.find((m) => /30/.test(m.nombre)) ?? p.hormigones[0])?.nombre ?? null;
   if (!p.aceros.some((m) => m.nombre === D.aceroCercos)) D.aceroCercos = (p.aceros.find((m) => /500/.test(m.nombre)) ?? p.aceros[0])?.nombre ?? null;
   return D;
@@ -45,7 +47,7 @@ function entrada(p, D, { dimensionando = false } = {}) {
   const x = {
     tipo: D.tipo, pos: D.pos, c1: D.c1, c2: D.c2, D: D.D, d: D.d, fck: hor.fck, fykCercos: ace.fyk,
     rhoX: D.rhoX, rhoY: D.rhoY, sigCd: es23(p) ? 0 : D.sigCd, beta: betaDe(N.id, D.exc, D.pos, D.betaOtro), VEd: D.VEd, Dlower: D.Dlower,
-    sinArmadura: !dimensionando && D.sin,
+    sinArmadura: !dimensionando && (D.sin || D.ramasBrazo === 0),
   };
   x.arm = { fi: D.fi, ramas: D.esq === 'cruz' ? nBrazos(D.pos) * D.ramasBrazo : D.ramas, sr: D.sr, a1: D.a1, nPer: D.nPer, esq: D.esq };
   return x;
@@ -78,12 +80,12 @@ export function datos(ctx, form) {
   const set = (k) => (v) => { D[k] = v; cambio(); };
   const rect = D.tipo === 'rect';
     const beta = betaDe(N.id, D.exc, D.pos, D.betaOtro);
-  const arm = !D.sin || !comp;
+  const arm = true;
   poner(form,
     segmentado({ ancho: true, etiqueta: t('flex.modo'), opciones: [['comprobar', t('comprobar')], ['dimensionar', t('dimensionar')]], valor: est.modo, onCambio: (m) => { est.modo = m; ctx.pintar(); } }),
     grupo(t('pun.pilar'),
       segmentado({ ancho: true, etiqueta: t('pun.forma'), opciones: [['rect', t('pun.rect')], ['circ', t('pun.circ')]], valor: D.tipo, onCambio: (v) => { D.tipo = v; ctx.cambio({ estructura: true }); } }),
-      segmentado({ ancho: true, etiqueta: t('pun.pos'), opciones: [['interior', t('pun.interior')], ['borde', t('pun.borde')], ['esquina', t('pun.esquina')]], valor: D.pos, onCambio: (v) => { D.pos = v; ctx.cambio({ estructura: true }); } }),
+      segmentado({ ancho: true, etiqueta: t('pun.pos'), opciones: [['interior', t('pun.interior')], ['borde', t('pun.borde')], ['esquina', t('pun.esquina')]], valor: D.pos, onCambio: (v) => { D.pos = v; D.exc = 'aprox'; ctx.cambio({ estructura: true }); } }),
       ...(rect
         ? parejas([
           campoNum({ id: 'p-c1', etq: sub('c', '1'), ref: D.pos === 'interior' ? '' : t('pun.c1Ref'), valor: D.c1, mag: 'diam', paso: 25, min: 1, max: 5000, ayuda: t('pun.c1Ayuda'), onCambio: set('c1') }),
@@ -103,19 +105,14 @@ export function datos(ctx, form) {
       ]),
       ...parejas([
         campoNum({ id: 'p-ved', etq: sub('V', 'Ed'), valor: D.VEd, mag: 'N', paso: 10, min: 0.01, max: 1e6, nombre: t('pun.VEdNombre'), ayuda: t('pun.VEdAyuda'), onCambio: set('VEd') }),
-        D.exc === 'otro'
-          ? campoNum({ id: 'p-beta', etq: e23 ? sub('β', 'e') : 'β', valor: D.betaOtro, mag: 'ratio', paso: 0.05, min: 1, max: 3, ayuda: t('pun.betaAyuda'), onCambio: set('betaOtro') })
-          : calculado(mostrar(campoNum({ id: 'p-beta', etq: e23 ? sub('β', 'e') : 'β', valor: beta, mag: 'ratio', paso: 0.05, min: 1, max: 3, ayuda: t('pun.betaAyuda'), onCambio: () => {} }), beta, 2)),
-      ]),
-      segmentado({ ancho: true, etiqueta: t('pun.exc'), opciones: [['sin', t('pun.excSin')], ['aprox', t('pun.excAprox')], ['otro', t('pun.excOtro')]], valor: D.exc, onCambio: (v) => { D.exc = v; ctx.cambio({ estructura: true }); } })),
+        campoNum({ id: 'p-beta', etq: e23 ? sub('β', 'e') : 'β', valor: beta, mag: 'ratio', paso: 0.05, min: 1, max: 3, ayuda: t('pun.betaAyuda'), onCambio: (v) => { D.betaOtro = v; D.exc = 'otro'; cambio(); } }),
+      ])),
     grupo(t('pun.cercos'),
-      comp ? segmentado({ ancho: true, etiqueta: t('pun.cercos'), opciones: [['con', t('cor.conArm')], ['sin', t('cor.sinArm')]], valor: D.sin ? 'sin' : 'con', onCambio: (v) => { D.sin = v === 'sin'; ctx.pintar(); } }) : null,
-      segmentado({ ancho: true, etiqueta: t('pun.esq'), opciones: [['cruz', t('pun.esqCruz')], ['ret', t('pun.esqRet')]], valor: D.esq, onCambio: (v) => { D.esq = v; ctx.cambio({ estructura: true }); } }),
       ...parejas([
         selector({ id: 'p-ace', linea: true, etq: t('pun.acero'), opciones: p.aceros.map((m) => [m.nombre, m.nombre]), valor: D.aceroCercos, onCambio: (v) => { D.aceroCercos = v; cambio(); } }),
         arm && comp ? selector({ id: 'p-fi', etq: t('cor.fi'), linea: true, opciones: diametrosEntrada().map((x) => [String(x), `ø${x}`]), valor: String(D.fi), onCambio: (v) => { D.fi = Number(v); cambio(); } }) : null,
         arm && comp ? (D.esq === 'cruz'
-          ? campoNum({ id: 'p-rb', etq: t('pun.ramasBrazo'), valor: D.ramasBrazo, mag: 'n', paso: 1, min: 1, max: 20, ayuda: t('pun.ramasBrazoAyuda', nBrazos(D.pos)), onCambio: set('ramasBrazo') })
+          ? campoNum({ id: 'p-rb', etq: t('pun.ramasBrazo'), valor: D.ramasBrazo, mag: 'n', paso: 1, min: 0, max: 20, ayuda: t('pun.ramasBrazoAyuda', nBrazos(D.pos)), onCambio: set('ramasBrazo') })
           : campoNum({ id: 'p-ramas', etq: t('pun.ramas'), valor: D.ramas, mag: 'n', paso: 2, min: 1, max: 200, ayuda: t('pun.ramasAyuda'), onCambio: set('ramas') })) : null,
         arm && comp ? campoNum({ id: 'p-nper', etq: t('pun.nPer'), valor: D.nPer, mag: 'n', paso: 1, min: 1, max: 30, ayuda: t('pun.nPerAyuda'), onCambio: set('nPer') }) : null,
         arm ? campoNum({ id: 'p-a1', etq: sub('a', '1'), valor: D.a1, mag: 'diam', paso: 5, min: 0, max: 2000, ayuda: t('pun.a1Ayuda'), onCambio: set('a1') }) : null,
@@ -170,7 +167,8 @@ export function resultados(ctx, res) {
 
   // Centro: planta
   const dibujo = planta(p, x, r, comp, D, e23, ec, N);
-  poner(centro, h('h2', {}, t('pun.t.planta')), h('div', { class: 'lienzo', html: dibujo }), notas(p, D));
+  const [infoBtn, infoPop] = notas(p, D);
+  poner(centro, h('h2', { class: 'tit-info' }, t('pun.t.planta'), infoBtn), infoPop, h('div', { class: 'lienzo', html: dibujo }));
 
   // Derecha: cifras, tabla (al dimensionar) y filas desplegables
   poner(dcha, h('h2', {}, t('cor.t.res')), cifras(cifrasDe(r, comp, e23)));
@@ -376,8 +374,13 @@ function notas(p, D) {
   const claves = [['pun.n.alcance', e23 ? 'pun.alcance23' : 'pun.alcance'], ['pun.n.perim', e23 ? 'pun.perim23' : 'pun.perim'], ['pun.n.beta', e23 ? 'pun.beta23' : 'pun.beta']];
   if (D.tipo === 'circ') claves.push(['pun.n.circ', 'pun.circNota']);
   claves.push(['pun.n.norma', e23 ? 'pun.nota23' : ec ? 'pun.notaEC' : 'pun.notaEHE']);
-  return h('div', { class: 'pun-notas' }, h('h3', {}, t('cor.notas')),
+  const pop = h('div', { class: 'pun-info', hidden: true, role: 'dialog', 'aria-label': t('cor.notas') },
     ...claves.map(([k, v]) => h('details', { class: 'pleg' }, h('summary', {}, h('span', { html: t(k) })), h('div', { class: 'cuenta' }, h('p', { class: 'nota', html: t(v) })))));
+  const cerrar = (e) => { if (!pop.contains(e.target) && !btn.contains(e.target)) fuera(); };
+  const fuera = () => { pop.hidden = true; btn.setAttribute('aria-expanded', 'false'); document.removeEventListener('click', cerrar); };
+  const btn = h('button', { type: 'button', class: 'info-btn', 'aria-label': t('cor.notas'), 'aria-expanded': 'false', title: t('cor.notas'),
+    onclick: () => { if (pop.hidden) { pop.hidden = false; btn.setAttribute('aria-expanded', 'true'); setTimeout(() => document.addEventListener('click', cerrar), 0); } else fuera(); } }, 'i');
+  return [btn, pop];
 }
 
 export function comandos(ctx) {
