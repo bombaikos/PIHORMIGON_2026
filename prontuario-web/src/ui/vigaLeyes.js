@@ -152,7 +152,7 @@ export function dibujarLeyes(svg, W, H, D, r) {
     g.append(e('path', { d: `M${X(v)} ${yEje} v5`, class: 'vl-eje' }));
     g.append(e('text', { x: X(v), y: yEje + 17, 'text-anchor': 'middle', class: 'vl-eje-n' }, fmt(v, paso < 1 ? 1 : (Number.isInteger(v) ? 0 : 2))));
   }
-  g.append(e('text', { x: W - 2, y: yEje + 17, 'text-anchor': 'end', class: 'vl-eje-n' }, 'x [m]'));
+  g.append(e('text', { x: W - 2, y: yEje + 17, 'text-anchor': 'end', class: 'vl-eje-n' }, '[m]'));
   BANDAS.forEach((B) => {
     const h = (resto * B.peso) / pesoTot;
     const top = y0, bot = y0 + h;
