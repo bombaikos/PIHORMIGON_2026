@@ -14905,6 +14905,16 @@ svg.dib-ras { min-width: 0; }
     x.arm = { fi: D.fi, ramas: D.esq === "ret" ? ramasReticula(D.pos, D.nx, D.ny) : D.ramas, nx: D.nx, ny: D.ny, sr: D.sr, a1: D.a1, nPer: D.nPer, esq: D.esq };
     return x;
   }
+  var campoNum2 = (o) => {
+    const c = campoNum(o);
+    const caja = c.querySelector(".caja");
+    const ud = caja?.querySelector(".ud");
+    const txt = ud?.textContent.trim();
+    if (txt) ud.textContent = `[${txt}]`;
+    else if (ud) ud.textContent = "[-]";
+    else caja?.append(h("span", { class: "ud" }, "[-]"));
+    return c;
+  };
   var parejas2 = (campos) => {
     const c = campos.filter(Boolean);
     const filas = [];
@@ -14952,9 +14962,9 @@ svg.dib-ras { min-width: 0; }
           ctx2.cambio({ estructura: true });
         } }),
         ...rect2 ? parejas2([
-          campoNum({ id: "p-c1", etq: sub24("c", "1"), ref: D.pos === "interior" ? "" : t("pun.c1Ref"), valor: D.c1, mag: "diam", paso: 25, min: 1, max: 5e3, ayuda: t("pun.c1Ayuda"), onCambio: set("c1") }),
-          campoNum({ id: "p-c2", etq: sub24("c", "2"), ref: D.pos === "interior" ? "" : t("pun.c2Ref"), valor: D.c2, mag: "diam", paso: 25, min: 1, max: 5e3, ayuda: t("pun.c2Ayuda"), onCambio: set("c2") })
-        ]) : parejas2([campoNum({ id: "p-D", etq: "D", valor: D.D, mag: "diam", paso: 25, min: 1, max: 5e3, ayuda: t("pun.DAyuda"), onCambio: set("D") })])
+          campoNum2({ id: "p-c1", etq: sub24("c", "1"), ref: D.pos === "interior" ? "" : t("pun.c1Ref"), valor: D.c1, mag: "diam", paso: 25, min: 1, max: 5e3, ayuda: t("pun.c1Ayuda"), onCambio: set("c1") }),
+          campoNum2({ id: "p-c2", etq: sub24("c", "2"), ref: D.pos === "interior" ? "" : t("pun.c2Ref"), valor: D.c2, mag: "diam", paso: 25, min: 1, max: 5e3, ayuda: t("pun.c2Ayuda"), onCambio: set("c2") })
+        ]) : parejas2([campoNum2({ id: "p-D", etq: "D", valor: D.D, mag: "diam", paso: 25, min: 1, max: 5e3, ayuda: t("pun.DAyuda"), onCambio: set("D") })])
       ),
       grupo(
         t("pun.losa"),
@@ -14963,15 +14973,15 @@ svg.dib-ras { min-width: 0; }
             D.hormigon = v2;
             cambio();
           } }),
-          campoNum({ id: "p-h", etq: "e", valor: D.h, mag: "diam", paso: 10, min: 50, max: 3e3, ayuda: t("pun.hAyuda"), onCambio: set("h") }),
-          campoNum({ id: "p-d", etq: e23 ? sub24("d", "v") : "d", valor: D.d, mag: "diam", paso: 10, min: 20, max: 3e3, ayuda: t("pun.dAyuda"), onCambio: set("d") }),
-          e23 ? campoNum({ id: "p-dlow", etq: t("pun.Dlower"), valor: D.Dlower, mag: "diam", paso: 2, min: 4, max: 63, ayuda: t("pun.DlowerAyuda"), onCambio: set("Dlower") }) : campoNum({ id: "p-sig", etq: sub24("\u03C3", "cd"), ref: t("pun.sigRef"), valor: D.sigCd, mag: "tension", paso: 0.5, min: -20, max: 40, ayuda: t("pun.sigAyuda"), onCambio: set("sigCd") }),
-          campoNum({ id: "p-rx", etq: sub24("\u03C1", "x"), valor: D.rhoX, mag: "cuantia", paso: 0.5, min: 0, max: 0.1, ayuda: t("pun.rhoAyuda"), onCambio: set("rhoX") }),
-          campoNum({ id: "p-ry", etq: sub24("\u03C1", "y"), valor: D.rhoY, mag: "cuantia", paso: 0.5, min: 0, max: 0.1, ayuda: t("pun.rhoAyuda"), onCambio: set("rhoY") })
+          campoNum2({ id: "p-h", etq: "e", valor: D.h, mag: "diam", paso: 10, min: 50, max: 3e3, ayuda: t("pun.hAyuda"), onCambio: set("h") }),
+          campoNum2({ id: "p-d", etq: e23 ? sub24("d", "v") : "d", valor: D.d, mag: "diam", paso: 10, min: 20, max: 3e3, ayuda: t("pun.dAyuda"), onCambio: set("d") }),
+          e23 ? campoNum2({ id: "p-dlow", etq: t("pun.Dlower"), valor: D.Dlower, mag: "diam", paso: 2, min: 4, max: 63, ayuda: t("pun.DlowerAyuda"), onCambio: set("Dlower") }) : campoNum2({ id: "p-sig", etq: sub24("\u03C3", "cd"), ref: t("pun.sigRef"), valor: D.sigCd, mag: "tension", paso: 0.5, min: -20, max: 40, ayuda: t("pun.sigAyuda"), onCambio: set("sigCd") }),
+          campoNum2({ id: "p-rx", etq: sub24("\u03C1", "x"), valor: D.rhoX, mag: "cuantia", paso: 0.5, min: 0, max: 0.1, ayuda: t("pun.rhoAyuda"), onCambio: set("rhoX") }),
+          campoNum2({ id: "p-ry", etq: sub24("\u03C1", "y"), valor: D.rhoY, mag: "cuantia", paso: 0.5, min: 0, max: 0.1, ayuda: t("pun.rhoAyuda"), onCambio: set("rhoY") })
         ]),
         ...parejas2([
-          campoNum({ id: "p-ved", etq: sub24("V", "Ed"), valor: D.VEd, mag: "N", paso: 10, min: 0.01, max: 1e6, nombre: t("pun.VEdNombre"), ayuda: t("pun.VEdAyuda"), onCambio: set("VEd") }),
-          campoNum({ id: "p-beta", etq: e23 ? sub24("\u03B2", "e") : "\u03B2", valor: beta2, mag: "ratio", paso: 0.05, min: 1, max: 3, ayuda: t("pun.betaAyuda"), onCambio: (v2) => {
+          campoNum2({ id: "p-ved", etq: sub24("V", "Ed"), valor: D.VEd, mag: "N", paso: 10, min: 0.01, max: 1e6, nombre: t("pun.VEdNombre"), ayuda: t("pun.VEdAyuda"), onCambio: set("VEd") }),
+          campoNum2({ id: "p-beta", etq: e23 ? sub24("\u03B2", "e") : "\u03B2", valor: beta2, mag: "ratio", paso: 0.05, min: 1, max: 3, ayuda: t("pun.betaAyuda"), onCambio: (v2) => {
             D.betaOtro = v2;
             D.exc = "otro";
             cambio();
@@ -15002,23 +15012,23 @@ svg.dib-ras { min-width: 0; }
           return comp ? c : apaga(c, motivoDim);
         })(),
         (() => {
-          const c = campoNum({ id: "p-nper", etq: t("pun.nPer"), valor: D.nPer, mag: "n", paso: 1, min: 1, max: 30, ayuda: t("pun.nPerAyuda"), onCambio: set("nPer") });
+          const c = campoNum2({ id: "p-nper", etq: t("pun.nPer"), valor: D.nPer, mag: "n", paso: 1, min: 1, max: 30, ayuda: t("pun.nPerAyuda"), onCambio: set("nPer") });
           return comp ? c : apaga(c, motivoDim);
         })(),
         (() => {
-          const c = campoNum({ id: "p-ramas", etq: t("pun.ramas"), valor: D.ramas, mag: "n", paso: 1, min: nBrazos(D.pos), max: 200, ayuda: t("pun.ramasAyuda", nBrazos(D.pos)), onCambio: set("ramas") });
+          const c = campoNum2({ id: "p-ramas", etq: t("pun.ramas"), valor: D.ramas, mag: "n", paso: 1, min: nBrazos(D.pos), max: 200, ayuda: t("pun.ramasAyuda", nBrazos(D.pos)), onCambio: set("ramas") });
           return comp && cruz ? c : apaga(c, comp ? t("pun.motivoRet") : motivoDim);
         })(),
         (() => {
-          const c = campoNum({ id: "p-nx", etq: sub24("n", "x"), valor: D.nx, mag: "n", paso: 1, min: 2, max: 40, ayuda: t("pun.nxAyuda"), onCambio: set("nx") });
+          const c = campoNum2({ id: "p-nx", etq: sub24("n", "x"), valor: D.nx, mag: "n", paso: 1, min: 2, max: 40, ayuda: t("pun.nxAyuda"), onCambio: set("nx") });
           return comp && !cruz ? c : apaga(c, comp ? t("pun.motivoCruz") : motivoDim);
         })(),
         (() => {
-          const c = campoNum({ id: "p-ny", etq: sub24("n", "y"), valor: D.ny, mag: "n", paso: 1, min: 2, max: 40, ayuda: t("pun.nyAyuda"), onCambio: set("ny") });
+          const c = campoNum2({ id: "p-ny", etq: sub24("n", "y"), valor: D.ny, mag: "n", paso: 1, min: 2, max: 40, ayuda: t("pun.nyAyuda"), onCambio: set("ny") });
           return comp && !cruz ? c : apaga(c, comp ? t("pun.motivoCruz") : motivoDim);
         })(),
-        campoNum({ id: "p-a1", etq: sub24("a", "1"), valor: D.a1, mag: "diam", paso: 5, min: 0, max: 2e3, ayuda: t("pun.a1Ayuda"), onCambio: set("a1") }),
-        campoNum({ id: "p-sr", etq: sub24("s", "r"), valor: D.sr, mag: "diam", paso: 5, min: 20, max: 2e3, ayuda: t("pun.srAyuda"), onCambio: set("sr") })
+        campoNum2({ id: "p-a1", etq: sub24("a", "1"), valor: D.a1, mag: "diam", paso: 5, min: 0, max: 2e3, ayuda: t("pun.a1Ayuda"), onCambio: set("a1") }),
+        campoNum2({ id: "p-sr", etq: sub24("s", "r"), valor: D.sr, mag: "diam", paso: 5, min: 20, max: 2e3, ayuda: t("pun.srAyuda"), onCambio: set("sr") })
       ]);
       const cuerpo = h(
         "div",
@@ -15220,14 +15230,14 @@ svg.dib-ras { min-width: 0; }
     f.push(fila3(
       "tau",
       t("pun.r.tau"),
-      `${fmt(r.tau.tau, 3)}<span class="u">${ESP}MPa</span>`,
-      `<span class="f">${t("pun.f.tauEHE")}</span><span class="n">\u03BE = ${n1(P.xi, 3)} \xB7 \u03C1<sub>l</sub> = ${n1(P.rho * 1e3, 2)} \u2030 \xB7 f<sub>cv</sub> = ${n1(P.fcv, 0)} MPa \xB7 \u03C3'<sub>cd</sub> = ${n1(P.sigCdLim)} MPa</span><span class="n">${t("pun.v.concMin", fmt(r.tau.conc, 3), fmt(r.tau.min, 3))}</span>${art4("46.3")}`
+      `${fmt(r.tau.tau, 2)}<span class="u">${ESP}MPa</span>`,
+      `<span class="f">${t("pun.f.tauEHE")}</span><span class="n">\u03BE = ${n1(P.xi, 2)} \xB7 \u03C1<sub>l</sub> = ${n1(P.rho * 1e3, 2)} \u2030 \xB7 f<sub>cv</sub> = ${n1(P.fcv, 0)} MPa \xB7 \u03C3'<sub>cd</sub> = ${n1(P.sigCdLim)} MPa</span><span class="n">${t("pun.v.concMin", fmt(r.tau.conc, 2), fmt(r.tau.min, 2))}</span>${art4("46.3")}`
     ));
     f.push(fila3(
       "vc",
       t("pun.r.vc"),
       q(r.Vc, "N"),
-      `<span class="f">${t("pun.f.vcEHE")}</span><span class="n">${fmt(r.tau.tau, 3)} \xD7 ${n1(r.u.u1, 0)} \xD7 ${n1(x.d, 0)} / ${n1(r.beta, 2)} = ${q(r.Vc, "N")}</span>${art4("46.3")}`
+      `<span class="f">${t("pun.f.vcEHE")}</span><span class="n">${fmt(r.tau.tau, 2)} \xD7 ${n1(r.u.u1, 0)} \xD7 ${n1(x.d, 0)} / ${n1(r.beta, 2)} = ${q(r.Vc, "N")}</span>${art4("46.3")}`
     ));
     f.push(fila3(
       "vmax",
@@ -15271,20 +15281,20 @@ svg.dib-ras { min-width: 0; }
     f.push(fila3(
       "tau",
       t("pun.r.vRdc"),
-      `${fmt(r.v.v, 3)}<span class="u">${ESP}MPa</span>`,
-      `<span class="f">${t("pun.f.vRdcEC")}</span><span class="n">k = ${n1(P.k, 3)} \xB7 \u03C1<sub>l</sub> = ${n1(P.rho * 1e3, 2)} \u2030 \xB7 \u03C3<sub>cp</sub> = ${n1(P.sigCp)} MPa \xB7 \u03BD<sub>m\xEDn</sub> = ${n1(r.v.nuMin, 3)} MPa</span><span class="n">${t("pun.v.concMin", fmt(r.v.conc, 3), fmt(r.v.min, 3))}</span>${art4("6.4.4(1), AN")}`
+      `${fmt(r.v.v, 2)}<span class="u">${ESP}MPa</span>`,
+      `<span class="f">${t("pun.f.vRdcEC")}</span><span class="n">k = ${n1(P.k, 2)} \xB7 \u03C1<sub>l</sub> = ${n1(P.rho * 1e3, 2)} \u2030 \xB7 \u03C3<sub>cp</sub> = ${n1(P.sigCp)} MPa \xB7 \u03BD<sub>m\xEDn</sub> = ${n1(r.v.nuMin, 2)} MPa</span><span class="n">${t("pun.v.concMin", fmt(r.v.conc, 2), fmt(r.v.min, 2))}</span>${art4("6.4.4(1), AN")}`
     ));
     f.push(fila3(
       "vc",
       t("pun.r.vc"),
       q(r.Vc, "N"),
-      `<span class="f">${t("pun.f.vcEC")}</span><span class="n">${fmt(r.v.v, 3)} \xD7 ${n1(r.u.u1, 0)} \xD7 ${n1(x.d, 0)} / ${n1(r.beta, 2)} = ${q(r.Vc, "N")}</span>${art4("6.4.3(2), (3)")}`
+      `<span class="f">${t("pun.f.vcEC")}</span><span class="n">${fmt(r.v.v, 2)} \xD7 ${n1(r.u.u1, 0)} \xD7 ${n1(x.d, 0)} / ${n1(r.beta, 2)} = ${q(r.Vc, "N")}</span>${art4("6.4.3(2), (3)")}`
     ));
     f.push(fila3(
       "vmax",
       t("pun.r.vmax"),
       q(r.Vmax, "N"),
-      `<span class="f">${t("pun.f.vmaxEC")}</span><span class="n">\u03BD = ${n1(P.nu, 3)} \xB7 f<sub>cd</sub> = ${n1(P.fcd)} MPa \u2192 v<sub>Rd,m\xE1x</sub> = ${n1(P.vRdMax)} MPa \xB7 ${sub24("u", "0")} = ${n1(r.u.u0, 0)} mm</span>${art4("6.4.5(3), AN")}`
+      `<span class="f">${t("pun.f.vmaxEC")}</span><span class="n">\u03BD = ${n1(P.nu, 2)} \xB7 f<sub>cd</sub> = ${n1(P.fcd)} MPa \u2192 v<sub>Rd,m\xE1x</sub> = ${n1(P.vRdMax)} MPa \xB7 ${sub24("u", "0")} = ${n1(r.u.u0, 0)} mm</span>${art4("6.4.5(3), AN")}`
     ));
     if (comp && !r.sinArmadura) {
       f.push(fila3(
@@ -15330,32 +15340,32 @@ svg.dib-ras { min-width: 0; }
       "kpb",
       t("pun.r.kpb"),
       n1(s.kpb, 2),
-      `<span class="f">${t("pun.f.kpb")}</span><span class="n">${sub24("b", "0")} = ${n1(r.u.b0, 0)} mm \xB7 ${sub24("b", "0,5")} = ${n1(r.u.b05, 0)} mm \u2192 3,6\xB7(1 \u2212 ${n1(r.u.b0 / r.u.b05, 3)}) = ${n1(s.kpbBruto, 2)}</span>${art4("8.4.3(1), (8.96)")}`
+      `<span class="f">${t("pun.f.kpb")}</span><span class="n">${sub24("b", "0")} = ${n1(r.u.b0, 0)} mm \xB7 ${sub24("b", "0,5")} = ${n1(r.u.b05, 0)} mm \u2192 3,6\xB7(1 \u2212 ${n1(r.u.b0 / r.u.b05, 2)}) = ${n1(s.kpbBruto, 2)}</span>${art4("8.4.3(1), (8.96)")}`
     ));
     f.push(fila3(
       "tau",
       t("pun.r.tau"),
-      `${fmt(s.tau, 3)}<span class="u">${ESP}MPa</span>`,
-      `<span class="f">${t("pun.f.tau23")}</span><span class="n">\u03C1<sub>l</sub> = ${n1(P.rho * 1e3, 2)} \u2030 \xB7 d<sub>dg</sub> = ${n1(P.ddg, 0)} mm \xB7 \u03B3<sub>V</sub> = ${n1(P.gv, 1)} \xB7 d<sub>v</sub> = ${n1(x.d, 0)} mm</span><span class="n">${t("pun.v.tau23", fmt(s.conc, 3), fmt(s.tope, 3))}</span>${art4("8.4.3(1), (8.94)")}`
+      `${fmt(s.tau, 2)}<span class="u">${ESP}MPa</span>`,
+      `<span class="f">${t("pun.f.tau23")}</span><span class="n">\u03C1<sub>l</sub> = ${n1(P.rho * 1e3, 2)} \u2030 \xB7 d<sub>dg</sub> = ${n1(P.ddg, 0)} mm \xB7 \u03B3<sub>V</sub> = ${n1(P.gv, 1)} \xB7 d<sub>v</sub> = ${n1(x.d, 0)} mm</span><span class="n">${t("pun.v.tau23", fmt(s.conc, 2), fmt(s.tope, 2))}</span>${art4("8.4.3(1), (8.94)")}`
     ));
     f.push(fila3(
       "vc",
       t("pun.r.vRdc"),
       q(s.VRdc, "N"),
-      `<span class="f">${t("pun.f.vRdc23")}</span><span class="n">${fmt(s.tau, 3)} \xD7 ${n1(r.u.b05, 0)} \xD7 ${n1(x.d, 0)} = ${q(s.VRdc, "N")} \u2192 ${q(r.Vc, "N")} (\xF7 \u03B2<sub>e</sub> = ${n1(r.beta, 2)})</span>${art4("8.4.2(6), (8.92)")}`
+      `<span class="f">${t("pun.f.vRdc23")}</span><span class="n">${fmt(s.tau, 2)} \xD7 ${n1(r.u.b05, 0)} \xD7 ${n1(x.d, 0)} = ${q(s.VRdc, "N")} \u2192 ${q(r.Vc, "N")} (\xF7 \u03B2<sub>e</sub> = ${n1(r.beta, 2)})</span>${art4("8.4.2(6), (8.92)")}`
     ));
     f.push(fila3(
       "vmax",
       t("pun.r.vmax"),
       q(r.Vmax, "N"),
-      `<span class="f">${t("pun.f.vmax23")}</span><span class="n">\u03B7<sub>sys</sub> = ${n1(s.etaSys, 3)} (b<sub>0</sub>/d<sub>v</sub> = ${n1(r.u.b0 / x.d, 2)}) \u2192 V<sub>Rd,m\xE1x</sub> = ${q(s.VRdMax, "N")}</span>${art4("8.4.4(5), (8.111)")}`
+      `<span class="f">${t("pun.f.vmax23")}</span><span class="n">\u03B7<sub>sys</sub> = ${n1(s.etaSys, 2)} (b<sub>0</sub>/d<sub>v</sub> = ${n1(r.u.b0 / x.d, 2)}) \u2192 V<sub>Rd,m\xE1x</sub> = ${q(s.VRdMax, "N")}</span>${art4("8.4.4(5), (8.111)")}`
     ));
     if (comp && !r.sinArmadura) {
       f.push(fila3(
         "etas",
         t("pun.r.etas"),
         `${fmt(r.etaC, 2)} \xB7 ${fmt(r.etaS, 2)}`,
-        `<span class="f">${t("pun.f.etas")}</span><span class="n">V<sub>Ed,ef</sub> = ${n1(Number.isFinite(r.VEd) ? r.beta * r.VEd : r.VuEf, 0)} kN \u2192 \u03B7<sub>c</sub> = ${n1(r.etaC, 3)} \xB7 \u03B7<sub>s</sub> = ${n1(r.etaS, 3)} (\u2264 0,8) \xB7 \u03C6<sub>w</sub> = ${n1(x.arm.fi, 0)} mm</span>${art4("8.4.4(1), (8.105), (8.106)")}`
+        `<span class="f">${t("pun.f.etas")}</span><span class="n">V<sub>Ed,ef</sub> = ${n1(Number.isFinite(r.VEd) ? r.beta * r.VEd : r.VuEf, 0)} kN \u2192 \u03B7<sub>c</sub> = ${n1(r.etaC, 2)} \xB7 \u03B7<sub>s</sub> = ${n1(r.etaS, 2)} (\u2264 0,8) \xB7 \u03C6<sub>w</sub> = ${n1(x.arm.fi, 0)} mm</span>${art4("8.4.4(1), (8.105), (8.106)")}`
       ));
       f.push(fila3(
         "vcs",
@@ -15375,7 +15385,7 @@ svg.dib-ras { min-width: 0; }
         "etas",
         t("pun.r.etas"),
         `${fmt(r.etaCEf, 2)}`,
-        `<span class="f">${t("pun.f.etasDim")}</span><span class="n">V<sub>Ed,ef</sub> = ${n1(r.Vef, 0)} kN \u2192 \u03B7<sub>c</sub> = ${n1(r.etaCEf, 3)}; \u03B7<sub>s</sub> por di\xE1metro en la tabla</span>${art4("8.4.4(1)")}`
+        `<span class="f">${t("pun.f.etasDim")}</span><span class="n">V<sub>Ed,ef</sub> = ${n1(r.Vef, 0)} kN \u2192 \u03B7<sub>c</sub> = ${n1(r.etaCEf, 2)}; \u03B7<sub>s</sub> por di\xE1metro en la tabla</span>${art4("8.4.4(1)")}`
       ));
       f.push(fila3(
         "nper",

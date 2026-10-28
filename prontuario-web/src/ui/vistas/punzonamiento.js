@@ -7,7 +7,7 @@ import { betaDe, anillos, nBrazos, uExterior, ramasReticula } from '../../norma/
 import { areaRama } from '../../norma/cortante/ehe08.js';
 import { t } from '../i18n.js';
 import { fmt, q, qh, ESP, serieDiametros } from '../formato.js';
-import { h, poner, campoNum, selector, segmentado, grupo, aviso, cifras, tabla } from '../campos.js';
+import { h, poner, campoNum as campoNumBase, selector, segmentado, grupo, aviso, cifras, tabla } from '../campos.js';
 import { veredicto } from './flexion.js';
 import { dibujoPunzonamiento } from '../dibujoPunzonamiento.js';
 
@@ -51,6 +51,17 @@ function entrada(p, D, { dimensionando = false } = {}) {
   return x;
 }
 
+/** Guía común: unidades entre corchetes en las cajas, y [-] en las adimensionales. */
+const campoNum = (o) => {
+  const c = campoNumBase(o);
+  const caja = c.querySelector('.caja');
+  const ud = caja?.querySelector('.ud');
+  const txt = ud?.textContent.trim();
+  if (txt) ud.textContent = `[${txt}]`;
+  else if (ud) ud.textContent = '[-]';
+  else caja?.append(h('span', { class: 'ud' }, '[-]'));
+  return c;
+};
 const mostrar = (c, v, d) => { const i = c.querySelector('input'); i.value = String(+v.toFixed(d)); return c; };
 const calculado = (c) => { const i = c.querySelector('input'); i.disabled = true; i.tabIndex = -1; c.classList.add('calculado'); return c; };
 const parejas = (campos) => {
@@ -302,11 +313,11 @@ const filaPerim = (r, x, e23) => fila('per', t('pun.r.per'), e23 ? q(r.u.b05, 'd
 function trazasEHE(r, x, comp) {
   const P = r.P;
   const f = [filaPerim(r, x, false)];
-  f.push(fila('tau', t('pun.r.tau'), `${fmt(r.tau.tau, 3)}<span class="u">${ESP}MPa</span>`,
-    `<span class="f">${t('pun.f.tauEHE')}</span><span class="n">ξ = ${n1(P.xi, 3)} · ρ<sub>l</sub> = ${n1(P.rho * 1000, 2)} ‰ · f<sub>cv</sub> = ${n1(P.fcv, 0)} MPa · σ'<sub>cd</sub> = ${n1(P.sigCdLim)} MPa</span>`
-    + `<span class="n">${t('pun.v.concMin', fmt(r.tau.conc, 3), fmt(r.tau.min, 3))}</span>${art('46.3')}`));
+  f.push(fila('tau', t('pun.r.tau'), `${fmt(r.tau.tau, 2)}<span class="u">${ESP}MPa</span>`,
+    `<span class="f">${t('pun.f.tauEHE')}</span><span class="n">ξ = ${n1(P.xi, 2)} · ρ<sub>l</sub> = ${n1(P.rho * 1000, 2)} ‰ · f<sub>cv</sub> = ${n1(P.fcv, 0)} MPa · σ'<sub>cd</sub> = ${n1(P.sigCdLim)} MPa</span>`
+    + `<span class="n">${t('pun.v.concMin', fmt(r.tau.conc, 2), fmt(r.tau.min, 2))}</span>${art('46.3')}`));
   f.push(fila('vc', t('pun.r.vc'), q(r.Vc, 'N'),
-    `<span class="f">${t('pun.f.vcEHE')}</span><span class="n">${fmt(r.tau.tau, 3)} × ${n1(r.u.u1, 0)} × ${n1(x.d, 0)} / ${n1(r.beta, 2)} = ${q(r.Vc, 'N')}</span>${art('46.3')}`));
+    `<span class="f">${t('pun.f.vcEHE')}</span><span class="n">${fmt(r.tau.tau, 2)} × ${n1(r.u.u1, 0)} × ${n1(x.d, 0)} / ${n1(r.beta, 2)} = ${q(r.Vc, 'N')}</span>${art('46.3')}`));
   f.push(fila('vmax', t('pun.r.vmax'), q(r.Vmax, 'N'),
     `<span class="f">${t('pun.f.vmaxEHE')}</span><span class="n">${t('cor.f.f1cd', P.fck)} → ${n1(P.f1cd)} MPa · ${sub('u', '0')} = ${n1(r.u.u0, 0)} mm</span>${art('46.4.3')}`));
   if (comp && !r.sinArmadura) {
@@ -328,13 +339,13 @@ function trazasEHE(r, x, comp) {
 function trazasEC2(r, x, comp) {
   const P = r.P;
   const f = [filaPerim(r, x, false)];
-  f.push(fila('tau', t('pun.r.vRdc'), `${fmt(r.v.v, 3)}<span class="u">${ESP}MPa</span>`,
-    `<span class="f">${t('pun.f.vRdcEC')}</span><span class="n">k = ${n1(P.k, 3)} · ρ<sub>l</sub> = ${n1(P.rho * 1000, 2)} ‰ · σ<sub>cp</sub> = ${n1(P.sigCp)} MPa · ν<sub>mín</sub> = ${n1(r.v.nuMin, 3)} MPa</span>`
-    + `<span class="n">${t('pun.v.concMin', fmt(r.v.conc, 3), fmt(r.v.min, 3))}</span>${art('6.4.4(1), AN')}`));
+  f.push(fila('tau', t('pun.r.vRdc'), `${fmt(r.v.v, 2)}<span class="u">${ESP}MPa</span>`,
+    `<span class="f">${t('pun.f.vRdcEC')}</span><span class="n">k = ${n1(P.k, 2)} · ρ<sub>l</sub> = ${n1(P.rho * 1000, 2)} ‰ · σ<sub>cp</sub> = ${n1(P.sigCp)} MPa · ν<sub>mín</sub> = ${n1(r.v.nuMin, 2)} MPa</span>`
+    + `<span class="n">${t('pun.v.concMin', fmt(r.v.conc, 2), fmt(r.v.min, 2))}</span>${art('6.4.4(1), AN')}`));
   f.push(fila('vc', t('pun.r.vc'), q(r.Vc, 'N'),
-    `<span class="f">${t('pun.f.vcEC')}</span><span class="n">${fmt(r.v.v, 3)} × ${n1(r.u.u1, 0)} × ${n1(x.d, 0)} / ${n1(r.beta, 2)} = ${q(r.Vc, 'N')}</span>${art('6.4.3(2), (3)')}`));
+    `<span class="f">${t('pun.f.vcEC')}</span><span class="n">${fmt(r.v.v, 2)} × ${n1(r.u.u1, 0)} × ${n1(x.d, 0)} / ${n1(r.beta, 2)} = ${q(r.Vc, 'N')}</span>${art('6.4.3(2), (3)')}`));
   f.push(fila('vmax', t('pun.r.vmax'), q(r.Vmax, 'N'),
-    `<span class="f">${t('pun.f.vmaxEC')}</span><span class="n">ν = ${n1(P.nu, 3)} · f<sub>cd</sub> = ${n1(P.fcd)} MPa → v<sub>Rd,máx</sub> = ${n1(P.vRdMax)} MPa · ${sub('u', '0')} = ${n1(r.u.u0, 0)} mm</span>${art('6.4.5(3), AN')}`));
+    `<span class="f">${t('pun.f.vmaxEC')}</span><span class="n">ν = ${n1(P.nu, 2)} · f<sub>cd</sub> = ${n1(P.fcd)} MPa → v<sub>Rd,máx</sub> = ${n1(P.vRdMax)} MPa · ${sub('u', '0')} = ${n1(r.u.u0, 0)} mm</span>${art('6.4.5(3), AN')}`));
   if (comp && !r.sinArmadura) {
     f.push(fila('vcs', t('pun.r.vcs'), q(r.Vcs, 'N'),
       `<span class="f">${t('pun.f.vcsEC')}</span><span class="n">${sub('A', 'sw')} = ${n1(r.Asw, 0)} mm² · s<sub>r</sub> = ${n1(x.arm.sr, 0)} mm · f<sub>ywd,ef</sub> = ${n1(P.fywdEf, 0)} MPa (f<sub>ywd</sub> = ${n1(P.fywd, 0)})</span>`
@@ -358,17 +369,17 @@ function trazas23(r, x, comp) {
   const s = r.s;
   const f = [filaPerim(r, x, true)];
   f.push(fila('kpb', t('pun.r.kpb'), n1(s.kpb, 2),
-    `<span class="f">${t('pun.f.kpb')}</span><span class="n">${sub('b', '0')} = ${n1(r.u.b0, 0)} mm · ${sub('b', '0,5')} = ${n1(r.u.b05, 0)} mm → 3,6·(1 − ${n1(r.u.b0 / r.u.b05, 3)}) = ${n1(s.kpbBruto, 2)}</span>${art('8.4.3(1), (8.96)')}`));
-  f.push(fila('tau', t('pun.r.tau'), `${fmt(s.tau, 3)}<span class="u">${ESP}MPa</span>`,
+    `<span class="f">${t('pun.f.kpb')}</span><span class="n">${sub('b', '0')} = ${n1(r.u.b0, 0)} mm · ${sub('b', '0,5')} = ${n1(r.u.b05, 0)} mm → 3,6·(1 − ${n1(r.u.b0 / r.u.b05, 2)}) = ${n1(s.kpbBruto, 2)}</span>${art('8.4.3(1), (8.96)')}`));
+  f.push(fila('tau', t('pun.r.tau'), `${fmt(s.tau, 2)}<span class="u">${ESP}MPa</span>`,
     `<span class="f">${t('pun.f.tau23')}</span><span class="n">ρ<sub>l</sub> = ${n1(P.rho * 1000, 2)} ‰ · d<sub>dg</sub> = ${n1(P.ddg, 0)} mm · γ<sub>V</sub> = ${n1(P.gv, 1)} · d<sub>v</sub> = ${n1(x.d, 0)} mm</span>`
-    + `<span class="n">${t('pun.v.tau23', fmt(s.conc, 3), fmt(s.tope, 3))}</span>${art('8.4.3(1), (8.94)')}`));
+    + `<span class="n">${t('pun.v.tau23', fmt(s.conc, 2), fmt(s.tope, 2))}</span>${art('8.4.3(1), (8.94)')}`));
   f.push(fila('vc', t('pun.r.vRdc'), q(s.VRdc, 'N'),
-    `<span class="f">${t('pun.f.vRdc23')}</span><span class="n">${fmt(s.tau, 3)} × ${n1(r.u.b05, 0)} × ${n1(x.d, 0)} = ${q(s.VRdc, 'N')} → ${q(r.Vc, 'N')} (÷ β<sub>e</sub> = ${n1(r.beta, 2)})</span>${art('8.4.2(6), (8.92)')}`));
+    `<span class="f">${t('pun.f.vRdc23')}</span><span class="n">${fmt(s.tau, 2)} × ${n1(r.u.b05, 0)} × ${n1(x.d, 0)} = ${q(s.VRdc, 'N')} → ${q(r.Vc, 'N')} (÷ β<sub>e</sub> = ${n1(r.beta, 2)})</span>${art('8.4.2(6), (8.92)')}`));
   f.push(fila('vmax', t('pun.r.vmax'), q(r.Vmax, 'N'),
-    `<span class="f">${t('pun.f.vmax23')}</span><span class="n">η<sub>sys</sub> = ${n1(s.etaSys, 3)} (b<sub>0</sub>/d<sub>v</sub> = ${n1(r.u.b0 / x.d, 2)}) → V<sub>Rd,máx</sub> = ${q(s.VRdMax, 'N')}</span>${art('8.4.4(5), (8.111)')}`));
+    `<span class="f">${t('pun.f.vmax23')}</span><span class="n">η<sub>sys</sub> = ${n1(s.etaSys, 2)} (b<sub>0</sub>/d<sub>v</sub> = ${n1(r.u.b0 / x.d, 2)}) → V<sub>Rd,máx</sub> = ${q(s.VRdMax, 'N')}</span>${art('8.4.4(5), (8.111)')}`));
   if (comp && !r.sinArmadura) {
     f.push(fila('etas', t('pun.r.etas'), `${fmt(r.etaC, 2)} · ${fmt(r.etaS, 2)}`,
-      `<span class="f">${t('pun.f.etas')}</span><span class="n">V<sub>Ed,ef</sub> = ${n1(Number.isFinite(r.VEd) ? r.beta * r.VEd : r.VuEf, 0)} kN → η<sub>c</sub> = ${n1(r.etaC, 3)} · η<sub>s</sub> = ${n1(r.etaS, 3)} (≤ 0,8) · φ<sub>w</sub> = ${n1(x.arm.fi, 0)} mm</span>${art('8.4.4(1), (8.105), (8.106)')}`));
+      `<span class="f">${t('pun.f.etas')}</span><span class="n">V<sub>Ed,ef</sub> = ${n1(Number.isFinite(r.VEd) ? r.beta * r.VEd : r.VuEf, 0)} kN → η<sub>c</sub> = ${n1(r.etaC, 2)} · η<sub>s</sub> = ${n1(r.etaS, 2)} (≤ 0,8) · φ<sub>w</sub> = ${n1(x.arm.fi, 0)} mm</span>${art('8.4.4(1), (8.105), (8.106)')}`));
     f.push(fila('vcs', t('pun.r.vcs'), q(r.VuEf / r.beta, 'N'),
       `<span class="f">${t('pun.f.vcs23')}</span><span class="n">${sub('A', 'sw,per')} = ${n1(r.Asw, 0)} mm² · s<sub>r</sub> = ${n1(r.srEf, 0)} mm · f<sub>ywd</sub> = ${n1(P.fywd, 0)} MPa → V<sub>w</sub> = ${q(r.Vw, 'N')}</span>`
       + `<span class="n">${t('pun.v.vcs23', n1(r.VRdcs, 0), q(r.VuEf, 'N'))}</span>${art('8.4.4(1), (8.104), (8.107)')}`));
@@ -377,7 +388,7 @@ function trazas23(r, x, comp) {
     f.push(...filasDisp(r, x));
   } else if (!comp && r.caso === 'calculo') {
     f.push(fila('etas', t('pun.r.etas'), `${fmt(r.etaCEf, 2)}`,
-      `<span class="f">${t('pun.f.etasDim')}</span><span class="n">V<sub>Ed,ef</sub> = ${n1(r.Vef, 0)} kN → η<sub>c</sub> = ${n1(r.etaCEf, 3)}; η<sub>s</sub> por diámetro en la tabla</span>${art('8.4.4(1)')}`));
+      `<span class="f">${t('pun.f.etasDim')}</span><span class="n">V<sub>Ed,ef</sub> = ${n1(r.Vef, 0)} kN → η<sub>c</sub> = ${n1(r.etaCEf, 2)}; η<sub>s</sub> por diámetro en la tabla</span>${art('8.4.4(1)')}`));
     f.push(fila('nper', t('pun.r.nper'), String(r.nPer),
       `<span class="f">${t('pun.f.nper23')}</span><span class="n">${sub('b', '0,5,out')} → δ = ${n1(r.deltaOut, 0)} mm; a<sub>1</sub> = ${n1(r.a1, 0)} mm, s<sub>1</sub> = ${n1(r.sr, 0)} mm; mínimo 2 perímetros</span>${art('8.4.4(7), 12.5.1(2)')}`));
   }
