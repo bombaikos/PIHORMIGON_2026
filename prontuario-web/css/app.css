@@ -963,3 +963,9 @@ svg.dib-ras { min-width: 0; }
 .marca .ed { display: flex; flex-direction: column; align-items: stretch; flex: none; }
 .marca .ed .beta { font: 700 calc(10px + var(--mas))/1 var(--f); letter-spacing: .14em; text-transform: uppercase; color: #ff9a2e; border: 1px solid #ff9a2e; border-radius: 3px; padding: 2px 5px 1px; text-align: center; white-space: nowrap; }
 .marca .ed #marca-fecha { font: 500 10px/1 var(--f); letter-spacing: .04em; color: #ff9a2e; text-align: center; white-space: nowrap; width: 0; min-width: 100%; margin-top: 2px; }
+/* Idioma: dos banderas, la activa en color y la otra en gris (guía § 2.3, como VLASTA) */
+.barra .banderas { display: flex; align-items: center; gap: 6px; }
+.barra .banderas button { line-height: 0; padding: 2px; border: 0; border-radius: var(--r-chip); background: none; cursor: pointer; }
+.barra .banderas button[aria-pressed="false"] { filter: grayscale(1); opacity: .55; }
+.barra .banderas button[aria-pressed="false"]:hover { filter: none; opacity: .9; }
+.barra .banderas .bandera { width: 26px; height: 17px; display: block; border-radius: 2px; }

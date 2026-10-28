@@ -972,6 +972,12 @@ svg.dib-ras { min-width: 0; }
 .marca .ed { display: flex; flex-direction: column; align-items: stretch; flex: none; }
 .marca .ed .beta { font: 700 calc(10px + var(--mas))/1 var(--f); letter-spacing: .14em; text-transform: uppercase; color: #ff9a2e; border: 1px solid #ff9a2e; border-radius: 3px; padding: 2px 5px 1px; text-align: center; white-space: nowrap; }
 .marca .ed #marca-fecha { font: 500 10px/1 var(--f); letter-spacing: .04em; color: #ff9a2e; text-align: center; white-space: nowrap; width: 0; min-width: 100%; margin-top: 2px; }
+/* Idioma: dos banderas, la activa en color y la otra en gris (guía § 2.3, como VLASTA) */
+.barra .banderas { display: flex; align-items: center; gap: 6px; }
+.barra .banderas button { line-height: 0; padding: 2px; border: 0; border-radius: var(--r-chip); background: none; cursor: pointer; }
+.barra .banderas button[aria-pressed="false"] { filter: grayscale(1); opacity: .55; }
+.barra .banderas button[aria-pressed="false"]:hover { filter: none; opacity: .9; }
+.barra .banderas .bandera { width: 26px; height: 17px; display: block; border-radius: 2px; }
 </style>
 
 <header class="barra">
@@ -983,7 +989,11 @@ svg.dib-ras { min-width: 0; }
   <nav class="menu" id="menu"></nav>
   <div class="lado">
     <div id="seg-norma"></div>
-    <button type="button" class="tecla" id="abrir-paleta"><span id="txt-comandos"></span> <kbd>Ctrl</kbd><kbd>K</kbd></button>
+    <button type="button" class="tecla" id="abrir-paleta" hidden><span id="txt-comandos"></span> <kbd>Ctrl</kbd><kbd>K</kbd></button>
+    <div class="banderas" role="group" aria-label="Idioma">
+      <button type="button" data-idioma="es" title="Español" aria-label="Español"><svg viewBox="0 0 750 500" class="bandera" aria-hidden="true"><rect width="750" height="500" fill="#a8464c"/><rect width="750" height="250" y="125" fill="#d4b04a"/></svg></button>
+      <button type="button" data-idioma="en" title="English" aria-label="English"><svg viewBox="0 0 60 30" class="bandera" aria-hidden="true"><clipPath id="bandera-gb"><path d="M30,15h30v15zv15h-30zh-30v-15zv-15h30z"/></clipPath><path d="M0,0v30h60v-30z" fill="#2c4377"/><path d="M0,0 60,30M60,0 0,30" stroke="#e4e6e9" stroke-width="6"/><path d="M0,0 60,30M60,0 0,30" clip-path="url(#bandera-gb)" stroke="#a8464c" stroke-width="4"/><path d="M30,0v30M0,15h60" stroke="#e4e6e9" stroke-width="10"/><path d="M30,0v30M0,15h60" stroke="#a8464c" stroke-width="6"/></svg></button>
+    </div>
     <button type="button" class="pant-completa" id="pant-completa" aria-label="Pantalla completa"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M1 5V1h4M9 1h4v4M13 9v4H9M5 13H1V9"/></svg></button>
   </div>
 </header>
@@ -16952,6 +16962,7 @@ svg.dib-ras { min-width: 0; }
     $("marca-ejemplo").hidden = !estado3.ejemplo;
     $("marca-ejemplo").textContent = t("ejemplo");
     $("txt-comandos").textContent = t("comandos");
+    for (const b of document.querySelectorAll("[data-idioma]")) b.setAttribute("aria-pressed", String(b.dataset.idioma === lenguaActual()));
     $("pant-completa").title = $("pant-completa").ariaLabel = t(document.fullscreenElement ? "p.salirCompleta" : "p.completa");
     $("pant-completa").querySelector("path").setAttribute("d", document.fullscreenElement ? "M5 1v4H1M13 5H9V1M9 13V9h4M1 9h4v4" : "M1 5V1h4M9 1h4v4M13 9v4H9M5 13H1V9");
     $("pie").textContent = t("pie");
@@ -17207,6 +17218,10 @@ svg.dib-ras { min-width: 0; }
     if (VISTAS[v2]) estado3.vista = v2;
     if (leerPref("densidad") === "comoda") document.documentElement.dataset.densidad = "comoda";
     if (leerPref("datos") === "plegado") document.documentElement.dataset.datos = "plegado";
+    for (const b of document.querySelectorAll("[data-idioma]")) b.onclick = () => {
+      ponerLengua(b.dataset.idioma);
+      pintar();
+    };
     $("pant-completa").onclick = pantallaCompleta;
     document.addEventListener("fullscreenchange", pintar);
     comportamientoFormulario($("datos"));

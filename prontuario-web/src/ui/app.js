@@ -124,6 +124,7 @@ function pintarCabecera() {
   $('marca-ejemplo').hidden = !estado.ejemplo;
   $('marca-ejemplo').textContent = t('ejemplo');
   $('txt-comandos').textContent = t('comandos');
+  for (const b of document.querySelectorAll('[data-idioma]')) b.setAttribute('aria-pressed', String(b.dataset.idioma === lenguaActual()));
   $('pant-completa').title = $('pant-completa').ariaLabel = t(document.fullscreenElement ? 'p.salirCompleta' : 'p.completa');
   $('pant-completa').querySelector('path').setAttribute('d', document.fullscreenElement ? 'M5 1v4H1M13 5H9V1M9 13V9h4M1 9h4v4' : 'M1 5V1h4M9 1h4v4M13 9v4H9M5 13H1V9');
   $('pie').textContent = t('pie');
@@ -320,6 +321,7 @@ export function iniciar() {
   // La compacta es la normal (guía § 5); la cómoda es opcional
   if (leerPref('densidad') === 'comoda') document.documentElement.dataset.densidad = 'comoda';
   if (leerPref('datos') === 'plegado') document.documentElement.dataset.datos = 'plegado';
+  for (const b of document.querySelectorAll('[data-idioma]')) b.onclick = () => { ponerLengua(b.dataset.idioma); pintar(); };
   $('pant-completa').onclick = pantallaCompleta;
   document.addEventListener('fullscreenchange', pintar);
   comportamientoFormulario($('datos'));
