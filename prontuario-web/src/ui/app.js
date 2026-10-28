@@ -24,6 +24,8 @@ import * as rasante from './vistas/rasante.js';
 import * as vigas1vano from './vistas/vigas.js';
 import { guardarProyecto, abrirProyecto, nuevoProyecto } from './vistas/proyecto.js';
 
+const EMISION = '28/10/2026'; // fecha de emisión de la versión BETA
+
 // Crear y editar y Diagramas son el mismo módulo de secciones con la misma sección activa;
 // cada entrada fija lo que muestra antes de pintar
 function vistaSecciones(m, propia) {
@@ -117,6 +119,7 @@ function deshacer() {
 function pintarCabecera() {
   const p = estado.proyecto;
   $('marca-app').innerHTML = t('app');
+  $('marca-fecha').textContent = EMISION;
   $('nombre-proyecto').textContent = p.nombre || t('sinNombre');
   $('marca-ejemplo').hidden = !estado.ejemplo;
   $('marca-ejemplo').textContent = t('ejemplo');

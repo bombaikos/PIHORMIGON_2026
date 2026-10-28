@@ -3,7 +3,7 @@
 const sub = (a, b) => `${a}<sub>${b}</sub>`;
 
 export default {
-  app: 'Concrete Design Handbook 2026 <b class="beta">BETA a</b>',
+  app: 'Concrete Design Handbook 2026',
   ejemplo: 'example',
   ejemploNombre: 'Example',
   sinNombre: 'Untitled',
