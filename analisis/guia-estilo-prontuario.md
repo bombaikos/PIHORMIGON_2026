@@ -67,7 +67,7 @@ Esta guía recoge las decisiones de José Luis (8 de octubre de 2026) y las reco
 
 ## 9. Gráficas
 - Mantienen la misma paleta y la misma fuente.
-- **Series con colores distintos** (decidido el 11/10): para las leyes de esfuerzos y cualquier gráfica con varias series se usa esta asignación fija. **Rojo, verde y ámbar no se usan como series**, porque significan «No cumple», «Cumple» y aviso.
+- **Series distinguidas por el trazo, no por el color** (decidido el 14/10; sustituye a la asignación por colores del 11/10): continuo, rayitas, puntos. Los colores de abajo solo valen para el relleno de los diagramas de esfuerzos y para dibujos donde el color ya significa algo. **Rojo, verde y ámbar no se usan como series**, porque significan «No cumple», «Cumple» y aviso.
   | Serie | Claro | Oscuro |
   |---|---|---|
   | M (momento) | azul del acento, `oklch(47% 0.13 252)` | `oklch(74% 0.11 250)` |
@@ -76,7 +76,7 @@ Esta guía recoge las decisiones de José Luis (8 de octubre de 2026) y las reco
   | Flecha | siena, `oklch(50% 0.10 55)` | `oklch(76% 0.10 60)` |
   - Todos pasan 5:1 sobre la hoja y 7:1 sobre la hoja oscura. La serie se identifica además con **su rótulo escrito junto a la curva**, no solo por el color.
   - Los diagramas de esfuerzos (M, V) llevan **área rayada** en su color; giro y flecha, solo línea. Las flechas de las cargas no se rayan. El eje de ordenadas no se dibuja.
-  - Se usan siempre las mismas series con el mismo color en toda la app (M azul siempre).
+  - Se usan siempre las mismas series con el mismo trazo (y, en los diagramas de esfuerzos, el mismo color) en toda la app.
 - **Zoom**: con la rueda, con un rectángulo arrastrado y con dos dedos en móvil. El doble clic vuelve a la vista completa.
 - **Etiquetas emergentes**: una cruz que sigue al cursor con los valores del punto.
 - **Debajo de cada gráfica, un selector Gráfico/Tabla**, como en el Prontuario 3.1 (decidido el 11/10).
