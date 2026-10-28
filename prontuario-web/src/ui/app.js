@@ -37,7 +37,6 @@ const VISTAS = { proyecto, materiales, reologicas, secciones: vistaSecciones('se
 // Menú principal. Una entrada es un módulo suelto o un grupo con submenú; '|' separa familias dentro del
 // submenú. Lo que aún no está en VISTAS sale atenuado y sin acción, y se activa solo al migrarlo.
 const MENU = [
-  'proyecto',
   { grupo: 'materiales', vistas: ['materiales', 'reologicas'] },
   { grupo: 'secciones', vistas: ['secciones', 'durabilidad', 'diagramas'] },
   { grupo: 'analisis', vistas: ['vigas1vano'] },
@@ -45,7 +44,7 @@ const MENU = [
   { grupo: 'els', vistas: ['flechas'] },
   'fuego', 'bielas', 'ejecucion', 'ayuda',
 ];
-const ORDEN = MENU.flatMap((m) => (typeof m === 'string' ? [m] : m.vistas)).filter((v) => v in VISTAS);
+const ORDEN = ['proyecto', ...MENU.flatMap((m) => (typeof m === 'string' ? [m] : m.vistas))].filter((v) => v in VISTAS);
 
 const estado = {
   proyecto: null,
@@ -153,10 +152,11 @@ function pintarCabecera() {
 
 /** Menú Archivo (guía común § 2.3): Nuevo, Abrir y Guardar, con sus atajos. */
 function archivo() {
-  const acciones = [['pro.nuevo', '', nuevoProyecto], ['pro.abrir', 'Ctrl+O', abrirProyecto], ['pro.guardar', 'Ctrl+S', guardarProyecto]];
+  const acciones = [['pro.nuevo', '', nuevoProyecto], ['pro.abrir', 'Ctrl+O', abrirProyecto], ['pro.guardar', 'Ctrl+S', guardarProyecto], '|', ['m.proyecto', '', () => ctx.ir('proyecto')]];
   const lista = h('div', { class: 'menu-desp', id: 'menu-archivo', popover: 'auto', role: 'menu' },
-    ...acciones.map(([k, atajo, f]) => h('button', { type: 'button', role: 'menuitem', onclick: () => { lista.hidePopover?.(); f(ctx); } }, t(k), atajo ? h('small', {}, atajo) : null)));
-  const b = h('button', { type: 'button', class: 'con-desp', 'aria-haspopup': 'menu',
+    ...acciones.map((a) => (a === '|' ? h('hr', { role: 'separator' }) : h('button', { type: 'button', role: 'menuitem', 'aria-current': a[0] === 'm.proyecto' && estado.vista === 'proyecto' ? 'page' : undefined,
+      onclick: () => { lista.hidePopover?.(); a[2](ctx); } }, t(a[0]), a[1] ? h('small', {}, a[1]) : null))));
+  const b = h('button', { type: 'button', class: 'con-desp', 'aria-haspopup': 'menu', 'aria-current': estado.vista === 'proyecto' ? 'page' : undefined,
     onclick: () => {
       if (!lista.showPopover) return;
       const r = b.getBoundingClientRect();

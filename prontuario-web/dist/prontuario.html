@@ -16868,7 +16868,6 @@ svg.dib-ras { min-width: 0; }
   }
   var VISTAS = { proyecto: proyecto_exports, materiales: materiales_exports, reologicas: reologicas_exports, secciones: vistaSecciones("seccion", true), durabilidad: durabilidad_exports5, diagramas: vistaSecciones("mk", false), vigas1vano: vigas_exports, flexion: flexion_exports, flexRecta: flexRecta_exports, fuego: fuego_exports, anclaje: anclaje_exports, cortante: cortante_exports, punzonamiento: punzonamiento_exports, rasante: rasante_exports };
   var MENU = [
-    "proyecto",
     { grupo: "materiales", vistas: ["materiales", "reologicas"] },
     { grupo: "secciones", vistas: ["secciones", "durabilidad", "diagramas"] },
     { grupo: "analisis", vistas: ["vigas1vano"] },
@@ -16879,7 +16878,7 @@ svg.dib-ras { min-width: 0; }
     "ejecucion",
     "ayuda"
   ];
-  var ORDEN = MENU.flatMap((m) => typeof m === "string" ? [m] : m.vistas).filter((v2) => v2 in VISTAS);
+  var ORDEN = ["proyecto", ...MENU.flatMap((m) => typeof m === "string" ? [m] : m.vistas)].filter((v2) => v2 in VISTAS);
   var estado3 = {
     proyecto: null,
     vista: "secciones",
@@ -17004,19 +17003,25 @@ svg.dib-ras { min-width: 0; }
     $("seg-norma").replaceChildren(chip);
   }
   function archivo() {
-    const acciones = [["pro.nuevo", "", nuevoProyecto], ["pro.abrir", "Ctrl+O", abrirProyecto], ["pro.guardar", "Ctrl+S", guardarProyecto]];
+    const acciones = [["pro.nuevo", "", nuevoProyecto], ["pro.abrir", "Ctrl+O", abrirProyecto], ["pro.guardar", "Ctrl+S", guardarProyecto], "|", ["m.proyecto", "", () => ctx.ir("proyecto")]];
     const lista = h(
       "div",
       { class: "menu-desp", id: "menu-archivo", popover: "auto", role: "menu" },
-      ...acciones.map(([k, atajo, f]) => h("button", { type: "button", role: "menuitem", onclick: () => {
-        lista.hidePopover?.();
-        f(ctx);
-      } }, t(k), atajo ? h("small", {}, atajo) : null))
+      ...acciones.map((a) => a === "|" ? h("hr", { role: "separator" }) : h("button", {
+        type: "button",
+        role: "menuitem",
+        "aria-current": a[0] === "m.proyecto" && estado3.vista === "proyecto" ? "page" : void 0,
+        onclick: () => {
+          lista.hidePopover?.();
+          a[2](ctx);
+        }
+      }, t(a[0]), a[1] ? h("small", {}, a[1]) : null))
     );
     const b = h("button", {
       type: "button",
       class: "con-desp",
       "aria-haspopup": "menu",
+      "aria-current": estado3.vista === "proyecto" ? "page" : void 0,
       onclick: () => {
         if (!lista.showPopover) return;
         const r = b.getBoundingClientRect();
