@@ -1,0 +1,46 @@
+# Publica la aplicación (un solo HTML) en GitHub Pages: la URL de la página abre el Prontuario, no el README.
+# Requiere en GitHub: Settings > Pages > Build and deployment > Source: "GitHub Actions".
+name: Publicar página
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    if: github.repository == 'bombaikos/pihormigon_2026'
+    environment:
+      name: github-pages
+      url: ${{ steps.despliegue.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Construir la aplicación
+        working-directory: prontuario-web
+        run: |
+          npm i --no-save esbuild
+          node tools/build.mjs
+      - name: Preparar la página
+        run: |
+          mkdir _sitio
+          cp prontuario-web/dist/prontuario.html _sitio/index.html
+          touch _sitio/.nojekyll
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _sitio
+      - id: despliegue
+        uses: actions/deploy-pages@v4
