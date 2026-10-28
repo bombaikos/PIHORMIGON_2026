@@ -122,6 +122,7 @@ function pintarCabecera() {
   $('marca-ejemplo').textContent = t('ejemplo');
   $('txt-comandos').textContent = t('comandos');
   $('pant-completa').title = $('pant-completa').ariaLabel = t(document.fullscreenElement ? 'p.salirCompleta' : 'p.completa');
+  $('pant-completa').querySelector('path').setAttribute('d', document.fullscreenElement ? 'M5 1v4H1M13 5H9V1M9 13V9h4M1 9h4v4' : 'M1 5V1h4M9 1h4v4M13 9v4H9M5 13H1V9');
   $('pie').textContent = t('pie');
   $('menu').setAttribute('aria-label', t('modulos'));
   $('menu').replaceChildren(archivo(), ...MENU.map((m) => (typeof m === 'string'

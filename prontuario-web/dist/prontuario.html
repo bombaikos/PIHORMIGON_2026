@@ -641,7 +641,7 @@ span.bien { color: var(--ok); font-weight: 600; }
 .marca .app { color: var(--banda-tinta-2); }
 .marca .proy { color: var(--banda-tinta); }
 .barra .menu button { color: var(--banda-tinta-2); }
-.barra .menu button:hover { background: rgb(255 255 255 / .08); color: var(--banda-tinta); }
+.barra .menu button:hover, .barra .menu button[aria-expanded="true"] { background: rgb(255 255 255 / .12); color: var(--banda-tinta); }
 .barra .menu button[aria-current="page"] { background: var(--marca-azul); color: #fff; }
 .barra .chip-ajuste, .barra .tecla { background: none; border-color: var(--banda-linea); color: var(--banda-tinta-2); }
 .barra .chip-ajuste b { color: var(--banda-tinta); }
@@ -649,10 +649,10 @@ span.bien { color: var(--ok); font-weight: 600; }
 .barra kbd { background: none; border-color: var(--banda-linea); color: var(--banda-tinta-2); }
 @media (max-width: 1099px), (max-height: 599px) { .marca .logo { height: 26px; } }
 /* Menú principal a 16 px (guía § 3 y § 14.1): primer nivel, peso normal; el activo en seminegrita en su píldora */
-.barra .menu button { font-size: calc(16px + var(--mas)); font-weight: 400; padding: 3px 12px; min-height: 30px; line-height: 1.3; }
+.barra .menu button { font-size: 14px; font-weight: 400; padding: 5px 10px; border-radius: 4px; min-height: 28px; line-height: 1.3; }
 .barra .menu button[aria-current="page"] { font-weight: 600; }
+.barra .menu button[aria-current="page"] { border-radius: 999px; }
 .barra .menu .con-desp .flecha { font-size: calc(10px + var(--mas)); }
-@media (max-width: 1099px), (max-height: 599px) { .barra .menu button { padding: 4px 10px; } }
 /* Diagramas: cinco axiles, un color cada uno (s1 y s2 ya definidos) */
 :root { --serie-5: oklch(42% 0.04 250); }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --serie-5: oklch(78% 0.04 250); } }
@@ -705,7 +705,6 @@ table.rejilla.numerada tbody tr:not(.nueva) td:first-child { padding-left: 22px;
 .fijo .caja { background: transparent; border-color: transparent; box-shadow: none; }
 .fijo input, .fijo select { appearance: none; -webkit-appearance: none; background: transparent; color: var(--tinta-2); opacity: 1; cursor: default; pointer-events: none; }
 /* Con el menú completo, a anchos de portátil la cabecera se mantiene en una fila */
-@media (min-width: 1100px) and (max-width: 1500px) { .barra .menu button { font-size: calc(14px + var(--mas)); padding: 3px 7px; } .barra .menu { gap: 0; } }
 
 /* Materiales */
 .edad .formula { font-size: var(--t-xs); color: var(--tinta-3); margin: 8px 0 0; line-height: 1.5; }
@@ -958,14 +957,15 @@ svg.dib-ras { min-width: 0; }
   .barra { flex-wrap: nowrap; gap: var(--e3); padding: 4px var(--e4); min-height: 52px; }
   .barra .marca { flex: none; }
   .barra .menu { flex: 1 1 auto; min-width: 0; gap: 0; }
-  .barra .menu button { padding: 3px 8px; }
   .barra .menu button:disabled:not(:last-child) { display: none; } /* módulos aún no migrados: fuera de la barra */
   .barra .lado { flex: none; flex-wrap: nowrap; margin-left: 0; gap: var(--e2); }
   .barra .tecla { white-space: nowrap; }
 }
 .barra .pant-completa { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; border: 1px solid var(--banda-linea); border-radius: var(--r-campo); background: none; color: var(--banda-tinta-2); cursor: pointer; }
 .barra .pant-completa:hover { border-color: rgb(255 255 255 / .5); color: var(--banda-tinta); }
-.barra .pant-completa svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.5; }
+.barra .pant-completa svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.5; }
+/* Línea fina tras el logo (guía § 2.3) */
+.marca .logo { padding-right: var(--e3); border-right: 1px solid var(--banda-linea); box-sizing: content-box; }
 #menu-archivo button { display: flex; justify-content: space-between; gap: var(--e5); width: 100%; }
 #menu-archivo small { color: var(--tinta-3); }
 </style>
@@ -979,7 +979,7 @@ svg.dib-ras { min-width: 0; }
   <div class="lado">
     <div id="seg-norma"></div>
     <button type="button" class="tecla" id="abrir-paleta"><span id="txt-comandos"></span> <kbd>Ctrl</kbd><kbd>K</kbd></button>
-    <button type="button" class="pant-completa" id="pant-completa" aria-label="Pantalla completa"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1 5V1h4M11 1h4v4M15 11v4h-4M5 15H1v-4"/></svg></button>
+    <button type="button" class="pant-completa" id="pant-completa" aria-label="Pantalla completa"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M1 5V1h4M9 1h4v4M13 9v4H9M5 13H1V9"/></svg></button>
   </div>
 </header>
 <div class="cabeza-modulo" id="cabeza" hidden></div>
@@ -16946,6 +16946,7 @@ svg.dib-ras { min-width: 0; }
     $("marca-ejemplo").textContent = t("ejemplo");
     $("txt-comandos").textContent = t("comandos");
     $("pant-completa").title = $("pant-completa").ariaLabel = t(document.fullscreenElement ? "p.salirCompleta" : "p.completa");
+    $("pant-completa").querySelector("path").setAttribute("d", document.fullscreenElement ? "M5 1v4H1M13 5H9V1M9 13V9h4M1 9h4v4" : "M1 5V1h4M9 1h4v4M13 9v4H9M5 13H1V9");
     $("pie").textContent = t("pie");
     $("menu").setAttribute("aria-label", t("modulos"));
     $("menu").replaceChildren(archivo(), ...MENU.map((m) => typeof m === "string" ? h("button", { type: "button", "aria-current": m === estado3.vista ? "page" : void 0, disabled: m in VISTAS ? void 0 : "", title: m in VISTAS ? void 0 : t("menu.pronto"), onclick: () => ctx.ir(m) }, t(`m.${m}`)) : desplegable(m)));
