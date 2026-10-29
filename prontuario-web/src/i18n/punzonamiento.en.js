@@ -52,7 +52,7 @@ export default {
   'pun.dib.ext23': (dl, u, req) => `${sv('b', '0,5,out')} at ${dl} mm: ${u} ≥ ${req}`,
   'pun.crit.t': 'Critical perimeters', 'pun.crit.per': 'Perimeter', 'pun.crit.dist': 'Dist. [mm]', 'pun.crit.long': 'Length [mm]', 'pun.crit.comp': 'Check',
   'pun.crit.cara': 'Column face (strut)', 'pun.crit.ctrl': (n) => `Control ${n} (links)`, 'pun.crit.ext': (n) => `Outer ${n} (concrete)`,
-  'pun.dib.alzX': 'Elevation A-A (cut along x)', 'pun.dib.alzY': 'Elevation B-B (cut along y)',
+  'pun.dib.alzX': 'Elevation X-X', 'pun.dib.alzY': 'Elevation Y-Y',
   'pun.hAyuda': 'Total slab depth (drawing only)',
   'pun.dib.aria': (a, b) => `Plan of the ${a} by ${b} mm column with control perimeters and links`,
   'pun.dib.borde': 'free edge',

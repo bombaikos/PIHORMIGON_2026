@@ -57,7 +57,7 @@ export default {
   'pun.dib.ext23': (dl, u, req) => `${sv('b', '0,5,out')} a ${dl} mm: ${u} ≥ ${req}`,
   'pun.crit.t': 'Perímetros críticos', 'pun.crit.per': 'Perímetro', 'pun.crit.dist': 'Dist. [mm]', 'pun.crit.long': 'Long. [mm]', 'pun.crit.comp': 'Comprobación',
   'pun.crit.cara': 'Cara del pilar (biela)', 'pun.crit.ctrl': (n) => `Control ${n} (cercos)`, 'pun.crit.ext': (n) => `Exterior ${n} (hormigón)`,
-  'pun.dib.alzX': 'Alzado A-A (corte por el eje x)', 'pun.dib.alzY': 'Alzado B-B (corte por el eje y)',
+  'pun.dib.alzX': 'Alzado X-X', 'pun.dib.alzY': 'Alzado Y-Y',
   'pun.hAyuda': 'Canto total de la losa (solo para el dibujo)',
   'pun.dib.aria': (a, b) => `Planta del pilar de ${a} por ${b} mm con los perímetros de control y los cercos`,
   'pun.dib.borde': 'borde libre',
