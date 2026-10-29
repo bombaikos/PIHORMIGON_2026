@@ -75,3 +75,4 @@ Método general de θe y M_Ed (fase 4); cálculo de z con compresiones grandes; 
 - EC-2 2023: ΔFtd = NVd/2 (aumento por cortante en el cordón traccionado); Ftd = MEd/z + (NVd+NEd)/2 es el total con momento (solo si hay MEd).
 - Visual: dos mini-barras (biela VEd/Vu1, cercos VEd/Vu2) y fila «sugerida» (primera con s ≥ 100 mm) en la tabla ø/s.
 - Abierto: cómo pedir MEd sin saturar; casilla cotθ ≤ 3,0 (2023); ktc.
+- ktc (José Luis 29/10): en Materiales es dato del hormigón, por defecto 1,00 (EC-2 2023); en Cortante (solo 2023) se muestra el del material y se puede alternar entre 0,85 y 1,00 sin cambiar el material. Solo afecta a fcd y VRd,máx. Antes Cortante usaba 0,85 fijo.

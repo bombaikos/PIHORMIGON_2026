@@ -80,6 +80,7 @@ export default {
   'cor.alcanceEC': 'V<sub>Rd,max</sub> (compression strut) and V<sub>Rd,s</sub> (stirrups) with the 6.2.3 truss, or V<sub>Rd,c</sub> without stirrups (6.2.2), with the National Annex: 0.5 ≤ cotg θ ≤ 2.0, ν<sub>min</sub> with k<sup>3/2</sup>, ρ<sub>w,min</sub> = f<sub>ctm</sub>/(7.5 f<sub>yk</sub>) and the 9.2.2 spacings. V<sub>Ed</sub> is typed by the user. Not included: prestressing, loads near the support (β = a<sub>v</sub>/2d), flange-web shear, torsion.',
   'cor.n.ec': 'Criteria used here', 'cor.ecNota': 'With stirrups only the truss counts: the concrete adds nothing (unlike EHE-08). No 400 MPa cap on f<sub>ywd</sub>. α<sub>cw</sub> = 1 (the axial force does not change it). No 0.85 reduction for circular hoops. b<sub>w</sub>, d and z = 0.9 d as in the rest of the Prontuario.',
   // EC-2 2023
+  'cor.ktc': sub('k', 'tc'), 'cor.ktcAyuda': 'Effect of sustained loads on f_cd (5.1.6(1)). Taken from the concrete (Materials); here it can only be switched between 0.85 and 1.00. It only affects V_Rd,max',
   'cor.MEdOpc': 'Moment (optional)',
   'cor.MEd': sub('M', 'Ed'), 'cor.MEdAyuda': 'Design moment at the same section as V_Ed (absolute value). Optional: 0 = not used. Gives the shear span a_cs = M_Ed/V_Ed, which reduces d in V_Rd,c (8.2.2(3)), and the chord force F_td (8.51)',
   'cor.NEdNota23': 'Compression +, tension −.',

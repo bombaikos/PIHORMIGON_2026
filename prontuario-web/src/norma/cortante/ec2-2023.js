@@ -41,7 +41,8 @@ export function parametros(x) {
   const gc = EC2_2023.gammaC;
   const gs = EC2_2023.gammaS;
   const gv = EC2_2023.gammaV;
-  const fcd = (EC2_2023.alfaCC(fck) * fck) / gc;
+  const ktc = x.ktc === 1 ? 1 : 0.85; // 5.1.6(1): solo 0,85 o 1,00
+  const fcd = (EC2_2023.alfaCC(fck, { ktc }) * fck) / gc;
   const fctm = EC2_2023.fctm(fck);
   const fyd = fykCercos / gs;
   // Armadura longitudinal que sirvió para el diseño a flexión: fyd con el acero longitudinal (8.20)
@@ -52,7 +53,7 @@ export function parametros(x) {
   const z = x.z ?? 0.9 * d;
   const rho = (x.Asl ?? 0) / (b0 * d);
   const MEd = Number.isFinite(x.MEd) && x.MEd > 0 ? x.MEd : null; // kN·m, valor absoluto
-  return { fck, fcd, fctm, fyk: fykCercos, fyd, fydLong, NEd, NEdN, gc, gv, ddg, z, rho, b0, d, MEd, ductilidad: x.ductilidad ?? 'B', sigCp: (NEd * 1000) / x.Ac };
+  return { fck, ktc, fcd, fctm, fyk: fykCercos, fyd, fydLong, NEd, NEdN, gc, gv, ddg, z, rho, b0, d, MEd, ductilidad: x.ductilidad ?? 'B', sigCp: (NEd * 1000) / x.Ac };
 }
 
 /** Cotas de cotg θ (8.41): [1 (o tan(α/2) con cercos inclinados), cotg θmín], con cotg θmín según axil y ductilidad. */

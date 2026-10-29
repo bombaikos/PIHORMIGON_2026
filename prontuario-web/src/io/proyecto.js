@@ -2,7 +2,7 @@
 // Longitudes en m, áreas en m², resistencias de materiales en MPa (la interfaz muestra mm).
 // Versión 2: secciones con el modelo único (forma, geo, armado) de src/core/geometria.js.
 
-import { materialDeFicha } from '../core/materiales.js';
+import { materialDeFicha, ktcDe } from '../core/materiales.js';
 import { geometria, trapecios, SEP_CAPAS } from '../core/geometria.js';
 import { bruta } from '../core/propiedades.js';
 import { leerCapas } from '../core/armado.js';
@@ -249,7 +249,7 @@ export function datosViga(p, s, signo = 1) {
  */
 export function datosCortante(p, s, { signo = 1, dir = 'h' } = {}) {
   const { fichaH, fichaA } = materialesSeccion(p, s);
-  const comun = { forma: s.forma, nombre: s.nombre, hormigon: s.hormigon, acero: s.acero, fck: fichaH.fck, fyk: fichaA.fyk };
+  const comun = { forma: s.forma, nombre: s.nombre, hormigon: s.hormigon, acero: s.acero, fck: fichaH.fck, fyk: fichaA.fyk, ktc: ktcDe(fichaH, p.norma) };
   if (s.forma === 'rectangular' || s.forma === 'T') {
     const v = datosViga(p, s, signo);
     const b0 = Math.min(...v.trapecios.flatMap((t) => [t.b1, t.b2]));

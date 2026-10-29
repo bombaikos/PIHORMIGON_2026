@@ -2372,7 +2372,7 @@ svg.dib-ras { min-width: 0; }
   }
   function datosCortante(p, s, { signo = 1, dir = "h" } = {}) {
     const { fichaH, fichaA } = materialesSeccion(p, s);
-    const comun = { forma: s.forma, nombre: s.nombre, hormigon: s.hormigon, acero: s.acero, fck: fichaH.fck, fyk: fichaA.fyk };
+    const comun = { forma: s.forma, nombre: s.nombre, hormigon: s.hormigon, acero: s.acero, fck: fichaH.fck, fyk: fichaA.fyk, ktc: ktcDe(fichaH, p.norma) };
     if (s.forma === "rectangular" || s.forma === "T") {
       const v2 = datosViga(p, s, signo);
       const b0 = Math.min(...v2.trapecios.flatMap((t2) => [t2.b1, t2.b2]));
@@ -4454,6 +4454,8 @@ svg.dib-ras { min-width: 0; }
     "cor.n.ec": "Criterios de esta pantalla",
     "cor.ecNota": "Con cercos solo suma la celos\xEDa: el hormig\xF3n no aporta (a diferencia de la EHE-08). Sin tope de 400 MPa en f<sub>ywd</sub>. \u03B1<sub>cw</sub> = 1 (el axil no lo modifica). Con cercos circulares no hay reducci\xF3n de 0,85. b<sub>w</sub>, d y z = 0,9 d como en el resto del Prontuario.",
     // EC-2 2023
+    "cor.ktc": sub5("k", "tc"),
+    "cor.ktcAyuda": "Efecto de las cargas mantenidas en f_cd (5.1.6(1)). Se toma del hormig\xF3n (Materiales); aqu\xED solo se puede alternar entre 0,85 y 1,00. Solo influye en V_Rd,m\xE1x",
     "cor.MEdOpc": "Momento (opcional)",
     "cor.MEd": sub5("M", "Ed"),
     "cor.MEdAyuda": "Momento de c\xE1lculo en la misma secci\xF3n que V_Ed (valor absoluto). Opcional: con 0 no se usa. Da la esbeltez de cortante a_cs = M_Ed/V_Ed, que reduce d en V_Rd,c (8.2.2(3)), y la fuerza F_td del cord\xF3n (8.51)",
@@ -4618,6 +4620,8 @@ svg.dib-ras { min-width: 0; }
     "cor.n.ec": "Criteria used here",
     "cor.ecNota": "With stirrups only the truss counts: the concrete adds nothing (unlike EHE-08). No 400 MPa cap on f<sub>ywd</sub>. \u03B1<sub>cw</sub> = 1 (the axial force does not change it). No 0.85 reduction for circular hoops. b<sub>w</sub>, d and z = 0.9 d as in the rest of the Prontuario.",
     // EC-2 2023
+    "cor.ktc": sub6("k", "tc"),
+    "cor.ktcAyuda": "Effect of sustained loads on f_cd (5.1.6(1)). Taken from the concrete (Materials); here it can only be switched between 0.85 and 1.00. It only affects V_Rd,max",
     "cor.MEdOpc": "Moment (optional)",
     "cor.MEd": sub6("M", "Ed"),
     "cor.MEdAyuda": "Design moment at the same section as V_Ed (absolute value). Optional: 0 = not used. Gives the shear span a_cs = M_Ed/V_Ed, which reduces d in V_Rd,c (8.2.2(3)), and the chord force F_td (8.51)",
@@ -13135,7 +13139,8 @@ svg.dib-ras { min-width: 0; }
     const gc = EC2_2023.gammaC;
     const gs = EC2_2023.gammaS;
     const gv = EC2_2023.gammaV;
-    const fcd = EC2_2023.alfaCC(fck) * fck / gc;
+    const ktc = x.ktc === 1 ? 1 : 0.85;
+    const fcd = EC2_2023.alfaCC(fck, { ktc }) * fck / gc;
     const fctm = EC2_2023.fctm(fck);
     const fyd = fykCercos / gs;
     const fydLong = (x.fykLong ?? fykCercos) / gs;
@@ -13145,7 +13150,7 @@ svg.dib-ras { min-width: 0; }
     const z = x.z ?? 0.9 * d;
     const rho = (x.Asl ?? 0) / (b0 * d);
     const MEd = Number.isFinite(x.MEd) && x.MEd > 0 ? x.MEd : null;
-    return { fck, fcd, fctm, fyk: fykCercos, fyd, fydLong, NEd, NEdN, gc, gv, ddg, z, rho, b0, d, MEd, ductilidad: x.ductilidad ?? "B", sigCp: NEd * 1e3 / x.Ac };
+    return { fck, ktc, fcd, fctm, fyk: fykCercos, fyd, fydLong, NEd, NEdN, gc, gv, ddg, z, rho, b0, d, MEd, ductilidad: x.ductilidad ?? "B", sigCp: NEd * 1e3 / x.Ac };
   }
   function rangoCot(x, VEd = NaN) {
     const P = parametros3(x);
@@ -13411,6 +13416,7 @@ svg.dib-ras { min-width: 0; }
     sigY: 0,
     cot: 1,
     alfa: 90,
+    ktc: null,
     fi: 8,
     ramas: 2,
     s: 200,
@@ -13424,6 +13430,7 @@ svg.dib-ras { min-width: 0; }
     est6.i = null;
     est6.ov = { b0: null, d: null, Asl: null, Asc: null };
     est6.aceroCercos = null;
+    est6.ktc = null;
   }
   var RAD = Math.PI / 180;
   var thetaDe2 = (cot4) => Math.atan(1 / cot4) / RAD;
@@ -13452,6 +13459,7 @@ svg.dib-ras { min-width: 0; }
   function cambiaSeccion(ctx2) {
     est6.ov = { b0: null, d: null, Asl: null, Asc: null };
     est6.aceroCercos = null;
+    est6.ktc = null;
     ctx2.pintar();
   }
   function calculado(c) {
@@ -13588,6 +13596,10 @@ svg.dib-ras { min-width: 0; }
           mostrar(campoNum({ id: "c-asl", etq: t("cor.Asl"), valor: ef.Asl, mag: "As", paso: 50, min: 0, max: 1, ayuda: t("cor.AslAyuda"), info: s.forma === "pilar" ? t("cor.AslInfoPilar") : s.forma === "circular" ? t("cor.AslInfoCirc") : void 0, onCambio: nuevo2("Asl") }), ef.Asl * 1e6, 0),
           calculado(mostrar(campoNum({ id: "c-rho", etq: t("cor.rho"), valor: rho0, mag: "cuantia", paso: 1, min: 0, max: 1, ayuda: t("cor.rhoAyuda"), onCambio: () => {
           } }), rho0 * 1e3, 2)),
+          e23 ? selector({ id: "c-ktc", etq: t("cor.ktc"), linea: true, opciones: [["0.85", "0.85"], ["1", "1.00"]], valor: String(est6.ktc ?? sec.ktc ?? 0.85), onCambio: (v2) => {
+            est6.ktc = Number(v2);
+            cambio();
+          } }) : null,
           e23 && (!comp || est6.sin) ? campoNum({ id: "c-dlow", etq: t("cor.Dlower"), valor: est6.Dlower, mag: "diam", paso: 2, min: 4, max: 63, ayuda: t("cor.DlowerAyuda"), onCambio: (v2) => {
             est6.Dlower = v2;
             cambio();
@@ -13655,6 +13667,7 @@ svg.dib-ras { min-width: 0; }
     const acero2 = p.aceros.find((m) => m.nombre === (est6.aceroCercos ?? s.acero)) ?? p.aceros[0];
     return {
       fck: sec.fck,
+      ktc: est6.ktc ?? sec.ktc,
       fykCercos: acero2.fyk,
       fykLong: sec.fyk,
       b0: ef.b0 * 1e3,
@@ -13872,7 +13885,7 @@ svg.dib-ras { min-width: 0; }
         "vu1",
         t("cor.ec.r.vmax"),
         q(comp ? r.VRdMax : r.Vu1, "N"),
-        `<span class="f">${t("cor.e3.f.vmax")}</span><span class="n">${t("cor.e3.f.nu")}</span><span class="n">\u03BD = 0,5 \xB7 b<sub>w</sub> = ${n13(P.b0, 0)} \xB7 z = ${n13(P.z, 0)} mm \xB7 f<sub>cd</sub> = ${n13(P.fcd, 0)} MPa \xB7 (cotg \u03B8 + cotg \u03B1)/(1 + cotg\xB2\u03B8) = ${n13((r.cotTheta + cotA) / (1 + r.cotTheta ** 2), 3)}</span>${art3("8.2.3(5), (6)")}`
+        `<span class="f">${t("cor.e3.f.vmax")}</span><span class="n">${t("cor.e3.f.nu")}</span><span class="n">\u03BD = 0,5 \xB7 b<sub>w</sub> = ${n13(P.b0, 0)} \xB7 z = ${n13(P.z, 0)} mm \xB7 k<sub>tc</sub> = ${P.ktc != null ? P.ktc.toFixed(2) : "\u2014"} \xB7 f<sub>cd</sub> = ${n13(P.fcd, 1)} MPa \xB7 (cotg \u03B8 + cotg \u03B1)/(1 + cotg\xB2\u03B8) = ${n13((r.cotTheta + cotA) / (1 + r.cotTheta ** 2), 3)}</span>${art3("8.2.3(5), (6)")}`
       ));
     }
     if (comp && r.sinArmadura && r.VmaxRef != null) {

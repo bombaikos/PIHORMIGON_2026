@@ -17,10 +17,10 @@ import { dibujoCortante } from '../dibujoCortante.js';
 const est = {
   i: null, modo: 'comprobar', signo: 1, dir: 'h',
   VEd: 120, NEd: 0, MEd: 0, Dlower: 20, sigY: 0,
-  cot: 1, alfa: 90, fi: 8, ramas: 2, s: 200, sin: false, circ: true, aceroCercos: null,
+  cot: 1, alfa: 90, ktc: null, fi: 8, ramas: 2, s: 200, sin: false, circ: true, aceroCercos: null,
   ov: { b0: null, d: null, Asl: null, Asc: null }, abiertos: new Set(),
 };
-export function reiniciar() { est.i = null; est.ov = { b0: null, d: null, Asl: null, Asc: null }; est.aceroCercos = null; }
+export function reiniciar() { est.i = null; est.ov = { b0: null, d: null, Asl: null, Asc: null }; est.aceroCercos = null; est.ktc = null; }
 
 const RAD = Math.PI / 180;
 const thetaDe = (cot) => (Math.atan(1 / cot) / RAD);
@@ -54,6 +54,7 @@ function efectivos(p, s) {
 function cambiaSeccion(ctx) {
   est.ov = { b0: null, d: null, Asl: null, Asc: null };
   est.aceroCercos = null;
+  est.ktc = null;
   ctx.pintar();
 }
 
@@ -149,6 +150,7 @@ export function datos(ctx, form) {
         campoNum({ id: 'c-d', etq: t('cor.d'), valor: ef.d, mag: 'long', paso: 5, min: 0.01, max: 20, ayuda: t('cor.dAyuda'), onCambio: nuevo('d') }),
         mostrar(campoNum({ id: 'c-asl', etq: t('cor.Asl'), valor: ef.Asl, mag: 'As', paso: 50, min: 0, max: 1, ayuda: t('cor.AslAyuda'), info: s.forma === 'pilar' ? t('cor.AslInfoPilar') : s.forma === 'circular' ? t('cor.AslInfoCirc') : undefined, onCambio: nuevo('Asl') }), ef.Asl * 1e6, 0),
         calculado(mostrar(campoNum({ id: 'c-rho', etq: t('cor.rho'), valor: rho0, mag: 'cuantia', paso: 1, min: 0, max: 1, ayuda: t('cor.rhoAyuda'), onCambio: () => {} }), rho0 * 1000, 2)),
+        e23 ? selector({ id: 'c-ktc', etq: t('cor.ktc'), linea: true, opciones: [['0.85', '0.85'], ['1', '1.00']], valor: String(est.ktc ?? sec.ktc ?? 0.85), onCambio: (v) => { est.ktc = Number(v); cambio(); } }) : null,
         e23 && (!comp || est.sin) ? campoNum({ id: 'c-dlow', etq: t('cor.Dlower'), valor: est.Dlower, mag: 'diam', paso: 2, min: 4, max: 63, ayuda: t('cor.DlowerAyuda'), onCambio: (v) => { est.Dlower = v; cambio(); } }) : null,
         ec ? null : campoNum({ id: 'c-sigy', etq: t('cor.sigY'), ref: t('cor.sigYRef'), valor: est.sigY, mag: 'tension', paso: 0.5, min: -50, max: 50, ayuda: t('cor.sigYAyuda'), onCambio: (v) => { est.sigY = v; cambio(); } }),
         pilarOCirc && !ec ? mostrar(campoNum({ id: 'c-asc', etq: t('cor.Asc'), valor: ef.Asc, mag: 'As', paso: 50, min: 0, max: 1, ayuda: t('cor.AscAyuda'), onCambio: nuevo('Asc') }), ef.Asc * 1e6, 0) : null,
@@ -180,7 +182,7 @@ export function datos(ctx, form) {
 function entrada(p, s, sec, ef) {
   const acero = p.aceros.find((m) => m.nombre === (est.aceroCercos ?? s.acero)) ?? p.aceros[0];
   return {
-    fck: sec.fck, fykCercos: acero.fyk, fykLong: sec.fyk,
+    fck: sec.fck, ktc: est.ktc ?? sec.ktc, fykCercos: acero.fyk, fykLong: sec.fyk,
     b0: ef.b0 * 1000, d: ef.d * 1000, Ac: sec.Ac * 1e6, Asl: ef.Asl * 1e6, Asc: ef.Asc * 1e6,
     NEd: est.NEd, sigY: est.sigY, cotTheta: est.cot, alfa: est.alfa, circular: sec.circular && est.circ, viga: esViga(s),
     MEd: est.MEd, Dlower: est.Dlower, ductilidad: acero.ductilidad ?? aceroTipificado(acero.nombre)?.ductilidad ?? 'B',
@@ -350,7 +352,7 @@ function trazasEC2023(r, x, comp) {
   if (!comp || !r.sinArmadura) {
     f.push(fila('vu1', t('cor.ec.r.vmax'), q(comp ? r.VRdMax : r.Vu1, 'N'),
       `<span class="f">${t('cor.e3.f.vmax')}</span><span class="n">${t('cor.e3.f.nu')}</span>`
-      + `<span class="n">ν = 0,5 · b<sub>w</sub> = ${n1(P.b0, 0)} · z = ${n1(P.z, 0)} mm · f<sub>cd</sub> = ${n1(P.fcd, 0)} MPa · (cotg θ + cotg α)/(1 + cotg²θ) = ${n1((r.cotTheta + cotA) / (1 + r.cotTheta ** 2), 3)}</span>${art('8.2.3(5), (6)')}`));
+      + `<span class="n">ν = 0,5 · b<sub>w</sub> = ${n1(P.b0, 0)} · z = ${n1(P.z, 0)} mm · k<sub>tc</sub> = ${P.ktc != null ? P.ktc.toFixed(2) : '—'} · f<sub>cd</sub> = ${n1(P.fcd, 1)} MPa · (cotg θ + cotg α)/(1 + cotg²θ) = ${n1((r.cotTheta + cotA) / (1 + r.cotTheta ** 2), 3)}</span>${art('8.2.3(5), (6)')}`));
   }
   if (comp && r.sinArmadura && r.VmaxRef != null) {
     f.push(fila('vlim', t('cor.ec.r.vlim'), q(r.VmaxRef, 'N'), `<span class="f">${t('cor.e3.f.vlim')}</span>${art('8.2.3(5), (6)')}`));

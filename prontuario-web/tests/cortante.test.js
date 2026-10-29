@@ -463,3 +463,17 @@ test('Asl de pilares (criterio propio): una cara en pilar rectangular (según el
     assert.ok(d.Asl > 0);
   }
 });
+
+test('EC-2 2023: ktc (0,85 o 1,00) solo cambia fcd y V_Rd,máx; el material lo trae con 1,00 por defecto', async () => {
+  const x = { fck: 30, fykCercos: 500, b0: 300, d: 455, Ac: 150000, Asl: 1005, VEd: 50, cotTheta: 1, AswS: 2.16 };
+  const a = e23.comprobar({ ...x, ktc: 0.85 });
+  const b = e23.comprobar({ ...x, ktc: 1 });
+  cerca(b.P.fcd / a.P.fcd, 1 / 0.85, 1e-9);
+  cerca(b.Vu1 / a.Vu1, 1 / 0.85, 1e-9);
+  cerca(b.Vsu, a.Vsu, 1e-9);
+  const { proyectoNuevo } = await import('../src/io/proyecto.js');
+  const p = proyectoNuevo();
+  p.norma = 'EC2-2023';
+  const { datosCortante } = await import('../src/io/proyecto.js');
+  assert.equal(datosCortante(p, p.secciones[0]).ktc, 1);
+});
