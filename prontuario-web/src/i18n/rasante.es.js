@@ -18,9 +18,10 @@ export default {
   'ras.hAyuda': 'Canto de la sección compuesta (EHE-08 47.3). Solo para comprobar la separación máxima del cosido. 0 = no se comprueba',
   'ras.eminAyuda': 'Menor espesor de hormigón a un lado de la junta (EHE-08 47.2: 50 mm, localmente 30 mm). Se usa en la separación máxima del cosido. 0 = no se comprueba',
   'ras.opciones': 'Opciones', 'ras.fatiga': 'Fatiga o cargas dinámicas', 'ras.topping': 'Recrecido estructural', 'ras.bordeCerca': 'Barra a menos de 10 ø del borde',
-  'ras.cosido': 'Armadura de cosido', 'ras.anclaje': 'Anclaje del cosido', 'ras.anclado': 'Anclado (plastifica)', 'ras.noAnclado': 'No anclado del todo',
+  'ras.cosido': 'Armadura de cosido', 'ras.anclaje': 'Anclaje del cosido', 'ras.anclado': 'Anclado hasta f<sub>yd</sub> (plastifica)',
+  'ras.sinArmNota': 'Sin armadura de cosido: la junta resiste solo la adherencia', 'ras.noAnclado': 'No anclado del todo',
   'ras.acero': 'Acero', 'ras.alfaAyuda': (a, b) => `Ángulo de las barras de cosido con el plano de la junta (${a}° a ${b}°). 90° = barras perpendiculares a la junta`,
-  'ras.ramas': 'Barras', 'ras.ramasAyuda': 'Barras de cosido que cruzan la junta en cada separación s (un cerco de dos ramas verticales cuenta 2)',
+  'ras.ramas': 'Ramas', 'ras.ramasAyuda': 'Ramas (barras) de cosido que cruzan la junta en cada posición del cosido, a lo ancho b: un cerco de dos ramas verticales cuenta 2. Cada s mm a lo largo de L se repite ese grupo; el número de grupos en L sale de L/s',
   'ras.sAyuda': 'Separación del cosido a lo largo de la junta',
   // Veredicto y cifras
   'ras.armNec': 'A<sub>sw</sub>/s necesaria',
@@ -32,7 +33,7 @@ export default {
   'ras.t.junta': 'Junta',
   'ras.c.rmax': sub('R', 'u,máx') + ' (límite)', 'ras.c.coh': 'Cohesión', 'ras.c.fric': 'Fricción', 'ras.c.cosido': 'Cosido', 'ras.c.estado': 'Estado',
   'ras.c.muEstado': (n) => `μ (estado ${n})`,
-  'ras.tabla.ramas': 'Barras', 'ras.tabla.asw': 'A<sub>sw</sub> [mm²]', 'ras.tabla.s': 's [mm]', 'ras.tabla.asws': 'A<sub>sw</sub>/s (cm²/m)',
+  'ras.tabla.ramas': 'Ramas', 'ras.tabla.asw': 'A<sub>sw</sub> [mm²]', 'ras.tabla.s': 's [mm]', 'ras.tabla.asws': 'A<sub>sw</sub>/s (cm²/m)',
   'ras.tabla.nota': (n, smax) => `${n} barras por sección, separación de 25 en 25 mm hasta ${smax} mm. «—» = ni con la separación mínima de 50 mm llega.`,
   // Dibujo
   'ras.dib.aria': 'Alzado de la junta entre dos hormigones con las barras de cosido',

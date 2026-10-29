@@ -59,7 +59,7 @@ export function dibujoRasante(o) {
     }
     // Ángulo α en la primera barra (sobre el plano de la junta)
     const xa0 = xIni;
-    if (!o.sinAlfa) out.push(`<text class="nota-d" x="${(xa0 + 8).toFixed(1)}" y="${yJ - 6}">α = ${fmt(o.alfa, 0)}°</text>`);
+    if (!o.sinAlfa) out.push(`<text x="${(xa0 + 8).toFixed(1)}" y="${yJ - 6}">α = ${fmt(o.alfa, 0)}°</text>`);
   }
   // Longitud de comprobación L, por debajo
   const yL = 206;

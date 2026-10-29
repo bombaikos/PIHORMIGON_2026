@@ -902,6 +902,8 @@ svg.dib-pun { min-width: 0; }
 .grupo legend .tick input { margin: 0; accent-color: var(--acento); }
 .cuerpo-arm { display: flex; flex-direction: column; gap: var(--hueco-campos); }
 .cuerpo-arm.inactivo { opacity: .55; }
+.datos .grupo > .tick, .cuerpo-arm > .tick { display: inline-flex; align-items: center; gap: var(--e2); cursor: pointer; }
+.datos .grupo > .tick input, .cuerpo-arm > .tick input { margin: 0; accent-color: var(--acento); }
 /* Guía de diseño común (bombaikos/guia-de-diseno, 28/10/2026) aplicada a Punzonamiento: campos blancos con borde azul grisáceo,
    gris solo en lo desactivado y tablas en rejilla. */
 .est-guia { --campo: oklch(100% 0 0); --campo-borde: oklch(78% 0.05 252); }

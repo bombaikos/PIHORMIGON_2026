@@ -911,6 +911,8 @@ svg.dib-pun { min-width: 0; }
 .grupo legend .tick input { margin: 0; accent-color: var(--acento); }
 .cuerpo-arm { display: flex; flex-direction: column; gap: var(--hueco-campos); }
 .cuerpo-arm.inactivo { opacity: .55; }
+.datos .grupo > .tick, .cuerpo-arm > .tick { display: inline-flex; align-items: center; gap: var(--e2); cursor: pointer; }
+.datos .grupo > .tick input, .cuerpo-arm > .tick input { margin: 0; accent-color: var(--acento); }
 /* Guía de diseño común (bombaikos/guia-de-diseno, 28/10/2026) aplicada a Punzonamiento: campos blancos con borde azul grisáceo,
    gris solo en lo desactivado y tablas en rejilla. */
 .est-guia { --campo: oklch(100% 0 0); --campo-borde: oklch(78% 0.05 252); }
@@ -5047,12 +5049,13 @@ svg.dib-ras { min-width: 0; }
     "ras.bordeCerca": "Barra a menos de 10 \xF8 del borde",
     "ras.cosido": "Armadura de cosido",
     "ras.anclaje": "Anclaje del cosido",
-    "ras.anclado": "Anclado (plastifica)",
+    "ras.anclado": "Anclado hasta f<sub>yd</sub> (plastifica)",
+    "ras.sinArmNota": "Sin armadura de cosido: la junta resiste solo la adherencia",
     "ras.noAnclado": "No anclado del todo",
     "ras.acero": "Acero",
     "ras.alfaAyuda": (a, b) => `\xC1ngulo de las barras de cosido con el plano de la junta (${a}\xB0 a ${b}\xB0). 90\xB0 = barras perpendiculares a la junta`,
-    "ras.ramas": "Barras",
-    "ras.ramasAyuda": "Barras de cosido que cruzan la junta en cada separaci\xF3n s (un cerco de dos ramas verticales cuenta 2)",
+    "ras.ramas": "Ramas",
+    "ras.ramasAyuda": "Ramas (barras) de cosido que cruzan la junta en cada posici\xF3n del cosido, a lo ancho b: un cerco de dos ramas verticales cuenta 2. Cada s mm a lo largo de L se repite ese grupo; el n\xFAmero de grupos en L sale de L/s",
     "ras.sAyuda": "Separaci\xF3n del cosido a lo largo de la junta",
     // Veredicto y cifras
     "ras.armNec": "A<sub>sw</sub>/s necesaria",
@@ -5071,7 +5074,7 @@ svg.dib-ras { min-width: 0; }
     "ras.c.cosido": "Cosido",
     "ras.c.estado": "Estado",
     "ras.c.muEstado": (n) => `\u03BC (estado ${n})`,
-    "ras.tabla.ramas": "Barras",
+    "ras.tabla.ramas": "Ramas",
     "ras.tabla.asw": "A<sub>sw</sub> [mm\xB2]",
     "ras.tabla.s": "s [mm]",
     "ras.tabla.asws": "A<sub>sw</sub>/s (cm\xB2/m)",
@@ -5184,12 +5187,13 @@ svg.dib-ras { min-width: 0; }
     "ras.bordeCerca": "Bar closer than 10 \xF8 to the edge",
     "ras.cosido": "Tie reinforcement",
     "ras.anclaje": "Tie anchorage",
-    "ras.anclado": "Anchored (yields)",
+    "ras.anclado": "Anchored to f<sub>yd</sub> (yields)",
+    "ras.sinArmNota": "No tie reinforcement: the joint resists adhesion only",
     "ras.noAnclado": "Not fully anchored",
     "ras.acero": "Steel",
     "ras.alfaAyuda": (a, b) => `Angle of the ties to the joint plane (${a}\xB0 to ${b}\xB0). 90\xB0 = bars perpendicular to the joint`,
-    "ras.ramas": "Bars",
-    "ras.ramasAyuda": "Tie bars crossing the joint at each spacing s (a two-leg vertical stirrup counts 2)",
+    "ras.ramas": "Legs",
+    "ras.ramasAyuda": "Tie legs (bars) crossing the joint at each tie position across the width b: a two-leg vertical stirrup counts 2. That group repeats every s mm along L; the number of groups in L comes from L/s",
     "ras.sAyuda": "Tie spacing along the joint",
     "ras.armNec": "A<sub>sw</sub>/s required",
     "ras.ver.ecu": (R, Ru, ok, manda) => `${sub10("R", "Ed")} <b>${R}</b> ${ok ? "\u2264" : ">"} ${sub10("R", "u")} <b>${Ru}</b> \xB7 ${manda}`,
@@ -5207,7 +5211,7 @@ svg.dib-ras { min-width: 0; }
     "ras.c.cosido": "Ties",
     "ras.c.estado": "State",
     "ras.c.muEstado": (n) => `\u03BC (state ${n})`,
-    "ras.tabla.ramas": "Bars",
+    "ras.tabla.ramas": "Legs",
     "ras.tabla.asw": "A<sub>sw</sub> [mm\xB2]",
     "ras.tabla.s": "s [mm]",
     "ras.tabla.asws": "A<sub>sw</sub>/s (cm\xB2/m)",
@@ -15853,7 +15857,7 @@ svg.dib-ras { min-width: 0; }
         out.push(`<text class="fuerte" x="${(xa + xb) / 2}" y="${yJ + 66}" text-anchor="middle">s = ${fmt(o.s, 0)}</text>`);
       }
       const xa0 = xIni;
-      if (!o.sinAlfa) out.push(`<text class="nota-d" x="${(xa0 + 8).toFixed(1)}" y="${yJ - 6}">\u03B1 = ${fmt(o.alfa, 0)}\xB0</text>`);
+      if (!o.sinAlfa) out.push(`<text x="${(xa0 + 8).toFixed(1)}" y="${yJ - 6}">\u03B1 = ${fmt(o.alfa, 0)}\xB0</text>`);
     }
     const yL = 206;
     out.push(`<line class="ref" x1="${x0}" y1="${186}" x2="${x0}" y2="${yL + 6}"/><line class="ref" x1="${x1}" y1="${186}" x2="${x1}" y2="${yL + 6}"/>`);
@@ -16142,45 +16146,48 @@ svg.dib-ras { min-width: 0; }
           campoNum({ id: "r-hc", etq: "h", valor: D.h, mag: "diam", paso: 25, min: 0, max: 5e3, ayuda: t("ras.hAyuda"), onCambio: set("h") }),
           campoNum({ id: "r-emin", etq: sub26("e", "m\xEDn"), valor: D.emin, mag: "diam", paso: 10, min: 0, max: 2e3, ayuda: t("ras.eminAyuda"), onCambio: set("emin") })
         ) : null,
-        opciones.length ? casillas({
-          id: "r-op",
-          etq: t("ras.opciones"),
-          opciones,
-          marcadas: opciones.map((o) => o[0]).filter((k) => D[k]),
-          onCambio: (marc) => {
-            for (const [k] of opciones) D[k] = marc.includes(k);
-            cambio();
-          }
-        }) : null
+        ...opciones.map(([k, etq]) => h("label", { class: "tick" }, h("input", { type: "checkbox", id: `r-${k}`, checked: D[k], onchange: (e2) => {
+          D[k] = e2.target.checked;
+          cambio();
+        } }), h("span", { html: etq })))
       ),
-      grupo(
-        t("ras.cosido"),
-        comp ? segmentado({ ancho: true, etiqueta: t("ras.cosido"), opciones: [["con", t("cor.conArm")], ["sin", t("cor.sinArm")]], valor: D.sin ? "sin" : "con", onCambio: (v2) => {
-          D.sin = v2 === "sin";
-          ctx2.pintar();
-        } }) : null,
-        e23 ? segmentado({ ancho: true, etiqueta: t("ras.anclaje"), opciones: [[true, t("ras.anclado")], [false, t("ras.noAnclado")]], valor: D.anclado, onCambio: (v2) => {
-          D.anclado = v2;
-          ctx2.pintar();
-        } }) : null,
-        h(
+      (() => {
+        const cuerpo = h(
           "div",
-          { class: "par2" },
-          selector({ id: "r-ace", linea: true, etq: t("ras.acero"), opciones: p.aceros.map((m) => [m.nombre, m.nombre]), valor: D.aceroCosido, onCambio: (v2) => {
-            D.aceroCosido = v2;
-            cambio();
-          } }),
-          e23 && !D.anclado ? null : campoNum({ id: "r-alfa", etq: "\u03B1", valor: D.alfa, mag: "ang", paso: 5, min: N.ALFA_MIN, max: e23 && D.rug === "muyLisa" ? 90 : N.ALFA_MAX, ayuda: t("ras.alfaAyuda", N.ALFA_MIN, N.ALFA_MAX), onCambio: set("alfa") })
-        ),
-        ...arm ? parejas3([
-          comp ? selector({ id: "r-fi", etq: t("cor.fi"), linea: true, opciones: diametrosEntrada3().map((x) => [String(x), `\xF8${x}`]), valor: String(D.fi), onCambio: (v2) => {
-            D.fi = Number(v2);
-            cambio();
-          } }) : null,
-          campoNum({ id: "r-ramas", etq: t("ras.ramas"), valor: D.ramas, mag: "n", paso: 1, min: 1, max: 100, ayuda: t("ras.ramasAyuda"), onCambio: set("ramas") }),
-          comp ? campoNum({ id: "r-s", etq: "s", valor: D.s, mag: "diam", paso: 25, min: 20, max: 2e3, ayuda: t("ras.sAyuda"), onCambio: set("s") }) : null
-        ]) : []
-      )
+          { class: "cuerpo-arm" },
+          e23 ? h("label", { class: "tick" }, h("input", { type: "checkbox", id: "r-anc", checked: D.anclado, onchange: (e2) => {
+            D.anclado = e2.target.checked;
+            ctx2.pintar();
+          } }), h("span", { html: t("ras.anclado") })) : null,
+          h(
+            "div",
+            { class: "par2" },
+            selector({ id: "r-ace", linea: true, etq: t("ras.acero"), opciones: p.aceros.map((m) => [m.nombre, m.nombre]), valor: D.aceroCosido, onCambio: (v2) => {
+              D.aceroCosido = v2;
+              cambio();
+            } }),
+            e23 && !D.anclado ? null : campoNum({ id: "r-alfa", etq: "\u03B1", valor: D.alfa, mag: "ang", paso: 5, min: N.ALFA_MIN, max: e23 && D.rug === "muyLisa" ? 90 : N.ALFA_MAX, ayuda: t("ras.alfaAyuda", N.ALFA_MIN, N.ALFA_MAX), onCambio: set("alfa") })
+          ),
+          ...parejas3([
+            comp ? selector({ id: "r-fi", etq: t("cor.fi"), linea: true, opciones: diametrosEntrada3().map((x) => [String(x), `\xF8${x}`]), valor: String(D.fi), onCambio: (v2) => {
+              D.fi = Number(v2);
+              cambio();
+            } }) : null,
+            campoNum({ id: "r-ramas", etq: t("ras.ramas"), valor: D.ramas, mag: "n", paso: 1, min: 1, max: 100, ayuda: t("ras.ramasAyuda"), onCambio: set("ramas") }),
+            comp ? campoNum({ id: "r-s", etq: "s", valor: D.s, mag: "diam", paso: 25, min: 20, max: 2e3, ayuda: t("ras.sAyuda"), onCambio: set("s") }) : null
+          ])
+        );
+        const leyenda3 = h("legend", {}, comp ? h("label", { class: "tick" }, h("input", { type: "checkbox", id: "r-arm", checked: !D.sin, onchange: (e2) => {
+          D.sin = !e2.target.checked;
+          ctx2.pintar();
+        } }), h("span", { html: t("ras.cosido") })) : h("span", { html: t("ras.cosido") }));
+        if (!arm) {
+          for (const el of cuerpo.querySelectorAll("input, select")) el.disabled = true;
+          cuerpo.classList.add("inactivo");
+          cuerpo.title = t("ras.sinArmNota");
+        }
+        return h("fieldset", { class: "grupo" }, leyenda3, cuerpo);
+      })()
     );
   }
   function resultados14(ctx2, res) {

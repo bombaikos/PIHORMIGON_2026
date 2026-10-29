@@ -6,7 +6,7 @@
 import { nucleo } from '../../norma/rasante/index.js';
 import { t } from '../i18n.js';
 import { fmt, q, qh, ESP, serieDiametros } from '../formato.js';
-import { h, poner, campoNum, selector, segmentado, grupo, aviso, cifras, tabla, casillas } from '../campos.js';
+import { h, poner, campoNum, selector, segmentado, grupo, aviso, cifras, tabla } from '../campos.js';
 import { veredicto } from './flexion.js';
 import { dibujoRasante } from '../dibujoRasante.js';
 import { filaTraza } from './rasanteTraza.js';
@@ -89,19 +89,28 @@ export function datos(ctx, form) {
       ehe ? h('div', { class: 'par2' },
         campoNum({ id: 'r-hc', etq: 'h', valor: D.h, mag: 'diam', paso: 25, min: 0, max: 5000, ayuda: t('ras.hAyuda'), onCambio: set('h') }),
         campoNum({ id: 'r-emin', etq: sub('e', 'mín'), valor: D.emin, mag: 'diam', paso: 10, min: 0, max: 2000, ayuda: t('ras.eminAyuda'), onCambio: set('emin') })) : null,
-      opciones.length ? casillas({ id: 'r-op', etq: t('ras.opciones'), opciones, marcadas: opciones.map((o) => o[0]).filter((k) => D[k]),
-        onCambio: (marc) => { for (const [k] of opciones) D[k] = marc.includes(k); cambio(); } }) : null),
-    grupo(t('ras.cosido'),
-      comp ? segmentado({ ancho: true, etiqueta: t('ras.cosido'), opciones: [['con', t('cor.conArm')], ['sin', t('cor.sinArm')]], valor: D.sin ? 'sin' : 'con', onCambio: (v) => { D.sin = v === 'sin'; ctx.pintar(); } }) : null,
-      e23 ? segmentado({ ancho: true, etiqueta: t('ras.anclaje'), opciones: [[true, t('ras.anclado')], [false, t('ras.noAnclado')]], valor: D.anclado, onCambio: (v) => { D.anclado = v; ctx.pintar(); } }) : null,
-      h('div', { class: 'par2' },
-        selector({ id: 'r-ace', linea: true, etq: t('ras.acero'), opciones: p.aceros.map((m) => [m.nombre, m.nombre]), valor: D.aceroCosido, onCambio: (v) => { D.aceroCosido = v; cambio(); } }),
-        (e23 && !D.anclado) ? null : campoNum({ id: 'r-alfa', etq: 'α', valor: D.alfa, mag: 'ang', paso: 5, min: N.ALFA_MIN, max: e23 && D.rug === 'muyLisa' ? 90 : N.ALFA_MAX, ayuda: t('ras.alfaAyuda', N.ALFA_MIN, N.ALFA_MAX), onCambio: set('alfa') })),
-      ...(arm ? parejas([
-        comp ? selector({ id: 'r-fi', etq: t('cor.fi'), linea: true, opciones: diametrosEntrada().map((x) => [String(x), `ø${x}`]), valor: String(D.fi), onCambio: (v) => { D.fi = Number(v); cambio(); } }) : null,
-        campoNum({ id: 'r-ramas', etq: t('ras.ramas'), valor: D.ramas, mag: 'n', paso: 1, min: 1, max: 100, ayuda: t('ras.ramasAyuda'), onCambio: set('ramas') }),
-        comp ? campoNum({ id: 'r-s', etq: 's', valor: D.s, mag: 'diam', paso: 25, min: 20, max: 2000, ayuda: t('ras.sAyuda'), onCambio: set('s') }) : null,
-      ]) : [])));
+      ...opciones.map(([k, etq]) => h('label', { class: 'tick' }, h('input', { type: 'checkbox', id: `r-${k}`, checked: D[k], onchange: (e) => { D[k] = e.target.checked; cambio(); } }), h('span', { html: etq })))),
+    (() => {
+      const cuerpo = h('div', { class: 'cuerpo-arm' },
+        e23 ? h('label', { class: 'tick' }, h('input', { type: 'checkbox', id: 'r-anc', checked: D.anclado, onchange: (e) => { D.anclado = e.target.checked; ctx.pintar(); } }), h('span', { html: t('ras.anclado') })) : null,
+        h('div', { class: 'par2' },
+          selector({ id: 'r-ace', linea: true, etq: t('ras.acero'), opciones: p.aceros.map((m) => [m.nombre, m.nombre]), valor: D.aceroCosido, onCambio: (v) => { D.aceroCosido = v; cambio(); } }),
+          (e23 && !D.anclado) ? null : campoNum({ id: 'r-alfa', etq: 'α', valor: D.alfa, mag: 'ang', paso: 5, min: N.ALFA_MIN, max: e23 && D.rug === 'muyLisa' ? 90 : N.ALFA_MAX, ayuda: t('ras.alfaAyuda', N.ALFA_MIN, N.ALFA_MAX), onCambio: set('alfa') })),
+        ...parejas([
+          comp ? selector({ id: 'r-fi', etq: t('cor.fi'), linea: true, opciones: diametrosEntrada().map((x) => [String(x), `ø${x}`]), valor: String(D.fi), onCambio: (v) => { D.fi = Number(v); cambio(); } }) : null,
+          campoNum({ id: 'r-ramas', etq: t('ras.ramas'), valor: D.ramas, mag: 'n', paso: 1, min: 1, max: 100, ayuda: t('ras.ramasAyuda'), onCambio: set('ramas') }),
+          comp ? campoNum({ id: 'r-s', etq: 's', valor: D.s, mag: 'diam', paso: 25, min: 20, max: 2000, ayuda: t('ras.sAyuda'), onCambio: set('s') }) : null,
+        ]));
+      const leyenda = h('legend', {}, comp
+        ? h('label', { class: 'tick' }, h('input', { type: 'checkbox', id: 'r-arm', checked: !D.sin, onchange: (e) => { D.sin = !e.target.checked; ctx.pintar(); } }), h('span', { html: t('ras.cosido') }))
+        : h('span', { html: t('ras.cosido') }));
+      if (!arm) {
+        for (const el of cuerpo.querySelectorAll('input, select')) el.disabled = true;
+        cuerpo.classList.add('inactivo');
+        cuerpo.title = t('ras.sinArmNota');
+      }
+      return h('fieldset', { class: 'grupo' }, leyenda, cuerpo);
+    })());
 }
 
 export function resultados(ctx, res) {
