@@ -918,6 +918,8 @@ svg.dib-pun { min-width: 0; }
 .grupo legend .tick input { margin: 0; accent-color: var(--acento); }
 .cuerpo-arm { display: flex; flex-direction: column; gap: var(--hueco-campos); }
 .cuerpo-arm.inactivo { opacity: .55; }
+.datos .grupo > .tick, .cuerpo-arm > .tick { display: inline-flex; align-items: center; gap: var(--e2); cursor: pointer; }
+.datos .grupo > .tick input, .cuerpo-arm > .tick input { margin: 0; accent-color: var(--acento); }
 /* Guía de diseño común (bombaikos/guia-de-diseno, 28/10/2026) aplicada a Punzonamiento: campos blancos con borde azul grisáceo,
    gris solo en lo desactivado y tablas en rejilla. */
 .est-guia { --campo: oklch(100% 0 0); --campo-borde: oklch(78% 0.05 252); }
@@ -933,7 +935,7 @@ table.rejilla-res thead th { background: var(--hundido); }
 /* Rasante en juntas · alzado de la junta con el cosido */
 .dib .hor-2 { fill: color-mix(in oklch, var(--hormigon) 55%, var(--hoja)); }
 .dib .junta { fill: none; stroke: var(--tinta); stroke-width: 1.6; }
-.dib .barra-cos { stroke: var(--acero); stroke-width: 3.2; stroke-linecap: round; }
+.dib .barra-cos { fill: none; stroke: var(--armadura-resaltada); stroke-width: 2.2; stroke-linecap: round; }
 .dib .fuerza { stroke: var(--acento); stroke-width: 2; fill: none; }
 .dib .fuerza + text, .dib text.fuerza-t { fill: var(--acento); }
 svg.dib-ras { min-width: 0; }
@@ -984,3 +986,6 @@ svg.dib-ras { min-width: 0; }
 .aprov2 .fila-ap.no .pista-barra i { background: var(--no); }
 .tabla-scroll tr.sugerida td { font-weight: 700; background: var(--acento-suave); }
 .tarjeta > .pista { flex: none; }
+
+.fila-anc { display: flex; align-items: center; gap: 8px; }
+.fila-anc .seg { flex: 1; }
