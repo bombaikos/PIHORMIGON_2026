@@ -138,9 +138,11 @@ export function datos(ctx, form) {
       ...parejas([
         campoNum({ id: 'c-ved', etq: t('cor.VEd'), valor: est.VEd, mag: 'N', paso: 10, min: 0.01, max: 1e6, nombre: t('cor.VEdNombre'), onCambio: (v) => { est.VEd = v; cambio(); } }),
         campoNum({ id: 'c-ned', etq: t('cor.NEd'), ref: t('cor.NEdRef'), valor: est.NEd, mag: 'N', paso: 10, min: -1e6, max: 1e6, ayuda: t('cor.NEdNota'), onCambio: (v) => { est.NEd = v; cambio(); } }),
-        e23 ? campoNum({ id: 'c-med', etq: t('cor.MEd'), valor: est.MEd, mag: 'M', paso: 10, min: 0, max: 1e7, ayuda: t('cor.MEdAyuda'), onCambio: (v) => { est.MEd = v; cambio(); } }) : null,
       ]),
-      h('p', { class: 'nota-ned', html: t(e23 ? 'cor.NEdNota23' : 'cor.NEdNota') })),
+      h('p', { class: 'nota-ned', html: t(e23 ? 'cor.NEdNota23' : 'cor.NEdNota') }),
+      e23 ? h('details', { class: 'pleg', open: est.MEd > 0 ? true : null },
+        h('summary', {}, t('cor.MEdOpc')),
+        ...parejas([campoNum({ id: 'c-med', etq: t('cor.MEd'), valor: est.MEd, mag: 'M', paso: 10, min: 0, max: 1e7, ayuda: t('cor.MEdAyuda'), onCambio: (v) => { est.MEd = v; cambio(); } })])) : null),
     grupo(t('cor.datosCalc'),
       ...parejas([
         campoNum({ id: 'c-b0', etq: t('cor.b0'), valor: ef.b0, mag: 'long', paso: 5, min: 0.01, max: 20, ayuda: t('cor.b0Ayuda'), onCambio: nuevo('b0') }),

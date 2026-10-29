@@ -106,6 +106,7 @@ export default {
   'cor.alcanceEC': 'V<sub>Rd,máx</sub> (biela comprimida) y V<sub>Rd,s</sub> (cercos) con la celosía de 6.2.3, o V<sub>Rd,c</sub> sin cercos (6.2.2), con el Anejo Nacional: 0,5 ≤ cotg θ ≤ 2,0, ν<sub>mín</sub> con k<sup>3/2</sup>, ρ<sub>w,mín</sub> = f<sub>ctm</sub>/(7,5 f<sub>yk</sub>) y separaciones de 9.2.2. El cortante V<sub>Ed</sub> lo da el usuario. No incluye pretensado, cargas próximas al apoyo (β = a<sub>v</sub>/2d), rasante alas-alma ni torsión.',
   'cor.n.ec': 'Criterios de esta pantalla', 'cor.ecNota': 'Con cercos solo suma la celosía: el hormigón no aporta (a diferencia de la EHE-08). Sin tope de 400 MPa en f<sub>ywd</sub>. α<sub>cw</sub> = 1 (el axil no lo modifica). Con cercos circulares no hay reducción de 0,85. b<sub>w</sub>, d y z = 0,9 d como en el resto del Prontuario.',
   // EC-2 2023
+  'cor.MEdOpc': 'Momento (opcional)',
   'cor.MEd': sub('M', 'Ed'), 'cor.MEdAyuda': 'Momento de cálculo en la misma sección que V_Ed (valor absoluto). Opcional: con 0 no se usa. Da la esbeltez de cortante a_cs = M_Ed/V_Ed, que reduce d en V_Rd,c (8.2.2(3)), y la fuerza F_td del cordón (8.51)',
   'cor.NEdNota23': 'Compresión +, tracción −.',
   'cor.Dlower': sub('D', 'lower'), 'cor.DlowerAyuda': 'Tamaño del árido grueso en mm (8.2.1(4)): d_dg = 16 + D_lower ≤ 40 mm. Solo interviene en V_Rd,c, sin cercos',
