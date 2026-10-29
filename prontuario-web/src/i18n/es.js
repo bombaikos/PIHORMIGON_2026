@@ -4,7 +4,7 @@
 const sub = (a, b) => `${a}<sub>${b}</sub>`;
 
 export default {
-  app: 'Prontuario Informático del Hormigón 2026 <b class="beta">BETA a</b>',
+  app: 'Prontuario Informático del Hormigón 2026',
   ejemplo: 'ejemplo',
   ejemploNombre: 'Ejemplo',
   sinNombre: 'Sin nombre',
@@ -13,7 +13,7 @@ export default {
   norma: 'Norma',
   pie: 'Prontuario web, versión de prueba. Atajos: Ctrl K comandos · Ctrl Z deshacer fuera de un campo · Alt 1…4 módulos.',
   pendiente: 'Pendiente de migrar del Prontuario 3.1',
-  'm.proyecto': 'Proyecto', 'm.materiales': 'Materiales', 'm.secciones': 'Secciones', 'm.flexion': 'Flexión simple',
+  'm.proyecto': 'Datos de proyecto', 'm.materiales': 'Materiales', 'm.secciones': 'Secciones', 'm.flexion': 'Flexión simple',
   nombre: 'Nombre', forma: 'Forma', seccion: 'Sección', hormigon: 'Hormigón', acero: 'Acero', elemento: 'Elemento',
   viga: 'Viga', losa: 'Losa', muro: 'Muro', pilar: 'Pilar',
   traccion: 'tracción', compresion: 'compresión', total: 'Total', area: 'Área', areaMm2: 'Área mm²',

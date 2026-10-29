@@ -3,7 +3,7 @@
 const sub = (a, b) => `${a}<sub>${b}</sub>`;
 
 export default {
-  app: 'Concrete Design Handbook 2026 <b class="beta">BETA a</b>',
+  app: 'Concrete Design Handbook 2026',
   ejemplo: 'example',
   ejemploNombre: 'Example',
   sinNombre: 'Untitled',
@@ -12,7 +12,7 @@ export default {
   norma: 'Code',
   pie: 'Web handbook, test version. Shortcuts: Ctrl K commands · Ctrl Z undo outside a field · Alt 1…4 modules.',
   pendiente: 'Not yet ported from Prontuario 3.1',
-  'm.proyecto': 'Project', 'm.materiales': 'Materials', 'm.secciones': 'Sections', 'm.flexion': 'Bending',
+  'm.proyecto': 'Project data', 'm.materiales': 'Materials', 'm.secciones': 'Sections', 'm.flexion': 'Bending',
   nombre: 'Name', forma: 'Shape', seccion: 'Section', hormigon: 'Concrete', acero: 'Steel', elemento: 'Member',
   viga: 'Beam', losa: 'Slab', muro: 'Wall', pilar: 'Column',
   traccion: 'tension', compresion: 'compression', total: 'Total', area: 'Area', areaMm2: 'Area mm²',
