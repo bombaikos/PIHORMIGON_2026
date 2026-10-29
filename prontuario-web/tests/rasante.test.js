@@ -157,3 +157,21 @@ test('tabla de cosido: separación en múltiplos de 25 que cumple la cuantía', 
   }
   assert.equal(tablaCosido(0.1, { b: 200, ramas: 2 }, [8], 600)[0].s, null);
 });
+
+test('EC-2 2023: sin armadura rige (8.76) aunque se marque cosido no anclado', () => {
+  const b = { ...base, rug: 'lisa', REd: 30, sinArmadura: true };
+  const a = ec23.comprobar({ ...b, anclado: true });
+  const n = ec23.comprobar({ ...b, anclado: false });
+  cerca(n.tauRd, a.tauRd, 1e-12);
+  cerca(n.tauRd, 0.08 * 5 / 1.5, 1e-9);
+  assert.equal(n.formula, '8.76');
+  assert.equal(ec23.dimensionar({ ...base, rug: 'lisa', ramas: 2, anclado: false }, 30).caso, 'sin');
+  assert.equal(ec23.comprobar({ ...base, rug: 'lisa', anclado: false, REd: 100 }).formula, '8.77');
+});
+
+test('la fórmula aplicada se informa en las tres normas', () => {
+  assert.equal(ec2.comprobar({ ...base, rug: 'rugosa', REd: 100 }).formula, '6.25');
+  assert.equal(ehe.comprobar({ ...base, rug: 'baja', REd: 100 }).formula, '47.2.2.1');
+  assert.equal(ehe.comprobar({ ...base, rug: 'baja', REd: 200 }).formula, '47.2.2.2');
+  assert.equal(ehe.comprobar({ ...base, rug: 'baja', REd: 100, sinArmadura: true }).formula, '47.2.1');
+});

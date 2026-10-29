@@ -63,13 +63,13 @@ export function comprobar(x) {
   const tauEd = tauDe(x.REd, x.b, x.L);
   const r = resistencia(P, rho);
   const Ru = esfuerzoDe(r.tauRd, x.b, x.L);
-  return { P, tauEd, tauRd: r.tauRd, Ru, REd: x.REd, Rmax: esfuerzoDe(P.lim, x.b, x.L), aprov: r.tauRd > 0 ? tauEd / r.tauRd : Infinity, rho, res: r, manda: r.limita ? 'limite' : r.contabiliza ? 'cosido' : 'cohesion', avisos: avisos(P), norma: ID };
+  return { P, tauEd, tauRd: r.tauRd, Ru, REd: x.REd, Rmax: esfuerzoDe(P.lim, x.b, x.L), aprov: r.tauRd > 0 ? tauEd / r.tauRd : Infinity, rho, res: r, manda: r.limita ? 'limite' : r.contabiliza ? 'cosido' : 'cohesion', formula: '6.25', avisos: avisos(P), norma: ID };
 }
 
 export function dimensionar(x, REd, { diametros = [8, 10, 12, 16, 20] } = {}) {
   const P = parametros(x);
   const tauEd = tauDe(REd, x.b, x.L);
-  const base = { P, tauEd, REd, Rmax: esfuerzoDe(P.lim, x.b, x.L), norma: ID, avisos: avisos(P) };
+  const base = { P, tauEd, REd, Rmax: esfuerzoDe(P.lim, x.b, x.L), norma: ID, avisos: avisos(P), formula: '6.25' };
   if (tauEd > P.lim + 1e-12) return { ...base, caso: 'limite' };
   const fijo = P.coh + P.R.mu * P.sigN;
   if (tauEd <= fijo + 1e-12) return { ...base, caso: 'sin', tauSin: Math.max(0, fijo) };

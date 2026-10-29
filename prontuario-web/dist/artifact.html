@@ -1,4 +1,4 @@
-<title>Prontuario Informático del Hormigón 2026 BETA a</title>
+<title>Prontuario del Hormigón</title>
 <style>
 /* Prontuario web. Estilo según analisis/guia-estilo-prontuario.md (la maqueta de flexión es la referencia).
    Disposición: todo en una pantalla de PC (§ 13): barra de una línea; datos | dibujo | resultados, sin scroll de página. En móvil, una columna. */
@@ -22,6 +22,7 @@
   --compr: oklch(62% 0.09 252);
   --traccion: oklch(66% 0.008 250);
   --acero: oklch(30% 0.012 250);
+  --armadura-resaltada: oklch(45% 0.15 258);
   --ok: oklch(46% 0.11 152);
   --ok-fondo: oklch(95% 0.035 152);
   --no: oklch(50% 0.17 27);
@@ -52,7 +53,7 @@
     --acento: oklch(74% 0.11 250); --acento-suave: oklch(30% 0.05 252);
   --serie-m: oklch(74% 0.11 250); --serie-v: oklch(76% 0.11 125); --serie-giro: oklch(76% 0.09 195); --serie-flecha: oklch(76% 0.10 60);
     --hormigon: oklch(33% 0.008 85); --hormigon-borde: oklch(58% 0.01 85);
-    --compr: oklch(62% 0.1 252); --traccion: oklch(55% 0.01 250); --acero: oklch(88% 0.008 250);
+    --compr: oklch(62% 0.1 252); --traccion: oklch(55% 0.01 250); --acero: oklch(88% 0.008 250); --armadura-resaltada: oklch(72% 0.13 255);
     --ok: oklch(76% 0.13 152); --ok-fondo: oklch(29% 0.05 152);
     --no: oklch(74% 0.14 27); --no-fondo: oklch(30% 0.06 27);
     --atencion: oklch(80% 0.11 80); --atencion-fondo: oklch(30% 0.05 80);
@@ -67,7 +68,7 @@
   --acento: oklch(74% 0.11 250); --acento-suave: oklch(30% 0.05 252);
   --serie-m: oklch(74% 0.11 250); --serie-v: oklch(76% 0.11 125); --serie-giro: oklch(76% 0.09 195); --serie-flecha: oklch(76% 0.10 60);
   --hormigon: oklch(33% 0.008 85); --hormigon-borde: oklch(58% 0.01 85);
-  --compr: oklch(62% 0.1 252); --traccion: oklch(55% 0.01 250); --acero: oklch(88% 0.008 250);
+  --compr: oklch(62% 0.1 252); --traccion: oklch(55% 0.01 250); --acero: oklch(88% 0.008 250); --armadura-resaltada: oklch(72% 0.13 255);
   --ok: oklch(76% 0.13 152); --ok-fondo: oklch(29% 0.05 152);
   --no: oklch(74% 0.14 27); --no-fondo: oklch(30% 0.06 27);
   --atencion: oklch(80% 0.11 80); --atencion-fondo: oklch(30% 0.05 80);
@@ -904,6 +905,8 @@ svg.dib-pun { min-width: 0; }
 .grupo legend .tick input { margin: 0; accent-color: var(--acento); }
 .cuerpo-arm { display: flex; flex-direction: column; gap: var(--hueco-campos); }
 .cuerpo-arm.inactivo { opacity: .55; }
+.datos .grupo > .tick, .cuerpo-arm > .tick { display: inline-flex; align-items: center; gap: var(--e2); cursor: pointer; }
+.datos .grupo > .tick input, .cuerpo-arm > .tick input { margin: 0; accent-color: var(--acento); }
 /* Guía de diseño común (bombaikos/guia-de-diseno, 28/10/2026) aplicada a Punzonamiento: campos blancos con borde azul grisáceo,
    gris solo en lo desactivado y tablas en rejilla. */
 .est-guia { --campo: oklch(100% 0 0); --campo-borde: oklch(78% 0.05 252); }
@@ -919,7 +922,7 @@ table.rejilla-res thead th { background: var(--hundido); }
 /* Rasante en juntas · alzado de la junta con el cosido */
 .dib .hor-2 { fill: color-mix(in oklch, var(--hormigon) 55%, var(--hoja)); }
 .dib .junta { fill: none; stroke: var(--tinta); stroke-width: 1.6; }
-.dib .barra-cos { stroke: var(--acero); stroke-width: 3.2; stroke-linecap: round; }
+.dib .barra-cos { fill: none; stroke: var(--armadura-resaltada); stroke-width: 2.2; stroke-linecap: round; }
 .dib .fuerza { stroke: var(--acento); stroke-width: 2; fill: none; }
 .dib .fuerza + text, .dib text.fuerza-t { fill: var(--acento); }
 svg.dib-ras { min-width: 0; }
@@ -961,6 +964,9 @@ svg.dib-ras { min-width: 0; }
 .barra .pant-completa svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.5; }
 #menu-archivo button { display: flex; justify-content: space-between; gap: var(--e5); width: 100%; }
 #menu-archivo small { color: var(--tinta-3); }
+
+.fila-anc { display: flex; align-items: center; gap: 8px; }
+.fila-anc .seg { flex: 1; }
 </style>
 
 <header class="barra">
@@ -5040,12 +5046,21 @@ svg.dib-ras { min-width: 0; }
     "ras.bordeCerca": "Barra a menos de 10 \xF8 del borde",
     "ras.cosido": "Armadura de cosido",
     "ras.anclaje": "Anclaje del cosido",
-    "ras.anclado": "Anclado (plastifica)",
+    "ras.anclado": "Anclado hasta f<sub>yd</sub> (plastifica)",
+    "ras.anclado2": "Cosido anclado a ambos lados de la junta",
+    "ras.av.noAnclado": "El cosido no est\xE1 anclado a ambos lados de la junta: la norma solo cuenta la armadura bien anclada, as\xED que se comprueba la junta sin cosido",
+    "ras.av.noAncladoDim": "Recuerda anclar el cosido a ambos lados de la junta: la norma solo cuenta la armadura bien anclada",
+    "ras.anc.ayuda": "Total: la armadura de cosido est\xE1 anclada a ambos lados de la junta y puede plastificar (fyd). Insuficiente: no lo est\xE1, y la junta se calcula solo con la adherencia (sin cosido).",
+    "ras.anc.ayuda23": "Total: anclada a ambos lados hasta fyd (plastifica, f\xF3rmula 8.76). Parcial: anclada al menos a 0,5\xB7fyd con 8 \xF8 (f\xF3rmula 8.77, sin \u03B1). Insuficiente: menos que eso; se calcula sin cosido.",
+    "ras.anc.total": "Total",
+    "ras.anc.parcial": "Parcial",
+    "ras.anc.insuf": "Insuficiente",
+    "ras.sinArmNota": "Sin armadura de cosido: la junta resiste solo la adherencia",
     "ras.noAnclado": "No anclado del todo",
     "ras.acero": "Acero",
     "ras.alfaAyuda": (a, b) => `\xC1ngulo de las barras de cosido con el plano de la junta (${a}\xB0 a ${b}\xB0). 90\xB0 = barras perpendiculares a la junta`,
-    "ras.ramas": "Barras",
-    "ras.ramasAyuda": "Barras de cosido que cruzan la junta en cada separaci\xF3n s (un cerco de dos ramas verticales cuenta 2)",
+    "ras.ramas": "Ramas",
+    "ras.ramasAyuda": "Ramas (barras) de cosido que cruzan la junta en cada posici\xF3n del cosido, a lo ancho b: un cerco de dos ramas verticales cuenta 2. Cada s mm a lo largo de L se repite ese grupo; el n\xFAmero de grupos en L sale de L/s",
     "ras.sAyuda": "Separaci\xF3n del cosido a lo largo de la junta",
     // Veredicto y cifras
     "ras.armNec": "A<sub>sw</sub>/s necesaria",
@@ -5064,13 +5079,15 @@ svg.dib-ras { min-width: 0; }
     "ras.c.cosido": "Cosido",
     "ras.c.estado": "Estado",
     "ras.c.muEstado": (n) => `\u03BC (estado ${n})`,
-    "ras.tabla.ramas": "Barras",
+    "ras.tabla.ramas": "Ramas",
     "ras.tabla.asw": "A<sub>sw</sub> [mm\xB2]",
     "ras.tabla.s": "s [mm]",
     "ras.tabla.asws": "A<sub>sw</sub>/s (cm\xB2/m)",
     "ras.tabla.nota": (n, smax) => `${n} barras por secci\xF3n, separaci\xF3n de 25 en 25 mm hasta ${smax} mm. \xAB\u2014\xBB = ni con la separaci\xF3n m\xEDnima de 50 mm llega.`,
     // Dibujo
     "ras.dib.aria": "Alzado de la junta entre dos hormigones con las barras de cosido",
+    "ras.dib.seccion": "Secci\xF3n",
+    "ras.dib.ramas": (n, fi) => `${n} ${n === 1 ? "rama" : "ramas"}${fi ? ` \xF8${fi}` : ""}`,
     "ras.dib.h1": "Hormig\xF3n 1",
     "ras.dib.h2": "Hormig\xF3n 2",
     "ras.dib.l1": (n) => `Hormig\xF3n 1 (${n})`,
@@ -5135,7 +5152,7 @@ svg.dib-ras { min-width: 0; }
     "ras.rugNotaEC": "Muy lisa: encofrado de acero, pl\xE1stico o madera preparada (c = 0,025 a 0,10; aqu\xED 0,025). Lisa: encofrado deslizante, extruida o superficie libre tras vibrar (c = 0,20). Rugosa: al menos 3 mm de rugosidad cada unos 40 mm (c = 0,40). Dentada: relieves de la fig. 6.9 (c = 0,50). \u03BC = 0,5 / 0,6 / 0,7 / 0,9.",
     "ras.rugNota23": "Muy lisa: moldes de acero, pl\xE1stico o madera preparada. Lisa: menos de 3 mm de rugosidad, p. ej. superficie libre tras compactar. Rugosa: al menos 3 mm de rugosidad pico-valle cada 40 mm como m\xE1ximo. Muy rugosa: al menos 6 mm. Dentada: llaves de la fig. 8.15c. Tabla 8.2. Con tracci\xF3n normal c<sub>v1</sub> = c<sub>v2</sub> = 0.",
     "ras.cosidoNotaEHE": "Las barras de cosido deben estar bien ancladas a ambos lados de la junta (espesores menores de 80 mm pueden pedir anclajes no convencionales). Separaci\xF3n \u2264 m\xEDn(canto de la secci\xF3n compuesta; 4 veces la menor dimensi\xF3n de las piezas; 600 mm). Con cargas din\xE1micas, cosido siempre en voladizos y cuartos extremos (47.3).",
-    "ras.cosidoNotaEC": "Solo cuenta la armadura que atraviesa la junta con anclaje adecuado a ambos lados, incluida la de cortante. \u03B1 entre 45\xB0 y 90\xB0 (135\xB0 con armaduras en celos\xEDa). La separaci\xF3n y el escalonado: 9.2.5 y fig. 6.10.",
+    "ras.cosidoNotaEC": "Solo cuenta la armadura que atraviesa la junta con anclaje adecuado a ambos lados, incluida la de cortante. \u03B1 entre 45\xB0 y 90\xB0 (135\xB0 con armaduras en celos\xEDa). El escalonado del cosido: fig. 6.10. 6.2.5 no fija separaci\xF3n m\xE1xima.",
     "ras.cosidoNota23": "La armadura debe estar anclada a ambos lados seg\xFAn 11.4. Si no se asegura que plastifique (anclaje insuficiente) se aplica (8.77): sin \xE1ngulo \u03B1, con k<sub>dowel</sub> = 0 a menos de 10 \xF8 del borde y ancladas para al menos 0,5 f<sub>yd</sub> con 8 \xF8 de embebimiento. En losas compuestas: separaci\xF3n \u2264 2,5 h y 300 mm en el sentido del rasante, y 5 h y 750 mm en el transversal (8.2.6(9)).",
     "ras.notaNormaEHE": "EHE-08, art. 47. Valores marcados para verificar contra el BOE: el l\xEDmite 0,70 del factor (1,30 \u2212 0,30\xB7f<sub>ck</sub>/25), el umbral de 2,5 veces la cohesi\xF3n entre estados, los \u03BC de la tabla 47.2.2.2 y el l\xEDmite 0,25\xB7f<sub>cd</sub>. El 3.1 aplicaba la EHE-98 (una sola ecuaci\xF3n y \u03BC m\xE1s altos), por eso da m\xE1s resistencia.",
     "ras.notaNormaEC": "UNE-EN 1992-1-1:2013 y Anejo Nacional, 6.2.5. El AN fija \u03B1<sub>ct</sub> = 1,00 en f<sub>ctd</sub> y \u03BD = 0,6\xB7(1 \u2212 f<sub>ck</sub>/250). \u03C3<sub>n</sub> \u2264 0,6 f<sub>cd</sub>; con tracci\xF3n, c\xB7f<sub>ctd</sub> = 0. Con fatiga se reduce c a la mitad.",
@@ -5177,12 +5194,21 @@ svg.dib-ras { min-width: 0; }
     "ras.bordeCerca": "Bar closer than 10 \xF8 to the edge",
     "ras.cosido": "Tie reinforcement",
     "ras.anclaje": "Tie anchorage",
-    "ras.anclado": "Anchored (yields)",
+    "ras.anclado": "Anchored to f<sub>yd</sub> (yields)",
+    "ras.anclado2": "Ties anchored on both sides of the joint",
+    "ras.av.noAnclado": "The ties are not anchored on both sides of the joint: the code only counts well anchored reinforcement, so the joint is checked without ties",
+    "ras.av.noAncladoDim": "Remember to anchor the ties on both sides of the joint: the code only counts well anchored reinforcement",
+    "ras.anc.ayuda": "Full: tie reinforcement anchored on both sides of the joint and able to yield (fyd). Insufficient: not so anchored; the joint is checked for adhesion only (no ties).",
+    "ras.anc.ayuda23": "Full: anchored on both sides up to fyd (yields, eq. 8.76). Partial: anchored to at least 0.5\xB7fyd with 8 \xF8 (eq. 8.77, no \u03B1). Insufficient: less than that; checked without ties.",
+    "ras.anc.total": "Full",
+    "ras.anc.parcial": "Partial",
+    "ras.anc.insuf": "Insufficient",
+    "ras.sinArmNota": "No tie reinforcement: the joint resists adhesion only",
     "ras.noAnclado": "Not fully anchored",
     "ras.acero": "Steel",
     "ras.alfaAyuda": (a, b) => `Angle of the ties to the joint plane (${a}\xB0 to ${b}\xB0). 90\xB0 = bars perpendicular to the joint`,
-    "ras.ramas": "Bars",
-    "ras.ramasAyuda": "Tie bars crossing the joint at each spacing s (a two-leg vertical stirrup counts 2)",
+    "ras.ramas": "Legs",
+    "ras.ramasAyuda": "Tie legs (bars) crossing the joint at each tie position across the width b: a two-leg vertical stirrup counts 2. That group repeats every s mm along L; the number of groups in L comes from L/s",
     "ras.sAyuda": "Tie spacing along the joint",
     "ras.armNec": "A<sub>sw</sub>/s required",
     "ras.ver.ecu": (R, Ru, ok, manda) => `${sub10("R", "Ed")} <b>${R}</b> ${ok ? "\u2264" : ">"} ${sub10("R", "u")} <b>${Ru}</b> \xB7 ${manda}`,
@@ -5200,12 +5226,14 @@ svg.dib-ras { min-width: 0; }
     "ras.c.cosido": "Ties",
     "ras.c.estado": "State",
     "ras.c.muEstado": (n) => `\u03BC (state ${n})`,
-    "ras.tabla.ramas": "Bars",
+    "ras.tabla.ramas": "Legs",
     "ras.tabla.asw": "A<sub>sw</sub> [mm\xB2]",
     "ras.tabla.s": "s [mm]",
     "ras.tabla.asws": "A<sub>sw</sub>/s (cm\xB2/m)",
     "ras.tabla.nota": (n, smax) => `${n} bars per section, spacing in steps of 25 mm up to ${smax} mm. \xAB\u2014\xBB = not enough even at the 50 mm minimum spacing.`,
     "ras.dib.aria": "Elevation of the joint between two concretes with the tie bars",
+    "ras.dib.seccion": "Section",
+    "ras.dib.ramas": (n, fi) => `${n} ${n === 1 ? "leg" : "legs"}${fi ? ` \xF8${fi}` : ""}`,
     "ras.dib.h1": "Concrete 1",
     "ras.dib.h2": "Concrete 2",
     "ras.dib.l1": (n) => `Concrete 1 (${n})`,
@@ -5266,7 +5294,7 @@ svg.dib-ras { min-width: 0; }
     "ras.rugNotaEC": "Very smooth: steel, plastic or prepared timber moulds (c = 0.025 to 0.10; 0.025 here). Smooth: slip-formed, extruded or free surface after vibration (c = 0.20). Rough: at least 3 mm roughness about every 40 mm (c = 0.40). Keyed: fig. 6.9 (c = 0.50). \u03BC = 0.5 / 0.6 / 0.7 / 0.9.",
     "ras.rugNota23": "Very smooth: steel, plastic or prepared timber moulds. Smooth: under 3 mm roughness, e.g. free surface after compaction. Rough: at least 3 mm peak-to-valley at most every 40 mm. Very rough: at least 6 mm. Keyed: keys per fig. 8.15c. Table 8.2. With normal tension c<sub>v1</sub> = c<sub>v2</sub> = 0.",
     "ras.cosidoNotaEHE": "Ties must be properly anchored on both sides of the joint (thicknesses under 80 mm may need non-conventional anchorage). Spacing \u2264 min(depth of the composite section; 4 times the smaller dimension of the parts; 600 mm). With dynamic loads, ties always in cantilevers and end quarters (47.3).",
-    "ras.cosidoNotaEC": "Only reinforcement crossing the joint, adequately anchored on both sides and including shear reinforcement, counts. \u03B1 between 45\xB0 and 90\xB0 (135\xB0 with lattice reinforcement). Spacing and stepping: 9.2.5 and fig. 6.10.",
+    "ras.cosidoNotaEC": "Only reinforcement crossing the joint, adequately anchored on both sides and including shear reinforcement, counts. \u03B1 between 45\xB0 and 90\xB0 (135\xB0 with lattice reinforcement). Stepping of the ties: fig. 6.10. 6.2.5 sets no maximum spacing.",
     "ras.cosidoNota23": "Reinforcement must be anchored on both sides per 11.4. If yielding is not ensured (insufficient anchorage), (8.77) applies: no angle \u03B1, k<sub>dowel</sub> = 0 closer than 10 \xF8 to the edge, anchored for at least 0.5 f<sub>yd</sub> with 8 \xF8 embedment. Composite slabs: spacing \u2264 2.5 h and 300 mm along the shear, 5 h and 750 mm across (8.2.6(9)).",
     "ras.notaNormaEHE": "EHE-08, art. 47. Values to check against the BOE: the 0.70 bound of the factor (1.30 \u2212 0.30\xB7f<sub>ck</sub>/25), the threshold of 2.5 times the cohesion between states, the \u03BC of table 47.2.2.2 and the 0.25\xB7f<sub>cd</sub> limit. Version 3.1 applied EHE-98 (a single equation and higher \u03BC), hence its higher resistance.",
     "ras.notaNormaEC": "UNE-EN 1992-1-1:2013 and National Annex, 6.2.5. The NA sets \u03B1<sub>ct</sub> = 1.00 in f<sub>ctd</sub> and \u03BD = 0.6\xB7(1 \u2212 f<sub>ck</sub>/250). \u03C3<sub>n</sub> \u2264 0.6 f<sub>cd</sub>; with tension, c\xB7f<sub>ctd</sub> = 0. With fatigue c is halved.",
@@ -15586,7 +15614,7 @@ svg.dib-ras { min-width: 0; }
     const Ru = esfuerzoDe(r.tauRd, x.b, x.L);
     const aprov = r.tauRd > 0 ? tauEd / r.tauRd : Infinity;
     const manda = r.limita ? "limite" : r.contabiliza ? "cosido" : "cohesion";
-    return { P, tauEd, tauRd: r.tauRd, Ru, REd: x.REd, Rmax: esfuerzoDe(P.lim, x.b, x.L), aprov, rho, res: r, manda, sMax: sepMaxima2(x), avisos: avisos(x, P, rho, sinArm), norma: ID6 };
+    return { P, tauEd, tauRd: r.tauRd, Ru, REd: x.REd, Rmax: esfuerzoDe(P.lim, x.b, x.L), aprov, rho, res: r, manda, formula: r.estado === 1 ? "47.2.2.1" : r.estado === 2 ? "47.2.2.2" : "47.2.1", sMax: sepMaxima2(x), avisos: avisos(x, P, rho, sinArm), norma: ID6 };
   }
   function dimensionar8(x, REd, { diametros = [8, 10, 12, 16, 20] } = {}) {
     const P = parametros7(x);
@@ -15665,12 +15693,12 @@ svg.dib-ras { min-width: 0; }
     const tauEd = tauDe(x.REd, x.b, x.L);
     const r = resistencia2(P, rho);
     const Ru = esfuerzoDe(r.tauRd, x.b, x.L);
-    return { P, tauEd, tauRd: r.tauRd, Ru, REd: x.REd, Rmax: esfuerzoDe(P.lim, x.b, x.L), aprov: r.tauRd > 0 ? tauEd / r.tauRd : Infinity, rho, res: r, manda: r.limita ? "limite" : r.contabiliza ? "cosido" : "cohesion", avisos: avisos2(P), norma: ID7 };
+    return { P, tauEd, tauRd: r.tauRd, Ru, REd: x.REd, Rmax: esfuerzoDe(P.lim, x.b, x.L), aprov: r.tauRd > 0 ? tauEd / r.tauRd : Infinity, rho, res: r, manda: r.limita ? "limite" : r.contabiliza ? "cosido" : "cohesion", formula: "6.25", avisos: avisos2(P), norma: ID7 };
   }
   function dimensionar9(x, REd, { diametros = [8, 10, 12, 16, 20] } = {}) {
     const P = parametros8(x);
     const tauEd = tauDe(REd, x.b, x.L);
-    const base2 = { P, tauEd, REd, Rmax: esfuerzoDe(P.lim, x.b, x.L), norma: ID7, avisos: avisos2(P) };
+    const base2 = { P, tauEd, REd, Rmax: esfuerzoDe(P.lim, x.b, x.L), norma: ID7, avisos: avisos2(P), formula: "6.25" };
     if (tauEd > P.lim + 1e-12) return { ...base2, caso: "limite" };
     const fijo = P.coh + P.R.mu * P.sigN;
     if (tauEd <= fijo + 1e-12) return { ...base2, caso: "sin", tauSin: Math.max(0, fijo) };
@@ -15765,18 +15793,23 @@ svg.dib-ras { min-width: 0; }
     return a;
   }
   function comprobar10(x) {
-    const P = parametros9(x);
     const sinArm = !!x.sinArmadura;
+    const P = parametros9(sinArm ? { ...x, anclado: true } : x);
     const rho = sinArm ? 0 : rhoDe(x.arm, x.b);
     const tauEd = tauDe(x.REd, x.b, x.L);
     const r = resistencia3(P, rho);
     const Ru = esfuerzoDe(r.tauRd, x.b, x.L);
-    return { P, tauEd, tauRd: r.tauRd, Ru, REd: x.REd, Rmax: esfuerzoDe(r.lim, x.b, x.L), aprov: r.tauRd > 0 ? tauEd / r.tauRd : Infinity, rho, res: r, manda: r.limita ? "limite" : r.contabiliza ? "cosido" : "cohesion", avisos: avisos3(P), norma: ID8 };
+    return { P, tauEd, tauRd: r.tauRd, Ru, REd: x.REd, Rmax: esfuerzoDe(r.lim, x.b, x.L), aprov: r.tauRd > 0 ? tauEd / r.tauRd : Infinity, rho, res: r, manda: r.limita ? "limite" : r.contabiliza ? "cosido" : "cohesion", formula: P.anclado ? "8.76" : "8.77", avisos: avisos3(P), norma: ID8 };
   }
   function dimensionar10(x, REd, { diametros = [8, 10, 12, 16, 20] } = {}) {
     const P = parametros9(x);
     const tauEd = tauDe(REd, x.b, x.L);
-    const base2 = { P, tauEd, REd, Rmax: esfuerzoDe(resistencia3(P, 0).lim, x.b, x.L), norma: ID8, avisos: avisos3(P) };
+    const P0 = P.anclado ? P : parametros9({ ...x, anclado: true });
+    const fijo0 = P0.coh + (P0.tracc ? 0 : P0.mu * P0.sigN);
+    if (tauEd <= fijo0 + 1e-12 && tauEd <= P0.lim) {
+      return { P: P0, tauEd, REd, Rmax: esfuerzoDe(P0.lim, x.b, x.L), norma: ID8, avisos: avisos3(P0), formula: "8.76", caso: "sin", tauSin: Math.max(0, fijo0) };
+    }
+    const base2 = { P, tauEd, REd, Rmax: esfuerzoDe(resistencia3(P, 0).lim, x.b, x.L), norma: ID8, avisos: avisos3(P), formula: P.anclado ? "8.76" : "8.77" };
     const fijo = P.coh + (P.tracc ? 0 : P.mu * P.sigN);
     if (tauEd <= fijo + 1e-12) return { ...base2, caso: "sin", tauSin: Math.max(0, fijo) };
     const pend = P.anclado ? P.fyd * factorAlfa(P.mu, P.alfa) : P.R.kv * P.fyd * P.mu + P.kdowel * Math.sqrt(P.fyd * P.fcd);
@@ -15798,11 +15831,11 @@ svg.dib-ras { min-width: 0; }
   }
 
   // src/ui/dibujoRasante.js
-  var ANCHO2 = 420;
+  var ANCHO2 = 640;
   var MAX_BARRAS = 14;
   function dibujoRasante(o) {
     const x0 = 24;
-    const x1 = ANCHO2 - 24;
+    const x1 = 396;
     const yJ = 118;
     const ancho = x1 - x0;
     const out = [DEFS];
@@ -15841,16 +15874,34 @@ svg.dib-ras { min-width: 0; }
         out.push(`<text class="fuerte" x="${(xa + xb) / 2}" y="${yJ + 66}" text-anchor="middle">s = ${fmt(o.s, 0)}</text>`);
       }
       const xa0 = xIni;
-      if (!o.sinAlfa) out.push(`<text class="nota-d" x="${(xa0 + 8).toFixed(1)}" y="${yJ - 6}">\u03B1 = ${fmt(o.alfa, 0)}\xB0</text>`);
+      if (!o.sinAlfa) out.push(`<text x="${(xa0 + 8).toFixed(1)}" y="${yJ - 6}">\u03B1 = ${fmt(o.alfa, 0)}\xB0</text>`);
     }
     const yL = 206;
     out.push(`<line class="ref" x1="${x0}" y1="${186}" x2="${x0}" y2="${yL + 6}"/><line class="ref" x1="${x1}" y1="${186}" x2="${x1}" y2="${yL + 6}"/>`);
     out.push(`<line class="cota" x1="${x0}" y1="${yL}" x2="${x1}" y2="${yL}" marker-start="url(#tic)" marker-end="url(#tic)"/>`);
-    out.push(`<text class="fuerte" x="${(x0 + x1) / 2}" y="${yL + 14}" text-anchor="middle">L = ${fmt(o.L, 0)} mm \xB7 b = ${fmt(o.b, 0)} mm</text>`);
+    out.push(`<text class="fuerte" x="${(x0 + x1) / 2}" y="${yL + 14}" text-anchor="middle">L = ${fmt(o.L, 0)} mm</text>`);
+    const xs0 = 452;
+    const w = 150;
+    const xs1 = xs0 + w;
+    out.push(`<text class="tit" x="${xs0}" y="47">${t("ras.dib.seccion")}</text>`);
+    out.push(`<rect class="hor hor-2" x="${xs0}" y="52" width="${w}" height="${yJ - 52}"/>`);
+    out.push(`<rect class="hor" x="${xs0}" y="${yJ}" width="${w}" height="${186 - yJ}"/>`);
+    out.push(`<line class="junta" x1="${xs0}" y1="${yJ}" x2="${xs1}" y2="${yJ}"/>`);
+    const nr = o.sinArmadura ? 0 : Math.max(1, Math.round(o.ramas));
+    const nd = Math.min(nr, 12);
+    const margen = 22;
+    for (let i = 0; i < nd; i++) {
+      const xr = nd === 1 ? xs0 + w / 2 : xs0 + margen + i * (w - 2 * margen) / (nd - 1);
+      out.push(`<line class="barra-cos" x1="${xr.toFixed(1)}" y1="${yJ - 34}" x2="${xr.toFixed(1)}" y2="${yJ + 34}"/>`);
+    }
+    out.push(`<line class="ref" x1="${xs0}" y1="186" x2="${xs0}" y2="${yL + 6}"/><line class="ref" x1="${xs1}" y1="186" x2="${xs1}" y2="${yL + 6}"/>`);
+    out.push(`<line class="cota" x1="${xs0}" y1="${yL}" x2="${xs1}" y2="${yL}" marker-start="url(#tic)" marker-end="url(#tic)"/>`);
+    out.push(`<text class="fuerte" x="${(xs0 + xs1) / 2}" y="${yL + 14}" text-anchor="middle">b = ${fmt(o.b, 0)} mm</text>`);
+    if (nr > 0) out.push(`<text x="${(xs0 + xs1) / 2}" y="${yL + 32}" text-anchor="middle">${t("ras.dib.ramas", nr, o.fi ?? "")}</text>`);
     const fl = (x, y, dir) => `<line class="fuerza" x1="${x}" y1="${y}" x2="${x + dir * 52}" y2="${y}" marker-end="url(#pta)"/>`;
     out.push(fl(x0 + 70, 42, 1), `<text class="fuerte" x="${x0 + 128}" y="46">R<tspan baseline-shift="sub" font-size="75%">Ed</tspan> = ${fmt(o.REd, 0)} kN</text>`);
     out.push(fl(x1 - 70, 196, -1));
-    let yLey = yL + 34;
+    let yLey = yL + 46;
     const muestras = {
       junta: '<line class="junta" x1="0" y1="0" x2="22" y2="0"/>',
       cosido: '<line class="barra-cos" x1="3" y1="6" x2="19" y2="-6"/>',
@@ -16027,7 +16078,7 @@ svg.dib-ras { min-width: 0; }
     h: 0,
     emin: 0,
     fatiga: false,
-    anclado: true,
+    anclaje: "total",
     topping: false,
     bordeCerca: false,
     sin: false,
@@ -16044,6 +16095,7 @@ svg.dib-ras { min-width: 0; }
     if (!p.hormigones.some((m) => m.nombre === D.hormigon2)) D.hormigon2 = hor(/25/);
     if (!p.aceros.some((m) => m.nombre === D.aceroCosido)) D.aceroCosido = (p.aceros.find((m) => /500/.test(m.nombre)) ?? p.aceros[0])?.nombre ?? null;
     if (N && !(D.rug in N.RUGOSIDADES)) D.rug = N.id === "EHE-08" ? "alta" : "rugosa";
+    if (N && N.id !== "EC2-2023" && D.anclaje === "parcial") D.anclaje = "total";
     return D;
   }
   var diametrosEntrada3 = () => serieDiametros().filter((x) => x >= 6 && x <= 25);
@@ -16063,13 +16115,13 @@ svg.dib-ras { min-width: 0; }
       sigN: D.sigN,
       alfa: D.alfa,
       fatiga: D.fatiga,
-      anclado: D.anclado,
+      anclado: D.anclaje !== "parcial",
       topping: D.topping,
       bordeCerca: D.bordeCerca,
       h: D.h,
       emin: D.emin,
       ramas: D.ramas,
-      sinArmadura: !dimensionando && D.sin,
+      sinArmadura: !dimensionando && (D.sin || D.anclaje === "insuf"),
       arm: { fi: D.fi, ramas: D.ramas, s: D.s }
     };
   }
@@ -16097,7 +16149,7 @@ svg.dib-ras { min-width: 0; }
     const rugs = Object.keys(N.RUGOSIDADES);
     const opciones = [];
     if (!e23) opciones.push(["fatiga", t("ras.fatiga")]);
-    if (e23 && !D.anclado) opciones.push(["topping", t("ras.topping")], ["bordeCerca", t("ras.bordeCerca")]);
+    if (e23 && D.anclaje === "parcial") opciones.push(["topping", t("ras.topping")], ["bordeCerca", t("ras.bordeCerca")]);
     poner(
       form,
       segmentado({ ancho: true, etiqueta: t("flex.modo"), opciones: [["comprobar", t("comprobar")], ["dimensionar", t("dimensionar")]], valor: est8.modo, onCambio: (m) => {
@@ -16130,45 +16182,48 @@ svg.dib-ras { min-width: 0; }
           campoNum({ id: "r-hc", etq: "h", valor: D.h, mag: "diam", paso: 25, min: 0, max: 5e3, ayuda: t("ras.hAyuda"), onCambio: set("h") }),
           campoNum({ id: "r-emin", etq: sub26("e", "m\xEDn"), valor: D.emin, mag: "diam", paso: 10, min: 0, max: 2e3, ayuda: t("ras.eminAyuda"), onCambio: set("emin") })
         ) : null,
-        opciones.length ? casillas({
-          id: "r-op",
-          etq: t("ras.opciones"),
-          opciones,
-          marcadas: opciones.map((o) => o[0]).filter((k) => D[k]),
-          onCambio: (marc) => {
-            for (const [k] of opciones) D[k] = marc.includes(k);
-            cambio();
-          }
-        }) : null
+        ...opciones.map(([k, etq]) => h("label", { class: "tick" }, h("input", { type: "checkbox", id: `r-${k}`, checked: D[k], onchange: (e2) => {
+          D[k] = e2.target.checked;
+          cambio();
+        } }), h("span", { html: etq })))
       ),
-      grupo(
-        t("ras.cosido"),
-        comp ? segmentado({ ancho: true, etiqueta: t("ras.cosido"), opciones: [["con", t("cor.conArm")], ["sin", t("cor.sinArm")]], valor: D.sin ? "sin" : "con", onCambio: (v2) => {
-          D.sin = v2 === "sin";
-          ctx2.pintar();
-        } }) : null,
-        e23 ? segmentado({ ancho: true, etiqueta: t("ras.anclaje"), opciones: [[true, t("ras.anclado")], [false, t("ras.noAnclado")]], valor: D.anclado, onCambio: (v2) => {
-          D.anclado = v2;
-          ctx2.pintar();
-        } }) : null,
-        h(
+      (() => {
+        const cuerpo = h(
           "div",
-          { class: "par2" },
-          selector({ id: "r-ace", linea: true, etq: t("ras.acero"), opciones: p.aceros.map((m) => [m.nombre, m.nombre]), valor: D.aceroCosido, onCambio: (v2) => {
-            D.aceroCosido = v2;
-            cambio();
-          } }),
-          e23 && !D.anclado ? null : campoNum({ id: "r-alfa", etq: "\u03B1", valor: D.alfa, mag: "ang", paso: 5, min: N.ALFA_MIN, max: e23 && D.rug === "muyLisa" ? 90 : N.ALFA_MAX, ayuda: t("ras.alfaAyuda", N.ALFA_MIN, N.ALFA_MAX), onCambio: set("alfa") })
-        ),
-        ...arm ? parejas3([
-          comp ? selector({ id: "r-fi", etq: t("cor.fi"), linea: true, opciones: diametrosEntrada3().map((x) => [String(x), `\xF8${x}`]), valor: String(D.fi), onCambio: (v2) => {
-            D.fi = Number(v2);
-            cambio();
-          } }) : null,
-          campoNum({ id: "r-ramas", etq: t("ras.ramas"), valor: D.ramas, mag: "n", paso: 1, min: 1, max: 100, ayuda: t("ras.ramasAyuda"), onCambio: set("ramas") }),
-          comp ? campoNum({ id: "r-s", etq: "s", valor: D.s, mag: "diam", paso: 25, min: 20, max: 2e3, ayuda: t("ras.sAyuda"), onCambio: set("s") }) : null
-        ]) : []
-      )
+          { class: "cuerpo-arm" },
+          h("div", { class: "fila-anc" }, segmentado({ ancho: true, etiqueta: t("ras.anclaje"), opciones: [["total", t("ras.anc.total")], ...e23 ? [["parcial", t("ras.anc.parcial")]] : [], ["insuf", t("ras.anc.insuf")]], valor: D.anclaje, onCambio: (v2) => {
+            D.anclaje = v2;
+            ctx2.pintar();
+          } }), h("span", { class: "info-i", tabindex: 0, role: "img", "aria-label": t("ras.anc.ayuda"), "data-tip": t(e23 ? "ras.anc.ayuda23" : "ras.anc.ayuda") }, "i")),
+          h(
+            "div",
+            { class: "par2" },
+            selector({ id: "r-ace", linea: true, etq: t("ras.acero"), opciones: p.aceros.map((m) => [m.nombre, m.nombre]), valor: D.aceroCosido, onCambio: (v2) => {
+              D.aceroCosido = v2;
+              cambio();
+            } }),
+            e23 && D.anclaje === "parcial" ? null : campoNum({ id: "r-alfa", etq: "\u03B1", valor: D.alfa, mag: "ang", paso: 5, min: N.ALFA_MIN, max: e23 && D.rug === "muyLisa" ? 90 : N.ALFA_MAX, ayuda: t("ras.alfaAyuda", N.ALFA_MIN, N.ALFA_MAX), onCambio: set("alfa") })
+          ),
+          ...parejas3([
+            comp ? selector({ id: "r-fi", etq: t("cor.fi"), linea: true, opciones: diametrosEntrada3().map((x) => [String(x), `\xF8${x}`]), valor: String(D.fi), onCambio: (v2) => {
+              D.fi = Number(v2);
+              cambio();
+            } }) : null,
+            campoNum({ id: "r-ramas", etq: t("ras.ramas"), valor: D.ramas, mag: "n", paso: 1, min: 1, max: 100, ayuda: t("ras.ramasAyuda"), onCambio: set("ramas") }),
+            comp ? campoNum({ id: "r-s", etq: "s", valor: D.s, mag: "diam", paso: 25, min: 20, max: 2e3, ayuda: t("ras.sAyuda"), onCambio: set("s") }) : null
+          ])
+        );
+        const leyenda3 = h("legend", {}, comp ? h("label", { class: "tick" }, h("input", { type: "checkbox", id: "r-arm", checked: !D.sin, onchange: (e2) => {
+          D.sin = !e2.target.checked;
+          ctx2.pintar();
+        } }), h("span", { html: t("ras.cosido") })) : h("span", { html: t("ras.cosido") }));
+        if (!arm) {
+          for (const el of cuerpo.querySelectorAll("input, select")) el.disabled = true;
+          cuerpo.classList.add("inactivo");
+          cuerpo.title = t("ras.sinArmNota");
+        }
+        return h("fieldset", { class: "grupo" }, leyenda3, cuerpo);
+      })()
     );
   }
   function resultados14(ctx2, res) {
@@ -16213,7 +16268,7 @@ svg.dib-ras { min-width: 0; }
         !ok ? t("cor.ver.no") : hayAviso ? t("cor.ver.revisar") : t("cor.ver.cumple"),
         t("aprovechamiento"),
         fmt(r.aprov, 2),
-        t("ras.ver.ecu", kN(D.REd), kN(r.Ru), ok, t(`ras.manda.${r.manda}`)),
+        t("ras.ver.ecu", kN(D.REd), kN(r.Ru), ok, `${t(`ras.manda.${r.manda}`)} (${r.formula})`),
         Math.min(r.aprov / 1.25, 1)
       ));
     } else if (r.caso === "limite") {
@@ -16224,6 +16279,7 @@ svg.dib-ras { min-width: 0; }
       const rhoTxt = fmt(r.rhoNec * 1e3, 2);
       res.append(veredicto("cumple", t("cor.ver.valida"), t("ras.armNec"), qh(r.AswSNec / 1e3, "AswS"), t("ras.ver.nec", rhoTxt, kN(D.REd))));
     }
+    if (D.anclaje === "insuf") avisos4.push(aviso(t(comp ? "ras.av.noAnclado" : "ras.av.noAncladoDim")));
     if (avisos4.length) res.append(h("div", { class: "avisos" }, ...avisos4));
     const sinArm = comp ? !!x.sinArmadura : r.caso !== "calculo";
     const ley = [["h2", t("ras.dib.l2", D.hormigon2)], ["h1", t("ras.dib.l1", D.hormigon1)], ["junta", t("ras.dib.lj", t(`ras.rug.${D.rug}`).toLowerCase())]];
@@ -16233,7 +16289,7 @@ svg.dib-ras { min-width: 0; }
       sDib = f?.s ?? D.s;
       if (f) ley.push(["cosido", t("ras.dib.lc", fmt(f.ramas, 0), f.fi, fmt(f.s, 0))]);
     } else if (comp && !sinArm) ley.push(["cosido", t("ras.dib.lc", fmt(D.ramas, 0), D.fi, fmt(D.s, 0))]);
-    poner(centro, h("h2", {}, t("ras.t.junta")), h("div", { class: "lienzo", html: dibujoRasante({ alfa: N.id === "EC2-2023" && !D.anclado ? 90 : D.alfa, sinAlfa: N.id === "EC2-2023" && !D.anclado, L: D.L, s: sDib, sinArmadura: sinArm || !comp && r.caso !== "calculo", rugosa: D.rug !== "muyLisa", REd: D.REd, b: D.b, leyenda: ley }) }), notas3(N, D));
+    poner(centro, h("h2", {}, t("ras.t.junta")), h("div", { class: "lienzo", html: dibujoRasante({ ramas: D.ramas, fi: !comp && r.caso === "calculo" ? (r.tabla.find((k) => k.fi === D.fi && k.s) ?? r.tabla.find((k) => k.s))?.fi : D.fi, alfa: D.anclaje === "parcial" ? 90 : D.alfa, sinAlfa: D.anclaje === "parcial", L: D.L, s: sDib, sinArmadura: sinArm || !comp && r.caso !== "calculo", rugosa: D.rug !== "muyLisa", REd: D.REd, b: D.b, leyenda: ley }) }), notas3(N, D));
     poner(dcha, h("h2", {}, t("cor.t.res")), cifras(cifrasDe2(r, comp, N)));
     if (!comp && r.caso === "calculo") {
       const cab = [t("cor.tabla.fi"), t("ras.tabla.ramas"), t("ras.tabla.asw"), t("ras.tabla.s"), t("ras.tabla.asws")];
