@@ -29,7 +29,7 @@
   --compr: oklch(62% 0.09 252);
   --traccion: oklch(66% 0.008 250);
   --acero: oklch(30% 0.012 250);
-  --arm-azul: oklch(45% 0.15 258);
+  --armadura-resaltada: oklch(45% 0.15 258);
   --ok: oklch(46% 0.11 152);
   --ok-fondo: oklch(95% 0.035 152);
   --no: oklch(50% 0.17 27);
@@ -60,7 +60,7 @@
     --acento: oklch(74% 0.11 250); --acento-suave: oklch(30% 0.05 252);
   --serie-m: oklch(74% 0.11 250); --serie-v: oklch(76% 0.11 125); --serie-giro: oklch(76% 0.09 195); --serie-flecha: oklch(76% 0.10 60);
     --hormigon: oklch(33% 0.008 85); --hormigon-borde: oklch(58% 0.01 85);
-    --compr: oklch(62% 0.1 252); --traccion: oklch(55% 0.01 250); --acero: oklch(88% 0.008 250); --arm-azul: oklch(72% 0.13 255);
+    --compr: oklch(62% 0.1 252); --traccion: oklch(55% 0.01 250); --acero: oklch(88% 0.008 250); --armadura-resaltada: oklch(72% 0.13 255);
     --ok: oklch(76% 0.13 152); --ok-fondo: oklch(29% 0.05 152);
     --no: oklch(74% 0.14 27); --no-fondo: oklch(30% 0.06 27);
     --atencion: oklch(80% 0.11 80); --atencion-fondo: oklch(30% 0.05 80);
@@ -75,7 +75,7 @@
   --acento: oklch(74% 0.11 250); --acento-suave: oklch(30% 0.05 252);
   --serie-m: oklch(74% 0.11 250); --serie-v: oklch(76% 0.11 125); --serie-giro: oklch(76% 0.09 195); --serie-flecha: oklch(76% 0.10 60);
   --hormigon: oklch(33% 0.008 85); --hormigon-borde: oklch(58% 0.01 85);
-  --compr: oklch(62% 0.1 252); --traccion: oklch(55% 0.01 250); --acero: oklch(88% 0.008 250); --arm-azul: oklch(72% 0.13 255);
+  --compr: oklch(62% 0.1 252); --traccion: oklch(55% 0.01 250); --acero: oklch(88% 0.008 250); --armadura-resaltada: oklch(72% 0.13 255);
   --ok: oklch(76% 0.13 152); --ok-fondo: oklch(29% 0.05 152);
   --no: oklch(74% 0.14 27); --no-fondo: oklch(30% 0.06 27);
   --atencion: oklch(80% 0.11 80); --atencion-fondo: oklch(30% 0.05 80);
@@ -841,8 +841,8 @@ details.an-ce { margin-top: var(--e2); }
 .dib .alz-biela { fill: color-mix(in oklab, var(--hormigon) 85%, var(--tinta) 15%); stroke: color-mix(in oklab, var(--hormigon) 55%, var(--tinta) 45%); stroke-width: .8; }
 .dib .rayo-biela { stroke: color-mix(in oklab, var(--hormigon) 55%, var(--tinta) 45%); stroke-width: 1; }
 .dib .alz-cordon { fill: color-mix(in oklab, var(--hormigon) 72%, var(--tinta) 28%); stroke: var(--hormigon-borde); stroke-width: .8; }
-.dib .alz-arm { stroke: var(--arm-azul); stroke-width: 2.6; }
-.dib .alz-cerco { fill: var(--arm-azul); stroke: none; }
+.dib .alz-arm { stroke: var(--armadura-resaltada); stroke-width: 2.6; }
+.dib .alz-cerco { fill: var(--armadura-resaltada); stroke: none; }
 .dib .alz-ang { fill: none; stroke: var(--tinta); stroke-width: 1; }
 .dib .alz-ref { stroke: var(--tinta-2); stroke-width: .8; }
 .dib .alz-txt { paint-order: stroke; stroke: var(--hormigon); stroke-width: 3; }
