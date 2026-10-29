@@ -2237,15 +2237,10 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
 
   // src/io/proyecto.js
   var CLAVE = "prontuario-web:proyecto";
-  var HORMIGONES_TIPIFICADOS = [25, 30, 35, 40, 45, 50].flatMap((fck) => [
-    { nombre: `HA-${fck}`, tipo: "hormigon", fck },
-    ...fck === 30 ? [{ nombre: "HA-30_EC2", tipo: "hormigon", fck, diag: "EC2" }] : []
-  ]);
+  var HORMIGONES_TIPIFICADOS = [25, 30, 35, 40, 45, 50].map((fck) => ({ nombre: `HA-${fck}`, tipo: "hormigon", fck }));
   var ACEROS_TIPIFICADOS = [
     { nombre: "B 400 S", tipo: "acero", fyk: 400 },
-    { nombre: "B 400 SD", tipo: "acero", fyk: 400, ductilidad: "C" },
-    { nombre: "B 500 S", tipo: "acero", fyk: 500 },
-    { nombre: "B 500 SD", tipo: "acero", fyk: 500, ductilidad: "C" }
+    { nombre: "B 500 S", tipo: "acero", fyk: 500 }
   ];
   var NOMBRE_ACERO_ANTIGUO = { B500S: "B 500 S", B400S: "B 400 S", B500SD: "B 500 SD", B400SD: "B 400 SD" };
   function conTipificados(p) {
@@ -2584,6 +2579,9 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     "mat.avTipificado": (n) => `${n} solo admite cambiar \u03B1cc. Para cambiar otra cosa, gu\xE1rdalo con otro nombre.`,
     "mat.avNombreEC2": "Con diagrama EC-2 (Sargin) el nombre debe terminar en _EC2.",
     "mat.avNombreNoEC2": "Un nombre acabado en _EC2 es para el diagrama EC-2 (Sargin).",
+    "mat.alfaCansancio": "larga duraci\xF3n",
+    "mat.avInfoTipH": "Material tipificado: solo se puede cambiar el coeficiente \u03B1_cc / k_tc (1,00 o 0,85). Si quieres cambiar otra cosa, usa otro nombre.",
+    "mat.avInfoTipA": "Material tipificado: no admite cambios. Si quieres cambiarlo, usa otro nombre.",
     "mat.avTipificadoA": (n) => `${n} es un acero tipificado: solo admite cambiar el nombre. Para cambiar otra cosa, gu\xE1rdalo con otro nombre.`,
     "mat.kAyuda": "k = (f_t/f_y)k de la clase de ductilidad. Por defecto el valor m\xEDnimo de la clase (EC-2 2004 tabla C.1; EC-2 2023 tabla 5.5); el fabricante garantiza el suyo, hasta 1,35.",
     "mat.ref28": "Edad de referencia: los valores son los de la ficha.",
@@ -3572,6 +3570,9 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     "mat.avTipificado": (n) => `${n} only allows changing \u03B1cc. To change anything else, save it under another name.`,
     "mat.avNombreEC2": "With the EC 2 (Sargin) diagram the name must end in _EC2.",
     "mat.avNombreNoEC2": "A name ending in _EC2 is for the EC 2 (Sargin) diagram.",
+    "mat.alfaCansancio": "long-term loading",
+    "mat.avInfoTipH": "Standard material: only the \u03B1_cc / k_tc coefficient (1.00 or 0.85) can be changed. To change anything else, use another name.",
+    "mat.avInfoTipA": "Standard material: it cannot be changed. To change it, use another name.",
     "mat.avTipificadoA": (n) => `${n} is a standard steel: only its name can be changed. To change anything else, save it under another name.`,
     "mat.kAyuda": "k = (f_t/f_y)k of the ductility class. Default is the class minimum (EC 2 2004 table C.1; EC 2 2023 table 5.5); the manufacturer guarantees its own value, up to 1.35.",
     "mat.ref28": "Reference age: the values are those of the material.",
@@ -7446,8 +7447,9 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     const resistencia4 = grupo(
       t("mat.gResistencia"),
       fck,
-      ec2023 ? selector({ id: "m-ktc", etq: sub11("k", "tc"), opciones: [["0.85", `0.85 \xB7 ${t("mat.ktcGeneral")}`], ["1", `1.00 \xB7 ${t("mat.ktc1")}`]], valor: String(m.ktc ?? 1), onCambio: (v2) => {
+      ec2023 || tip ? selector({ id: "m-ktc", etq: sub11(ec2023 ? "k" : "\u03B1", ec2023 ? "tc" : "cc"), ayuda: t("mat.alfaAyuda", N.art.fcd), opciones: ec2023 ? [["1", `1.00 \xB7 ${t("mat.ktc1")}`], ["0.85", `0.85 \xB7 ${t("mat.ktcGeneral")}`]] : [["1", "1.00"], ["0.85", `0.85 \xB7 ${t("mat.alfaCansancio")}`]], valor: String(m.ktc ?? m.alfaCC ?? 1), onCambio: (v2) => {
         m.ktc = Number(v2);
+        m.alfaCC = Number(v2);
         cambio();
       } }) : campoNum({ id: "m-acc", etq: sub11("\u03B1", "cc"), ayuda: t("mat.alfaAyuda", N.art.fcd), valor: m.alfaCC ?? 1, paso: 0.05, min: N.alfaRango[0], max: N.alfaRango[1], onCambio: (v2) => {
         poneOBorra(m, "alfaCC", v2, 1);
@@ -7458,6 +7460,12 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
         cambio();
       } })
     );
+    const gc = resistencia4.querySelector("#m-gc");
+    if (tip && gc) {
+      gc.disabled = true;
+      gc.tabIndex = -1;
+      gc.title = t("mat.tipificado", m.nombre, tip);
+    }
     const cemSel = selector({ id: "m-cem", etq: t("mat.cemento"), opciones: CEMENTOS(), valor: m.cemento ?? "N", onCambio: (v2) => {
       poneOBorra(m, "cemento", v2, "N");
       cambio();
@@ -7602,6 +7610,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     } else if (m.fyk > N.fykMax) {
       out.push(["", t("mat.avFykMax", N.fykMax, N.corto)]);
     }
+    if (!out.some(([tipo]) => tipo === "error") && (m.tipo === "hormigon" ? fckTipificado(m.nombre) : aceroTipificado(m.nombre))) out.push(["info", t(m.tipo === "hormigon" ? "mat.avInfoTipH" : "mat.avInfoTipA")]);
     return out;
   }
   function graficaSigmaEps(ctx2, mat) {
