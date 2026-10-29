@@ -2230,15 +2230,10 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
 
   // src/io/proyecto.js
   var CLAVE = "prontuario-web:proyecto";
-  var HORMIGONES_TIPIFICADOS = [25, 30, 35, 40, 45, 50].flatMap((fck) => [
-    { nombre: `HA-${fck}`, tipo: "hormigon", fck },
-    ...fck === 30 ? [{ nombre: "HA-30_EC2", tipo: "hormigon", fck, diag: "EC2" }] : []
-  ]);
+  var HORMIGONES_TIPIFICADOS = [25, 30, 35, 40, 45, 50].map((fck) => ({ nombre: `HA-${fck}`, tipo: "hormigon", fck }));
   var ACEROS_TIPIFICADOS = [
     { nombre: "B 400 S", tipo: "acero", fyk: 400 },
-    { nombre: "B 400 SD", tipo: "acero", fyk: 400, ductilidad: "C" },
-    { nombre: "B 500 S", tipo: "acero", fyk: 500 },
-    { nombre: "B 500 SD", tipo: "acero", fyk: 500, ductilidad: "C" }
+    { nombre: "B 500 S", tipo: "acero", fyk: 500 }
   ];
   var NOMBRE_ACERO_ANTIGUO = { B500S: "B 500 S", B400S: "B 400 S", B500SD: "B 500 SD", B400SD: "B 400 SD" };
   function conTipificados(p) {
@@ -2577,6 +2572,9 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     "mat.avTipificado": (n) => `${n} solo admite cambiar \u03B1cc. Para cambiar otra cosa, gu\xE1rdalo con otro nombre.`,
     "mat.avNombreEC2": "Con diagrama EC-2 (Sargin) el nombre debe terminar en _EC2.",
     "mat.avNombreNoEC2": "Un nombre acabado en _EC2 es para el diagrama EC-2 (Sargin).",
+    "mat.alfaCansancio": "larga duraci\xF3n",
+    "mat.avInfoTipH": "Material tipificado: solo se puede cambiar el coeficiente \u03B1_cc / k_tc (1,00 o 0,85). Si quieres cambiar otra cosa, usa otro nombre.",
+    "mat.avInfoTipA": "Material tipificado: no admite cambios. Si quieres cambiarlo, usa otro nombre.",
     "mat.avTipificadoA": (n) => `${n} es un acero tipificado: solo admite cambiar el nombre. Para cambiar otra cosa, gu\xE1rdalo con otro nombre.`,
     "mat.kAyuda": "k = (f_t/f_y)k de la clase de ductilidad. Por defecto el valor m\xEDnimo de la clase (EC-2 2004 tabla C.1; EC-2 2023 tabla 5.5); el fabricante garantiza el suyo, hasta 1,35.",
     "mat.ref28": "Edad de referencia: los valores son los de la ficha.",
@@ -3565,6 +3563,9 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     "mat.avTipificado": (n) => `${n} only allows changing \u03B1cc. To change anything else, save it under another name.`,
     "mat.avNombreEC2": "With the EC 2 (Sargin) diagram the name must end in _EC2.",
     "mat.avNombreNoEC2": "A name ending in _EC2 is for the EC 2 (Sargin) diagram.",
+    "mat.alfaCansancio": "long-term loading",
+    "mat.avInfoTipH": "Standard material: only the \u03B1_cc / k_tc coefficient (1.00 or 0.85) can be changed. To change anything else, use another name.",
+    "mat.avInfoTipA": "Standard material: it cannot be changed. To change it, use another name.",
     "mat.avTipificadoA": (n) => `${n} is a standard steel: only its name can be changed. To change anything else, save it under another name.`,
     "mat.kAyuda": "k = (f_t/f_y)k of the ductility class. Default is the class minimum (EC 2 2004 table C.1; EC 2 2023 table 5.5); the manufacturer guarantees its own value, up to 1.35.",
     "mat.ref28": "Reference age: the values are those of the material.",
@@ -4548,7 +4549,24 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     "cor.tabla.sugerida": "En negrita, la primera combinaci\xF3n con s \u2265 100 mm.",
     "cor.ec.r.vlim": "L\xEDmite de biela sin cercos",
     "cor.ec.f.vlim": "V<sub>Ed</sub> \u2264 0,5\xB7b<sub>w</sub>\xB7d\xB7\u03BD\xB7f<sub>cd</sub>, con \u03BD = 0,6(1 \u2212 f<sub>ck</sub>/250): aunque no haya cercos, el cortante no puede pasar de este valor",
-    "cor.e3.f.vlim": "V<sub>Rd,m\xE1x</sub> con cotg \u03B8 = 1 y \u03BD = 0,5: el m\xE1ximo que admitir\xEDa la secci\xF3n aun con cercos"
+    "cor.e3.f.vlim": "V<sub>Rd,m\xE1x</sub> con cotg \u03B8 = 1 y \u03BD = 0,5: el m\xE1ximo que admitir\xEDa la secci\xF3n aun con cercos",
+    "cor.h.b0.ehe": "Anchura neta m\xEDnima del alma (EHE-08, 44.2.1). En circulares: b\u2080 = 0,866\xB7d (cuerda a d/4 del centro)",
+    "cor.h.b0.ec": "Anchura m\xEDnima del alma b_w entre los cordones de tracci\xF3n y compresi\xF3n (6.2.3(1)). En circulares el Prontuario toma b_w = 0,866\xB7d (cuerda a d/4 del centro)",
+    "cor.h.b0.e23": "Anchura b_w del alma (8.2.1(3)). En circulares el Prontuario toma b_w = 0,866\xB7d (cuerda a d/4 del centro); la armadura se reduce con b_w/D_h (8.2.3(9))",
+    "cor.h.d.ehe": "Canto \xFAtil, referido a la armadura de flexi\xF3n (EHE-08, 44.2.3). En circulares: d = D/2 + (D/2 \u2212 r)\xB70,707",
+    "cor.h.d.ec": "Canto \xFAtil, hasta el baricentro de la armadura traccionada (6.2.2). En circulares: d = D/2 + (D/2 \u2212 r)\xB70,707",
+    "cor.h.d.e23": "Canto \xFAtil, hasta el baricentro de la armadura traccionada (8.2.1(3)). En circulares: d = D/2 + (D/2 \u2212 r)\xB70,707",
+    "cor.h.z.ehe": "Brazo mec\xE1nico. Por defecto z = 0,9\xB7d (EHE-08, 44.2.3.2.2); se puede cambiar. Interviene en V_su y en el decalaje de la armadura longitudinal",
+    "cor.h.z.ec": "Brazo mec\xE1nico. Por defecto z = 0,9\xB7d (6.2.3(1)); se puede cambiar. Interviene en V_Rd,s, V_Rd,m\xE1x y en \u0394F_td",
+    "cor.h.z.e23": "Brazo mec\xE1nico. Por defecto z = 0,9\xB7d (8.2.1(3)); se puede cambiar. Interviene en \u03C4_Ed, V_Rd,s, V_Rd,m\xE1x y en F_td",
+    "cor.h.Asl.ehe": "Armadura longitudinal de tracci\xF3n anclada. Viene de la secci\xF3n y se cambia aqu\xED sin modificarla",
+    "cor.h.Asl.ec": "Armadura longitudinal de tracci\xF3n anclada. Viene de la secci\xF3n y se cambia aqu\xED sin modificarla",
+    "cor.h.Asl.e23": "Armadura longitudinal de tracci\xF3n anclada. Viene de la secci\xF3n y se cambia aqu\xED sin modificarla",
+    "cor.h.rho.ehe": "\u03C1_l = A_sl/(b\u2080\xB7d). Las f\xF3rmulas de V_cu lo limitan a 20 \u2030",
+    "cor.h.rho.ec": "\u03C1_l = A_sl/(b_w\xB7d), limitado a 20 \u2030 en V_Rd,c (6.2.2(1))",
+    "cor.h.rho.e23": "\u03C1_l = A_sl/(b_w\xB7d) (8.2.2)",
+    "cor.z": "z",
+    "cor.cotAyudaEC": "Entre 26,6\xB0 y 63,4\xB0, es decir cotg \u03B8 entre 0,5 y 2,0 (Anejo Nacional, 6.2.3(2))"
   };
 
   // src/i18n/cortante.en.js
@@ -4714,7 +4732,24 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     "cor.tabla.sugerida": "In bold, the first combination with s \u2265 100 mm.",
     "cor.ec.r.vlim": "Strut limit without stirrups",
     "cor.ec.f.vlim": "V<sub>Ed</sub> \u2264 0.5\xB7b<sub>w</sub>\xB7d\xB7\u03BD\xB7f<sub>cd</sub>, with \u03BD = 0.6(1 \u2212 f<sub>ck</sub>/250): even without stirrups the shear cannot exceed this value",
-    "cor.e3.f.vlim": "V<sub>Rd,max</sub> with cotg \u03B8 = 1 and \u03BD = 0.5: the maximum the section would admit even with stirrups"
+    "cor.e3.f.vlim": "V<sub>Rd,max</sub> with cotg \u03B8 = 1 and \u03BD = 0.5: the maximum the section would admit even with stirrups",
+    "cor.h.b0.ehe": "Minimum net web width (EHE-08, 44.2.1). Circular: b\u2080 = 0.866\xB7d (chord at d/4 from the centre)",
+    "cor.h.b0.ec": "Minimum web width b_w between tension and compression chords (6.2.3(1)). Circular: the Prontuario takes b_w = 0.866\xB7d (chord at d/4 from the centre)",
+    "cor.h.b0.e23": "Web width b_w (8.2.1(3)). Circular: the Prontuario takes b_w = 0.866\xB7d (chord at d/4 from the centre); the reinforcement is reduced by b_w/D_h (8.2.3(9))",
+    "cor.h.d.ehe": "Effective depth, to the flexural reinforcement (EHE-08, 44.2.3). Circular: d = D/2 + (D/2 \u2212 r)\xB70.707",
+    "cor.h.d.ec": "Effective depth, to the centroid of the tension reinforcement (6.2.2). Circular: d = D/2 + (D/2 \u2212 r)\xB70.707",
+    "cor.h.d.e23": "Effective depth, to the centroid of the tension reinforcement (8.2.1(3)). Circular: d = D/2 + (D/2 \u2212 r)\xB70.707",
+    "cor.h.z.ehe": "Lever arm. Default z = 0.9\xB7d (EHE-08, 44.2.3.2.2); can be changed. Used in V_su and in the longitudinal reinforcement shift",
+    "cor.h.z.ec": "Lever arm. Default z = 0.9\xB7d (6.2.3(1)); can be changed. Used in V_Rd,s, V_Rd,max and \u0394F_td",
+    "cor.h.z.e23": "Lever arm. Default z = 0.9\xB7d (8.2.1(3)); can be changed. Used in \u03C4_Ed, V_Rd,s, V_Rd,max and F_td",
+    "cor.h.Asl.ehe": "Anchored longitudinal tension reinforcement. Taken from the section and changed here without modifying it",
+    "cor.h.Asl.ec": "Anchored longitudinal tension reinforcement. Taken from the section and changed here without modifying it",
+    "cor.h.Asl.e23": "Anchored longitudinal tension reinforcement. Taken from the section and changed here without modifying it",
+    "cor.h.rho.ehe": "\u03C1_l = A_sl/(b\u2080\xB7d). The V_cu formulas limit it to 20 \u2030",
+    "cor.h.rho.ec": "\u03C1_l = A_sl/(b_w\xB7d), limited to 20 \u2030 in V_Rd,c (6.2.2(1))",
+    "cor.h.rho.e23": "\u03C1_l = A_sl/(b_w\xB7d) (8.2.2)",
+    "cor.z": "z",
+    "cor.cotAyudaEC": "Between 26.6\xB0 and 63.4\xB0, i.e. cotg \u03B8 between 0.5 and 2.0 (National Annex, 6.2.3(2))"
   };
 
   // src/i18n/punzonamiento.es.js
@@ -7405,8 +7440,9 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     const resistencia4 = grupo(
       t("mat.gResistencia"),
       fck,
-      ec2023 ? selector({ id: "m-ktc", etq: sub11("k", "tc"), opciones: [["0.85", `0.85 \xB7 ${t("mat.ktcGeneral")}`], ["1", `1.00 \xB7 ${t("mat.ktc1")}`]], valor: String(m.ktc ?? 1), onCambio: (v2) => {
+      ec2023 || tip ? selector({ id: "m-ktc", etq: sub11(ec2023 ? "k" : "\u03B1", ec2023 ? "tc" : "cc"), ayuda: t("mat.alfaAyuda", N.art.fcd), opciones: ec2023 ? [["1", `1.00 \xB7 ${t("mat.ktc1")}`], ["0.85", `0.85 \xB7 ${t("mat.ktcGeneral")}`]] : [["1", "1.00"], ["0.85", `0.85 \xB7 ${t("mat.alfaCansancio")}`]], valor: String(m.ktc ?? m.alfaCC ?? 1), onCambio: (v2) => {
         m.ktc = Number(v2);
+        m.alfaCC = Number(v2);
         cambio();
       } }) : campoNum({ id: "m-acc", etq: sub11("\u03B1", "cc"), ayuda: t("mat.alfaAyuda", N.art.fcd), valor: m.alfaCC ?? 1, paso: 0.05, min: N.alfaRango[0], max: N.alfaRango[1], onCambio: (v2) => {
         poneOBorra(m, "alfaCC", v2, 1);
@@ -7417,6 +7453,12 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
         cambio();
       } })
     );
+    const gc = resistencia4.querySelector("#m-gc");
+    if (tip && gc) {
+      gc.disabled = true;
+      gc.tabIndex = -1;
+      gc.title = t("mat.tipificado", m.nombre, tip);
+    }
     const cemSel = selector({ id: "m-cem", etq: t("mat.cemento"), opciones: CEMENTOS(), valor: m.cemento ?? "N", onCambio: (v2) => {
       poneOBorra(m, "cemento", v2, "N");
       cambio();
@@ -7561,6 +7603,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     } else if (m.fyk > N.fykMax) {
       out.push(["", t("mat.avFykMax", N.fykMax, N.corto)]);
     }
+    if (!out.some(([tipo]) => tipo === "error") && (m.tipo === "hormigon" ? fckTipificado(m.nombre) : aceroTipificado(m.nombre))) out.push(["info", t(m.tipo === "hormigon" ? "mat.avInfoTipH" : "mat.avInfoTipA")]);
     return out;
   }
   function graficaSigmaEps(ctx2, mat) {
@@ -13558,12 +13601,12 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     sin: false,
     circ: true,
     aceroCercos: null,
-    ov: { b0: null, d: null, Asl: null, Asc: null },
+    ov: { b0: null, d: null, z: null, Asl: null, Asc: null },
     abiertos: /* @__PURE__ */ new Set()
   };
   function reiniciar6() {
     est6.i = null;
-    est6.ov = { b0: null, d: null, Asl: null, Asc: null };
+    est6.ov = { b0: null, d: null, z: null, Asl: null, Asc: null };
     est6.aceroCercos = null;
     est6.ktc = null;
   }
@@ -13580,19 +13623,22 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
   var diametrosTabla = () => serieDiametros().filter((x) => x >= 8 && x <= 20);
   var nuc = (p) => nucleo(p.norma);
   var esEC2 = (p) => nuc(p)?.id === "EC2-2004" || nuc(p)?.id === "EC2-2023";
+  var mmEnt = (x) => Math.round(x * 1e3) / 1e3;
   var es23 = (p) => nuc(p)?.id === "EC2-2023";
   function efectivos(p, s) {
     const sec = datosCortante(p, s, { signo: est6.signo, dir: est6.dir });
     const ef = {
       b0: est6.ov.b0 ?? sec.b0,
       d: est6.ov.d ?? sec.d,
+      z: est6.ov.z,
       Asl: est6.ov.Asl ?? sec.Asl,
       Asc: est6.ov.Asc ?? sec.Asc
     };
+    ef.z ?? (ef.z = 0.9 * ef.d);
     return { sec, ef };
   }
   function cambiaSeccion(ctx2) {
-    est6.ov = { b0: null, d: null, Asl: null, Asc: null };
+    est6.ov = { b0: null, d: null, z: null, Asl: null, Asc: null };
     est6.aceroCercos = null;
     est6.ktc = null;
     ctx2.pintar();
@@ -13609,7 +13655,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     if (!R.length) return null;
     if (!R.some(([, i]) => i === est6.i)) {
       est6.i = R[0][1];
-      est6.ov = { b0: null, d: null, Asl: null, Asc: null };
+      est6.ov = { b0: null, d: null, z: null, Asl: null, Asc: null };
     }
     return p.secciones[est6.i];
   }
@@ -13659,21 +13705,27 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
       const rho = ef.Asl / (ef.b0 * ef.d);
       const a = document.getElementById("c-rho");
       if (a && document.activeElement !== a) a.value = String(+(rho * 1e3).toFixed(2));
+      const z = document.getElementById("c-z");
+      if (z && document.activeElement !== z) z.value = String(Math.round(ef.z * 1e3));
       const b = document.getElementById("c-asl");
       if (b && document.activeElement !== b) b.value = String(Math.round(ef.Asl * 1e6));
     };
+    const ec = esEC2(p);
+    const e23 = es23(p);
     const nuevo2 = (k) => (v2) => {
       est6.ov[k] = v2;
       ef[k] = v2;
+      if (k === "d" && est6.ov.z == null) ef.z = 0.9 * v2;
       refrescar();
       cambio();
     };
+    const nk = e23 ? "e23" : ec ? "ec" : "ehe";
+    const ayuda = (k) => t(`cor.h.${k}.${nk}`);
     const rho0 = ef.Asl / (ef.b0 * ef.d);
     const pilarOCirc = !esViga2(s);
-    const ec = esEC2(p);
-    const e23 = es23(p);
     const rg = ajustaCot(p, s, sec, ef);
     const LT = limitesTheta(rg);
+    const ayudaCot = e23 ? t("cor.cotAyuda23", fmt(LT.min, 1), fmt(LT.max, 1), fmt(rg.min, 1), fmt(rg.max, 1)) : ec ? t("cor.cotAyudaEC") : t("cor.cotAyuda");
     const gauge = h("input", { type: "range", class: "desliza-sec", min: LT.min, max: LT.max, step: 0.1, value: thetaDe2(est6.cot), "aria-label": t("cor.theta") });
     const refrescarGauge = () => {
       gauge.value = thetaDe2(est6.cot);
@@ -13726,10 +13778,11 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
       grupo(
         t("cor.datosCalc"),
         ...parejas([
-          campoNum({ id: "c-b0", etq: t("cor.b0"), valor: ef.b0, mag: "long", paso: 5, min: 0.01, max: 20, ayuda: t("cor.b0Ayuda"), onCambio: nuevo2("b0") }),
-          campoNum({ id: "c-d", etq: t("cor.d"), valor: ef.d, mag: "long", paso: 5, min: 0.01, max: 20, ayuda: t("cor.dAyuda"), onCambio: nuevo2("d") }),
-          mostrar(campoNum({ id: "c-asl", etq: t("cor.Asl"), valor: ef.Asl, mag: "As", paso: 50, min: 0, max: 1, ayuda: t("cor.AslAyuda"), info: s.forma === "pilar" ? t("cor.AslInfoPilar") : s.forma === "circular" ? t("cor.AslInfoCirc") : void 0, onCambio: nuevo2("Asl") }), ef.Asl * 1e6, 0),
-          calculado(mostrar(campoNum({ id: "c-rho", etq: t("cor.rho"), valor: rho0, mag: "cuantia", paso: 1, min: 0, max: 1, ayuda: t("cor.rhoAyuda"), onCambio: () => {
+          campoNum({ id: "c-b0", etq: t("cor.b0"), valor: mmEnt(ef.b0), mag: "long", paso: 5, min: 0.01, max: 20, ayuda: ayuda("b0"), onCambio: nuevo2("b0") }),
+          campoNum({ id: "c-d", etq: t("cor.d"), valor: mmEnt(ef.d), mag: "long", paso: 5, min: 0.01, max: 20, ayuda: ayuda("d"), onCambio: nuevo2("d") }),
+          campoNum({ id: "c-z", etq: t("cor.z"), valor: mmEnt(ef.z), mag: "long", paso: 5, min: 0.01, max: 20, ayuda: ayuda("z"), onCambio: nuevo2("z") }),
+          mostrar(campoNum({ id: "c-asl", etq: t("cor.Asl"), valor: ef.Asl, mag: "As", paso: 50, min: 0, max: 1, ayuda: ayuda("Asl"), info: s.forma === "pilar" ? t("cor.AslInfoPilar") : s.forma === "circular" ? t("cor.AslInfoCirc") : void 0, onCambio: nuevo2("Asl") }), ef.Asl * 1e6, 0),
+          calculado(mostrar(campoNum({ id: "c-rho", etq: t("cor.rho"), valor: rho0, mag: "cuantia", paso: 1, min: 0, max: 1, ayuda: ayuda("rho"), onCambio: () => {
           } }), rho0 * 1e3, 2)),
           e23 ? selector({ id: "c-ktc", etq: t("cor.ktc"), linea: true, opciones: [["0.85", "0.85"], ["1", "1.00"]], valor: String(est6.ktc ?? sec.ktc ?? 0.85), onCambio: (v2) => {
             est6.ktc = Number(v2);
@@ -13777,7 +13830,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
             est6.alfa = v2;
             cambio();
           } }) : null,
-          campoNum({ id: "c-theta", etq: t("cor.theta"), valor: thetaDe2(est6.cot), mag: "ang1", paso: 1, min: LT.min, max: LT.max, ayuda: t("cor.cotAyuda"), onCambio: (v2) => {
+          campoNum({ id: "c-theta", etq: t("cor.theta"), valor: thetaDe2(est6.cot), mag: "ang1", paso: 1, min: LT.min, max: LT.max, ayuda: ayudaCot, onCambio: (v2) => {
             est6.cot = 1 / Math.tan(v2 * RAD);
             cambio();
             refrescarGauge();
@@ -13807,6 +13860,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
       fykLong: sec.fyk,
       b0: ef.b0 * 1e3,
       d: ef.d * 1e3,
+      z: ef.z * 1e3,
       Ac: sec.Ac * 1e6,
       Asl: ef.Asl * 1e6,
       Asc: ef.Asc * 1e6,
