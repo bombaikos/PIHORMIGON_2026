@@ -92,7 +92,7 @@ export function comprobar(x) {
   const Ru = esfuerzoDe(r.tauRd, x.b, x.L);
   const aprov = r.tauRd > 0 ? tauEd / r.tauRd : Infinity;
   const manda = r.limita ? 'limite' : r.contabiliza ? 'cosido' : 'cohesion';
-  return { P, tauEd, tauRd: r.tauRd, Ru, REd: x.REd, Rmax: esfuerzoDe(P.lim, x.b, x.L), aprov, rho, res: r, manda, sMax: sepMaxima(x), avisos: avisos(x, P, rho, sinArm), norma: ID };
+  return { P, tauEd, tauRd: r.tauRd, Ru, REd: x.REd, Rmax: esfuerzoDe(P.lim, x.b, x.L), aprov, rho, res: r, manda, formula: r.estado === 1 ? '47.2.2.1' : r.estado === 2 ? '47.2.2.2' : '47.2.1', sMax: sepMaxima(x), avisos: avisos(x, P, rho, sinArm), norma: ID };
 }
 
 /**
