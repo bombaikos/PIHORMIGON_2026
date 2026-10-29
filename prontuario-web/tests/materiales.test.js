@@ -50,11 +50,11 @@ test('Diagrama EC-2 (Sargin): máximo fcm en εc1 y sin γ ni α; por puntos res
   assert.throws(() => materialDeFicha({ nombre: 'H', tipo: 'hormigon', fck: 30, diag: 'puntos', puntos: [[2, 10], [1, 20]] }, 'EC2-2004'));
 });
 
-test('Todo proyecto nuevo trae los 6 hormigones tipificados y los 4 aceros tipificados', async () => {
+test('Todo proyecto nuevo trae los 6 hormigones tipificados y los 2 aceros por defecto', async () => {
   const { proyectoNuevo } = await import('../src/io/proyecto.js');
   const p = proyectoNuevo();
-  assert.deepEqual(p.hormigones.map((m) => m.nombre), ['HA-25', 'HA-30', 'HA-30_EC2', 'HA-35', 'HA-40', 'HA-45', 'HA-50']);
-  assert.deepEqual(p.aceros.map((m) => m.nombre), ['B 400 S', 'B 400 SD', 'B 500 S', 'B 500 SD']);
+  assert.deepEqual(p.hormigones.map((m) => m.nombre), ['HA-25', 'HA-30', 'HA-35', 'HA-40', 'HA-45', 'HA-50']);
+  assert.deepEqual(p.aceros.map((m) => m.nombre), ['B 400 S', 'B 500 S']);
 });
 
 test('Sargin con tracción: elástica hasta fctm y luego cae; sin tracción por defecto (ELU)', () => {
