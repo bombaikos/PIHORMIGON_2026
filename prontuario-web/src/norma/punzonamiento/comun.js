@@ -267,7 +267,19 @@ function pilarCentro(x) {
  * Posiciones de los cercos en cruz: `n` ramas por perímetro repartidas entre los brazos (los que salen por los ejes del
  * pilar); las de cada brazo van en fila transversal (separación `sl`), a las distancias δ de la cara.
  */
-export function cercosCruz(x, deltas, n, sl) {
+/** Margen a cada lado del pilar sin barras en las bandas de la cruz (25 mm, José Luis y Pepiño 29/10/2026). */
+export const MARGEN_BANDA = 25;
+/** Ancho de la banda de un brazo de la cruz: el del pilar medido en perpendicular al brazo, menos el margen a cada lado. */
+export const anchoBanda = (x, ux) => {
+  const { hx, hy } = pilarCentro(x);
+  return Math.max(0, 2 * (Math.abs(ux) ? hy : hx) - 2 * MARGEN_BANDA);
+};
+
+/**
+ * Ramas de la cruz: en cada brazo, `k` ramas por perímetro repartidas a lo ancho de la banda (la del pilar menos 25 mm por
+ * lado). El último parámetro (separación lateral) ya no se usa y se conserva por compatibilidad.
+ */
+export function cercosCruz(x, deltas, n, _sl) {
   const { cx, cy, hx, hy } = pilarCentro(x);
   const brazos = [[1, 0], [0, 1]];
   if (x.pos !== 'esquina') brazos.push([-1, 0]);
@@ -276,9 +288,10 @@ export function cercosCruz(x, deltas, n, sl) {
   brazos.forEach(([ux, uy], i) => {
     const k = Math.floor(n / brazos.length) + (i < n % brazos.length ? 1 : 0);
     const cara = Math.abs(ux) * hx + Math.abs(uy) * hy;
+    const sepLat = k > 1 ? anchoBanda(x, ux) / (k - 1) : 0;
     for (const dl of deltas) {
       for (let j = 0; j < k; j++) {
-        const lat = (j - (k - 1) / 2) * sl;
+        const lat = (j - (k - 1) / 2) * sepLat;
         pts.push([cx + ux * (cara + dl) - uy * lat, cy + uy * (cara + dl) + ux * lat]);
       }
     }

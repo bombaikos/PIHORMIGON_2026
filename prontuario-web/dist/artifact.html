@@ -964,6 +964,24 @@ svg.dib-ras { min-width: 0; }
 
 /* Punzonamiento: fila que manda (perímetros críticos) y fila recomendada (dimensionar) */
 table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento-suave); }
+
+/* Dibujo de Punzonamiento: armadura en azul oscuro (la oculta, azul grisáceo), tramo de pilar en alzado con líneas de corte */
+.dib-pun { --armadura: oklch(34% 0.13 258); --armadura-oculta: oklch(68% 0.035 250); font-family: var(--f); }
+.dib-pun text { font-family: var(--f); }
+.dib-pun .barra-ac { fill: var(--armadura); }
+.dib-pun .cerco, .dib-pun .cerco-v { stroke: var(--armadura); }
+.dib-pun .cerco-v.tenue { stroke: var(--armadura-oculta); opacity: 1; }
+.dib-pun .banda { fill: color-mix(in oklch, var(--armadura) 8%, transparent); stroke: var(--armadura); stroke-width: .8; }
+.dib-pun .pilar-alz { fill: var(--linea-fuerte); stroke: none; }
+.dib-pun .arista { fill: none; stroke: var(--tinta); stroke-width: 1.2; }
+.dib-pun .corte-fino { fill: none; stroke: var(--tinta); stroke-width: .7; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .dib-pun { --armadura: oklch(72% 0.12 250); --armadura-oculta: oklch(50% 0.03 250); } }
+:root[data-theme="dark"] .dib-pun { --armadura: oklch(72% 0.12 250); --armadura-oculta: oklch(50% 0.03 250); }
+@media (forced-colors: active) {
+  .dib-pun .barra-ac { fill: CanvasText; }
+  .dib-pun .cerco, .dib-pun .cerco-v, .dib-pun .banda, .dib-pun .arista, .dib-pun .corte-fino { stroke: CanvasText; }
+  .dib-pun .pilar-alz { fill: Canvas; }
+}
 </style>
 
 <header class="barra">
@@ -14111,7 +14129,12 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
   function pilarCentro(x) {
     return x.tipo === "rect" ? { cx: x.c1 / 2, cy: x.c2 / 2, hx: x.c1 / 2, hy: x.c2 / 2 } : { cx: x.D / 2, cy: x.D / 2, hx: x.D / 2, hy: x.D / 2 };
   }
-  function cercosCruz(x, deltas, n, sl) {
+  var MARGEN_BANDA = 25;
+  var anchoBanda = (x, ux) => {
+    const { hx, hy } = pilarCentro(x);
+    return Math.max(0, 2 * (Math.abs(ux) ? hy : hx) - 2 * MARGEN_BANDA);
+  };
+  function cercosCruz(x, deltas, n, _sl) {
     const { cx, cy, hx, hy } = pilarCentro(x);
     const brazos = [[1, 0], [0, 1]];
     if (x.pos !== "esquina") brazos.push([-1, 0]);
@@ -14120,9 +14143,10 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     brazos.forEach(([ux, uy], i) => {
       const k = Math.floor(n / brazos.length) + (i < n % brazos.length ? 1 : 0);
       const cara2 = Math.abs(ux) * hx + Math.abs(uy) * hy;
+      const sepLat = k > 1 ? anchoBanda(x, ux) / (k - 1) : 0;
       for (const dl of deltas) {
         for (let j = 0; j < k; j++) {
-          const lat = (j - (k - 1) / 2) * sl;
+          const lat = (j - (k - 1) / 2) * sepLat;
           pts.push([cx + ux * (cara2 + dl) - uy * lat, cy + uy * (cara2 + dl) + ux * lat]);
         }
       }
@@ -14723,6 +14747,13 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     const X = (v2) => margen + (v2 - xmin) * sc;
     const Y = (v2) => margen + (ymax - v2) * sc;
     const paso2 = Math.max(1, 2.5 / sc);
+    const ctrlReal = (o.perimetros.find((p) => p.clase === "ctrl") ?? {}).delta;
+    let ctrlDib = ctrlReal;
+    if (ctrlReal && o.anillos?.length && !o.sinArmadura) {
+      const sep = 7 / sc;
+      for (const a of [...o.anillos].sort((p, q2) => p - q2)) if (Math.abs(a - ctrlDib) < sep) ctrlDib = a + sep;
+    }
+    o = { ...o, perimetros: o.perimetros.map((p) => p.clase === "ctrl" && ctrlDib ? { ...p, delta: ctrlDib } : p) };
     const camino = (pts, cerrado) => `M${pts.map(([a, b]) => `${X(a).toFixed(1)} ${Y(b).toFixed(1)}`).join("L")}${cerrado ? "Z" : ""}`;
     const out = [DEFS];
     const interior = x.pos === "interior";
@@ -14778,7 +14809,14 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
         if (x.pos === "interior") ejes.push([0, -1]);
         for (const [ux, uy] of ejes) {
           const cara2 = Math.abs(ux) * cc2.hx + Math.abs(uy) * cc2.hy;
-          out.push(`<line class="cerco" x1="${X(cc2.cx + ux * cara2).toFixed(1)}" y1="${Y(cc2.cy + uy * cara2).toFixed(1)}" x2="${X(cc2.cx + ux * (cara2 + ult)).toFixed(1)}" y2="${Y(cc2.cy + uy * (cara2 + ult)).toFixed(1)}"/>`);
+          const ancho = anchoBanda(x, ux);
+          const xa = cc2.cx + ux * cara2 - uy * ancho / 2;
+          const ya = cc2.cy + uy * cara2 + ux * ancho / 2;
+          const xb = cc2.cx + ux * (cara2 + ult) + uy * ancho / 2;
+          const yb = cc2.cy + uy * (cara2 + ult) - ux * ancho / 2;
+          const px = Math.min(X(xa), X(xb));
+          const py = Math.min(Y(ya), Y(yb));
+          out.push(`<rect class="banda" x="${px.toFixed(1)}" y="${py.toFixed(1)}" width="${Math.abs(X(xb) - X(xa)).toFixed(1)}" height="${Math.abs(Y(yb) - Y(ya)).toFixed(1)}"/>`);
         }
         for (const q2 of cercosCruz(x, o.anillos, o.ramas, o.sl)) {
           out.push(barra3(q2));
@@ -14800,7 +14838,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     const diag = (pts) => pts.reduce((m, q2) => q2[0] - cc[0] + (q2[1] - cc[1]) > m[0] ? [q2[0] - cc[0] + (q2[1] - cc[1]), q2] : m, [-Infinity, null])[1];
     const nom = o.nombres ?? {};
     const etiqueta = (q2, txt, dx = 4, dy = -4, fin = false) => q2 && txt ? out.push(`<text class="halo" x="${(X(q2[0]) + dx).toFixed(1)}" y="${(Y(q2[1]) + dy).toFixed(1)}"${fin ? ' text-anchor="end"' : ""}>${txt}</text>`) : 0;
-    etiqueta(x.tipo === "rect" ? [x.c1, x.c2] : [cc[0] + x.D / 2 * Math.SQRT1_2, cc[1] + x.D / 2 * Math.SQRT1_2], nom.u0);
+    if (nom.u0) out.push(`<text class="halo" x="${X(cc[0]).toFixed(1)}" y="${(Y(cc[1]) + 4).toFixed(1)}" text-anchor="middle">${nom.u0}</text>`);
     const ctrlD = (o.perimetros.find((p) => p.clase === "ctrl") ?? {}).delta;
     if (ctrlD) etiqueta(diag(contorno(x, ctrlD, paso2 * 2)), nom.ctrl, -3, -3, true);
     if (formaExt) etiqueta(diag(formaExt), nom.ext, -3, -3, true);
@@ -14849,8 +14887,14 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
       g.push(`<text class="tit" x="${x0}" y="${i * EH + 10}">${t(eje2 === "x" ? "pun.dib.alzX" : "pun.dib.alzY")}</text>`);
       g.push(`<rect class="hor" x="${f(U7(lo))}" y="${f(y0)}" width="${f(U7(hi) - U7(lo))}" height="${f(hs)}"/>`);
       if (libre) g.push(`<line class="borde-libre" x1="${f(U7(0))}" y1="${f(y0 - 4)}" x2="${f(U7(0))}" y2="${f(y0 + hs + 4)}"/>`);
-      g.push(`<rect class="pilar" x="${f(U7(0))}" y="${f(y0 - stub)}" width="${f(dim * se)}" height="${f(hs + 2 * stub)}"/>`);
-      const banda = o.esq === "cruz" ? o.sl / 2 + 1 : 0.75 * o.sl;
+      const xa = U7(0);
+      const xb = U7(0) + dim * se;
+      const xm = (xa + xb) / 2;
+      const corte = (yy) => `M${f(xa)} ${f(yy)}H${f(xm - 7)}L${f(xm - 2.5)} ${f(yy - 6)}L${f(xm + 2.5)} ${f(yy + 6)}L${f(xm + 7)} ${f(yy)}H${f(xb)}`;
+      g.push(`<rect class="pilar-alz" x="${f(xa)}" y="${f(y0 - stub)}" width="${f(xb - xa)}" height="${f(hs + 2 * stub)}"/>`);
+      g.push(`<path class="arista" d="M${f(xa)} ${f(y0 - stub)}V${f(y0 + hs + stub)}M${f(xb)} ${f(y0 - stub)}V${f(y0 + hs + stub)}"/>`);
+      g.push(`<path class="corte-fino" d="${corte(y0 - stub)}${corte(y0 + hs + stub)}"/>`);
+      const banda = o.esq === "cruz" ? Math.max(0, w[1 - k] - 2 * 25) / 2 + 1 : 0.75 * o.sl;
       const yz = (z) => y0 + (o.h - z) * sv3;
       const dd = Math.min(o.d ?? o.h, o.h);
       const pos = studs.map((q2) => [q2[k], Math.abs(q2[1 - k] - c[1 - k]) <= banda]);
@@ -14873,7 +14917,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
       g.push(`<line class="cota" x1="${f(xe)}" y1="${f(y0)}" x2="${f(xe)}" y2="${f(y0 + hs)}"/><line class="cota" x1="${f(xe - 4)}" y1="${f(y0)}" x2="${f(xe + 4)}" y2="${f(y0)}"/><line class="cota" x1="${f(xe - 4)}" y1="${f(y0 + hs)}" x2="${f(xe + 4)}" y2="${f(y0 + hs)}"/>`);
       g.push(`<text x="${f(xe + 7)}" y="${f(y0 + hs / 2 + 4)}">e = ${mm3(o.h)}</text>`);
       if (o.ext && o.anillos?.length) {
-        const yd = y0 + hs + stub + 12;
+        const yd = y0 + hs + stub + 8;
         const a = o.anillos;
         g.push(`<text x="${f(x0 + m)}" y="${f(yd + 3)}">${t("pun.dib.armaz", mm3(o.fi), mm3(a[0]), mm3(o.sl))}</text>`);
       }

@@ -50,3 +50,17 @@ test('EC-2 2023: la tabla de dimensionar marca los ø que pasan del máximo', ()
   assert.equal(r.tabla.find((f) => f.fi === 8).fiOk, true);
   assert.equal(r.tabla.find((f) => f.fi === 16).fiOk, false);
 });
+
+test('cruz: las ramas de cada brazo caben en la banda del pilar menos 25 mm por lado', async () => {
+  const { cercosCruz, anchoBanda } = await import('../src/norma/punzonamiento/comun.js');
+  const pil = { tipo: 'rect', pos: 'interior', c1: 300, c2: 400 };
+  assert.equal(anchoBanda(pil, 1), 350); // brazo en x: ancho c2 − 50
+  assert.equal(anchoBanda(pil, 0), 250); // brazo en y: ancho c1 − 50
+  const pts = cercosCruz(pil, [100, 250], 16, 150);
+  assert.equal(pts.length, 32);
+  const enX = pts.filter(([px]) => px > 300 + 90);
+  assert.ok(enX.every(([, py]) => Math.abs(py - 200) <= 350 / 2 + 1e-9));
+  assert.ok(Math.max(...enX.map(([, py]) => Math.abs(py - 200))) > 170); // llegan al borde de la banda
+  const enY = pts.filter(([, py]) => py > 400 + 90);
+  assert.ok(enY.every(([px]) => Math.abs(px - 150) <= 250 / 2 + 1e-9));
+});

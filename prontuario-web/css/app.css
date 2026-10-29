@@ -962,3 +962,21 @@ svg.dib-ras { min-width: 0; }
 
 /* Punzonamiento: fila que manda (perímetros críticos) y fila recomendada (dimensionar) */
 table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento-suave); }
+
+/* Dibujo de Punzonamiento: armadura en azul oscuro (la oculta, azul grisáceo), tramo de pilar en alzado con líneas de corte */
+.dib-pun { --armadura: oklch(34% 0.13 258); --armadura-oculta: oklch(68% 0.035 250); font-family: var(--f); }
+.dib-pun text { font-family: var(--f); }
+.dib-pun .barra-ac { fill: var(--armadura); }
+.dib-pun .cerco, .dib-pun .cerco-v { stroke: var(--armadura); }
+.dib-pun .cerco-v.tenue { stroke: var(--armadura-oculta); opacity: 1; }
+.dib-pun .banda { fill: color-mix(in oklch, var(--armadura) 8%, transparent); stroke: var(--armadura); stroke-width: .8; }
+.dib-pun .pilar-alz { fill: var(--linea-fuerte); stroke: none; }
+.dib-pun .arista { fill: none; stroke: var(--tinta); stroke-width: 1.2; }
+.dib-pun .corte-fino { fill: none; stroke: var(--tinta); stroke-width: .7; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .dib-pun { --armadura: oklch(72% 0.12 250); --armadura-oculta: oklch(50% 0.03 250); } }
+:root[data-theme="dark"] .dib-pun { --armadura: oklch(72% 0.12 250); --armadura-oculta: oklch(50% 0.03 250); }
+@media (forced-colors: active) {
+  .dib-pun .barra-ac { fill: CanvasText; }
+  .dib-pun .cerco, .dib-pun .cerco-v, .dib-pun .banda, .dib-pun .arista, .dib-pun .corte-fino { stroke: CanvasText; }
+  .dib-pun .pilar-alz { fill: Canvas; }
+}
