@@ -263,7 +263,10 @@ export function datosCortante(p, s, { signo = 1, dir = 'h' } = {}) {
     const arm = s.armado.find((a) => a.tipo === 'perimetral');
     const r = arm?.d ?? 0.05;
     const [b0, h] = dir === 'b' ? [s.geo.h, s.geo.b] : [s.geo.b, s.geo.h];
-    return { ...comun, b0, h, d: h - r, Ac, Asl: 0, Asc: A, circular: false, r };
+    // Criterio propio (José Luis, 29/10): Asl = las barras de una cara (la traccionada), que son las del lado que cruza el cortante
+    const nCara = (dir === 'b' ? arm?.ny : arm?.nx) ?? 0;
+    const Asl = nCara * Math.PI * ((arm?.fi ?? 0) / 1000) ** 2 / 4;
+    return { ...comun, b0, h, d: h - r, Ac, Asl, Asc: A, circular: false, r };
   }
   if (s.forma === 'circular') {
     const D = s.geo.D;
@@ -272,7 +275,8 @@ export function datosCortante(p, s, { signo = 1, dir = 'h' } = {}) {
     const d = D / 2 + (D / 2 - r) * Math.SQRT1_2;
     // Ancho eficaz (José Luis, 14/10): cuerda del círculo de diámetro d a d/4 del centro
     const b0 = 2 * Math.sqrt((d / 2) ** 2 - (d / 4) ** 2);
-    return { ...comun, b0, h: D, d, Ac, Asl: 0, Asc: A, circular: true, r };
+    // Criterio propio (José Luis, 29/10): Asl = la mitad de las barras
+    return { ...comun, b0, h: D, d, Ac, Asl: A / 2, Asc: A, circular: true, r };
   }
   throw new ErrorClave('cor.errForma', s.nombre, s.forma);
 }

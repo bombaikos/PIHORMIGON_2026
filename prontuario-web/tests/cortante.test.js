@@ -361,11 +361,13 @@ test('EC-2 2023: acs ≥ 4d no reduce d (av = d); acs ≥ d aunque MEd/VEd sea m
 
 test('EC-2 2023: armadura longitudinal N_Vd = V_Ed (cotθ − cotα), F_td con MEd y decalaje al = z (cotθ − cotα)/2', () => {
   const r = e23.comprobar({ ...b23, cotTheta: 2, VEd: 100, MEd: 90, NEd: 0 });
-  cerca(r.long.dT, 200, 1e-9);
+  cerca(r.long.NVd, 200, 1e-9);
+  cerca(r.long.dT, 100, 1e-9); // ΔFtd = NVd/2
   cerca(r.long.Ftd, (90 * 1000) / 450 + 100, 1e-9);
   cerca(r.long.sd, 450, 1e-9);
   const i = e23.comprobar({ ...b23, cotTheta: 2, alfa: 45, VEd: 100 });
-  cerca(i.long.dT, 100, 1e-9);
+  cerca(i.long.NVd, 100, 1e-9);
+  cerca(i.long.dT, 50, 1e-9);
   const sin = e23.comprobar({ ...b23, sinArmadura: true, VEd: 50 });
   assert.equal(sin.long.sd, 500);
 });
@@ -403,4 +405,61 @@ test('EC-2 2023: θ óptimo — comprobar: iguala cercos y biela; dimensionar: e
   const v = (k) => e23.comprobar({ ...x, cotTheta: k, VEd: 150 }).Vu;
   assert.ok(v(c) >= v(1) - 1e-9 && v(c) >= v(2.5) - 1e-9);
   assert.equal(e23.cotOptimo(b23, { VEd: 150, dim: true }), 2.5);
+});
+
+// ---------- Revisión EC-2 (29/10): defectos D1-D3, ΔFtd y Asl de pilares ----------
+import { proyectoNuevo, datosCortante } from '../src/io/proyecto.js';
+
+test('D1: dimensionar con VEd ≤ resistencia sin armadura pide solo la mínima (EHE-08, EC-2 2004 y EC-2 2023)', () => {
+  for (const [N, x] of [[ec2, { ...b23 }], [e23, { ...b23 }], [{ dimensionar }, { ...base }]]) {
+    const d = N.dimensionar(x, 70);
+    assert.equal(d.sinArmaduraBasta, true);
+    assert.equal(d.caso, 'minima');
+    assert.equal(d.AswSNec, 0);
+    assert.equal(d.AswS, d.AswSMin);
+    assert.ok(d.avisos.some((a) => a.clave === 'cor.av.bastaSinArm'));
+    assert.ok(d.tabla.every((f) => !f.s || f.Vu >= 70 - 1e-6));
+  }
+  // Con más cortante que VRd,c vuelve a mandar el cálculo
+  assert.equal(e23.dimensionar(b23, 100).caso, 'calculo');
+});
+
+test('D2: sin cercos se avisa si VEd supera el límite de biela (6.2.2(6) en 2004; VRd,máx con cotθ = 1 en 2023)', () => {
+  const a = ec2.comprobar({ ...b23, sinArmadura: true, VEd: 900 });
+  cerca(a.VmaxRef, 0.5 * 300 * 500 * 0.6 * (1 - 30 / 250) * 20 / 1000, 0.01);
+  assert.ok(a.avisos.some((x) => x.clave === 'cor.av.sinBiela'));
+  const b = e23.comprobar({ ...b23, sinArmadura: true, VEd: 900 });
+  cerca(b.VmaxRef, 573.75, 0.01);
+  assert.ok(b.avisos.some((x) => x.clave === 'cor.av.sinBiela'));
+  assert.ok(!e23.comprobar({ ...b23, sinArmadura: true, VEd: 50 }).avisos.some((x) => x.clave === 'cor.av.sinBiela'));
+});
+
+test('D3: sin cercos y con VEd ≤ VRd,c se avisa de la armadura mínima en vigas (no en pilares); en 2023, también con d > 500', () => {
+  const tiene = (r, k) => r.avisos.some((x) => x.clave === k);
+  assert.ok(tiene(ec2.comprobar({ ...b23, sinArmadura: true, VEd: 50 }), 'cor.av.minObligatoria'));
+  assert.ok(!tiene(ec2.comprobar({ ...b23, sinArmadura: true, VEd: 50, viga: false }), 'cor.av.minObligatoria'));
+  assert.ok(!tiene(ec2.comprobar({ ...b23, sinArmadura: true, VEd: 95 }), 'cor.av.minObligatoria'), 'VEd > VRd,c: ya no cumple');
+  const r = e23.comprobar({ ...b23, sinArmadura: true, VEd: 50 });
+  assert.ok(tiene(r, 'cor.av.minObligatoria'));
+  assert.ok(!tiene(r, 'cor.av.d500'));
+  assert.ok(tiene(e23.comprobar({ ...b23, d: 600, Ac: 300 * 650, Asl: 0.01 * 300 * 600, sinArmadura: true, VEd: 50 }), 'cor.av.d500'));
+  assert.ok(!tiene(e23.comprobar({ ...b23, sinArmadura: false, VEd: 50 }), 'cor.av.minObligatoria'));
+});
+
+test('Asl de pilares (criterio propio): una cara en pilar rectangular (según el lado del cortante), la mitad de las barras en circular', () => {
+  const p = proyectoNuevo();
+  const pil = p.secciones.find((s) => s.forma === 'pilar');
+  if (pil) {
+    const arm = pil.armado.find((a) => a.tipo === 'perimetral');
+    arm.nx = 4; arm.ny = 3; arm.fi = 20;
+    const A = Math.PI * 0.02 ** 2 / 4;
+    cerca(datosCortante(p, pil, { dir: 'h' }).Asl, 4 * A, 1e-12);
+    cerca(datosCortante(p, pil, { dir: 'b' }).Asl, 3 * A, 1e-12);
+  }
+  const circ = p.secciones.find((s) => s.forma === 'circular');
+  if (circ) {
+    const d = datosCortante(p, circ);
+    cerca(d.Asl, d.Asc / 2, 1e-12);
+    assert.ok(d.Asl > 0);
+  }
 });

@@ -68,3 +68,10 @@ Mismo contrato que los otros dos núcleos; todo en kN (las tensiones de 8.2 por 
 
 ## Pendiente (fases del plan)
 Método general de θe y M_Ed (fase 4); cálculo de z con compresiones grandes; ancho efectivo y d de la circular que fije José Luis; resultados de EHE.exe para los 10 casos (comparar con `casos-ehe31-app.csv`); enlace con Vigas (V(x)); ayuda del módulo.
+
+## Revisión EC-2 (29/10/2026, rama claude/cortante-revision-ec2; pendiente de visto bueno)
+- Informe: `analisis/cortante-revision-ec2.md`. Defectos D1-D3 corregidos en las tres normas: con VEd ≤ VRd,c dimensionar da «cuantía mínima» (no armadura calculada); sin cercos en EC-2 2004 se comprueba el límite de biela 6.2.2(6); avisos de armadura mínima obligatoria en vigas (6.2.1(4), 8.2.1(2)) y d > 500 mm (2023).
+- Asl en pilares (criterio propio, José Luis 29/10, marcado con (i), a revisar): pilar rectangular = armadura de una cara (la perpendicular a la dirección de cortante); circular = mitad de la armadura.
+- EC-2 2023: ΔFtd = NVd/2 (aumento por cortante en el cordón traccionado); Ftd = MEd/z + (NVd+NEd)/2 es el total con momento (solo si hay MEd).
+- Visual: dos mini-barras (biela VEd/Vu1, cercos VEd/Vu2) y fila «sugerida» (primera con s ≥ 100 mm) en la tabla ø/s.
+- Abierto: cómo pedir MEd sin saturar; casilla cotθ ≤ 3,0 (2023); ktc.

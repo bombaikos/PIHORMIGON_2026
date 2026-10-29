@@ -145,7 +145,7 @@ export function datos(ctx, form) {
       ...parejas([
         campoNum({ id: 'c-b0', etq: t('cor.b0'), valor: ef.b0, mag: 'long', paso: 5, min: 0.01, max: 20, ayuda: t('cor.b0Ayuda'), onCambio: nuevo('b0') }),
         campoNum({ id: 'c-d', etq: t('cor.d'), valor: ef.d, mag: 'long', paso: 5, min: 0.01, max: 20, ayuda: t('cor.dAyuda'), onCambio: nuevo('d') }),
-        mostrar(campoNum({ id: 'c-asl', etq: t('cor.Asl'), valor: ef.Asl, mag: 'As', paso: 50, min: 0, max: 1, ayuda: t('cor.AslAyuda'), onCambio: nuevo('Asl') }), ef.Asl * 1e6, 0),
+        mostrar(campoNum({ id: 'c-asl', etq: t('cor.Asl'), valor: ef.Asl, mag: 'As', paso: 50, min: 0, max: 1, ayuda: t('cor.AslAyuda'), info: s.forma === 'pilar' ? t('cor.AslInfoPilar') : s.forma === 'circular' ? t('cor.AslInfoCirc') : undefined, onCambio: nuevo('Asl') }), ef.Asl * 1e6, 0),
         calculado(mostrar(campoNum({ id: 'c-rho', etq: t('cor.rho'), valor: rho0, mag: 'cuantia', paso: 1, min: 0, max: 1, ayuda: t('cor.rhoAyuda'), onCambio: () => {} }), rho0 * 1000, 2)),
         e23 && (!comp || est.sin) ? campoNum({ id: 'c-dlow', etq: t('cor.Dlower'), valor: est.Dlower, mag: 'diam', paso: 2, min: 4, max: 63, ayuda: t('cor.DlowerAyuda'), onCambio: (v) => { est.Dlower = v; cambio(); } }) : null,
         ec ? null : campoNum({ id: 'c-sigy', etq: t('cor.sigY'), ref: t('cor.sigYRef'), valor: est.sigY, mag: 'tension', paso: 0.5, min: -50, max: 50, ayuda: t('cor.sigYAyuda'), onCambio: (v) => { est.sigY = v; cambio(); } }),
@@ -180,7 +180,7 @@ function entrada(p, s, sec, ef) {
   return {
     fck: sec.fck, fykCercos: acero.fyk, fykLong: sec.fyk,
     b0: ef.b0 * 1000, d: ef.d * 1000, Ac: sec.Ac * 1e6, Asl: ef.Asl * 1e6, Asc: ef.Asc * 1e6,
-    NEd: est.NEd, sigY: est.sigY, cotTheta: est.cot, alfa: est.alfa, circular: sec.circular && est.circ,
+    NEd: est.NEd, sigY: est.sigY, cotTheta: est.cot, alfa: est.alfa, circular: sec.circular && est.circ, viga: esViga(s),
     MEd: est.MEd, Dlower: est.Dlower, ductilidad: acero.ductilidad ?? aceroTipificado(acero.nombre)?.ductilidad ?? 'B',
     Dh: sec.circular ? (sec.h - 2 * (sec.r ?? 0)) * 1000 : null,
   };
@@ -262,9 +262,14 @@ export function resultados(ctx, res) {
       : [[t('cor.c.Vu1'), qh(r.Vu1, 'N')], [t('cor.c.Vu2'), qh(r.Vu2, 'N')], [`${t('cor.c.Vcu')} + ${t('cor.c.Vsu')}`, `${fmt(r.Vcu, 0)} + ${fmt(r.Vsu, 0)}<span class="u">${ESP}kN</span>`], [`θ · β`, `${fmt(r.theta, 1)}° · ${fmt(r.beta, 2)}`]])
     : [[t('cor.c.Vu1'), qh(r.Vu1, 'N')], [t('cor.c.Vcu'), qh(r.Vcu, 'N')], [t('cor.armNec'), qh(r.AswSNec, 'AswS')], [t('cor.c.Asw') + ' mín.', qh(r.AswSMin, 'AswS')]];
   poner(dcha, h('h2', {}, t('cor.t.res')), cifras(cif));
+  if (comp && !r.sinArmadura && Number.isFinite(r.Vu1) && r.Vu1 > 0) poner(dcha, aprovechamientos(r, ec));
   if (!comp && r.tabla) {
     const filas = r.tabla.map((f) => (f.s ? [`ø${f.fi}`, String(f.ramas), fmt(f.s, 0), fmt(f.AswS * 10, 2), fmt(f.Vu, 0)] : [`ø${f.fi}`, String(f.ramas), '—', '—', '—']));
+    // Fila sugerida: la primera combinación con s ≥ 100 mm (cercos más finos y más juntos suelen ser poco prácticos en obra)
+    const sug = r.tabla.findIndex((f) => f.s && f.s >= 100);
+    if (sug >= 0) filas[sug].clase = 'sugerida';
     poner(dcha, tabla(filas, { cabecera: [t('cor.tabla.fi'), t('cor.tabla.ramas'), t('cor.tabla.s'), t('cor.tabla.asw'), t('cor.tabla.vu')] }));
+    if (sug >= 0) poner(dcha, h('p', { class: 'pista', html: t('cor.tabla.sugerida') }));
   }
   poner(dcha, h('div', { class: 'traza' }, ...trazas(p, r, { ...x, AswS }, comp, ef).map((f) => {
     const det = h('details', { 'data-ref': f.id, open: est.abiertos.has(f.id) },
@@ -274,6 +279,14 @@ export function resultados(ctx, res) {
     return det;
   })));
   res.append(h('div', { class: 'cuerpo' }, centro, dcha));
+}
+
+/** Aprovechamiento de la biela y de los cercos por separado (el cartel da el mayor de los dos). */
+function aprovechamientos(r, ec) {
+  const fila = (etq, v) => h('div', { class: `fila-ap${v > 1 + 1e-9 ? ' no' : ''}` }, h('span', { html: etq }),
+    h('div', { class: 'pista-barra', 'aria-hidden': 'true' }, h('i', { style: `width:${Math.min(v / 1.25, 1) * 100}%` }), h('span', { class: 'uno' })),
+    h('span', { class: 'v' }, fmt(v, 2)));
+  return h('div', { class: 'aprov2' }, fila(t('cor.ap.biela'), est.VEd / r.Vu1), fila(t(ec ? 'cor.ap.cercos' : 'cor.ap.traccion'), est.VEd / r.Vu2));
 }
 
 /** Cifras de la columna de resultados con el EC-2 2004 + AN. */
@@ -297,6 +310,10 @@ function trazasEC2(r, x, comp) {
       `<span class="f">${t('cor.ec.f.vmax')}</span><span class="n">${t('cor.ec.f.nu1')}</span>`
       + `<span class="n">${nu == null ? '' : `ν<sub>1</sub> = ${n1(nu, 3)} · `}α<sub>cw</sub> = 1 · b<sub>w</sub> = ${n1(P.b0, 0)} · z = ${n1(P.z, 0)} mm · f<sub>cd</sub> = ${n1(P.fcd, 0)} MPa · (cotg θ + cotg α)/(1 + cotg²θ) = ${n1((r.cotTheta + cotA) / (1 + r.cotTheta ** 2), 3)}</span>${art('6.2.3(3), AN')}`));
   }
+  if (comp && r.sinArmadura && r.VmaxRef != null) {
+    f.push(fila('vlim', t('cor.ec.r.vlim'), q(r.VmaxRef, 'N'),
+      `<span class="f">${t('cor.ec.f.vlim')}</span><span class="n">b<sub>w</sub> = ${n1(P.b0, 0)} · d = ${n1(P.d, 0)} mm · f<sub>cd</sub> = ${n1(P.fcd, 0)} MPa · ν = ${n1(0.6 * (1 - P.fck / 250), 3)}</span>${art('6.2.2(6)')}`));
+  }
   if (comp && r.sinArmadura) {
     f.push(fila('vcu', t('cor.ec.r.vc'), q(r.Vu, 'N'),
       `<span class="f">${t('cor.ec.f.vc')}</span><span class="n">${t('cor.ec.f.vcPar')}</span>`
@@ -312,7 +329,7 @@ function trazasEC2(r, x, comp) {
   if (comp) {
     f.push(fila('sep', t('cor.r.sep'), r.sinArmadura ? '—' : `${fmt(est.s, 0)} ≤ ${fmt(r.sep, 0)} mm`,
       `<span class="f">${t('cor.ec.f.sep')}</span><span class="n">V<sub>Ed</sub> = ${n1(est.VEd, 0)} kN → s<sub>l,máx</sub> ≤ ${n1(r.sep, 0)} mm · ${t('cor.avs.trans', n1(r.sepTrans, 0))}</span>${art('AN 9.2.2(6), (8)')}`));
-    f.push(fila('long', t('cor.ec.r.long'), r.long.dT == null ? `a<sub>l</sub> ${q(r.long.sd, 'long')}` : `ΔF<sub>td</sub> ${q(r.long.dT, 'N')}`,
+    f.push(fila('long', t('cor.ec.r.long'), r.long.dT == null ? `a<sub>l</sub> ${fmt(r.long.sd, 0)} mm` : `ΔF<sub>td</sub> ${q(r.long.dT, 'N')}`,
       `<span class="f">${t('cor.ec.f.long')}</span><span class="n">${r.long.dT == null ? '' : `ΔF<sub>td</sub> = ${n1(r.long.dT, 0)} kN · `}a<sub>l</sub> = ${n1(r.long.sd, 0)} mm</span>${art('6.2.3(7); 9.2.1.3(2)')}`));
   } else if (r.caso !== 'biela') {
     f.push(fila('min', t('cor.r.min'), q(r.AswSMin, 'AswS'), `<span class="f">${t('cor.ec.f.min')}</span><span class="n">${n1(r.AswSMin * 1000, 0)} mm²/m</span>${art('AN 9.2.2(5)')}`));
@@ -332,6 +349,9 @@ function trazasEC2023(r, x, comp) {
     f.push(fila('vu1', t('cor.ec.r.vmax'), q(comp ? r.VRdMax : r.Vu1, 'N'),
       `<span class="f">${t('cor.e3.f.vmax')}</span><span class="n">${t('cor.e3.f.nu')}</span>`
       + `<span class="n">ν = 0,5 · b<sub>w</sub> = ${n1(P.b0, 0)} · z = ${n1(P.z, 0)} mm · f<sub>cd</sub> = ${n1(P.fcd, 0)} MPa · (cotg θ + cotg α)/(1 + cotg²θ) = ${n1((r.cotTheta + cotA) / (1 + r.cotTheta ** 2), 3)}</span>${art('8.2.3(5), (6)')}`));
+  }
+  if (comp && r.sinArmadura && r.VmaxRef != null) {
+    f.push(fila('vlim', t('cor.ec.r.vlim'), q(r.VmaxRef, 'N'), `<span class="f">${t('cor.e3.f.vlim')}</span>${art('8.2.3(5), (6)')}`));
   }
   const dsin = comp && r.sinArmadura ? r : !comp ? VRdcDe(r) : null;
   if (dsin) {
@@ -365,8 +385,8 @@ const VRdcDe = (r) => (r.sinArm ? { Vu: r.sinArm.VRdc, VRdcConc: r.sinArm.conc, 
 function longitudinal23(r) {
   const n1 = (v, d = 2) => fmt(v, d);
   const l = r.long;
-  const val = l.dT == null ? `a<sub>l</sub> ${q(l.sd, 'long')}` : `N<sub>Vd</sub> ${q(l.dT, 'N')}`;
-  const cuenta = `${l.dT == null ? '' : `N<sub>Vd</sub> = ${n1(l.dT, 0)} kN · `}${l.Ftd != null ? `F<sub>td</sub> = ${n1(l.Ftd, 0)} kN · ` : ''}a<sub>l</sub> = ${n1(l.sd, 0)} mm`;
+  const val = l.dT == null ? `a<sub>l</sub> ${fmt(l.sd, 0)} mm` : `ΔF<sub>td</sub> ${q(l.dT, 'N')}`;
+  const cuenta = `${l.dT == null ? '' : `N<sub>Vd</sub> = ${n1(l.NVd, 0)} kN → ΔF<sub>td</sub> = N<sub>Vd</sub>/2 = ${n1(l.dT, 0)} kN · `}${l.Ftd != null ? `F<sub>td</sub> = ${n1(l.Ftd, 0)} kN · ` : ''}a<sub>l</sub> = ${n1(l.sd, 0)} mm`;
   return fila('long', t('cor.ec.r.long'), val, `<span class="f">${t('cor.e3.f.long')}</span><span class="n">${cuenta}</span>${art('8.2.3(8); 12.3.2(1)')}`);
 }
 

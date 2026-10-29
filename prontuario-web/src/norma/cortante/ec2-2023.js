@@ -105,10 +105,12 @@ export function separaciones(d, alfa = 90) {
 
 /** Fuerza adicional NVd (8.50, 8.61), cordón traccionado Ftd (8.51) y decalaje al (12.5, 12.6). */
 export function longitudinal(P, VEd, cotT, cotA, sinArmadura = false) {
-  if (sinArmadura) return { dT: null, Ftd: null, sd: P.d };
+  if (sinArmadura) return { NVd: null, dT: null, Ftd: null, sd: P.d };
   const NVd = Math.abs(VEd) * (cotT - cotA);
+  // NVd se reparte entre los dos cordones: ΔFtd = NVd/2 es lo que el cortante añade a la tracción del cordón traccionado
+  // (igual que ΔFtd del EC-2 2004); Ftd es la fuerza total con momento, cortante y axil (8.51)
   const Ftd = P.MEd ? (P.MEd * 1000) / P.z + (NVd + P.NEdN) / 2 : null;
-  return { dT: NVd, Ftd, sd: Math.max(0, (P.z * (cotT - cotA)) / 2) };
+  return { NVd, dT: NVd / 2, Ftd, sd: Math.max(0, (P.z * (cotT - cotA)) / 2) };
 }
 
 /**
@@ -132,8 +134,18 @@ export function comprobar(x) {
 
   if (sin) {
     const s = VRdcSinArmadura(P, VEd);
+    // VRd,máx de referencia (cotg θ = 1, el mayor): con más cortante ni con cercos cumpliría
+    const VmaxRef = VRdMax(P, 1, 0);
     Object.assign(r, { VRdc: s.VRdc, VRdcConc: s.conc, VRdcMin: s.min, tauC: s.tauC, tauMin: s.tauMin, minManda: s.minManda, dEf: s.dEf, av: s.av, acs: s.acs, kvp: s.kvp, efecto: s.usado,
-      Vu: s.VRdc, Vu2: s.VRdc, Vu1: null, Vcu: s.VRdc, Vsu: 0, mandaBiela: false });
+      Vu: s.VRdc, Vu2: s.VRdc, Vu1: null, VmaxRef, Vcu: s.VRdc, Vsu: 0, mandaBiela: false });
+    if (Number.isFinite(VEd)) {
+      if (VEd > VmaxRef) avisos.push({ clave: 'cor.av.sinBiela', args: [VEd.toFixed(0), VmaxRef.toFixed(0), '8.2.3(5), (6)'] });
+      // Armadura mínima en vigas aunque VEd ≤ VRd,c (8.2.1(2)); obligatoria con d > 500 mm en vigas isostáticas
+      else if (VEd <= s.VRdc && x.viga !== false) {
+        avisos.push({ clave: 'cor.av.minObligatoria', args: ['8.2.1(2)'] });
+        if (P.d > 500) avisos.push({ clave: 'cor.av.d500' });
+      }
+    }
   } else {
     const fc = factorCercos(x);
     const AswEf = x.AswS * fc;
@@ -188,6 +200,11 @@ export function dimensionar(x, VEd, { diametros = [8, 10, 12, 16, 20], ramas } =
   }
   r.caso = n.manda === 'minima' ? 'minima' : 'calculo';
   r.sinArmaduraBasta = VEd <= sin.VRdc;
+  // VEd ≤ VRd,c: no se requiere armadura de cortante calculada (8.2.1(1)b); queda la mínima (12.2(4))
+  if (r.sinArmaduraBasta) {
+    r.caso = 'minima'; r.manda = 'minima'; r.AswSNec = 0; n.usar = n.mn; r.AswS = n.mn;
+    r.avisos.push({ clave: 'cor.av.bastaSinArm', args: [VEd.toFixed(0), sin.VRdc.toFixed(0)] });
+  }
   const sp = separaciones(P.d, alfa);
   r.sMax = sp.sep;
   const sTope = Math.floor(Math.min(r.sMax, S_TABLA_MAX) / S_TABLA_PASO) * S_TABLA_PASO;
@@ -199,7 +216,8 @@ export function dimensionar(x, VEd, { diametros = [8, 10, 12, 16, 20], ramas } =
     if (sOk < S_TABLA_PASO) return { fi, ramas: nr, s: null };
     const AswS = AswSDe(fi, nr, sOk);
     const v = comprobar({ ...x, VEd, AswS, sinArmadura: false });
-    return { fi, ramas: nr, s: sOk, AswS, Vsu: v.VRds, Vu2: v.VRds, Vu: v.Vu };
+    // Si VEd ≤ VRd,c la pieza resiste al menos VRd,c aunque los cercos mínimos aporten menos
+    return { fi, ramas: nr, s: sOk, AswS, Vsu: v.VRds, Vu2: v.VRds, Vu: r.sinArmaduraBasta ? Math.max(v.Vu, sin.VRdc) : v.Vu };
   });
   r.long = longitudinal(P, VEd, n.c.cotTheta, cot(alfa));
   return r;
