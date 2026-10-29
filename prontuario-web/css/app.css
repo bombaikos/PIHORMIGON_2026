@@ -19,7 +19,8 @@
   --hormigon-borde: oklch(60% 0.01 85);
   --compr: oklch(62% 0.09 252);
   --traccion: oklch(66% 0.008 250);
-  --acero: oklch(35% 0.07 252);
+  --acero: oklch(30% 0.012 250);
+  --armadura-resaltada: oklch(35% 0.07 252);
   --ok: oklch(46% 0.11 152);
   --ok-fondo: oklch(95% 0.035 152);
   --no: oklch(50% 0.17 27);
@@ -50,7 +51,7 @@
     --acento: oklch(74% 0.11 250); --acento-suave: oklch(30% 0.05 252);
   --serie-m: oklch(74% 0.11 250); --serie-v: oklch(76% 0.11 125); --serie-giro: oklch(76% 0.09 195); --serie-flecha: oklch(76% 0.10 60);
     --hormigon: oklch(33% 0.008 85); --hormigon-borde: oklch(58% 0.01 85);
-    --compr: oklch(62% 0.1 252); --traccion: oklch(55% 0.01 250); --acero: oklch(88% 0.008 250);
+    --compr: oklch(62% 0.1 252); --traccion: oklch(55% 0.01 250); --acero: oklch(88% 0.008 250); --armadura-resaltada: oklch(80% 0.08 252);
     --ok: oklch(76% 0.13 152); --ok-fondo: oklch(29% 0.05 152);
     --no: oklch(74% 0.14 27); --no-fondo: oklch(30% 0.06 27);
     --atencion: oklch(80% 0.11 80); --atencion-fondo: oklch(30% 0.05 80);
@@ -65,7 +66,7 @@
   --acento: oklch(74% 0.11 250); --acento-suave: oklch(30% 0.05 252);
   --serie-m: oklch(74% 0.11 250); --serie-v: oklch(76% 0.11 125); --serie-giro: oklch(76% 0.09 195); --serie-flecha: oklch(76% 0.10 60);
   --hormigon: oklch(33% 0.008 85); --hormigon-borde: oklch(58% 0.01 85);
-  --compr: oklch(62% 0.1 252); --traccion: oklch(55% 0.01 250); --acero: oklch(88% 0.008 250);
+  --compr: oklch(62% 0.1 252); --traccion: oklch(55% 0.01 250); --acero: oklch(88% 0.008 250); --armadura-resaltada: oklch(80% 0.08 252);
   --ok: oklch(76% 0.13 152); --ok-fondo: oklch(29% 0.05 152);
   --no: oklch(74% 0.14 27); --no-fondo: oklch(30% 0.06 27);
   --atencion: oklch(80% 0.11 80); --atencion-fondo: oklch(30% 0.05 80);
@@ -919,7 +920,7 @@ table.rejilla-res thead th { background: var(--hundido); }
 /* Rasante en juntas · alzado de la junta con el cosido */
 .dib .hor-2 { fill: color-mix(in oklch, var(--hormigon) 55%, var(--hoja)); }
 .dib .junta { fill: none; stroke: var(--tinta); stroke-width: 1.6; }
-.dib .barra-cos { fill: none; stroke: var(--acero); stroke-width: 2.2; stroke-linecap: round; }
+.dib .barra-cos { fill: none; stroke: var(--armadura-resaltada); stroke-width: 2.2; stroke-linecap: round; }
 .dib .fuerza { stroke: var(--acento); stroke-width: 2; fill: none; }
 .dib .fuerza + text, .dib text.fuerza-t { fill: var(--acento); }
 svg.dib-ras { min-width: 0; }
