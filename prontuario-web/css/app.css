@@ -20,6 +20,7 @@
   --compr: oklch(62% 0.09 252);
   --traccion: oklch(66% 0.008 250);
   --acero: oklch(30% 0.012 250);
+  --armadura-resaltada: oklch(45% 0.15 258);
   --ok: oklch(46% 0.11 152);
   --ok-fondo: oklch(95% 0.035 152);
   --no: oklch(50% 0.17 27);
@@ -50,7 +51,7 @@
     --acento: oklch(74% 0.11 250); --acento-suave: oklch(30% 0.05 252);
   --serie-m: oklch(74% 0.11 250); --serie-v: oklch(76% 0.11 125); --serie-giro: oklch(76% 0.09 195); --serie-flecha: oklch(76% 0.10 60);
     --hormigon: oklch(33% 0.008 85); --hormigon-borde: oklch(58% 0.01 85);
-    --compr: oklch(62% 0.1 252); --traccion: oklch(55% 0.01 250); --acero: oklch(88% 0.008 250);
+    --compr: oklch(62% 0.1 252); --traccion: oklch(55% 0.01 250); --acero: oklch(88% 0.008 250); --armadura-resaltada: oklch(72% 0.13 255);
     --ok: oklch(76% 0.13 152); --ok-fondo: oklch(29% 0.05 152);
     --no: oklch(74% 0.14 27); --no-fondo: oklch(30% 0.06 27);
     --atencion: oklch(80% 0.11 80); --atencion-fondo: oklch(30% 0.05 80);
@@ -65,7 +66,7 @@
   --acento: oklch(74% 0.11 250); --acento-suave: oklch(30% 0.05 252);
   --serie-m: oklch(74% 0.11 250); --serie-v: oklch(76% 0.11 125); --serie-giro: oklch(76% 0.09 195); --serie-flecha: oklch(76% 0.10 60);
   --hormigon: oklch(33% 0.008 85); --hormigon-borde: oklch(58% 0.01 85);
-  --compr: oklch(62% 0.1 252); --traccion: oklch(55% 0.01 250); --acero: oklch(88% 0.008 250);
+  --compr: oklch(62% 0.1 252); --traccion: oklch(55% 0.01 250); --acero: oklch(88% 0.008 250); --armadura-resaltada: oklch(72% 0.13 255);
   --ok: oklch(76% 0.13 152); --ok-fondo: oklch(29% 0.05 152);
   --no: oklch(74% 0.14 27); --no-fondo: oklch(30% 0.06 27);
   --atencion: oklch(80% 0.11 80); --atencion-fondo: oklch(30% 0.05 80);
@@ -902,6 +903,8 @@ svg.dib-pun { min-width: 0; }
 .grupo legend .tick input { margin: 0; accent-color: var(--acento); }
 .cuerpo-arm { display: flex; flex-direction: column; gap: var(--hueco-campos); }
 .cuerpo-arm.inactivo { opacity: .55; }
+.datos .grupo > .tick, .cuerpo-arm > .tick { display: inline-flex; align-items: center; gap: var(--e2); cursor: pointer; }
+.datos .grupo > .tick input, .cuerpo-arm > .tick input { margin: 0; accent-color: var(--acento); }
 /* Guía de diseño común (bombaikos/guia-de-diseno, 28/10/2026) aplicada a Punzonamiento: campos blancos con borde azul grisáceo,
    gris solo en lo desactivado y tablas en rejilla. */
 .est-guia { --campo: oklch(100% 0 0); --campo-borde: oklch(78% 0.05 252); }
@@ -917,7 +920,7 @@ table.rejilla-res thead th { background: var(--hundido); }
 /* Rasante en juntas · alzado de la junta con el cosido */
 .dib .hor-2 { fill: color-mix(in oklch, var(--hormigon) 55%, var(--hoja)); }
 .dib .junta { fill: none; stroke: var(--tinta); stroke-width: 1.6; }
-.dib .barra-cos { stroke: var(--acero); stroke-width: 3.2; stroke-linecap: round; }
+.dib .barra-cos { fill: none; stroke: var(--armadura-resaltada); stroke-width: 2.2; stroke-linecap: round; }
 .dib .fuerza { stroke: var(--acento); stroke-width: 2; fill: none; }
 .dib .fuerza + text, .dib text.fuerza-t { fill: var(--acento); }
 svg.dib-ras { min-width: 0; }
@@ -964,7 +967,7 @@ svg.dib-ras { min-width: 0; }
 table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento-suave); }
 
 /* Dibujo de Punzonamiento: armadura en azul oscuro (la oculta, azul grisáceo), tramo de pilar en alzado con líneas de corte */
-.dib-pun { --armadura: oklch(34% 0.13 258); --armadura-oculta: oklch(68% 0.035 250); font-family: var(--f); }
+.dib-pun { --armadura: var(--armadura-resaltada); --armadura-oculta: oklch(68% 0.035 250); font-family: var(--f); }
 .dib-pun text { font-family: var(--f); }
 .dib-pun .barra-ac { fill: var(--armadura); }
 .dib-pun .cerco, .dib-pun .cerco-v { stroke: var(--armadura); }
@@ -973,8 +976,8 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
 .dib-pun .pilar-alz { fill: var(--linea-fuerte); stroke: none; }
 .dib-pun .arista { fill: none; stroke: var(--tinta); stroke-width: 1.2; }
 .dib-pun .corte-fino { fill: none; stroke: var(--tinta); stroke-width: .7; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .dib-pun { --armadura: oklch(72% 0.12 250); --armadura-oculta: oklch(50% 0.03 250); } }
-:root[data-theme="dark"] .dib-pun { --armadura: oklch(72% 0.12 250); --armadura-oculta: oklch(50% 0.03 250); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .dib-pun { --armadura-oculta: oklch(50% 0.03 250); } }
+:root[data-theme="dark"] .dib-pun { --armadura-oculta: oklch(50% 0.03 250); }
 @media (forced-colors: active) {
   .dib-pun .barra-ac { fill: CanvasText; }
   .dib-pun .cerco, .dib-pun .cerco-v, .dib-pun .banda, .dib-pun .arista, .dib-pun .corte-fino { stroke: CanvasText; }
@@ -982,3 +985,5 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
 }
 /* Rótulos de los alzados: caen sobre el fondo de la hoja, no sobre el hormigón, y su halo es del color de la hoja */
 .dib text.halo.halo-alz { stroke: var(--hoja); }
+.fila-anc { display: flex; align-items: center; gap: 8px; }
+.fila-anc .seg { flex: 1; }
