@@ -13,13 +13,9 @@ import { GENERICA_EJEMPLO } from './ejemploGenerica.js';
 const CLAVE = 'prontuario-web:proyecto';
 
 /** Materiales que existen en todo proyecto nuevo: los seis hormigones tipificados y los dos aceros. */
-export const HORMIGONES_TIPIFICADOS = [25, 30, 35, 40, 45, 50].flatMap((fck) => [
-  { nombre: `HA-${fck}`, tipo: 'hormigon', fck },
-  ...(fck === 30 ? [{ nombre: 'HA-30_EC2', tipo: 'hormigon', fck, diag: 'EC2' }] : []),
-]);
+export const HORMIGONES_TIPIFICADOS = [25, 30, 35, 40, 45, 50].map((fck) => ({ nombre: `HA-${fck}`, tipo: 'hormigon', fck }));
 export const ACEROS_TIPIFICADOS = [
-  { nombre: 'B 400 S', tipo: 'acero', fyk: 400 }, { nombre: 'B 400 SD', tipo: 'acero', fyk: 400, ductilidad: 'C' },
-  { nombre: 'B 500 S', tipo: 'acero', fyk: 500 }, { nombre: 'B 500 SD', tipo: 'acero', fyk: 500, ductilidad: 'C' },
+  { nombre: 'B 400 S', tipo: 'acero', fyk: 400 }, { nombre: 'B 500 S', tipo: 'acero', fyk: 500 },
 ];
 /** Nombres sin espacios de versiones anteriores → escritos como en la norma. */
 const NOMBRE_ACERO_ANTIGUO = { B500S: 'B 500 S', B400S: 'B 400 S', B500SD: 'B 500 SD', B400SD: 'B 400 SD' };

@@ -267,10 +267,12 @@ function gruposHormigon(m, N, cambio, repintar) {
   if (tip) fck.querySelectorAll('input').forEach((i) => { i.disabled = true; i.tabIndex = -1; });
   const resistencia = grupo(t('mat.gResistencia'),
     fck,
-    ec2023
-      ? selector({ id: 'm-ktc', etq: sub('k', 'tc'), opciones: [['0.85', `0.85 · ${t('mat.ktcGeneral')}`], ['1', `1.00 · ${t('mat.ktc1')}`]], valor: String(m.ktc ?? 1), onCambio: (v) => { m.ktc = Number(v); cambio(); } })
+    ec2023 || tip
+      ? selector({ id: 'm-ktc', etq: sub(ec2023 ? 'k' : 'α', ec2023 ? 'tc' : 'cc'), ayuda: t('mat.alfaAyuda', N.art.fcd), opciones: ec2023 ? [['1', `1.00 · ${t('mat.ktc1')}`], ['0.85', `0.85 · ${t('mat.ktcGeneral')}`]] : [['1', '1.00'], ['0.85', `0.85 · ${t('mat.alfaCansancio')}`]], valor: String(m.ktc ?? m.alfaCC ?? 1), onCambio: (v) => { m.ktc = Number(v); m.alfaCC = Number(v); cambio(); } })
       : campoNum({ id: 'm-acc', etq: sub('α', 'cc'), ayuda: t('mat.alfaAyuda', N.art.fcd), valor: m.alfaCC ?? 1, paso: 0.05, min: N.alfaRango[0], max: N.alfaRango[1], onCambio: (v) => { poneOBorra(m, 'alfaCC', v, 1); cambio(); } }),
     campoNum({ id: 'm-gc', etq: sub('γ', 'C'), ayuda: t('mat.gammaAyuda', N.gammaC, N.gammaAcc.c, N.art.gamma), valor: m.gammaC ?? N.gammaC, paso: 0.05, min: 1, max: 2, onCambio: (v) => { poneOBorra(m, 'gammaC', v, N.gammaC); cambio(); } }));
+  const gc = resistencia.querySelector('#m-gc');
+  if (tip && gc) { gc.disabled = true; gc.tabIndex = -1; gc.title = t('mat.tipificado', m.nombre, tip); }
   const cemSel = selector({ id: 'm-cem', etq: t('mat.cemento'), opciones: CEMENTOS(), valor: m.cemento ?? 'N', onCambio: (v) => { poneOBorra(m, 'cemento', v, 'N'); cambio(); } });
   const deformacion = grupo(t('mat.gDeformacion'),
     ...(ec2023
@@ -375,6 +377,7 @@ function avisosMaterial(m, N) {
   } else if (m.fyk > N.fykMax) {
     out.push(['', t('mat.avFykMax', N.fykMax, N.corto)]);
   }
+  if (!out.some(([tipo]) => tipo === 'error') && (m.tipo === 'hormigon' ? fckTipificado(m.nombre) : aceroTipificado(m.nombre))) out.push(['info', t(m.tipo === 'hormigon' ? 'mat.avInfoTipH' : 'mat.avInfoTipA')]);
   return out;
 }
 
