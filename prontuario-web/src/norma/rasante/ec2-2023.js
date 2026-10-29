@@ -74,19 +74,26 @@ function avisos(P) {
 }
 
 export function comprobar(x) {
-  const P = parametros(x);
   const sinArm = !!x.sinArmadura;
+  // Sin armadura cruzando la junta rige (8.76) (8.2.6(3)), aunque se haya marcado cosido sin anclaje total
+  const P = parametros(sinArm ? { ...x, anclado: true } : x);
   const rho = sinArm ? 0 : rhoDe(x.arm, x.b);
   const tauEd = tauDe(x.REd, x.b, x.L);
   const r = resistencia(P, rho);
   const Ru = esfuerzoDe(r.tauRd, x.b, x.L);
-  return { P, tauEd, tauRd: r.tauRd, Ru, REd: x.REd, Rmax: esfuerzoDe(r.lim, x.b, x.L), aprov: r.tauRd > 0 ? tauEd / r.tauRd : Infinity, rho, res: r, manda: r.limita ? 'limite' : r.contabiliza ? 'cosido' : 'cohesion', avisos: avisos(P), norma: ID };
+  return { P, tauEd, tauRd: r.tauRd, Ru, REd: x.REd, Rmax: esfuerzoDe(r.lim, x.b, x.L), aprov: r.tauRd > 0 ? tauEd / r.tauRd : Infinity, rho, res: r, manda: r.limita ? 'limite' : r.contabiliza ? 'cosido' : 'cohesion', formula: P.anclado ? '8.76' : '8.77', avisos: avisos(P), norma: ID };
 }
 
 export function dimensionar(x, REd, { diametros = [8, 10, 12, 16, 20] } = {}) {
   const P = parametros(x);
   const tauEd = tauDe(REd, x.b, x.L);
-  const base = { P, tauEd, REd, Rmax: esfuerzoDe(resistencia(P, 0).lim, x.b, x.L), norma: ID, avisos: avisos(P) };
+  // ¿Basta la adherencia? Sin armadura rige (8.76), con cualquier anclaje del cosido
+  const P0 = P.anclado ? P : parametros({ ...x, anclado: true });
+  const fijo0 = P0.coh + (P0.tracc ? 0 : P0.mu * P0.sigN);
+  if (tauEd <= fijo0 + 1e-12 && tauEd <= P0.lim) {
+    return { P: P0, tauEd, REd, Rmax: esfuerzoDe(P0.lim, x.b, x.L), norma: ID, avisos: avisos(P0), formula: '8.76', caso: 'sin', tauSin: Math.max(0, fijo0) };
+  }
+  const base = { P, tauEd, REd, Rmax: esfuerzoDe(resistencia(P, 0).lim, x.b, x.L), norma: ID, avisos: avisos(P), formula: P.anclado ? '8.76' : '8.77' };
   const fijo = P.coh + (P.tracc ? 0 : P.mu * P.sigN);
   if (tauEd <= fijo + 1e-12) return { ...base, caso: 'sin', tauSin: Math.max(0, fijo) };
   const pend = P.anclado ? P.fyd * factorAlfa(P.mu, P.alfa) : P.R.kv * P.fyd * P.mu + P.kdowel * Math.sqrt(P.fyd * P.fcd);

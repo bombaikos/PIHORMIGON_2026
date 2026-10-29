@@ -133,7 +133,7 @@ export function resultados(ctx, res) {
     const ok = D.REd <= r.Ru + 1e-9;
     const hayAviso = (r.avisos ?? []).length > 0;
     res.append(veredicto(!ok ? 'nocumple' : hayAviso ? 'atencion' : 'cumple', !ok ? t('cor.ver.no') : hayAviso ? t('cor.ver.revisar') : t('cor.ver.cumple'),
-      t('aprovechamiento'), fmt(r.aprov, 2), t('ras.ver.ecu', kN(D.REd), kN(r.Ru), ok, t(`ras.manda.${r.manda}`)), Math.min(r.aprov / 1.25, 1)));
+      t('aprovechamiento'), fmt(r.aprov, 2), t('ras.ver.ecu', kN(D.REd), kN(r.Ru), ok, `${t(`ras.manda.${r.manda}`)} (${r.formula})`), Math.min(r.aprov / 1.25, 1)));
   } else if (r.caso === 'limite') {
     res.append(veredicto('nocumple', t('cor.ver.aum'), t('ras.armNec'), '—', t('ras.ver.necAum', kN(D.REd), kN(r.Rmax))));
   } else if (r.caso === 'sin') {
