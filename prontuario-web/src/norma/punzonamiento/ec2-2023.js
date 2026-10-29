@@ -22,6 +22,8 @@ export const ID = 'EC2-2023';
 export const A1_MAX = 0.5; // s0 ≤ 0,5 dv,out (12.5.1(2))
 export const SR_MAX = 0.75; // s1 ≤ 0,75 dv (flat slabs)
 export const ST_PRIMERO = 0.75; // tangencial en el primer perímetro (12.5.1(2))
+/** Diámetro máximo de la rama (12.7 a 12.9): rama simple o cerco abierto 10, cerco cerrado 11, conectores y barras levantadas 16, por √(d/200). */
+export const FI_MAX_K = { abierto: 10, cerrado: 11, studs: 16 };
 export const ST_MAX = 1.5; // tangencial a ≤ 2dv del pilar (12.5.1(2))
 
 export function parametros(x) {
@@ -35,7 +37,8 @@ export function parametros(x) {
   const fywd = fyk / EC2_2023.gammaS;
   const ddg = ddgDe(fck, x.Dlower ?? 20);
   const rho = Math.sqrt(Math.max(0, x.rhoX ?? 0) * Math.max(0, x.rhoY ?? 0));
-  return { fck, fyk, fywd, ddg, gv, gc, dv: d, rho };
+  const tipo = x.arm?.tipo ?? 'cerrado';
+  return { fck, fyk, fywd, ddg, gv, gc, dv: d, rho, tipo };
 }
 
 export function perimetros(x) {
@@ -53,7 +56,7 @@ export function resistenciaSin(P, u) {
   const tope = (0.5 / P.gv) * Math.sqrt(P.fck);
   const tau = Math.min(conc, tope);
   const f = (u.b05 * P.dv) / 1000;
-  const etaSys = Math.max(1, 0.5 + 0.63 * Math.pow(u.b0 / P.dv, 0.25));
+  const etaSys = Math.max(1, (P.tipo === 'studs' ? 0.7 : 0.5) + 0.63 * Math.pow(u.b0 / P.dv, 0.25)); // 8.110 y 8.111
   return { kpb, kpbBruto, conc, tope, tau, topeManda: conc > tope, VRdc: tau * f, etaSys, VRdMax: etaSys * tau * f };
 }
 
@@ -145,7 +148,7 @@ export function comprobar(x) {
     if (r.VuExtEf < r.VuEf) { r.VuEf = r.VuExtEf; r.manda = 'exterior'; }
     r.Vu = r.VuEf / beta;
     // Disposiciones (12.5.1)
-    const fiMax = 11 * Math.sqrt(P.dv / 200);
+    const fiMax = (FI_MAX_K[P.tipo] ?? 11) * Math.sqrt(P.dv / 200);
     r.fiMax = fiMax;
     if (a.fi > fiMax + 1e-9) r.disp.push({ clave: 'pun.disp.fiMax', ok: false, args: [a.fi, fiMax] });
     if (a.nPer < 2) r.disp.push({ clave: 'pun.disp.dos', ok: false, args: [ID] });
@@ -191,7 +194,7 @@ export function dimensionar(x, VEd, { diametros = [8, 10, 12, 16, 20] } = {}) {
     const dvOut = P.dv - fi;
     const b05out = u.b05 * Math.pow((P.dv / dvOut) / Math.min(1, etaC), 2);
     const nPer = nPerimetrosExt(x, { ...a, ramas: n }, 0.5 * dvOut, b05out, 2, 3 * P.dv);
-    return { fi, ramas: n, nx: gr.nx, ny: gr.ny, Asw, st: u.b05 / n, etaC, etaS, AswNec, nPer, b05out, Vu: VuConArmadura(P, s, fi, VwR).V / beta, ok: c.VRdcs >= Vef - 1e-9 };
+    return { fi, fiOk: fi <= (FI_MAX_K[P.tipo] ?? 11) * Math.sqrt(P.dv / 200) + 1e-9, ramas: n, nx: gr.nx, ny: gr.ny, Asw, st: u.b05 / n, etaC, etaS, AswNec, nPer, b05out, Vu: VuConArmadura(P, s, fi, VwR).V / beta, ok: c.VRdcs >= Vef - 1e-9 };
   });
   r.nPer = Math.max(...r.tabla.map((f) => f.nPer));
   return r;

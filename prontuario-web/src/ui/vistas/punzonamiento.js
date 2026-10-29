@@ -21,7 +21,7 @@ export function reiniciar() { est.abiertos = new Set(); }
 const INICIAL = () => ({
   tipo: 'rect', pos: 'interior', c1: 300, c2: 300, D: 350, h: 250, d: 210, hormigon: null, aceroCercos: null,
   rhoX: 0.008, rhoY: 0.008, sigCd: 0, VEd: 400, exc: 'aprox', betaOtro: 1.15, Dlower: 20,
-  armadura: true, esq: 'cruz', nx: 5, ny: 5, fi: 10, ramas: 16, sr: 150, a1: 100, nPer: 3,
+  armadura: true, esq: 'cruz', tipoRama: 'cerrado', nx: 5, ny: 5, fi: 10, ramas: 16, sr: 150, a1: 100, nPer: 3,
 });
 
 /** Datos de la pantalla (se guardan con el proyecto); materiales por omisión si el elegido ya no existe. */
@@ -47,7 +47,7 @@ function entrada(p, D, { dimensionando = false } = {}) {
     rhoX: D.rhoX, rhoY: D.rhoY, sigCd: es23(p) ? 0 : D.sigCd, beta: betaDe(N.id, D.exc, D.pos, D.betaOtro), VEd: D.VEd, Dlower: D.Dlower,
     sinArmadura: !dimensionando && !D.armadura,
   };
-  x.arm = { fi: D.fi, ramas: D.esq === 'ret' ? ramasReticula(D.pos, D.nx, D.ny) : D.ramas, nx: D.nx, ny: D.ny, sr: D.sr, a1: D.a1, nPer: D.nPer, esq: D.esq };
+  x.arm = { fi: D.fi, ramas: D.esq === 'ret' ? ramasReticula(D.pos, D.nx, D.ny) : D.ramas, nx: D.nx, ny: D.ny, sr: D.sr, a1: D.a1, nPer: D.nPer, esq: D.esq, tipo: D.tipoRama };
   return x;
 }
 
@@ -106,7 +106,7 @@ export function datos(ctx, form) {
     grupo(t('pun.losa'),
       ...parejas([
         selector({ id: 'p-hor', linea: true, etq: t('pun.hormigon'), opciones: p.hormigones.map((m) => [m.nombre, m.nombre]), valor: D.hormigon, onCambio: (v) => { D.hormigon = v; cambio(); } }),
-        campoNum({ id: 'p-h', etq: 'e', valor: D.h, mag: 'diam', paso: 10, min: 50, max: 3000, ayuda: t('pun.hAyuda'), onCambio: set('h') }),
+        campoNum({ id: 'p-h', etq: 'h', valor: D.h, mag: 'diam', paso: 10, min: 50, max: 3000, ayuda: t('pun.hAyuda'), onCambio: set('h') }),
         campoNum({ id: 'p-d', etq: e23 ? sub('d', 'v') : 'd', valor: D.d, mag: 'diam', paso: 10, min: 20, max: 3000, ayuda: t('pun.dAyuda'), onCambio: set('d') }),
         e23 ? campoNum({ id: 'p-dlow', etq: t('pun.Dlower'), valor: D.Dlower, mag: 'diam', paso: 2, min: 4, max: 63, ayuda: t('pun.DlowerAyuda'), onCambio: set('Dlower') })
           : campoNum({ id: 'p-sig', etq: sub('σ', 'cd'), ref: t('pun.sigRef'), valor: D.sigCd, mag: 'tension', paso: 0.5, min: -20, max: 40, ayuda: t('pun.sigAyuda'), onCambio: set('sigCd') }),
@@ -136,6 +136,7 @@ export function datos(ctx, form) {
     ]);
     const cuerpo = h('div', { class: 'cuerpo-arm' },
       selector({ id: 'p-esq', etq: t('pun.esq'), opciones: [['cruz', t('pun.esqCruz')], ['ret', t('pun.esqRet')]], valor: D.esq, onCambio: (v) => { D.esq = v; ctx.cambio({ estructura: true }); } }),
+      (() => { const c = selector({ id: 'p-tipo', etq: t('pun.tipoRama'), opciones: [['cerrado', t('pun.tipoCerrado')], ['abierto', t('pun.tipoAbierto')], ['studs', t('pun.tipoStuds')]], valor: D.tipoRama, onCambio: (v) => { D.tipoRama = v; cambio(); } }); return e23 ? c : apaga(c, t('pun.motivoTipo')); })(),
       ...campos);
     const leyenda = h('legend', {}, comp
       ? h('label', { class: 'tick' }, h('input', { type: 'checkbox', id: 'p-arm', checked: D.armadura, onchange: (e) => { D.armadura = e.target.checked; ctx.cambio({ estructura: true }); } }), h('span', { html: t('pun.cercos') }))
@@ -171,6 +172,10 @@ export function resultados(ctx, res) {
     return;
   }
   const avisos = (r.avisos ?? []).filter((a) => a.clave !== 'pun.av.fyd400').map((a) => aviso(t(a.clave, ...(a.args ?? []))));
+  if (!(x.d < D.h)) avisos.push(aviso(t('pun.av.dh', fmt(x.d, 0), fmt(D.h, 0))));
+  if (x.tipo === 'rect' && Math.max(x.c1, x.c2) > 2 * Math.min(x.c1, x.c2)) avisos.push(aviso(t('pun.av.alargado', fmt(Math.max(x.c1, x.c2) / Math.min(x.c1, x.c2), 1))));
+  if (e23 && x.tipo === 'rect' && Math.max(x.c1, x.c2) > 6 * x.d) avisos.push(aviso(t('pun.av.muro23')));
+  if (e23 && !comp && r.tabla && r.tabla.some((f) => f.fiOk === false)) avisos.push(aviso(t('pun.av.fiTabla')));
   const kN = (v) => q(v, 'N');
 
   p.calculos.punzonamientoRes = { modo: est.modo, norma: p.norma, fecha: new Date().toISOString().slice(0, 10), VEd: D.VEd, beta: r.beta,
@@ -203,8 +208,12 @@ export function resultados(ctx, res) {
   poner(dcha, h('h2', {}, t('cor.t.res')), cifras(cifrasDe(r, comp, e23)));
   if (!comp && r.tabla) {
     const cab = [t('pun.tabla.fi'), t('pun.tabla.ramas'), t('pun.tabla.asw'), t('pun.tabla.st'), t('pun.tabla.nPer'), t('pun.tabla.vu')];
-    const filas = r.tabla.map((f) => [`ø${f.fi}`, D.esq === 'ret' ? `${f.ramas} (${f.nx}×${f.ny})` : String(f.ramas), fmt(f.Asw, 0), fmt(f.st, 0), String(f.nPer), fmt(f.Vu, 0)]);
-    poner(dcha, titulos(tabla(filas, { cabecera: cab, clase: 'rejilla-res' }), ['pun.tt.fi', 'pun.tt.ramas', 'pun.tt.asw', 'pun.tt.st', 'pun.tt.nPer', 'pun.tt.vu']));
+    const valida = (f) => f.fiOk !== false && f.ok !== false;
+    const rec = r.tabla.filter(valida).reduce((a, b) => (!a || b.Asw < a.Asw ? b : a), null);
+    const filas = r.tabla.map((f) => [`ø${f.fi}${f.fiOk === false ? ' ✗' : ''}`, D.esq === 'ret' ? `${f.ramas} (${f.nx}×${f.ny})` : String(f.ramas), fmt(f.Asw, 0), fmt(f.st, 0), String(f.nPer), fmt(f.Vu, 0)]);
+    const tabDim = tabla(filas, { cabecera: cab, clase: 'rejilla-res' });
+    r.tabla.forEach((f, i) => { const tr = tabDim.querySelectorAll('tbody tr')[i]; if (f === rec) { tr.classList.add('manda'); tr.title = t('pun.tt.rec'); } if (f.fiOk === false) tr.title = t('pun.tt.fiMax'); });
+    poner(dcha, titulos(tabDim, ['pun.tt.fi', 'pun.tt.ramas', 'pun.tt.asw', 'pun.tt.st', 'pun.tt.nPer', 'pun.tt.vu']));
   }
   // Comprobaciones explícitas en cada perímetro crítico (con los cercos pedidos, o los de la tabla al dimensionar)
   let rc = comp ? r : null;
@@ -279,8 +288,12 @@ function criticos(r, x, D, e23, ec) {
     [t('pun.crit.ctrl', e23 ? nombre('b', '0,5') : nombre('u', '1')), fmt(ctrl, 0), fmt(uCtrl, 0), `${kN(V)} ≤ ${kN(capCtrl)} kN ${ok(V <= capCtrl + 1e-9)}`],
     [t('pun.crit.ext', e23 ? nombre('b', '0,5,out') : ec ? nombre('u', 'out,ef') : nombre('u', 'n,ef')), fmt(dl + kd, 0), fmt(uProv, 0), `${fmt(uProv, 0)} ≥ ${fmt(uReq, 0)} mm ${ok(uProv >= uReq - 1e-6)}`],
   ];
-  return h('div', { class: 'pun-criticos' },
-    titulos(tabla(filas, { cabecera: [t('pun.crit.t'), t('pun.crit.dist'), t('pun.crit.long'), t('pun.crit.comp')], clase: 'rejilla-res' }), ['pun.tt.per', 'pun.tt.dist', 'pun.tt.long', 'pun.tt.comp']));
+  const usos = [V / r.Vmax, V / capCtrl, Number.isFinite(uReq) && uProv > 0 ? uReq / uProv : 0];
+  const iMax = usos.indexOf(Math.max(...usos));
+  const tabCrit = tabla(filas, { cabecera: [t('pun.crit.t'), t('pun.crit.dist'), t('pun.crit.long'), t('pun.crit.comp')], clase: 'rejilla-res' });
+  const trM = tabCrit.querySelectorAll('tbody tr')[iMax];
+  if (trM) { trM.classList.add('manda'); trM.title = t('pun.tt.manda'); }
+  return h('div', { class: 'pun-criticos' }, titulos(tabCrit, ['pun.tt.per', 'pun.tt.dist', 'pun.tt.long', 'pun.tt.comp']));
 }
 
 const rectTexto = (x) => (x.tipo === 'rect' ? t('pun.dib.pilarR', fmt(x.c1, 0), fmt(x.c2, 0), t(`pun.${x.pos}`).toLowerCase())

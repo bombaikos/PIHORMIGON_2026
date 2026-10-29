@@ -5,7 +5,7 @@
 import { fmt } from './formato.js';
 import { t } from './i18n.js';
 import { DEFS } from './dibujoSeccion.js';
-import { contorno, contornoRect, cercosCruz, cercosReticula, envolventeCruz, nBrazos } from '../norma/punzonamiento/comun.js';
+import { contorno, contornoRect, cercosCruz, cercosReticula, envolventeCruz, anchoBanda } from '../norma/punzonamiento/comun.js';
 
 const ANCHO = 290; // ancho de la planta
 const ALTO = 290;
@@ -34,6 +34,14 @@ export function dibujoPunzonamiento(x, o) {
   const X = (v) => margen + (v - xmin) * sc;
   const Y = (v) => margen + (ymax - v) * sc;
   const paso = Math.max(1, 2.5 / sc);
+  // Aunque u1 y la última barra casi coincidan, el dibujo los separa unos píxeles (Pepiño, 29/10/2026)
+  const ctrlReal = (o.perimetros.find((p) => p.clase === 'ctrl') ?? {}).delta;
+  let ctrlDib = ctrlReal;
+  if (ctrlReal && o.anillos?.length && !o.sinArmadura) {
+    const sep = 7 / sc;
+    for (const a of [...o.anillos].sort((p, q) => p - q)) if (Math.abs(a - ctrlDib) < sep) ctrlDib = a + sep;
+  }
+  o = { ...o, perimetros: o.perimetros.map((p) => (p.clase === 'ctrl' && ctrlDib ? { ...p, delta: ctrlDib } : p)) };
   const camino = (pts, cerrado) => `M${pts.map(([a, b]) => `${X(a).toFixed(1)} ${Y(b).toFixed(1)}`).join('L')}${cerrado ? 'Z' : ''}`;
   const out = [DEFS];
   const interior = x.pos === 'interior';
@@ -89,9 +97,17 @@ export function dibujoPunzonamiento(x, o) {
       const ejes = [[1, 0], [0, 1]];
       if (x.pos !== 'esquina') ejes.push([-1, 0]);
       if (x.pos === 'interior') ejes.push([0, -1]);
+      // Cada banda mide el ancho del pilar menos 25 mm por lado
       for (const [ux, uy] of ejes) {
         const cara = Math.abs(ux) * cc.hx + Math.abs(uy) * cc.hy;
-        out.push(`<line class="cerco" x1="${X(cc.cx + ux * cara).toFixed(1)}" y1="${Y(cc.cy + uy * cara).toFixed(1)}" x2="${X(cc.cx + ux * (cara + ult)).toFixed(1)}" y2="${Y(cc.cy + uy * (cara + ult)).toFixed(1)}"/>`);
+        const ancho = anchoBanda(x, ux);
+        const xa = cc.cx + ux * cara - uy * ancho / 2;
+        const ya = cc.cy + uy * cara + ux * ancho / 2;
+        const xb = cc.cx + ux * (cara + ult) + uy * ancho / 2;
+        const yb = cc.cy + uy * (cara + ult) - ux * ancho / 2;
+        const px = Math.min(X(xa), X(xb));
+        const py = Math.min(Y(ya), Y(yb));
+        out.push(`<rect class="banda" x="${px.toFixed(1)}" y="${py.toFixed(1)}" width="${Math.abs(X(xb) - X(xa)).toFixed(1)}" height="${Math.abs(Y(yb) - Y(ya)).toFixed(1)}"/>`);
       }
       for (const q of cercosCruz(x, o.anillos, o.ramas, o.sl)) { out.push(barra(q)); studs.push(q); }
     } else {
@@ -109,7 +125,8 @@ export function dibujoPunzonamiento(x, o) {
   const diag = (pts) => pts.reduce((m, q) => (q[0] - cc[0] + (q[1] - cc[1]) > m[0] ? [q[0] - cc[0] + (q[1] - cc[1]), q] : m), [-Infinity, null])[1];
   const nom = o.nombres ?? {};
   const etiqueta = (q, txt, dx = 4, dy = -4, fin = false) => (q && txt ? out.push(`<text class="halo" x="${(X(q[0]) + dx).toFixed(1)}" y="${(Y(q[1]) + dy).toFixed(1)}"${fin ? ' text-anchor="end"' : ''}>${txt}</text>`) : 0);
-  etiqueta(x.tipo === 'rect' ? [x.c1, x.c2] : [cc[0] + x.D / 2 * Math.SQRT1_2, cc[1] + x.D / 2 * Math.SQRT1_2], nom.u0);
+  // u0 dentro del pilar, para no chocar con las barras junto a su cara
+  if (nom.u0) out.push(`<text class="halo" x="${X(cc[0]).toFixed(1)}" y="${(Y(cc[1]) + 4).toFixed(1)}" text-anchor="middle">${nom.u0}</text>`);
   const ctrlD = (o.perimetros.find((p) => p.clase === 'ctrl') ?? {}).delta;
   if (ctrlD) etiqueta(diag(contorno(x, ctrlD, paso * 2)), nom.ctrl, -3, -3, true);
   if (formaExt) etiqueta(diag(formaExt), nom.ext, -3, -3, true);
@@ -158,9 +175,16 @@ function alzados(x, o, studs, ctrlD) {
     g.push(`<text class="tit" x="${x0}" y="${i * EH + 10}">${t(eje === 'x' ? 'pun.dib.alzX' : 'pun.dib.alzY')}</text>`);
     g.push(`<rect class="hor" x="${f(U(lo))}" y="${f(y0)}" width="${f(U(hi) - U(lo))}" height="${f(hs)}"/>`);
     if (libre) g.push(`<line class="borde-libre" x1="${f(U(0))}" y1="${f(y0 - 4)}" x2="${f(U(0))}" y2="${f(y0 + hs + 4)}"/>`);
-    g.push(`<rect class="pilar" x="${f(U(0))}" y="${f(y0 - stub)}" width="${f(dim * se)}" height="${f(hs + 2 * stub)}"/>`);
+    // Tramo de pilar en alzado: dos aristas verticales y, en cada extremo, la línea de corte fina con su zigzag (delineación)
+    const xa = U(0);
+    const xb = U(0) + dim * se;
+    const xm = (xa + xb) / 2;
+    const corte = (yy) => `M${f(xa)} ${f(yy)}H${f(xm - 7)}L${f(xm - 2.5)} ${f(yy - 6)}L${f(xm + 2.5)} ${f(yy + 6)}L${f(xm + 7)} ${f(yy)}H${f(xb)}`;
+    g.push(`<rect class="pilar-alz" x="${f(xa)}" y="${f(y0 - stub)}" width="${f(xb - xa)}" height="${f(hs + 2 * stub)}"/>`);
+    g.push(`<path class="arista" d="M${f(xa)} ${f(y0 - stub)}V${f(y0 + hs + stub)}M${f(xb)} ${f(y0 - stub)}V${f(y0 + hs + stub)}"/>`);
+    g.push(`<path class="corte-fino" d="${corte(y0 - stub)}${corte(y0 + hs + stub)}"/>`);
     // cercos: los de la banda del corte, en trazo fuerte; el resto proyectados, más claros
-    const banda = o.esq === 'cruz' ? o.sl / 2 + 1 : 0.75 * o.sl;
+    const banda = o.esq === 'cruz' ? Math.max(0, w[1 - k] - 2 * 25) / 2 + 1 : 0.75 * o.sl;
     const yz = (z) => y0 + (o.h - z) * sv;
     const dd = Math.min(o.d ?? o.h, o.h);
     const pos = studs.map((q) => [q[k], Math.abs(q[1 - k] - c[1 - k]) <= banda]);
@@ -177,19 +201,13 @@ function alzados(x, o, studs, ctrlD) {
       for (const [u, lado] of [[-dl, 'i'], [dim + dl, 'd']]) {
         if (lado === 'i' && libre) continue;
         g.push(`<line class="perim ${cl}" x1="${f(U(u))}" y1="${f(y0 - stub - (cl === 'perim-ext' ? 24 : 8))}" x2="${f(U(u))}" y2="${f(y0 + hs + 8)}"/>`);
-        if (nm) g.push(`<text class="halo" x="${f(U(u))}" y="${f(y0 - stub - (cl === 'perim-ext' ? 24 : 8))}" text-anchor="middle">${nm}</text>`);
+        if (nm) g.push(`<text class="halo halo-alz" x="${f(U(u))}" y="${f(y0 - stub - (cl === 'perim-ext' ? 24 : 8))}" text-anchor="middle">${nm}</text>`);
       }
     }
     // espesor
     const xe = U(hi) + 12;
     g.push(`<line class="cota" x1="${f(xe)}" y1="${f(y0)}" x2="${f(xe)}" y2="${f(y0 + hs)}"/><line class="cota" x1="${f(xe - 4)}" y1="${f(y0)}" x2="${f(xe + 4)}" y2="${f(y0)}"/><line class="cota" x1="${f(xe - 4)}" y1="${f(y0 + hs)}" x2="${f(xe + 4)}" y2="${f(y0 + hs)}"/>`);
-    g.push(`<text x="${f(xe + 7)}" y="${f(y0 + hs / 2 + 4)}">e = ${mm(o.h)}</text>`);
-    // armadura: a1 y sr sobre el brazo, bajo la losa
-    if (o.ext && o.anillos?.length) {
-      const yd = y0 + hs + stub + 12;
-      const a = o.anillos;
-      g.push(`<text x="${f(x0 + m)}" y="${f(yd + 3)}">${t('pun.dib.armaz', mm(o.fi), mm(a[0]), mm(o.sl))}</text>`);
-    }
+    g.push(`<text x="${f(xe + 7)}" y="${f(y0 + hs / 2 + 4)}">h = ${mm(o.h)}</text>`);
     salida.push(...g);
   });
   return salida.join('');
