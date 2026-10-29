@@ -21,6 +21,8 @@ export default {
   'ras.anclado2': 'Ties anchored on both sides of the joint',
   'ras.av.noAnclado': 'The ties are not anchored on both sides of the joint: the code only counts well anchored reinforcement, so the joint is checked without ties',
   'ras.av.noAncladoDim': 'Remember to anchor the ties on both sides of the joint: the code only counts well anchored reinforcement',
+  'ras.anc.ayuda': 'Full: tie reinforcement anchored on both sides of the joint and able to yield (fyd). Insufficient: not so anchored; the joint is checked for adhesion only (no ties).',
+  'ras.anc.ayuda23': 'Full: anchored on both sides up to fyd (yields, eq. 8.76). Partial: anchored to at least 0.5·fyd with 8 ø (eq. 8.77, no α). Insufficient: less than that; checked without ties.',
   'ras.anc.total': 'Full', 'ras.anc.parcial': 'Partial', 'ras.anc.insuf': 'Insufficient',
   'ras.sinArmNota': 'No tie reinforcement: the joint resists adhesion only', 'ras.noAnclado': 'Not fully anchored',
   'ras.acero': 'Steel', 'ras.alfaAyuda': (a, b) => `Angle of the ties to the joint plane (${a}° to ${b}°). 90° = bars perpendicular to the joint`,

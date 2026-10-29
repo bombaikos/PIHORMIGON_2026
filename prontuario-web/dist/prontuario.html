@@ -28,7 +28,7 @@
   --hormigon-borde: oklch(60% 0.01 85);
   --compr: oklch(62% 0.09 252);
   --traccion: oklch(66% 0.008 250);
-  --acero: oklch(30% 0.012 250);
+  --acero: oklch(35% 0.07 252);
   --ok: oklch(46% 0.11 152);
   --ok-fondo: oklch(95% 0.035 152);
   --no: oklch(50% 0.17 27);
@@ -970,6 +970,9 @@ svg.dib-ras { min-width: 0; }
 .barra .pant-completa svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.5; }
 #menu-archivo button { display: flex; justify-content: space-between; gap: var(--e5); width: 100%; }
 #menu-archivo small { color: var(--tinta-3); }
+
+.fila-anc { display: flex; align-items: center; gap: 8px; }
+.fila-anc .seg { flex: 1; }
 </style>
 
 <header class="barra">
@@ -5053,6 +5056,8 @@ svg.dib-ras { min-width: 0; }
     "ras.anclado2": "Cosido anclado a ambos lados de la junta",
     "ras.av.noAnclado": "El cosido no est\xE1 anclado a ambos lados de la junta: la norma solo cuenta la armadura bien anclada, as\xED que se comprueba la junta sin cosido",
     "ras.av.noAncladoDim": "Recuerda anclar el cosido a ambos lados de la junta: la norma solo cuenta la armadura bien anclada",
+    "ras.anc.ayuda": "Total: la armadura de cosido est\xE1 anclada a ambos lados de la junta y puede plastificar (fyd). Insuficiente: no lo est\xE1, y la junta se calcula solo con la adherencia (sin cosido).",
+    "ras.anc.ayuda23": "Total: anclada a ambos lados hasta fyd (plastifica, f\xF3rmula 8.76). Parcial: anclada al menos a 0,5\xB7fyd con 8 \xF8 (f\xF3rmula 8.77, sin \u03B1). Insuficiente: menos que eso; se calcula sin cosido.",
     "ras.anc.total": "Total",
     "ras.anc.parcial": "Parcial",
     "ras.anc.insuf": "Insuficiente",
@@ -5199,6 +5204,8 @@ svg.dib-ras { min-width: 0; }
     "ras.anclado2": "Ties anchored on both sides of the joint",
     "ras.av.noAnclado": "The ties are not anchored on both sides of the joint: the code only counts well anchored reinforcement, so the joint is checked without ties",
     "ras.av.noAncladoDim": "Remember to anchor the ties on both sides of the joint: the code only counts well anchored reinforcement",
+    "ras.anc.ayuda": "Full: tie reinforcement anchored on both sides of the joint and able to yield (fyd). Insufficient: not so anchored; the joint is checked for adhesion only (no ties).",
+    "ras.anc.ayuda23": "Full: anchored on both sides up to fyd (yields, eq. 8.76). Partial: anchored to at least 0.5\xB7fyd with 8 \xF8 (eq. 8.77, no \u03B1). Insufficient: less than that; checked without ties.",
     "ras.anc.total": "Full",
     "ras.anc.parcial": "Partial",
     "ras.anc.insuf": "Insufficient",
@@ -16190,10 +16197,10 @@ svg.dib-ras { min-width: 0; }
         const cuerpo = h(
           "div",
           { class: "cuerpo-arm" },
-          segmentado({ ancho: true, etiqueta: t("ras.anclaje"), opciones: [["total", t("ras.anc.total")], ...e23 ? [["parcial", t("ras.anc.parcial")]] : [], ["insuf", t("ras.anc.insuf")]], valor: D.anclaje, onCambio: (v2) => {
+          h("div", { class: "fila-anc" }, segmentado({ ancho: true, etiqueta: t("ras.anclaje"), opciones: [["total", t("ras.anc.total")], ...e23 ? [["parcial", t("ras.anc.parcial")]] : [], ["insuf", t("ras.anc.insuf")]], valor: D.anclaje, onCambio: (v2) => {
             D.anclaje = v2;
             ctx2.pintar();
-          } }),
+          } }), h("span", { class: "info-i", tabindex: 0, role: "img", "aria-label": t("ras.anc.ayuda"), "data-tip": t(e23 ? "ras.anc.ayuda23" : "ras.anc.ayuda") }, "i")),
           h(
             "div",
             { class: "par2" },

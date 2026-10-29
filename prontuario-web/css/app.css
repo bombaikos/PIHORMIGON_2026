@@ -19,7 +19,7 @@
   --hormigon-borde: oklch(60% 0.01 85);
   --compr: oklch(62% 0.09 252);
   --traccion: oklch(66% 0.008 250);
-  --acero: oklch(30% 0.012 250);
+  --acero: oklch(35% 0.07 252);
   --ok: oklch(46% 0.11 152);
   --ok-fondo: oklch(95% 0.035 152);
   --no: oklch(50% 0.17 27);
@@ -961,3 +961,6 @@ svg.dib-ras { min-width: 0; }
 .barra .pant-completa svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.5; }
 #menu-archivo button { display: flex; justify-content: space-between; gap: var(--e5); width: 100%; }
 #menu-archivo small { color: var(--tinta-3); }
+
+.fila-anc { display: flex; align-items: center; gap: 8px; }
+.fila-anc .seg { flex: 1; }

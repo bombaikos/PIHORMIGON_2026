@@ -22,6 +22,8 @@ export default {
   'ras.anclado2': 'Cosido anclado a ambos lados de la junta',
   'ras.av.noAnclado': 'El cosido no está anclado a ambos lados de la junta: la norma solo cuenta la armadura bien anclada, así que se comprueba la junta sin cosido',
   'ras.av.noAncladoDim': 'Recuerda anclar el cosido a ambos lados de la junta: la norma solo cuenta la armadura bien anclada',
+  'ras.anc.ayuda': 'Total: la armadura de cosido está anclada a ambos lados de la junta y puede plastificar (fyd). Insuficiente: no lo está, y la junta se calcula solo con la adherencia (sin cosido).',
+  'ras.anc.ayuda23': 'Total: anclada a ambos lados hasta fyd (plastifica, fórmula 8.76). Parcial: anclada al menos a 0,5·fyd con 8 ø (fórmula 8.77, sin α). Insuficiente: menos que eso; se calcula sin cosido.',
   'ras.anc.total': 'Total', 'ras.anc.parcial': 'Parcial', 'ras.anc.insuf': 'Insuficiente',
   'ras.sinArmNota': 'Sin armadura de cosido: la junta resiste solo la adherencia', 'ras.noAnclado': 'No anclado del todo',
   'ras.acero': 'Acero', 'ras.alfaAyuda': (a, b) => `Ángulo de las barras de cosido con el plano de la junta (${a}° a ${b}°). 90° = barras perpendiculares a la junta`,

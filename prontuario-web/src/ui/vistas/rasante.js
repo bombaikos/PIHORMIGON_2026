@@ -93,7 +93,7 @@ export function datos(ctx, form) {
       ...opciones.map(([k, etq]) => h('label', { class: 'tick' }, h('input', { type: 'checkbox', id: `r-${k}`, checked: D[k], onchange: (e) => { D[k] = e.target.checked; cambio(); } }), h('span', { html: etq })))),
     (() => {
       const cuerpo = h('div', { class: 'cuerpo-arm' },
-        segmentado({ ancho: true, etiqueta: t('ras.anclaje'), opciones: [['total', t('ras.anc.total')], ...(e23 ? [['parcial', t('ras.anc.parcial')]] : []), ['insuf', t('ras.anc.insuf')]], valor: D.anclaje, onCambio: (v) => { D.anclaje = v; ctx.pintar(); } }),
+        h('div', { class: 'fila-anc' }, segmentado({ ancho: true, etiqueta: t('ras.anclaje'), opciones: [['total', t('ras.anc.total')], ...(e23 ? [['parcial', t('ras.anc.parcial')]] : []), ['insuf', t('ras.anc.insuf')]], valor: D.anclaje, onCambio: (v) => { D.anclaje = v; ctx.pintar(); } }), h('span', { class: 'info-i', tabindex: 0, role: 'img', 'aria-label': t('ras.anc.ayuda'), 'data-tip': t(e23 ? 'ras.anc.ayuda23' : 'ras.anc.ayuda') }, 'i')),
         h('div', { class: 'par2' },
           selector({ id: 'r-ace', linea: true, etq: t('ras.acero'), opciones: p.aceros.map((m) => [m.nombre, m.nombre]), valor: D.aceroCosido, onCambio: (v) => { D.aceroCosido = v; cambio(); } }),
           (e23 && D.anclaje === 'parcial') ? null : campoNum({ id: 'r-alfa', etq: 'α', valor: D.alfa, mag: 'ang', paso: 5, min: N.ALFA_MIN, max: e23 && D.rug === 'muyLisa' ? 90 : N.ALFA_MAX, ayuda: t('ras.alfaAyuda', N.ALFA_MIN, N.ALFA_MAX), onCambio: set('alfa') })),
