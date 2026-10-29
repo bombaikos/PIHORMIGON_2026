@@ -152,7 +152,7 @@ function pintarCabecera() {
 
 /** Menú Archivo (guía común § 2.3): Nuevo, Abrir y Guardar, con sus atajos. */
 function archivo() {
-  const acciones = [['pro.nuevo', '', nuevoProyecto], ['pro.abrir', 'Ctrl+O', abrirProyecto], ['pro.guardar', 'Ctrl+S', guardarProyecto], '|', ['m.proyecto', '', () => ctx.ir('proyecto')]];
+  const acciones = [['m.proyecto', '', () => ctx.ir('proyecto')], '|', ['pro.nuevo', '', nuevoProyecto], ['pro.abrir', 'Ctrl+O', abrirProyecto], ['pro.guardar', 'Ctrl+S', guardarProyecto]];
   const lista = h('div', { class: 'menu-desp', id: 'menu-archivo', popover: 'auto', role: 'menu' },
     ...acciones.map((a) => (a === '|' ? h('hr', { role: 'separator' }) : h('button', { type: 'button', role: 'menuitem', 'aria-current': a[0] === 'm.proyecto' && estado.vista === 'proyecto' ? 'page' : undefined,
       onclick: () => { lista.hidePopover?.(); a[2](ctx); } }, t(a[0]), a[1] ? h('small', {}, a[1]) : null))));

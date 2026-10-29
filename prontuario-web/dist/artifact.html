@@ -2412,7 +2412,7 @@ svg.dib-ras { min-width: 0; }
     norma: "Norma",
     pie: "Prontuario web, versi\xF3n de prueba. Atajos: Ctrl K comandos \xB7 Ctrl Z deshacer fuera de un campo \xB7 Alt 1\u20264 m\xF3dulos.",
     pendiente: "Pendiente de migrar del Prontuario 3.1",
-    "m.proyecto": "Proyecto",
+    "m.proyecto": "Datos de proyecto",
     "m.materiales": "Materiales",
     "m.secciones": "Secciones",
     "m.flexion": "Flexi\xF3n simple",
@@ -3404,7 +3404,7 @@ svg.dib-ras { min-width: 0; }
     norma: "Code",
     pie: "Web handbook, test version. Shortcuts: Ctrl K commands \xB7 Ctrl Z undo outside a field \xB7 Alt 1\u20264 modules.",
     pendiente: "Not yet ported from Prontuario 3.1",
-    "m.proyecto": "Project",
+    "m.proyecto": "Project data",
     "m.materiales": "Materials",
     "m.secciones": "Sections",
     "m.flexion": "Bending",
@@ -16996,7 +16996,7 @@ svg.dib-ras { min-width: 0; }
     $("seg-norma").replaceChildren(chip);
   }
   function archivo() {
-    const acciones = [["pro.nuevo", "", nuevoProyecto], ["pro.abrir", "Ctrl+O", abrirProyecto], ["pro.guardar", "Ctrl+S", guardarProyecto], "|", ["m.proyecto", "", () => ctx.ir("proyecto")]];
+    const acciones = [["m.proyecto", "", () => ctx.ir("proyecto")], "|", ["pro.nuevo", "", nuevoProyecto], ["pro.abrir", "Ctrl+O", abrirProyecto], ["pro.guardar", "Ctrl+S", guardarProyecto]];
     const lista = h(
       "div",
       { class: "menu-desp", id: "menu-archivo", popover: "auto", role: "menu" },
