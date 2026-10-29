@@ -55,11 +55,13 @@ function marco(id, etq, ref, caja, nota = '') {
  * Campo numérico. valor, min y max en unidades internas; se muestra en las de la magnitud.
  * Admite cuentas (2*150); ↑ ↓ varían según paso (en unidades de pantalla), Mayús ×10.
  */
-export function campoNum({ id, etq, ref, valor, mag, paso, min = -Infinity, max = Infinity, nombre, onCambio, ayuda, sinUd = false }) {
+export function campoNum({ id, etq, ref, valor, mag, paso, min = -Infinity, max = Infinity, nombre, onCambio, ayuda, info, sinUd = false }) {
   const m = MAG[mag] ?? { ud: '', f: 1, d: 3 };
   const input = h('input', { id, inputmode: 'decimal', value: mag ? paraCampo(valor, mag) : String(valor ?? ''), 'data-paso': paso, autocomplete: 'off', title: ayuda, 'aria-describedby': `${id}-eco` });
   const caja = h('div', { class: 'caja' }, input, m.ud && !sinUd ? h('span', { class: 'ud' }, m.ud) : null); // sinUd: la unidad va en la etiqueta, entre corchetes
   const { c, marcar } = marco(id, etq, ref, caja);
+  // info: una (i) junto a la etiqueta con una aclaración al pasar el ratón o enfocar (criterios propios, avisos)
+  if (info) c.insertBefore(h('span', { class: 'info-i izq', tabindex: 0, role: 'img', 'aria-label': info, 'data-tip': info }, 'i'), caja);
   const leer = () => {
     const raw = input.value;
     const v = leerNumero(raw);
@@ -169,7 +171,7 @@ export function pestanas({ lista, activa, onCambio }) {
 export function tabla(filas, { cabecera, clase = '' } = {}) {
   return h('div', { class: 'tabla-scroll' }, h('table', { class: clase },
     cabecera ? h('thead', {}, h('tr', {}, ...cabecera.map((c) => h('th', { html: c })))) : null,
-    h('tbody', {}, ...filas.map((f) => h('tr', f.ref ? { 'data-ref': f.ref } : {}, ...f.map((c, i) => (i === 0 && !cabecera ? h('th', { scope: 'row', html: c }) : h('td', { html: c }))))))));
+    h('tbody', {}, ...filas.map((f) => h('tr', { ...(f.ref ? { 'data-ref': f.ref } : {}), ...(f.clase ? { class: f.clase } : {}) }, ...f.map((c, i) => (i === 0 && !cabecera ? h('th', { scope: 'row', html: c }) : h('td', { html: c }))))))));
 }
 
 /** Cifras destacadas: [[etiqueta(html), valor(html)]] */
