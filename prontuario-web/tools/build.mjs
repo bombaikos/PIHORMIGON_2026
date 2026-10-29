@@ -3,7 +3,9 @@
 import { build } from 'esbuild';
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 
-const r = await build({ entryPoints: ['src/ui/app.js'], bundle: true, format: 'iife', write: false, minify: false, target: 'es2020' });
+const d = new Date();
+const fechaEmision = [d.getDate(), d.getMonth() + 1, d.getFullYear() % 100].map(n => String(n).padStart(2, '0')).join('.');
+const r = await build({ entryPoints: ['src/ui/app.js'], bundle: true, format: 'iife', write: false, minify: false, target: 'es2020', define: { __FECHA_EMISION__: JSON.stringify(fechaEmision) } });
 const js = r.outputFiles[0].text.replace(/<\/script/g, '<\\/script');
 const css = readFileSync('css/app.css', 'utf8');
 const html = readFileSync('index.html', 'utf8');

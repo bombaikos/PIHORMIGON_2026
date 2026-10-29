@@ -24,7 +24,10 @@ import * as rasante from './vistas/rasante.js';
 import * as vigas1vano from './vistas/vigas.js';
 import { guardarProyecto, abrirProyecto, nuevoProyecto } from './vistas/proyecto.js';
 
-const EMISION = '28.10.26'; // fecha de emisión de la versión BETA
+// Fecha de emisión de la versión BETA (dd.mm.aa): la inyecta tools/build.mjs al empaquetar;
+// sin empaquetar (desarrollo) se usa la de hoy
+const EMISION = typeof __FECHA_EMISION__ !== 'undefined' ? __FECHA_EMISION__
+  : new Date().toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: '2-digit' }).replace(/\//g, '.');
 
 // Crear y editar y Diagramas son el mismo módulo de secciones con la misma sección activa;
 // cada entrada fija lo que muestra antes de pintar

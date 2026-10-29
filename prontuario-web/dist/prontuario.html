@@ -17192,7 +17192,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
   }
 
   // src/ui/app.js
-  var EMISION = "28.10.26";
+  var EMISION = true ? "29.10.26" : (/* @__PURE__ */ new Date()).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "2-digit" }).replace(/\//g, ".");
   function vistaSecciones(m, propia) {
     const fijar = (f) => (...a) => {
       modo(m);
