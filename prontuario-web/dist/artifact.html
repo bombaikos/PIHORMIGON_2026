@@ -4740,8 +4740,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     "pun.crit.ext": (n) => `Exterior ${n} (hormig\xF3n)`,
     "pun.dib.alzX": "Alzado A-A (corte por el eje x)",
     "pun.dib.alzY": "Alzado B-B (corte por el eje y)",
-    "pun.dib.armaz": (fi, a1, sr) => `cercos \xF8${fi} \xB7 a<tspan baseline-shift="sub" font-size="75%">1</tspan> = ${a1} \xB7 s = ${sr} mm`,
-    "pun.hAyuda": "Espesor total de la losa (solo para el dibujo)",
+    "pun.hAyuda": "Canto total de la losa (solo para el dibujo)",
     "pun.dib.aria": (a, b) => `Planta del pilar de ${a} por ${b} mm con los per\xEDmetros de control y los cercos`,
     "pun.dib.borde": "borde libre",
     "pun.dib.pilarR": (a, b, pos) => `Pilar ${a} \xD7 ${b} mm, ${pos}`,
@@ -4839,7 +4838,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     "pun.tipoAbierto": "Cercos abiertos o ramas simples",
     "pun.tipoStuds": "Conectores (studs)",
     "pun.motivoTipo": "Solo en EC-2 2023: el tipo de armadura fija el \xF8 m\xE1ximo (12.5.1(3)) y \u03B7sys (8.110, 8.111)",
-    "pun.av.dh": (d, h2) => `El canto \xFAtil d = ${d} mm no es menor que el canto e = ${h2} mm`,
+    "pun.av.dh": (d, h2) => `El canto \xFAtil d = ${d} mm no es menor que el canto h = ${h2} mm`,
     "pun.av.alargado": (r) => `Pilar alargado (c<sub>1</sub>/c<sub>2</sub> = ${r}): \u03B2 simplificado y per\xEDmetro de control pueden no valer; rev\xEDsalo como muro`,
     "pun.av.muro23": "Pilar con un lado mayor que 6d<sub>v</sub>: el EC-2 2023 lo trata como extremo de muro (8.4.2(3))",
     "pun.av.fiTabla": "Los di\xE1metros marcados \u2717 superan el m\xE1ximo del tipo de armadura (EC-2 2023, 12.5.1(3))",
@@ -4947,8 +4946,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     "pun.crit.ext": (n) => `Outer ${n} (concrete)`,
     "pun.dib.alzX": "Elevation A-A (cut along x)",
     "pun.dib.alzY": "Elevation B-B (cut along y)",
-    "pun.dib.armaz": (fi, a1, sr) => `links \xF8${fi} \xB7 a<tspan baseline-shift="sub" font-size="75%">1</tspan> = ${a1} \xB7 s = ${sr} mm`,
-    "pun.hAyuda": "Total slab thickness (drawing only)",
+    "pun.hAyuda": "Total slab depth (drawing only)",
     "pun.dib.aria": (a, b) => `Plan of the ${a} by ${b} mm column with control perimeters and links`,
     "pun.dib.borde": "free edge",
     "pun.dib.pilarR": (a, b, pos) => `Column ${a} \xD7 ${b} mm, ${pos}`,
@@ -5043,7 +5041,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     "pun.tipoAbierto": "Open stirrups or single legs",
     "pun.tipoStuds": "Studs (headed)",
     "pun.motivoTipo": "EC-2 2023 only: the type sets the maximum diameter (12.5.1(3)) and \u03B7sys (8.110, 8.111)",
-    "pun.av.dh": (d, h2) => `The effective depth d = ${d} mm is not smaller than the thickness e = ${h2} mm`,
+    "pun.av.dh": (d, h2) => `The effective depth d = ${d} mm is not smaller than the depth h = ${h2} mm`,
     "pun.av.alargado": (r) => `Elongated column (c<sub>1</sub>/c<sub>2</sub> = ${r}): the simplified \u03B2 and the control perimeter may not hold; check it as a wall`,
     "pun.av.muro23": "Column side larger than 6d<sub>v</sub>: EC-2 2023 treats it as a wall end (8.4.2(3))",
     "pun.av.fiTabla": "Diameters marked \u2717 exceed the maximum for the reinforcement type (EC-2 2023, 12.5.1(3))",
@@ -14915,12 +14913,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
       }
       const xe = U7(hi) + 12;
       g.push(`<line class="cota" x1="${f(xe)}" y1="${f(y0)}" x2="${f(xe)}" y2="${f(y0 + hs)}"/><line class="cota" x1="${f(xe - 4)}" y1="${f(y0)}" x2="${f(xe + 4)}" y2="${f(y0)}"/><line class="cota" x1="${f(xe - 4)}" y1="${f(y0 + hs)}" x2="${f(xe + 4)}" y2="${f(y0 + hs)}"/>`);
-      g.push(`<text x="${f(xe + 7)}" y="${f(y0 + hs / 2 + 4)}">e = ${mm3(o.h)}</text>`);
-      if (o.ext && o.anillos?.length) {
-        const yd = y0 + hs + stub + 8;
-        const a = o.anillos;
-        g.push(`<text x="${f(x0 + m)}" y="${f(yd + 3)}">${t("pun.dib.armaz", mm3(o.fi), mm3(a[0]), mm3(o.sl))}</text>`);
-      }
+      g.push(`<text x="${f(xe + 7)}" y="${f(y0 + hs / 2 + 4)}">h = ${mm3(o.h)}</text>`);
       salida.push(...g);
     });
     return salida.join("");
@@ -15066,7 +15059,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
             D.hormigon = v2;
             cambio();
           } }),
-          campoNum2({ id: "p-h", etq: "e", valor: D.h, mag: "diam", paso: 10, min: 50, max: 3e3, ayuda: t("pun.hAyuda"), onCambio: set("h") }),
+          campoNum2({ id: "p-h", etq: "h", valor: D.h, mag: "diam", paso: 10, min: 50, max: 3e3, ayuda: t("pun.hAyuda"), onCambio: set("h") }),
           campoNum2({ id: "p-d", etq: e23 ? sub24("d", "v") : "d", valor: D.d, mag: "diam", paso: 10, min: 20, max: 3e3, ayuda: t("pun.dAyuda"), onCambio: set("d") }),
           e23 ? campoNum2({ id: "p-dlow", etq: t("pun.Dlower"), valor: D.Dlower, mag: "diam", paso: 2, min: 4, max: 63, ayuda: t("pun.DlowerAyuda"), onCambio: set("Dlower") }) : campoNum2({ id: "p-sig", etq: sub24("\u03C3", "cd"), ref: t("pun.sigRef"), valor: D.sigCd, mag: "tension", paso: 0.5, min: -20, max: 40, ayuda: t("pun.sigAyuda"), onCambio: set("sigCd") }),
           campoNum2({ id: "p-rx", etq: sub24("\u03C1", "x"), valor: D.rhoX, mag: "cuantia", paso: 0.5, min: 0, max: 0.1, ayuda: t("pun.rhoAyuda"), onCambio: set("rhoX") }),

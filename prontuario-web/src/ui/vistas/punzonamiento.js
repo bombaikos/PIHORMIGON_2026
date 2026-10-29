@@ -106,7 +106,7 @@ export function datos(ctx, form) {
     grupo(t('pun.losa'),
       ...parejas([
         selector({ id: 'p-hor', linea: true, etq: t('pun.hormigon'), opciones: p.hormigones.map((m) => [m.nombre, m.nombre]), valor: D.hormigon, onCambio: (v) => { D.hormigon = v; cambio(); } }),
-        campoNum({ id: 'p-h', etq: 'e', valor: D.h, mag: 'diam', paso: 10, min: 50, max: 3000, ayuda: t('pun.hAyuda'), onCambio: set('h') }),
+        campoNum({ id: 'p-h', etq: 'h', valor: D.h, mag: 'diam', paso: 10, min: 50, max: 3000, ayuda: t('pun.hAyuda'), onCambio: set('h') }),
         campoNum({ id: 'p-d', etq: e23 ? sub('d', 'v') : 'd', valor: D.d, mag: 'diam', paso: 10, min: 20, max: 3000, ayuda: t('pun.dAyuda'), onCambio: set('d') }),
         e23 ? campoNum({ id: 'p-dlow', etq: t('pun.Dlower'), valor: D.Dlower, mag: 'diam', paso: 2, min: 4, max: 63, ayuda: t('pun.DlowerAyuda'), onCambio: set('Dlower') })
           : campoNum({ id: 'p-sig', etq: sub('σ', 'cd'), ref: t('pun.sigRef'), valor: D.sigCd, mag: 'tension', paso: 0.5, min: -20, max: 40, ayuda: t('pun.sigAyuda'), onCambio: set('sigCd') }),

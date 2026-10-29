@@ -207,13 +207,7 @@ function alzados(x, o, studs, ctrlD) {
     // espesor
     const xe = U(hi) + 12;
     g.push(`<line class="cota" x1="${f(xe)}" y1="${f(y0)}" x2="${f(xe)}" y2="${f(y0 + hs)}"/><line class="cota" x1="${f(xe - 4)}" y1="${f(y0)}" x2="${f(xe + 4)}" y2="${f(y0)}"/><line class="cota" x1="${f(xe - 4)}" y1="${f(y0 + hs)}" x2="${f(xe + 4)}" y2="${f(y0 + hs)}"/>`);
-    g.push(`<text x="${f(xe + 7)}" y="${f(y0 + hs / 2 + 4)}">e = ${mm(o.h)}</text>`);
-    // armadura: a1 y sr sobre el brazo, bajo la losa
-    if (o.ext && o.anillos?.length) {
-      const yd = y0 + hs + stub + 8;
-      const a = o.anillos;
-      g.push(`<text x="${f(x0 + m)}" y="${f(yd + 3)}">${t('pun.dib.armaz', mm(o.fi), mm(a[0]), mm(o.sl))}</text>`);
-    }
+    g.push(`<text x="${f(xe + 7)}" y="${f(y0 + hs / 2 + 4)}">h = ${mm(o.h)}</text>`);
     salida.push(...g);
   });
   return salida.join('');
