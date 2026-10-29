@@ -163,7 +163,7 @@ export function resultados(ctx, res) {
     sDib = f?.s ?? D.s;
     if (f) ley.push(['cosido', t('ras.dib.lc', fmt(f.ramas, 0), f.fi, fmt(f.s, 0))]);
   } else if (comp && !sinArm) ley.push(['cosido', t('ras.dib.lc', fmt(D.ramas, 0), D.fi, fmt(D.s, 0))]);
-  poner(centro, h('h2', {}, t('ras.t.junta')), h('div', { class: 'lienzo', html: dibujoRasante({ alfa: N.id === 'EC2-2023' && !D.anclado ? 90 : D.alfa, sinAlfa: N.id === 'EC2-2023' && !D.anclado, L: D.L, s: sDib, sinArmadura: sinArm || (!comp && r.caso !== 'calculo'), rugosa: D.rug !== 'muyLisa', REd: D.REd, b: D.b, leyenda: ley }) }), notas(N, D));
+  poner(centro, h('h2', {}, t('ras.t.junta')), h('div', { class: 'lienzo', html: dibujoRasante({ ramas: D.ramas, fi: !comp && r.caso === 'calculo' ? (r.tabla.find((k) => k.fi === D.fi && k.s) ?? r.tabla.find((k) => k.s))?.fi : D.fi, alfa: N.id === 'EC2-2023' && !D.anclado ? 90 : D.alfa, sinAlfa: N.id === 'EC2-2023' && !D.anclado, L: D.L, s: sDib, sinArmadura: sinArm || (!comp && r.caso !== 'calculo'), rugosa: D.rug !== 'muyLisa', REd: D.REd, b: D.b, leyenda: ley }) }), notas(N, D));
 
   // Derecha: cifras, tabla (al dimensionar) y filas desplegables
   poner(dcha, h('h2', {}, t('cor.t.res')), cifras(cifrasDe(r, comp, N)));

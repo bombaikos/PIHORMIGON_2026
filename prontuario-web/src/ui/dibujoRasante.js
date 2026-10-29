@@ -6,16 +6,16 @@ import { fmt } from './formato.js';
 import { t } from './i18n.js';
 import { DEFS } from './dibujoSeccion.js';
 
-const ANCHO = 420;
+const ANCHO = 640;
 const MAX_BARRAS = 14;
 
 /**
- * @param {{alfa:number, sinAlfa?:boolean, L:number, s:number, sinArmadura:boolean, rugosa:boolean, REd:number, b:number, leyenda:[string,string][]}} o
+ * @param {{ramas:number, fi?:number, alfa:number, sinAlfa?:boolean, L:number, s:number, sinArmadura:boolean, rugosa:boolean, REd:number, b:number, leyenda:[string,string][]}} o
  *   L, s y b en mm; leyenda: pares [clave de muestra, texto]
  */
 export function dibujoRasante(o) {
   const x0 = 24;
-  const x1 = ANCHO - 24;
+  const x1 = 396;
   const yJ = 118; // la junta
   const ancho = x1 - x0;
   const out = [DEFS];
@@ -65,13 +65,32 @@ export function dibujoRasante(o) {
   const yL = 206;
   out.push(`<line class="ref" x1="${x0}" y1="${186}" x2="${x0}" y2="${yL + 6}"/><line class="ref" x1="${x1}" y1="${186}" x2="${x1}" y2="${yL + 6}"/>`);
   out.push(`<line class="cota" x1="${x0}" y1="${yL}" x2="${x1}" y2="${yL}" marker-start="url(#tic)" marker-end="url(#tic)"/>`);
-  out.push(`<text class="fuerte" x="${(x0 + x1) / 2}" y="${yL + 14}" text-anchor="middle">L = ${fmt(o.L, 0)} mm · b = ${fmt(o.b, 0)} mm</text>`);
+  out.push(`<text class="fuerte" x="${(x0 + x1) / 2}" y="${yL + 14}" text-anchor="middle">L = ${fmt(o.L, 0)} mm</text>`);
+  // Sección perpendicular al alzado, a la derecha: ancho b y las ramas del cosido que cruzan la junta
+  const xs0 = 452;
+  const w = 150;
+  const xs1 = xs0 + w;
+  out.push(`<text class="tit" x="${xs0}" y="47">${t('ras.dib.seccion')}</text>`);
+  out.push(`<rect class="hor hor-2" x="${xs0}" y="52" width="${w}" height="${yJ - 52}"/>`);
+  out.push(`<rect class="hor" x="${xs0}" y="${yJ}" width="${w}" height="${186 - yJ}"/>`);
+  out.push(`<line class="junta" x1="${xs0}" y1="${yJ}" x2="${xs1}" y2="${yJ}"/>`);
+  const nr = o.sinArmadura ? 0 : Math.max(1, Math.round(o.ramas));
+  const nd = Math.min(nr, 12);
+  const margen = 22;
+  for (let i = 0; i < nd; i++) {
+    const xr = nd === 1 ? xs0 + w / 2 : xs0 + margen + (i * (w - 2 * margen)) / (nd - 1);
+    out.push(`<line class="barra-cos" x1="${xr.toFixed(1)}" y1="${yJ - 34}" x2="${xr.toFixed(1)}" y2="${yJ + 34}"/>`);
+  }
+  out.push(`<line class="ref" x1="${xs0}" y1="186" x2="${xs0}" y2="${yL + 6}"/><line class="ref" x1="${xs1}" y1="186" x2="${xs1}" y2="${yL + 6}"/>`);
+  out.push(`<line class="cota" x1="${xs0}" y1="${yL}" x2="${xs1}" y2="${yL}" marker-start="url(#tic)" marker-end="url(#tic)"/>`);
+  out.push(`<text class="fuerte" x="${(xs0 + xs1) / 2}" y="${yL + 14}" text-anchor="middle">b = ${fmt(o.b, 0)} mm</text>`);
+  if (nr > 0) out.push(`<text x="${(xs0 + xs1) / 2}" y="${yL + 32}" text-anchor="middle">${t('ras.dib.ramas', nr, o.fi ?? '')}</text>`);
   // Esfuerzo rasante: flechas opuestas en cada hormigón
   const fl = (x, y, dir) => `<line class="fuerza" x1="${x}" y1="${y}" x2="${x + dir * 52}" y2="${y}" marker-end="url(#pta)"/>`;
   out.push(fl(x0 + 70, 42, 1), `<text class="fuerte" x="${x0 + 128}" y="46">R<tspan baseline-shift="sub" font-size="75%">Ed</tspan> = ${fmt(o.REd, 0)} kN</text>`);
   out.push(fl(x1 - 70, 196, -1));
   // Leyenda dentro del SVG
-  let yLey = yL + 34;
+  let yLey = yL + 46;
   const muestras = {
     junta: '<line class="junta" x1="0" y1="0" x2="22" y2="0"/>',
     cosido: '<line class="barra-cos" x1="3" y1="6" x2="19" y2="-6"/>',

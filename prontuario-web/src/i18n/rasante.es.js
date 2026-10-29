@@ -40,6 +40,7 @@ export default {
   'ras.tabla.nota': (n, smax) => `${n} barras por sección, separación de 25 en 25 mm hasta ${smax} mm. «—» = ni con la separación mínima de 50 mm llega.`,
   // Dibujo
   'ras.dib.aria': 'Alzado de la junta entre dos hormigones con las barras de cosido',
+  'ras.dib.seccion': 'Sección', 'ras.dib.ramas': (n, fi) => `${n} ${n === 1 ? 'rama' : 'ramas'}${fi ? ` ø${fi}` : ''}`,
   'ras.dib.h1': 'Hormigón 1', 'ras.dib.h2': 'Hormigón 2',
   'ras.dib.l1': (n) => `Hormigón 1 (${n})`, 'ras.dib.l2': (n) => `Hormigón 2 (${n})`,
   'ras.dib.lj': (r) => `Junta, rugosidad ${r}`, 'ras.dib.lc': (n, fi, s) => `Cosido: ${n} barras ø${fi} cada ${s} mm`,

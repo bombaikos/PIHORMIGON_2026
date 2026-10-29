@@ -37,6 +37,7 @@ export default {
   'ras.tabla.ramas': 'Legs', 'ras.tabla.asw': 'A<sub>sw</sub> [mm²]', 'ras.tabla.s': 's [mm]', 'ras.tabla.asws': 'A<sub>sw</sub>/s (cm²/m)',
   'ras.tabla.nota': (n, smax) => `${n} bars per section, spacing in steps of 25 mm up to ${smax} mm. «—» = not enough even at the 50 mm minimum spacing.`,
   'ras.dib.aria': 'Elevation of the joint between two concretes with the tie bars',
+  'ras.dib.seccion': 'Section', 'ras.dib.ramas': (n, fi) => `${n} ${n === 1 ? 'leg' : 'legs'}${fi ? ` ø${fi}` : ''}`,
   'ras.dib.h1': 'Concrete 1', 'ras.dib.h2': 'Concrete 2',
   'ras.dib.l1': (n) => `Concrete 1 (${n})`, 'ras.dib.l2': (n) => `Concrete 2 (${n})`,
   'ras.dib.lj': (r) => `Joint, ${r} roughness`, 'ras.dib.lc': (n, fi, s) => `Ties: ${n} bars ø${fi} every ${s} mm`,

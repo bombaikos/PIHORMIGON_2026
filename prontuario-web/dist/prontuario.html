@@ -5084,6 +5084,8 @@ svg.dib-ras { min-width: 0; }
     "ras.tabla.nota": (n, smax) => `${n} barras por secci\xF3n, separaci\xF3n de 25 en 25 mm hasta ${smax} mm. \xAB\u2014\xBB = ni con la separaci\xF3n m\xEDnima de 50 mm llega.`,
     // Dibujo
     "ras.dib.aria": "Alzado de la junta entre dos hormigones con las barras de cosido",
+    "ras.dib.seccion": "Secci\xF3n",
+    "ras.dib.ramas": (n, fi) => `${n} ${n === 1 ? "rama" : "ramas"}${fi ? ` \xF8${fi}` : ""}`,
     "ras.dib.h1": "Hormig\xF3n 1",
     "ras.dib.h2": "Hormig\xF3n 2",
     "ras.dib.l1": (n) => `Hormig\xF3n 1 (${n})`,
@@ -5223,6 +5225,8 @@ svg.dib-ras { min-width: 0; }
     "ras.tabla.asws": "A<sub>sw</sub>/s (cm\xB2/m)",
     "ras.tabla.nota": (n, smax) => `${n} bars per section, spacing in steps of 25 mm up to ${smax} mm. \xAB\u2014\xBB = not enough even at the 50 mm minimum spacing.`,
     "ras.dib.aria": "Elevation of the joint between two concretes with the tie bars",
+    "ras.dib.seccion": "Section",
+    "ras.dib.ramas": (n, fi) => `${n} ${n === 1 ? "leg" : "legs"}${fi ? ` \xF8${fi}` : ""}`,
     "ras.dib.h1": "Concrete 1",
     "ras.dib.h2": "Concrete 2",
     "ras.dib.l1": (n) => `Concrete 1 (${n})`,
@@ -15820,11 +15824,11 @@ svg.dib-ras { min-width: 0; }
   }
 
   // src/ui/dibujoRasante.js
-  var ANCHO2 = 420;
+  var ANCHO2 = 640;
   var MAX_BARRAS = 14;
   function dibujoRasante(o) {
     const x0 = 24;
-    const x1 = ANCHO2 - 24;
+    const x1 = 396;
     const yJ = 118;
     const ancho = x1 - x0;
     const out = [DEFS];
@@ -15868,11 +15872,29 @@ svg.dib-ras { min-width: 0; }
     const yL = 206;
     out.push(`<line class="ref" x1="${x0}" y1="${186}" x2="${x0}" y2="${yL + 6}"/><line class="ref" x1="${x1}" y1="${186}" x2="${x1}" y2="${yL + 6}"/>`);
     out.push(`<line class="cota" x1="${x0}" y1="${yL}" x2="${x1}" y2="${yL}" marker-start="url(#tic)" marker-end="url(#tic)"/>`);
-    out.push(`<text class="fuerte" x="${(x0 + x1) / 2}" y="${yL + 14}" text-anchor="middle">L = ${fmt(o.L, 0)} mm \xB7 b = ${fmt(o.b, 0)} mm</text>`);
+    out.push(`<text class="fuerte" x="${(x0 + x1) / 2}" y="${yL + 14}" text-anchor="middle">L = ${fmt(o.L, 0)} mm</text>`);
+    const xs0 = 452;
+    const w = 150;
+    const xs1 = xs0 + w;
+    out.push(`<text class="tit" x="${xs0}" y="47">${t("ras.dib.seccion")}</text>`);
+    out.push(`<rect class="hor hor-2" x="${xs0}" y="52" width="${w}" height="${yJ - 52}"/>`);
+    out.push(`<rect class="hor" x="${xs0}" y="${yJ}" width="${w}" height="${186 - yJ}"/>`);
+    out.push(`<line class="junta" x1="${xs0}" y1="${yJ}" x2="${xs1}" y2="${yJ}"/>`);
+    const nr = o.sinArmadura ? 0 : Math.max(1, Math.round(o.ramas));
+    const nd = Math.min(nr, 12);
+    const margen = 22;
+    for (let i = 0; i < nd; i++) {
+      const xr = nd === 1 ? xs0 + w / 2 : xs0 + margen + i * (w - 2 * margen) / (nd - 1);
+      out.push(`<line class="barra-cos" x1="${xr.toFixed(1)}" y1="${yJ - 34}" x2="${xr.toFixed(1)}" y2="${yJ + 34}"/>`);
+    }
+    out.push(`<line class="ref" x1="${xs0}" y1="186" x2="${xs0}" y2="${yL + 6}"/><line class="ref" x1="${xs1}" y1="186" x2="${xs1}" y2="${yL + 6}"/>`);
+    out.push(`<line class="cota" x1="${xs0}" y1="${yL}" x2="${xs1}" y2="${yL}" marker-start="url(#tic)" marker-end="url(#tic)"/>`);
+    out.push(`<text class="fuerte" x="${(xs0 + xs1) / 2}" y="${yL + 14}" text-anchor="middle">b = ${fmt(o.b, 0)} mm</text>`);
+    if (nr > 0) out.push(`<text x="${(xs0 + xs1) / 2}" y="${yL + 32}" text-anchor="middle">${t("ras.dib.ramas", nr, o.fi ?? "")}</text>`);
     const fl = (x, y, dir) => `<line class="fuerza" x1="${x}" y1="${y}" x2="${x + dir * 52}" y2="${y}" marker-end="url(#pta)"/>`;
     out.push(fl(x0 + 70, 42, 1), `<text class="fuerte" x="${x0 + 128}" y="46">R<tspan baseline-shift="sub" font-size="75%">Ed</tspan> = ${fmt(o.REd, 0)} kN</text>`);
     out.push(fl(x1 - 70, 196, -1));
-    let yLey = yL + 34;
+    let yLey = yL + 46;
     const muestras = {
       junta: '<line class="junta" x1="0" y1="0" x2="22" y2="0"/>',
       cosido: '<line class="barra-cos" x1="3" y1="6" x2="19" y2="-6"/>',
@@ -16259,7 +16281,7 @@ svg.dib-ras { min-width: 0; }
       sDib = f?.s ?? D.s;
       if (f) ley.push(["cosido", t("ras.dib.lc", fmt(f.ramas, 0), f.fi, fmt(f.s, 0))]);
     } else if (comp && !sinArm) ley.push(["cosido", t("ras.dib.lc", fmt(D.ramas, 0), D.fi, fmt(D.s, 0))]);
-    poner(centro, h("h2", {}, t("ras.t.junta")), h("div", { class: "lienzo", html: dibujoRasante({ alfa: N.id === "EC2-2023" && !D.anclado ? 90 : D.alfa, sinAlfa: N.id === "EC2-2023" && !D.anclado, L: D.L, s: sDib, sinArmadura: sinArm || !comp && r.caso !== "calculo", rugosa: D.rug !== "muyLisa", REd: D.REd, b: D.b, leyenda: ley }) }), notas3(N, D));
+    poner(centro, h("h2", {}, t("ras.t.junta")), h("div", { class: "lienzo", html: dibujoRasante({ ramas: D.ramas, fi: !comp && r.caso === "calculo" ? (r.tabla.find((k) => k.fi === D.fi && k.s) ?? r.tabla.find((k) => k.s))?.fi : D.fi, alfa: N.id === "EC2-2023" && !D.anclado ? 90 : D.alfa, sinAlfa: N.id === "EC2-2023" && !D.anclado, L: D.L, s: sDib, sinArmadura: sinArm || !comp && r.caso !== "calculo", rugosa: D.rug !== "muyLisa", REd: D.REd, b: D.b, leyenda: ley }) }), notas3(N, D));
     poner(dcha, h("h2", {}, t("cor.t.res")), cifras(cifrasDe2(r, comp, N)));
     if (!comp && r.caso === "calculo") {
       const cab = [t("cor.tabla.fi"), t("ras.tabla.ramas"), t("ras.tabla.asw"), t("ras.tabla.s"), t("ras.tabla.asws")];
