@@ -122,6 +122,7 @@ export default {
   'rg.notaHistoria': 'Compression and shortening positive. φ and ε_cs use the humidity at time t.', 'rg.phiEvolucion': 'φ against t for each loading age',
   'rg.avSigHist': (t0, s, l) => `At the load of t = ${t0} d the accumulated stress (${s} MPa) exceeds 0.45·f_cm (${l} MPa): linear results are not valid.`,
   'rg.avTraccion': (t0) => `At the step of t = ${t0} d the accumulated stress is tensile: the model is not valid with cracking.`,
+  'rg.alternaEscala': 'Click to switch between logarithmic and linear scale', 'rg.phiNota': 'With the humidity of the table at each time t.',
   'rg.fluencia': 'Creep', 'rg.retraccion': 'Shrinkage', 'rg.total': 'Total', 'rg.secado': 'Drying', 'rg.autogena': 'Autogenous',
   'rg.valores': 'Values', 'rg.valorFinal': 'Final value',
   'rg.cuentaSecado': 'Drying shrinkage: ε<sub>cd</sub>(t) = β<sub>ds</sub>(t, t<sub>s</sub>)·k<sub>h</sub>·ε<sub>cd,0</sub>',

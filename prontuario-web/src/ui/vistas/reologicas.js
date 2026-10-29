@@ -12,11 +12,11 @@ import { rejilla } from '../rejilla.js';
 import { filasPlegables } from '../filasPlegables.js';
 import { grafica } from '../grafica.js';
 
-const est = { hormigon: null, cemento: null, HR: 70, Ac: 0.2, u: 2, h0: 200, t0: 28, ts: null, modo: 'final', t: 365, sigma: 0, pestana: 'fluencia', cargas: [['28', '8'], ['90', '4']], humedad: [['28', '70'], ['90', '70'], ['365', '60'], ['1000', '60'], ['3650', '60']] };
+const est = { hormigon: null, cemento: null, HR: 70, Ac: 0.2, u: 2, h0: 200, t0: 28, ts: null, modo: 'final', t: 365, sigma: 0, pestana: 'fluencia', logT: true, cargas: [['28', '8'], ['90', '4']], humedad: [['28', '70'], ['90', '70'], ['365', '60'], ['1000', '60'], ['3650', '60']] };
 const sub = (a, b) => `${a}<sub>${b}</sub>`;
 const U = (ud) => `${ESP}<span class="u u-cab">[${ud}]</span>`;
 
-export function reiniciar() { Object.assign(est, { hormigon: null, cemento: null, HR: 70, Ac: 0.2, u: 2, h0: 200, t0: 28, ts: null, modo: 'final', t: 365, sigma: 0, pestana: 'fluencia', cargas: [['28', '8'], ['90', '4']], humedad: [['28', '70'], ['90', '70'], ['365', '60'], ['1000', '60'], ['3650', '60']] }); }
+export function reiniciar() { Object.assign(est, { hormigon: null, cemento: null, HR: 70, Ac: 0.2, u: 2, h0: 200, t0: 28, ts: null, modo: 'final', t: 365, sigma: 0, pestana: 'fluencia', logT: true, cargas: [['28', '8'], ['90', '4']], humedad: [['28', '70'], ['90', '70'], ['365', '60'], ['1000', '60'], ['3650', '60']] }); }
 
 function hormigonActivo(ctx) {
   const L = ctx.p.hormigones;
@@ -110,7 +110,7 @@ const dias = (x) => fmt(x, x < 10 ? 1 : 0).replace(/\.0$/, '');
 
 function resultadosHistoria(ctx, res, m, N, E) {
   const D = historiaDatos(m, E);
-  const lg = (x) => Math.log10(x);
+  const lg = (x) => (est.logT ? Math.log10(x) : x);
   const centro = h('article', { class: 'panel tarjeta' },
     pestanas({ lista: PESTANAS(), activa: est.pestana, onCambio: (k) => { est.pestana = k; ctx.pintar(); } }),
     h('p', { class: 'sub' }, `${m.nombre} · ${N.corto}`));
@@ -126,16 +126,16 @@ function resultadosHistoria(ctx, res, m, N, E) {
   const H = historia(E.norma, D.o);
   if (est.pestana === 'phi') {
     const T = D.tiempos;
-    const F = tablaFluencia(E.norma, D.o, D.cargas.map((c) => c[0]), T);
+    const PHI = tablaFluencia(E.norma, D.o, D.cargas.map((c) => c[0]), T);
     const cab = [`${sub('t', '0')}${ESP}\\${ESP}t`, ...T.map((x) => dias(x))];
-    poner(centro, h('div', { class: 'lienzo' }, h('div', { class: 'edad' }, tabla(F.map((f, i) => [dias(D.cargas[i][0]), ...f.map((v) => (v === null ? '–' : fmt(v, 2)))]), { cabecera: cab, clase: 'num excel' })), h('p', { class: 'sub' }, `φ(t, ${sub('t', '0')}) · t ${t('rg.eje')} [${t('dias')}], ${sub('t', '0')} ${t('rg.eje2')} [${t('dias')}]`)));
+    poner(centro, h('div', { class: 'lienzo' }, h('div', { class: 'edad' }, tabla(PHI.map((f, i) => [dias(D.cargas[i][0]), ...f.map((v) => (v === null ? '–' : fmt(v, 2)))]), { cabecera: cab, clase: 'num excel' })), h('p', { class: 'sub', html: `φ(t, ${sub('t', '0')}) · t ${t('rg.eje')} [${t('dias')}], ${sub('t', '0')} ${t('rg.eje2')} [${t('dias')}]` })));
     const t0s = D.cargas.slice(0, 5).map((c) => c[0]);
     const series = t0s.map((t0, i) => {
       const ts = logx(t0 * 1.02, Math.max(tMax, t0 * 3), 60);
-      return { nombre: `t₀ = ${dias(t0)} d`, xy: ts.map((tt) => [lg(tt), fluencia(E.norma, { fck: m.fck, HR: humedadEnTabla(D.humedad, tt), h0: est.h0, t0, t: tt, cemento: E.cemento }).phi]), clase: `s${i + 1}` };
+      return { nombre: `t₀ = ${dias(t0)} d`, xy: ts.map((tt) => [lg(tt), fluencia(E.norma, { fck: m.fck, HR: humedadEn(D.humedad, tt), h0: est.h0, t0, t: tt, cemento: E.cemento }).phi]), clase: `s${i + 1}` };
     });
     const dib = h('article', { class: 'panel tarjeta' }, h('h2', { html: `φ(t, ${sub('t', '0')})` }), h('p', { class: 'sub' }, t('rg.phiEvolucion')),
-      h('div', { class: 'lienzo' }, grafica({ series, ejeX: { titulo: 'log₁₀ t [días]', d: 2 }, ejeY: { titulo: 'φ(t, t₀)', d: 2 }, archivo: 'fluencia-historia', avisar: ctx.avisar })));
+      h('div', { class: 'lienzo' }, grafica({ series, ejeX: { titulo: est.logT ? 'log₁₀ t [días]' : 't [días]', d: est.logT ? 2 : 0, alternar: () => { est.logT = !est.logT; ctx.pintar(); }, ayuda: t('rg.alternaEscala') }, ejeY: { titulo: 'φ(t, t₀)', d: 2 }, archivo: 'fluencia-historia', avisar: ctx.avisar })));
     return poner(res, h('div', { class: 'cuerpo' }, centro, dib));
   }
   const series = [
@@ -143,7 +143,7 @@ function resultadosHistoria(ctx, res, m, N, E) {
     { nombre: t('rg.elastica'), xy: serie('elastica'), clase: 's2' },
     { nombre: t('rg.diferida'), xy: serie('diferida'), clase: 's3' },
     { nombre: t('rg.retraccion'), xy: serie('retraccion'), clase: 's4' }];
-  poner(centro, h('div', { class: 'lienzo' }, grafica({ series, ejeX: { titulo: 'log₁₀ t [días]', d: 2 }, ejeY: { titulo: 'ε [‰]', d: 3 }, archivo: 'historia-deformaciones', avisar: ctx.avisar })));
+  poner(centro, h('div', { class: 'lienzo' }, grafica({ series, ejeX: { titulo: est.logT ? 'log₁₀ t [días]' : 't [días]', d: est.logT ? 2 : 0, alternar: () => { est.logT = !est.logT; ctx.pintar(); }, ayuda: t('rg.alternaEscala') }, ejeY: { titulo: 'ε [‰]', d: 3 }, archivo: 'historia-deformaciones', avisar: ctx.avisar })));
   const e = (x) => fmt(x * 1e6, 0);
   const fil = H.map((g) => [dias(g.t), fmt(g.HR, 0), e(g.elastica), e(g.diferida), e(g.retraccion), e(g.total)]);
   const cab = [`t<br><span class="u u-cab">[${t('dias')}]</span>`, `HR<br><span class="u u-cab">[%]</span>`, `${sub('ε', 'el')}<br><span class="u u-cab">[·10⁻⁶]</span>`, `${sub('ε', 'dif')}<br><span class="u u-cab">[·10⁻⁶]</span>`, `${sub('ε', 'cs')}<br><span class="u u-cab">[·10⁻⁶]</span>`, `${sub('ε', 'tot')}<br><span class="u u-cab">[·10⁻⁶]</span>`];
@@ -155,8 +155,6 @@ function resultadosHistoria(ctx, res, m, N, E) {
   for (const [t0, ds] of D.cargas) { acum += ds; if (acum > 0.45 * E.q.fcm) avisos.push(['', t('rg.avSigHist', dias(t0), fmt(acum, 1), fmt(0.45 * E.q.fcm, 1))]); if (acum < 0) avisos.push(['', t('rg.avTraccion', dias(t0))]); }
   poner(res, ...avisos.slice(0, 2).map(([k, x]) => aviso(x, k)), h('div', { class: 'cuerpo' }, centro, tarjeta));
 }
-
-const humedadEnTabla = (tabla_, tt) => humedadEn(tabla_, tt);
 
 export function resultados(ctx, res) {
   const m = hormigonActivo(ctx);

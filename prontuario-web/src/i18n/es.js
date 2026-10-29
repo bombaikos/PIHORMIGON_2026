@@ -127,6 +127,7 @@ export default {
   'rg.notaHistoria': 'Compresión y acortamiento positivos. φ y ε_cs con la humedad del instante t.', 'rg.phiEvolucion': 'Evolución de φ con t para cada edad de carga',
   'rg.avSigHist': (t0, s, l) => `Con la carga de t = ${t0} d la tensión acumulada (${s} MPa) supera 0,45·f_cm (${l} MPa): los resultados lineales no valen.`,
   'rg.avTraccion': (t0) => `Con el escalón de t = ${t0} d la tensión acumulada es de tracción: el modelo no vale con fisuración.`,
+  'rg.alternaEscala': 'Pulsa para alternar escala logarítmica y lineal', 'rg.phiNota': 'Con la humedad de la tabla en cada instante t.',
   'rg.fluencia': 'Fluencia', 'rg.retraccion': 'Retracción', 'rg.total': 'Total', 'rg.secado': 'Secado', 'rg.autogena': 'Autógena',
   'rg.valores': 'Valores', 'rg.valorFinal': 'Valor final',
   'rg.cuentaSecado': 'Retracción por secado: ε<sub>cd</sub>(t) = β<sub>ds</sub>(t, t<sub>s</sub>)·k<sub>h</sub>·ε<sub>cd,0</sub>',

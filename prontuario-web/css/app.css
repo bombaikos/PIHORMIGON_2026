@@ -484,6 +484,8 @@ table.rejilla tr.foco td { background: var(--acento-suave); }
 .grafica svg.graf { flex: 1; min-height: 0; width: 100%; display: block; touch-action: none; user-select: none; cursor: crosshair; }
 .graf text { fill: var(--tinta-2); font: calc(12px + var(--mas)) var(--f); font-variant-numeric: tabular-nums; }
 .graf .tit-eje { fill: var(--tinta-2); font-weight: 600; }
+.graf .tit-eje.alt { cursor: pointer; text-decoration: underline dotted; }
+.graf .tit-eje.alt:hover { fill: var(--acento); }
 .graf .etq-punto { fill: var(--tinta); font-weight: 600; }
 .graf .punto-calculo { fill: var(--hoja); stroke: var(--tinta); stroke-width: 2; }
 .graf .punto-calculo.ok { fill: var(--ok); stroke: var(--hoja); }
