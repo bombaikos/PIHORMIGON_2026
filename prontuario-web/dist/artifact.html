@@ -5043,6 +5043,9 @@ svg.dib-ras { min-width: 0; }
     "ras.cosido": "Armadura de cosido",
     "ras.anclaje": "Anclaje del cosido",
     "ras.anclado": "Anclado hasta f<sub>yd</sub> (plastifica)",
+    "ras.anclado2": "Cosido anclado a ambos lados de la junta",
+    "ras.av.noAnclado": "El cosido no est\xE1 anclado a ambos lados de la junta: la norma solo cuenta la armadura bien anclada, as\xED que se comprueba la junta sin cosido",
+    "ras.av.noAncladoDim": "Recuerda anclar el cosido a ambos lados de la junta: la norma solo cuenta la armadura bien anclada",
     "ras.sinArmNota": "Sin armadura de cosido: la junta resiste solo la adherencia",
     "ras.noAnclado": "No anclado del todo",
     "ras.acero": "Acero",
@@ -5181,6 +5184,9 @@ svg.dib-ras { min-width: 0; }
     "ras.cosido": "Tie reinforcement",
     "ras.anclaje": "Tie anchorage",
     "ras.anclado": "Anchored to f<sub>yd</sub> (yields)",
+    "ras.anclado2": "Ties anchored on both sides of the joint",
+    "ras.av.noAnclado": "The ties are not anchored on both sides of the joint: the code only counts well anchored reinforcement, so the joint is checked without ties",
+    "ras.av.noAncladoDim": "Remember to anchor the ties on both sides of the joint: the code only counts well anchored reinforcement",
     "ras.sinArmNota": "No tie reinforcement: the joint resists adhesion only",
     "ras.noAnclado": "Not fully anchored",
     "ras.acero": "Steel",
@@ -16078,7 +16084,7 @@ svg.dib-ras { min-width: 0; }
       h: D.h,
       emin: D.emin,
       ramas: D.ramas,
-      sinArmadura: !dimensionando && D.sin,
+      sinArmadura: !dimensionando && (D.sin || nuc3(p).id !== "EC2-2023" && !D.anclado),
       arm: { fi: D.fi, ramas: D.ramas, s: D.s }
     };
   }
@@ -16148,10 +16154,10 @@ svg.dib-ras { min-width: 0; }
         const cuerpo = h(
           "div",
           { class: "cuerpo-arm" },
-          e23 ? h("label", { class: "tick" }, h("input", { type: "checkbox", id: "r-anc", checked: D.anclado, onchange: (e2) => {
+          h("label", { class: "tick" }, h("input", { type: "checkbox", id: "r-anc", checked: D.anclado, onchange: (e2) => {
             D.anclado = e2.target.checked;
             ctx2.pintar();
-          } }), h("span", { html: t("ras.anclado") })) : null,
+          } }), h("span", { html: t(e23 ? "ras.anclado" : "ras.anclado2") })),
           h(
             "div",
             { class: "par2" },
@@ -16236,6 +16242,7 @@ svg.dib-ras { min-width: 0; }
       const rhoTxt = fmt(r.rhoNec * 1e3, 2);
       res.append(veredicto("cumple", t("cor.ver.valida"), t("ras.armNec"), qh(r.AswSNec / 1e3, "AswS"), t("ras.ver.nec", rhoTxt, kN(D.REd))));
     }
+    if (N.id !== "EC2-2023" && !D.anclado) avisos4.push(aviso(t(comp ? "ras.av.noAnclado" : "ras.av.noAncladoDim")));
     if (avisos4.length) res.append(h("div", { class: "avisos" }, ...avisos4));
     const sinArm = comp ? !!x.sinArmadura : r.caso !== "calculo";
     const ley = [["h2", t("ras.dib.l2", D.hormigon2)], ["h1", t("ras.dib.l1", D.hormigon1)], ["junta", t("ras.dib.lj", t(`ras.rug.${D.rug}`).toLowerCase())]];

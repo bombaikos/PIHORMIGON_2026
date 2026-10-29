@@ -47,7 +47,7 @@ function entrada(p, D, { dimensionando = false } = {}) {
   return {
     fck: Math.min(h1.fck, h2.fck), fykCosido: ace.fyk, rug: D.rug, b: D.b, L: D.L, REd: D.REd, sigN: D.sigN, alfa: D.alfa,
     fatiga: D.fatiga, anclado: D.anclado, topping: D.topping, bordeCerca: D.bordeCerca, h: D.h, emin: D.emin, ramas: D.ramas,
-    sinArmadura: !dimensionando && D.sin, arm: { fi: D.fi, ramas: D.ramas, s: D.s },
+    sinArmadura: !dimensionando && (D.sin || (nuc(p).id !== 'EC2-2023' && !D.anclado)), arm: { fi: D.fi, ramas: D.ramas, s: D.s },
   };
 }
 
@@ -92,7 +92,7 @@ export function datos(ctx, form) {
       ...opciones.map(([k, etq]) => h('label', { class: 'tick' }, h('input', { type: 'checkbox', id: `r-${k}`, checked: D[k], onchange: (e) => { D[k] = e.target.checked; cambio(); } }), h('span', { html: etq })))),
     (() => {
       const cuerpo = h('div', { class: 'cuerpo-arm' },
-        e23 ? h('label', { class: 'tick' }, h('input', { type: 'checkbox', id: 'r-anc', checked: D.anclado, onchange: (e) => { D.anclado = e.target.checked; ctx.pintar(); } }), h('span', { html: t('ras.anclado') })) : null,
+        h('label', { class: 'tick' }, h('input', { type: 'checkbox', id: 'r-anc', checked: D.anclado, onchange: (e) => { D.anclado = e.target.checked; ctx.pintar(); } }), h('span', { html: t(e23 ? 'ras.anclado' : 'ras.anclado2') })),
         h('div', { class: 'par2' },
           selector({ id: 'r-ace', linea: true, etq: t('ras.acero'), opciones: p.aceros.map((m) => [m.nombre, m.nombre]), valor: D.aceroCosido, onCambio: (v) => { D.aceroCosido = v; cambio(); } }),
           (e23 && !D.anclado) ? null : campoNum({ id: 'r-alfa', etq: 'α', valor: D.alfa, mag: 'ang', paso: 5, min: N.ALFA_MIN, max: e23 && D.rug === 'muyLisa' ? 90 : N.ALFA_MAX, ayuda: t('ras.alfaAyuda', N.ALFA_MIN, N.ALFA_MAX), onCambio: set('alfa') })),
@@ -151,6 +151,7 @@ export function resultados(ctx, res) {
     const rhoTxt = fmt(r.rhoNec * 1000, 2);
     res.append(veredicto('cumple', t('cor.ver.valida'), t('ras.armNec'), qh(r.AswSNec / 1000, 'AswS'), t('ras.ver.nec', rhoTxt, kN(D.REd))));
   }
+  if (N.id !== 'EC2-2023' && !D.anclado) avisos.push(aviso(t(comp ? 'ras.av.noAnclado' : 'ras.av.noAncladoDim')));
   if (avisos.length) res.append(h('div', { class: 'avisos' }, ...avisos));
 
   // Centro: alzado de la junta
