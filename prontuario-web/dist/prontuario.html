@@ -4461,6 +4461,7 @@ svg.dib-ras { min-width: 0; }
     "cor.n.ec": "Criterios de esta pantalla",
     "cor.ecNota": "Con cercos solo suma la celos\xEDa: el hormig\xF3n no aporta (a diferencia de la EHE-08). Sin tope de 400 MPa en f<sub>ywd</sub>. \u03B1<sub>cw</sub> = 1 (el axil no lo modifica). Con cercos circulares no hay reducci\xF3n de 0,85. b<sub>w</sub>, d y z = 0,9 d como en el resto del Prontuario.",
     // EC-2 2023
+    "cor.MEdOpc": "Momento (opcional)",
     "cor.MEd": sub5("M", "Ed"),
     "cor.MEdAyuda": "Momento de c\xE1lculo en la misma secci\xF3n que V_Ed (valor absoluto). Opcional: con 0 no se usa. Da la esbeltez de cortante a_cs = M_Ed/V_Ed, que reduce d en V_Rd,c (8.2.2(3)), y la fuerza F_td del cord\xF3n (8.51)",
     "cor.NEdNota23": "Compresi\xF3n +, tracci\xF3n \u2212.",
@@ -4624,6 +4625,7 @@ svg.dib-ras { min-width: 0; }
     "cor.n.ec": "Criteria used here",
     "cor.ecNota": "With stirrups only the truss counts: the concrete adds nothing (unlike EHE-08). No 400 MPa cap on f<sub>ywd</sub>. \u03B1<sub>cw</sub> = 1 (the axial force does not change it). No 0.85 reduction for circular hoops. b<sub>w</sub>, d and z = 0.9 d as in the rest of the Prontuario.",
     // EC-2 2023
+    "cor.MEdOpc": "Moment (optional)",
     "cor.MEd": sub6("M", "Ed"),
     "cor.MEdAyuda": "Design moment at the same section as V_Ed (absolute value). Optional: 0 = not used. Gives the shear span a_cs = M_Ed/V_Ed, which reduces d in V_Rd,c (8.2.2(3)), and the chord force F_td (8.51)",
     "cor.NEdNota23": "Compression +, tension \u2212.",
@@ -13572,13 +13574,18 @@ svg.dib-ras { min-width: 0; }
           campoNum({ id: "c-ned", etq: t("cor.NEd"), ref: t("cor.NEdRef"), valor: est6.NEd, mag: "N", paso: 10, min: -1e6, max: 1e6, ayuda: t("cor.NEdNota"), onCambio: (v2) => {
             est6.NEd = v2;
             cambio();
-          } }),
-          e23 ? campoNum({ id: "c-med", etq: t("cor.MEd"), valor: est6.MEd, mag: "M", paso: 10, min: 0, max: 1e7, ayuda: t("cor.MEdAyuda"), onCambio: (v2) => {
+          } })
+        ]),
+        h("p", { class: "nota-ned", html: t(e23 ? "cor.NEdNota23" : "cor.NEdNota") }),
+        e23 ? h(
+          "details",
+          { class: "pleg", open: est6.MEd > 0 ? true : null },
+          h("summary", {}, t("cor.MEdOpc")),
+          ...parejas([campoNum({ id: "c-med", etq: t("cor.MEd"), valor: est6.MEd, mag: "M", paso: 10, min: 0, max: 1e7, ayuda: t("cor.MEdAyuda"), onCambio: (v2) => {
             est6.MEd = v2;
             cambio();
-          } }) : null
-        ]),
-        h("p", { class: "nota-ned", html: t(e23 ? "cor.NEdNota23" : "cor.NEdNota") })
+          } })])
+        ) : null
       ),
       grupo(
         t("cor.datosCalc"),
@@ -13852,7 +13859,7 @@ svg.dib-ras { min-width: 0; }
       f.push(fila2(
         "long",
         t("cor.ec.r.long"),
-        r.long.dT == null ? `a<sub>l</sub> ${q(r.long.sd, "long")}` : `\u0394F<sub>td</sub> ${q(r.long.dT, "N")}`,
+        r.long.dT == null ? `a<sub>l</sub> ${fmt(r.long.sd, 0)} mm` : `\u0394F<sub>td</sub> ${q(r.long.dT, "N")}`,
         `<span class="f">${t("cor.ec.f.long")}</span><span class="n">${r.long.dT == null ? "" : `\u0394F<sub>td</sub> = ${n13(r.long.dT, 0)} kN \xB7 `}a<sub>l</sub> = ${n13(r.long.sd, 0)} mm</span>${art3("6.2.3(7); 9.2.1.3(2)")}`
       ));
     } else if (r.caso !== "biela") {
@@ -13920,7 +13927,7 @@ svg.dib-ras { min-width: 0; }
   function longitudinal23(r) {
     const n13 = (v2, d = 2) => fmt(v2, d);
     const l = r.long;
-    const val = l.dT == null ? `a<sub>l</sub> ${q(l.sd, "long")}` : `\u0394F<sub>td</sub> ${q(l.dT, "N")}`;
+    const val = l.dT == null ? `a<sub>l</sub> ${fmt(l.sd, 0)} mm` : `\u0394F<sub>td</sub> ${q(l.dT, "N")}`;
     const cuenta = `${l.dT == null ? "" : `N<sub>Vd</sub> = ${n13(l.NVd, 0)} kN \u2192 \u0394F<sub>td</sub> = N<sub>Vd</sub>/2 = ${n13(l.dT, 0)} kN \xB7 `}${l.Ftd != null ? `F<sub>td</sub> = ${n13(l.Ftd, 0)} kN \xB7 ` : ""}a<sub>l</sub> = ${n13(l.sd, 0)} mm`;
     return fila2("long", t("cor.ec.r.long"), val, `<span class="f">${t("cor.e3.f.long")}</span><span class="n">${cuenta}</span>${art3("8.2.3(8); 12.3.2(1)")}`);
   }
