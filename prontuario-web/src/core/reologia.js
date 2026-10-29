@@ -186,3 +186,50 @@ export function fluenciaNoLineal(norma, phi, sigma, { fck, fcmT0, t0 }) {
   }
   return phi; // la EHE-08 remite a la bibliografía
 }
+
+/* ---------------- historia de cargas y humedad (como el módulo de Materiales del Prontuario 3.1) ---------------- */
+
+/** Humedad relativa a la edad t por interpolación lineal de la tabla [t, HR]; constante fuera de ella. */
+export function humedadEn(tabla, t) {
+  const T = tabla.slice().sort((a, b) => a[0] - b[0]);
+  if (!T.length) return NaN;
+  if (t <= T[0][0]) return T[0][1];
+  for (let i = 1; i < T.length; i++) {
+    if (t <= T[i][0]) return T[i][0] === T[i - 1][0] ? T[i][1] : T[i - 1][1] + ((T[i][1] - T[i - 1][1]) * (t - T[i - 1][0])) / (T[i][0] - T[i - 1][0]);
+  }
+  return T.at(-1)[1];
+}
+
+/**
+ * Deformaciones diferidas bajo una historia de escalones de tensión, con la superposición lineal de las tres normas:
+ *   ε_el(t)  = Σ Δσj / Ec,t0j                (t0j ≤ t)
+ *   ε_dif(t) = Σ Δσj · φ(t, t0j) / Ec28      (Ec28: módulo tangente a 28 días; 1,05·Ecm si la norma no lo da)
+ *   ε_cs(t)  = retracción de la norma con la HR que hay en t
+ * Compresión y acortamiento positivos. φ y ε_cs usan la humedad que hay en el instante t (como el 3.1).
+ * @param {string} norma
+ * @param {{fck:number, fcm:number, fctm:number, Ecm:number, Ec28?:number, cemento?:'S'|'N'|'R', h0:number, ts:number,
+ *          cargas:number[][], humedad:number[][], tiempos:number[]}} o
+ *   cargas: [t0, Δσ] en días y MPa; humedad: [t, HR]; tiempos: edades en las que se dan los resultados
+ * @returns {{t:number, HR:number, elastica:number, diferida:number, retraccion:number, total:number}[]}
+ */
+export function historia(norma, { fck, fcm, fctm, Ecm, Ec28, cemento = 'N', h0, ts, cargas, humedad, tiempos }) {
+  const Ec0 = Ec28 ?? 1.05 * Ecm;
+  const E0 = cargas.map(([t0]) => evolucionEdad(norma, { fck, fcm, fctm, Ecm, cemento, t: t0 }).Ecm);
+  return tiempos.map((t) => {
+    const HR = humedadEn(humedad, t);
+    let elastica = 0;
+    let diferida = 0;
+    cargas.forEach(([t0, ds], j) => {
+      if (t < t0) return;
+      elastica += ds / E0[j];
+      if (t > t0) diferida += (ds * fluencia(norma, { fck, HR, h0, t0, t, cemento }).phi) / Ec0;
+    });
+    const rc = -retraccion(norma, { fck, HR, h0, t, ts, cemento }).total;
+    return { t, HR, elastica, diferida, retraccion: rc, total: elastica + diferida + rc };
+  });
+}
+
+/** Coeficientes φ(t, t0) en una tabla: filas t0, columnas t; null si t ≤ t0. La HR es la de la tabla en cada t. */
+export function tablaFluencia(norma, { fck, cemento = 'N', h0, humedad }, t0s, ts) {
+  return t0s.map((t0) => ts.map((t) => (t > t0 ? fluencia(norma, { fck, HR: humedadEn(humedad, t), h0, t0, t, cemento }).phi : null)));
+}

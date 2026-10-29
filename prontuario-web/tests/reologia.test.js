@@ -93,3 +93,22 @@ test('edad: βcc(28) = 1 y crecimiento monótono; el EC-2 2023 usa sus propios s
   assert.equal(edadFinal('EC2-2023'), T_FINAL_2023);
   assert.equal(edadFinal('EHE-08'), Infinity);
 });
+
+test('Historia de cargas: elástica + diferida + retracción, humedad interpolada', async () => {
+  const { historia, humedadEn, tablaFluencia } = await import('../src/core/reologia.js');
+  assert.equal(humedadEn([[28, 80], [100, 60]], 64), 70);
+  assert.equal(humedadEn([[28, 80], [100, 60]], 10), 80);
+  assert.equal(humedadEn([[28, 80], [100, 60]], 500), 60);
+  const o = { fck: 30, fcm: 38, fctm: 2.9, Ecm: 32837, Ec28: 34479, cemento: 'N', h0: 200, ts: 7, cargas: [[28, 10], [90, 5]], humedad: [[28, 70], [3650, 70]], tiempos: [10, 28, 60, 90, 365, 3650] };
+  const H = historia('EHE-08', o);
+  assert.equal(H[0].elastica, 0); // antes de cargar
+  assert.ok(H[0].retraccion > 0 && H[0].retraccion < H[5].retraccion);
+  cerca(H[1].elastica, 10 / evolucionEdad('EHE-08', { fck: 30, fcm: 38, fctm: 2.9, Ecm: 32837, t: 28 }).Ecm, 1e-12, 'elástica a 28 d');
+  assert.equal(H[1].diferida, 0); // en el mismo día de la carga no hay diferida
+  const phi = fluencia('EHE-08', { fck: 30, HR: 70, h0: 200, t0: 28, t: 365 }).phi;
+  cerca(H[4].diferida, (10 * phi + 5 * fluencia('EHE-08', { fck: 30, HR: 70, h0: 200, t0: 90, t: 365 }).phi) / 34479, 1e-12, 'diferida a 365 d');
+  cerca(H[4].total, H[4].elastica + H[4].diferida + H[4].retraccion, 1e-15, 'total');
+  const F = tablaFluencia('EHE-08', o, [28, 90], [28, 90, 365]);
+  assert.equal(F[0][0], null);
+  cerca(F[0][2], phi, 1e-12, 'φ(365, 28)');
+});

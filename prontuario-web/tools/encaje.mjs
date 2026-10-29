@@ -16,6 +16,8 @@ const PANTALLAS = [
   ['Materiales · puntos', 'materiales', [(p) => p.selectOption('#m-diag', 'puntos')]],
   ['Materiales · acero', 'materiales', [async (p) => { await p.click('.selsec .desp:nth-child(2) > button'); await p.click('.menu-sec button[role=option]'); }]],
   ['Propiedades reológicas', 'reologicas', []],
+  ['Reológicas · historia', 'reologicas', [(p) => p.click('text=Historia')]],
+  ['Reológicas · tabla φ', 'reologicas', [(p) => p.click('text=Tabla φ')]],
   ['Secciones · rec viga', 'secciones', []],
   ['Durabilidad', 'durabilidad', []],
   ['Secciones · diagramas M-κ', 'diagramas', []],
