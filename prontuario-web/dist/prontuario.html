@@ -5053,6 +5053,9 @@ svg.dib-ras { min-width: 0; }
     "ras.anclado2": "Cosido anclado a ambos lados de la junta",
     "ras.av.noAnclado": "El cosido no est\xE1 anclado a ambos lados de la junta: la norma solo cuenta la armadura bien anclada, as\xED que se comprueba la junta sin cosido",
     "ras.av.noAncladoDim": "Recuerda anclar el cosido a ambos lados de la junta: la norma solo cuenta la armadura bien anclada",
+    "ras.anc.total": "Total",
+    "ras.anc.parcial": "Parcial",
+    "ras.anc.insuf": "Insuficiente",
     "ras.sinArmNota": "Sin armadura de cosido: la junta resiste solo la adherencia",
     "ras.noAnclado": "No anclado del todo",
     "ras.acero": "Acero",
@@ -5196,6 +5199,9 @@ svg.dib-ras { min-width: 0; }
     "ras.anclado2": "Ties anchored on both sides of the joint",
     "ras.av.noAnclado": "The ties are not anchored on both sides of the joint: the code only counts well anchored reinforcement, so the joint is checked without ties",
     "ras.av.noAncladoDim": "Remember to anchor the ties on both sides of the joint: the code only counts well anchored reinforcement",
+    "ras.anc.total": "Full",
+    "ras.anc.parcial": "Partial",
+    "ras.anc.insuf": "Insufficient",
     "ras.sinArmNota": "No tie reinforcement: the joint resists adhesion only",
     "ras.noAnclado": "Not fully anchored",
     "ras.acero": "Steel",
@@ -16071,7 +16077,7 @@ svg.dib-ras { min-width: 0; }
     h: 0,
     emin: 0,
     fatiga: false,
-    anclado: true,
+    anclaje: "total",
     topping: false,
     bordeCerca: false,
     sin: false,
@@ -16088,6 +16094,7 @@ svg.dib-ras { min-width: 0; }
     if (!p.hormigones.some((m) => m.nombre === D.hormigon2)) D.hormigon2 = hor(/25/);
     if (!p.aceros.some((m) => m.nombre === D.aceroCosido)) D.aceroCosido = (p.aceros.find((m) => /500/.test(m.nombre)) ?? p.aceros[0])?.nombre ?? null;
     if (N && !(D.rug in N.RUGOSIDADES)) D.rug = N.id === "EHE-08" ? "alta" : "rugosa";
+    if (N && N.id !== "EC2-2023" && D.anclaje === "parcial") D.anclaje = "total";
     return D;
   }
   var diametrosEntrada3 = () => serieDiametros().filter((x) => x >= 6 && x <= 25);
@@ -16107,13 +16114,13 @@ svg.dib-ras { min-width: 0; }
       sigN: D.sigN,
       alfa: D.alfa,
       fatiga: D.fatiga,
-      anclado: D.anclado,
+      anclado: D.anclaje !== "parcial",
       topping: D.topping,
       bordeCerca: D.bordeCerca,
       h: D.h,
       emin: D.emin,
       ramas: D.ramas,
-      sinArmadura: !dimensionando && (D.sin || nuc3(p).id !== "EC2-2023" && !D.anclado),
+      sinArmadura: !dimensionando && (D.sin || D.anclaje === "insuf"),
       arm: { fi: D.fi, ramas: D.ramas, s: D.s }
     };
   }
@@ -16141,7 +16148,7 @@ svg.dib-ras { min-width: 0; }
     const rugs = Object.keys(N.RUGOSIDADES);
     const opciones = [];
     if (!e23) opciones.push(["fatiga", t("ras.fatiga")]);
-    if (e23 && !D.anclado) opciones.push(["topping", t("ras.topping")], ["bordeCerca", t("ras.bordeCerca")]);
+    if (e23 && D.anclaje === "parcial") opciones.push(["topping", t("ras.topping")], ["bordeCerca", t("ras.bordeCerca")]);
     poner(
       form,
       segmentado({ ancho: true, etiqueta: t("flex.modo"), opciones: [["comprobar", t("comprobar")], ["dimensionar", t("dimensionar")]], valor: est8.modo, onCambio: (m) => {
@@ -16183,10 +16190,10 @@ svg.dib-ras { min-width: 0; }
         const cuerpo = h(
           "div",
           { class: "cuerpo-arm" },
-          h("label", { class: "tick" }, h("input", { type: "checkbox", id: "r-anc", checked: D.anclado, onchange: (e2) => {
-            D.anclado = e2.target.checked;
+          segmentado({ ancho: true, etiqueta: t("ras.anclaje"), opciones: [["total", t("ras.anc.total")], ...e23 ? [["parcial", t("ras.anc.parcial")]] : [], ["insuf", t("ras.anc.insuf")]], valor: D.anclaje, onCambio: (v2) => {
+            D.anclaje = v2;
             ctx2.pintar();
-          } }), h("span", { html: t(e23 ? "ras.anclado" : "ras.anclado2") })),
+          } }),
           h(
             "div",
             { class: "par2" },
@@ -16194,7 +16201,7 @@ svg.dib-ras { min-width: 0; }
               D.aceroCosido = v2;
               cambio();
             } }),
-            e23 && !D.anclado ? null : campoNum({ id: "r-alfa", etq: "\u03B1", valor: D.alfa, mag: "ang", paso: 5, min: N.ALFA_MIN, max: e23 && D.rug === "muyLisa" ? 90 : N.ALFA_MAX, ayuda: t("ras.alfaAyuda", N.ALFA_MIN, N.ALFA_MAX), onCambio: set("alfa") })
+            e23 && D.anclaje === "parcial" ? null : campoNum({ id: "r-alfa", etq: "\u03B1", valor: D.alfa, mag: "ang", paso: 5, min: N.ALFA_MIN, max: e23 && D.rug === "muyLisa" ? 90 : N.ALFA_MAX, ayuda: t("ras.alfaAyuda", N.ALFA_MIN, N.ALFA_MAX), onCambio: set("alfa") })
           ),
           ...parejas3([
             comp ? selector({ id: "r-fi", etq: t("cor.fi"), linea: true, opciones: diametrosEntrada3().map((x) => [String(x), `\xF8${x}`]), valor: String(D.fi), onCambio: (v2) => {
@@ -16271,7 +16278,7 @@ svg.dib-ras { min-width: 0; }
       const rhoTxt = fmt(r.rhoNec * 1e3, 2);
       res.append(veredicto("cumple", t("cor.ver.valida"), t("ras.armNec"), qh(r.AswSNec / 1e3, "AswS"), t("ras.ver.nec", rhoTxt, kN(D.REd))));
     }
-    if (N.id !== "EC2-2023" && !D.anclado) avisos4.push(aviso(t(comp ? "ras.av.noAnclado" : "ras.av.noAncladoDim")));
+    if (D.anclaje === "insuf") avisos4.push(aviso(t(comp ? "ras.av.noAnclado" : "ras.av.noAncladoDim")));
     if (avisos4.length) res.append(h("div", { class: "avisos" }, ...avisos4));
     const sinArm = comp ? !!x.sinArmadura : r.caso !== "calculo";
     const ley = [["h2", t("ras.dib.l2", D.hormigon2)], ["h1", t("ras.dib.l1", D.hormigon1)], ["junta", t("ras.dib.lj", t(`ras.rug.${D.rug}`).toLowerCase())]];
@@ -16281,7 +16288,7 @@ svg.dib-ras { min-width: 0; }
       sDib = f?.s ?? D.s;
       if (f) ley.push(["cosido", t("ras.dib.lc", fmt(f.ramas, 0), f.fi, fmt(f.s, 0))]);
     } else if (comp && !sinArm) ley.push(["cosido", t("ras.dib.lc", fmt(D.ramas, 0), D.fi, fmt(D.s, 0))]);
-    poner(centro, h("h2", {}, t("ras.t.junta")), h("div", { class: "lienzo", html: dibujoRasante({ ramas: D.ramas, fi: !comp && r.caso === "calculo" ? (r.tabla.find((k) => k.fi === D.fi && k.s) ?? r.tabla.find((k) => k.s))?.fi : D.fi, alfa: N.id === "EC2-2023" && !D.anclado ? 90 : D.alfa, sinAlfa: N.id === "EC2-2023" && !D.anclado, L: D.L, s: sDib, sinArmadura: sinArm || !comp && r.caso !== "calculo", rugosa: D.rug !== "muyLisa", REd: D.REd, b: D.b, leyenda: ley }) }), notas3(N, D));
+    poner(centro, h("h2", {}, t("ras.t.junta")), h("div", { class: "lienzo", html: dibujoRasante({ ramas: D.ramas, fi: !comp && r.caso === "calculo" ? (r.tabla.find((k) => k.fi === D.fi && k.s) ?? r.tabla.find((k) => k.s))?.fi : D.fi, alfa: D.anclaje === "parcial" ? 90 : D.alfa, sinAlfa: D.anclaje === "parcial", L: D.L, s: sDib, sinArmadura: sinArm || !comp && r.caso !== "calculo", rugosa: D.rug !== "muyLisa", REd: D.REd, b: D.b, leyenda: ley }) }), notas3(N, D));
     poner(dcha, h("h2", {}, t("cor.t.res")), cifras(cifrasDe2(r, comp, N)));
     if (!comp && r.caso === "calculo") {
       const cab = [t("cor.tabla.fi"), t("ras.tabla.ramas"), t("ras.tabla.asw"), t("ras.tabla.s"), t("ras.tabla.asws")];

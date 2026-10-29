@@ -19,7 +19,7 @@ export function reiniciar() { est.abiertos = new Set(); }
 const INICIAL = () => ({
   hormigon1: null, hormigon2: null, aceroCosido: null, rug: null,
   b: 200, L: 1000, REd: 200, sigN: 0, alfa: 90, h: 0, emin: 0,
-  fatiga: false, anclado: true, topping: false, bordeCerca: false,
+  fatiga: false, anclaje: 'total', topping: false, bordeCerca: false,
   sin: false, fi: 8, ramas: 2, s: 100,
 });
 
@@ -32,6 +32,7 @@ function datosDe(p, N) {
   if (!p.hormigones.some((m) => m.nombre === D.hormigon2)) D.hormigon2 = hor(/25/);
   if (!p.aceros.some((m) => m.nombre === D.aceroCosido)) D.aceroCosido = (p.aceros.find((m) => /500/.test(m.nombre)) ?? p.aceros[0])?.nombre ?? null;
   if (N && !(D.rug in N.RUGOSIDADES)) D.rug = N.id === 'EHE-08' ? 'alta' : 'rugosa';
+  if (N && N.id !== 'EC2-2023' && D.anclaje === 'parcial') D.anclaje = 'total';
   return D;
 }
 
@@ -46,8 +47,8 @@ function entrada(p, D, { dimensionando = false } = {}) {
   if (!h1 || !h2 || !ace) return null;
   return {
     fck: Math.min(h1.fck, h2.fck), fykCosido: ace.fyk, rug: D.rug, b: D.b, L: D.L, REd: D.REd, sigN: D.sigN, alfa: D.alfa,
-    fatiga: D.fatiga, anclado: D.anclado, topping: D.topping, bordeCerca: D.bordeCerca, h: D.h, emin: D.emin, ramas: D.ramas,
-    sinArmadura: !dimensionando && (D.sin || (nuc(p).id !== 'EC2-2023' && !D.anclado)), arm: { fi: D.fi, ramas: D.ramas, s: D.s },
+    fatiga: D.fatiga, anclado: D.anclaje !== 'parcial', topping: D.topping, bordeCerca: D.bordeCerca, h: D.h, emin: D.emin, ramas: D.ramas,
+    sinArmadura: !dimensionando && (D.sin || D.anclaje === 'insuf'), arm: { fi: D.fi, ramas: D.ramas, s: D.s },
   };
 }
 
@@ -73,7 +74,7 @@ export function datos(ctx, form) {
   const rugs = Object.keys(N.RUGOSIDADES);
   const opciones = [];
   if (!e23) opciones.push(['fatiga', t('ras.fatiga')]);
-  if (e23 && !D.anclado) opciones.push(['topping', t('ras.topping')], ['bordeCerca', t('ras.bordeCerca')]);
+  if (e23 && D.anclaje === 'parcial') opciones.push(['topping', t('ras.topping')], ['bordeCerca', t('ras.bordeCerca')]);
   poner(form,
     segmentado({ ancho: true, etiqueta: t('flex.modo'), opciones: [['comprobar', t('comprobar')], ['dimensionar', t('dimensionar')]], valor: est.modo, onCambio: (m) => { est.modo = m; ctx.pintar(); } }),
     grupo(t('ras.junta'),
@@ -92,10 +93,10 @@ export function datos(ctx, form) {
       ...opciones.map(([k, etq]) => h('label', { class: 'tick' }, h('input', { type: 'checkbox', id: `r-${k}`, checked: D[k], onchange: (e) => { D[k] = e.target.checked; cambio(); } }), h('span', { html: etq })))),
     (() => {
       const cuerpo = h('div', { class: 'cuerpo-arm' },
-        h('label', { class: 'tick' }, h('input', { type: 'checkbox', id: 'r-anc', checked: D.anclado, onchange: (e) => { D.anclado = e.target.checked; ctx.pintar(); } }), h('span', { html: t(e23 ? 'ras.anclado' : 'ras.anclado2') })),
+        segmentado({ ancho: true, etiqueta: t('ras.anclaje'), opciones: [['total', t('ras.anc.total')], ...(e23 ? [['parcial', t('ras.anc.parcial')]] : []), ['insuf', t('ras.anc.insuf')]], valor: D.anclaje, onCambio: (v) => { D.anclaje = v; ctx.pintar(); } }),
         h('div', { class: 'par2' },
           selector({ id: 'r-ace', linea: true, etq: t('ras.acero'), opciones: p.aceros.map((m) => [m.nombre, m.nombre]), valor: D.aceroCosido, onCambio: (v) => { D.aceroCosido = v; cambio(); } }),
-          (e23 && !D.anclado) ? null : campoNum({ id: 'r-alfa', etq: 'α', valor: D.alfa, mag: 'ang', paso: 5, min: N.ALFA_MIN, max: e23 && D.rug === 'muyLisa' ? 90 : N.ALFA_MAX, ayuda: t('ras.alfaAyuda', N.ALFA_MIN, N.ALFA_MAX), onCambio: set('alfa') })),
+          (e23 && D.anclaje === 'parcial') ? null : campoNum({ id: 'r-alfa', etq: 'α', valor: D.alfa, mag: 'ang', paso: 5, min: N.ALFA_MIN, max: e23 && D.rug === 'muyLisa' ? 90 : N.ALFA_MAX, ayuda: t('ras.alfaAyuda', N.ALFA_MIN, N.ALFA_MAX), onCambio: set('alfa') })),
         ...parejas([
           comp ? selector({ id: 'r-fi', etq: t('cor.fi'), linea: true, opciones: diametrosEntrada().map((x) => [String(x), `ø${x}`]), valor: String(D.fi), onCambio: (v) => { D.fi = Number(v); cambio(); } }) : null,
           campoNum({ id: 'r-ramas', etq: t('ras.ramas'), valor: D.ramas, mag: 'n', paso: 1, min: 1, max: 100, ayuda: t('ras.ramasAyuda'), onCambio: set('ramas') }),
@@ -151,7 +152,7 @@ export function resultados(ctx, res) {
     const rhoTxt = fmt(r.rhoNec * 1000, 2);
     res.append(veredicto('cumple', t('cor.ver.valida'), t('ras.armNec'), qh(r.AswSNec / 1000, 'AswS'), t('ras.ver.nec', rhoTxt, kN(D.REd))));
   }
-  if (N.id !== 'EC2-2023' && !D.anclado) avisos.push(aviso(t(comp ? 'ras.av.noAnclado' : 'ras.av.noAncladoDim')));
+  if (D.anclaje === 'insuf') avisos.push(aviso(t(comp ? 'ras.av.noAnclado' : 'ras.av.noAncladoDim')));
   if (avisos.length) res.append(h('div', { class: 'avisos' }, ...avisos));
 
   // Centro: alzado de la junta
@@ -163,7 +164,7 @@ export function resultados(ctx, res) {
     sDib = f?.s ?? D.s;
     if (f) ley.push(['cosido', t('ras.dib.lc', fmt(f.ramas, 0), f.fi, fmt(f.s, 0))]);
   } else if (comp && !sinArm) ley.push(['cosido', t('ras.dib.lc', fmt(D.ramas, 0), D.fi, fmt(D.s, 0))]);
-  poner(centro, h('h2', {}, t('ras.t.junta')), h('div', { class: 'lienzo', html: dibujoRasante({ ramas: D.ramas, fi: !comp && r.caso === 'calculo' ? (r.tabla.find((k) => k.fi === D.fi && k.s) ?? r.tabla.find((k) => k.s))?.fi : D.fi, alfa: N.id === 'EC2-2023' && !D.anclado ? 90 : D.alfa, sinAlfa: N.id === 'EC2-2023' && !D.anclado, L: D.L, s: sDib, sinArmadura: sinArm || (!comp && r.caso !== 'calculo'), rugosa: D.rug !== 'muyLisa', REd: D.REd, b: D.b, leyenda: ley }) }), notas(N, D));
+  poner(centro, h('h2', {}, t('ras.t.junta')), h('div', { class: 'lienzo', html: dibujoRasante({ ramas: D.ramas, fi: !comp && r.caso === 'calculo' ? (r.tabla.find((k) => k.fi === D.fi && k.s) ?? r.tabla.find((k) => k.s))?.fi : D.fi, alfa: D.anclaje === 'parcial' ? 90 : D.alfa, sinAlfa: D.anclaje === 'parcial', L: D.L, s: sDib, sinArmadura: sinArm || (!comp && r.caso !== 'calculo'), rugosa: D.rug !== 'muyLisa', REd: D.REd, b: D.b, leyenda: ley }) }), notas(N, D));
 
   // Derecha: cifras, tabla (al dimensionar) y filas desplegables
   poner(dcha, h('h2', {}, t('cor.t.res')), cifras(cifrasDe(r, comp, N)));

@@ -22,6 +22,7 @@ export default {
   'ras.anclado2': 'Cosido anclado a ambos lados de la junta',
   'ras.av.noAnclado': 'El cosido no está anclado a ambos lados de la junta: la norma solo cuenta la armadura bien anclada, así que se comprueba la junta sin cosido',
   'ras.av.noAncladoDim': 'Recuerda anclar el cosido a ambos lados de la junta: la norma solo cuenta la armadura bien anclada',
+  'ras.anc.total': 'Total', 'ras.anc.parcial': 'Parcial', 'ras.anc.insuf': 'Insuficiente',
   'ras.sinArmNota': 'Sin armadura de cosido: la junta resiste solo la adherencia', 'ras.noAnclado': 'No anclado del todo',
   'ras.acero': 'Acero', 'ras.alfaAyuda': (a, b) => `Ángulo de las barras de cosido con el plano de la junta (${a}° a ${b}°). 90° = barras perpendiculares a la junta`,
   'ras.ramas': 'Ramas', 'ras.ramasAyuda': 'Ramas (barras) de cosido que cruzan la junta en cada posición del cosido, a lo ancho b: un cerco de dos ramas verticales cuenta 2. Cada s mm a lo largo de L se repite ese grupo; el número de grupos en L sale de L/s',

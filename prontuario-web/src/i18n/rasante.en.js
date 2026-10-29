@@ -21,6 +21,7 @@ export default {
   'ras.anclado2': 'Ties anchored on both sides of the joint',
   'ras.av.noAnclado': 'The ties are not anchored on both sides of the joint: the code only counts well anchored reinforcement, so the joint is checked without ties',
   'ras.av.noAncladoDim': 'Remember to anchor the ties on both sides of the joint: the code only counts well anchored reinforcement',
+  'ras.anc.total': 'Full', 'ras.anc.parcial': 'Partial', 'ras.anc.insuf': 'Insufficient',
   'ras.sinArmNota': 'No tie reinforcement: the joint resists adhesion only', 'ras.noAnclado': 'Not fully anchored',
   'ras.acero': 'Steel', 'ras.alfaAyuda': (a, b) => `Angle of the ties to the joint plane (${a}° to ${b}°). 90° = bars perpendicular to the joint`,
   'ras.ramas': 'Legs', 'ras.ramasAyuda': 'Tie legs (bars) crossing the joint at each tie position across the width b: a two-leg vertical stirrup counts 2. That group repeats every s mm along L; the number of groups in L comes from L/s',

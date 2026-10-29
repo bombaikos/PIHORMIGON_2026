@@ -67,7 +67,7 @@ const PANTALLAS = [
   ['Rasante · EHE-08', 'rasante', [norma(2)]],
   ['Rasante · EHE-08 dimensionar', 'rasante', [norma(2), (p) => p.click('button:text-is("Dimensionar")')]],
   ['Rasante · EC-2 2023', 'rasante', [norma(3)]],
-  ['Rasante · EC-2 2023 sin anclaje', 'rasante', [norma(3), (p) => p.click('#r-anc')]],
+  ['Rasante · EC-2 2023 sin anclaje', 'rasante', [norma(3), (p) => p.click('button:has-text("Parcial")')]],
   ['Rasante · EC-2 2023 dimensionar', 'rasante', [norma(3), (p) => p.click('button:text-is("Dimensionar")')]],
   ['Flexión · comprobar', 'flexion', []],
   ['Flexión · dimensionar', 'flexion', [(p) => p.click('.datos .seg >> nth=1 >> button >> nth=1')]],
