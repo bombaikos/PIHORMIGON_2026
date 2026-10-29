@@ -201,7 +201,7 @@ function alzados(x, o, studs, ctrlD) {
       for (const [u, lado] of [[-dl, 'i'], [dim + dl, 'd']]) {
         if (lado === 'i' && libre) continue;
         g.push(`<line class="perim ${cl}" x1="${f(U(u))}" y1="${f(y0 - stub - (cl === 'perim-ext' ? 24 : 8))}" x2="${f(U(u))}" y2="${f(y0 + hs + 8)}"/>`);
-        if (nm) g.push(`<text class="halo" x="${f(U(u))}" y="${f(y0 - stub - (cl === 'perim-ext' ? 24 : 8))}" text-anchor="middle">${nm}</text>`);
+        if (nm) g.push(`<text class="halo halo-alz" x="${f(U(u))}" y="${f(y0 - stub - (cl === 'perim-ext' ? 24 : 8))}" text-anchor="middle">${nm}</text>`);
       }
     }
     // espesor

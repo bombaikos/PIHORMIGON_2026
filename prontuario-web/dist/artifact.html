@@ -982,6 +982,8 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
   .dib-pun .cerco, .dib-pun .cerco-v, .dib-pun .banda, .dib-pun .arista, .dib-pun .corte-fino { stroke: CanvasText; }
   .dib-pun .pilar-alz { fill: Canvas; }
 }
+/* Rótulos de los alzados: caen sobre el fondo de la hoja, no sobre el hormigón, y su halo es del color de la hoja */
+.dib text.halo.halo-alz { stroke: var(--hoja); }
 </style>
 
 <header class="barra">
@@ -14908,7 +14910,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
         for (const [u, lado] of [[-dl, "i"], [dim + dl, "d"]]) {
           if (lado === "i" && libre) continue;
           g.push(`<line class="perim ${cl3}" x1="${f(U7(u))}" y1="${f(y0 - stub - (cl3 === "perim-ext" ? 24 : 8))}" x2="${f(U7(u))}" y2="${f(y0 + hs + 8)}"/>`);
-          if (nm) g.push(`<text class="halo" x="${f(U7(u))}" y="${f(y0 - stub - (cl3 === "perim-ext" ? 24 : 8))}" text-anchor="middle">${nm}</text>`);
+          if (nm) g.push(`<text class="halo halo-alz" x="${f(U7(u))}" y="${f(y0 - stub - (cl3 === "perim-ext" ? 24 : 8))}" text-anchor="middle">${nm}</text>`);
         }
       }
       const xe = U7(hi) + 12;

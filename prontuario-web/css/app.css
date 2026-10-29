@@ -980,3 +980,5 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
   .dib-pun .cerco, .dib-pun .cerco-v, .dib-pun .banda, .dib-pun .arista, .dib-pun .corte-fino { stroke: CanvasText; }
   .dib-pun .pilar-alz { fill: Canvas; }
 }
+/* Rótulos de los alzados: caen sobre el fondo de la hoja, no sobre el hormigón, y su halo es del color de la hoja */
+.dib text.halo.halo-alz { stroke: var(--hoja); }
