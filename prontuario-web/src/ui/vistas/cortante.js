@@ -18,9 +18,9 @@ const est = {
   i: null, modo: 'comprobar', signo: 1, dir: 'h',
   VEd: 120, NEd: 0, MEd: 0, Dlower: 20, sigY: 0,
   cot: 1, alfa: 90, ktc: null, fi: 8, ramas: 2, s: 200, sin: false, circ: true, aceroCercos: null,
-  ov: { b0: null, d: null, Asl: null, Asc: null }, abiertos: new Set(),
+  ov: { b0: null, d: null, z: null, Asl: null, Asc: null }, abiertos: new Set(),
 };
-export function reiniciar() { est.i = null; est.ov = { b0: null, d: null, Asl: null, Asc: null }; est.aceroCercos = null; est.ktc = null; }
+export function reiniciar() { est.i = null; est.ov = { b0: null, d: null, z: null, Asl: null, Asc: null }; est.aceroCercos = null; est.ktc = null; }
 
 const RAD = Math.PI / 180;
 const thetaDe = (cot) => (Math.atan(1 / cot) / RAD);
@@ -37,6 +37,8 @@ const diametrosEntrada = () => serieDiametros().filter((x) => x >= 6 && x <= 25)
 const diametrosTabla = () => serieDiametros().filter((x) => x >= 8 && x <= 20);
 const nuc = (p) => nucleo(p.norma);
 const esEC2 = (p) => nuc(p)?.id === 'EC2-2004' || nuc(p)?.id === 'EC2-2023';
+/** Longitud en m redondeada al mm para mostrarla sin decimales (el cálculo usa el valor exacto). */
+const mmEnt = (x) => Math.round(x * 1000) / 1000;
 const es23 = (p) => nuc(p)?.id === 'EC2-2023';
 
 /** Datos de la sección activa en m y m², con los cambios hechos en este módulo. */
@@ -45,14 +47,16 @@ function efectivos(p, s) {
   const ef = {
     b0: est.ov.b0 ?? sec.b0,
     d: est.ov.d ?? sec.d,
+    z: est.ov.z,
     Asl: est.ov.Asl ?? sec.Asl,
     Asc: est.ov.Asc ?? sec.Asc,
   };
+  ef.z ??= 0.9 * ef.d; // brazo mecánico: 0,9 d mientras no se cambie
   return { sec, ef };
 }
 
 function cambiaSeccion(ctx) {
-  est.ov = { b0: null, d: null, Asl: null, Asc: null };
+  est.ov = { b0: null, d: null, z: null, Asl: null, Asc: null };
   est.aceroCercos = null;
   est.ktc = null;
   ctx.pintar();
@@ -71,7 +75,7 @@ function calculado(c) {
 function activa(p) {
   const R = secciones(p);
   if (!R.length) return null;
-  if (!R.some(([, i]) => i === est.i)) { est.i = R[0][1]; est.ov = { b0: null, d: null, Asl: null, Asc: null }; }
+  if (!R.some(([, i]) => i === est.i)) { est.i = R[0][1]; est.ov = { b0: null, d: null, z: null, Asl: null, Asc: null }; }
   return p.secciones[est.i];
 }
 
@@ -108,17 +112,22 @@ export function datos(ctx, form) {
     const rho = ef.Asl / (ef.b0 * ef.d);
     const a = document.getElementById('c-rho');
     if (a && document.activeElement !== a) a.value = String(+(rho * 1000).toFixed(2));
+    const z = document.getElementById('c-z');
+    if (z && document.activeElement !== z) z.value = String(Math.round(ef.z * 1000));
     const b = document.getElementById('c-asl');
     if (b && document.activeElement !== b) b.value = String(Math.round(ef.Asl * 1e6));
   };
-  const nuevo = (k) => (v) => { est.ov[k] = v; ef[k] = v; refrescar(); cambio(); };
-  const rho0 = ef.Asl / (ef.b0 * ef.d);
-  const pilarOCirc = !esViga(s);
   const ec = esEC2(p);
   const e23 = es23(p);
+  const nuevo = (k) => (v) => { est.ov[k] = v; ef[k] = v; if (k === 'd' && est.ov.z == null) ef.z = 0.9 * v; refrescar(); cambio(); };
+  const nk = e23 ? 'e23' : ec ? 'ec' : 'ehe'; // los textos de ayuda dependen de la norma
+  const ayuda = (k) => t(`cor.h.${k}.${nk}`);
+  const rho0 = ef.Asl / (ef.b0 * ef.d);
+  const pilarOCirc = !esViga(s);
   // Ángulo de las bielas dentro del rango de la norma (en la 2023 depende del axil y de la ductilidad)
   const rg = ajustaCot(p, s, sec, ef);
   const LT = limitesTheta(rg);
+  const ayudaCot = e23 ? t('cor.cotAyuda23', fmt(LT.min, 1), fmt(LT.max, 1), fmt(rg.min, 1), fmt(rg.max, 1)) : ec ? t('cor.cotAyudaEC') : t('cor.cotAyuda');
 
   // Ángulo de las bielas: campo en grados y deslizador (el cotg θ queda dentro del cálculo)
   const gauge = h('input', { type: 'range', class: 'desliza-sec', min: LT.min, max: LT.max, step: 0.1, value: thetaDe(est.cot), 'aria-label': t('cor.theta') });
@@ -146,10 +155,11 @@ export function datos(ctx, form) {
         ...parejas([campoNum({ id: 'c-med', etq: t('cor.MEd'), valor: est.MEd, mag: 'M', paso: 10, min: 0, max: 1e7, ayuda: t('cor.MEdAyuda'), onCambio: (v) => { est.MEd = v; cambio(); } })])) : null),
     grupo(t('cor.datosCalc'),
       ...parejas([
-        campoNum({ id: 'c-b0', etq: t('cor.b0'), valor: ef.b0, mag: 'long', paso: 5, min: 0.01, max: 20, ayuda: t('cor.b0Ayuda'), onCambio: nuevo('b0') }),
-        campoNum({ id: 'c-d', etq: t('cor.d'), valor: ef.d, mag: 'long', paso: 5, min: 0.01, max: 20, ayuda: t('cor.dAyuda'), onCambio: nuevo('d') }),
-        mostrar(campoNum({ id: 'c-asl', etq: t('cor.Asl'), valor: ef.Asl, mag: 'As', paso: 50, min: 0, max: 1, ayuda: t('cor.AslAyuda'), info: s.forma === 'pilar' ? t('cor.AslInfoPilar') : s.forma === 'circular' ? t('cor.AslInfoCirc') : undefined, onCambio: nuevo('Asl') }), ef.Asl * 1e6, 0),
-        calculado(mostrar(campoNum({ id: 'c-rho', etq: t('cor.rho'), valor: rho0, mag: 'cuantia', paso: 1, min: 0, max: 1, ayuda: t('cor.rhoAyuda'), onCambio: () => {} }), rho0 * 1000, 2)),
+        campoNum({ id: 'c-b0', etq: t('cor.b0'), valor: mmEnt(ef.b0), mag: 'long', paso: 5, min: 0.01, max: 20, ayuda: ayuda('b0'), onCambio: nuevo('b0') }),
+        campoNum({ id: 'c-d', etq: t('cor.d'), valor: mmEnt(ef.d), mag: 'long', paso: 5, min: 0.01, max: 20, ayuda: ayuda('d'), onCambio: nuevo('d') }),
+        campoNum({ id: 'c-z', etq: t('cor.z'), valor: mmEnt(ef.z), mag: 'long', paso: 5, min: 0.01, max: 20, ayuda: ayuda('z'), onCambio: nuevo('z') }),
+        mostrar(campoNum({ id: 'c-asl', etq: t('cor.Asl'), valor: ef.Asl, mag: 'As', paso: 50, min: 0, max: 1, ayuda: ayuda('Asl'), info: s.forma === 'pilar' ? t('cor.AslInfoPilar') : s.forma === 'circular' ? t('cor.AslInfoCirc') : undefined, onCambio: nuevo('Asl') }), ef.Asl * 1e6, 0),
+        calculado(mostrar(campoNum({ id: 'c-rho', etq: t('cor.rho'), valor: rho0, mag: 'cuantia', paso: 1, min: 0, max: 1, ayuda: ayuda('rho'), onCambio: () => {} }), rho0 * 1000, 2)),
         e23 ? selector({ id: 'c-ktc', etq: t('cor.ktc'), linea: true, opciones: [['0.85', '0.85'], ['1', '1.00']], valor: String(est.ktc ?? sec.ktc ?? 0.85), onCambio: (v) => { est.ktc = Number(v); cambio(); } }) : null,
         e23 && (!comp || est.sin) ? campoNum({ id: 'c-dlow', etq: t('cor.Dlower'), valor: est.Dlower, mag: 'diam', paso: 2, min: 4, max: 63, ayuda: t('cor.DlowerAyuda'), onCambio: (v) => { est.Dlower = v; cambio(); } }) : null,
         ec ? null : campoNum({ id: 'c-sigy', etq: t('cor.sigY'), ref: t('cor.sigYRef'), valor: est.sigY, mag: 'tension', paso: 0.5, min: -50, max: 50, ayuda: t('cor.sigYAyuda'), onCambio: (v) => { est.sigY = v; cambio(); } }),
@@ -164,7 +174,7 @@ export function datos(ctx, form) {
         comp && !est.sin ? selector({ id: 'c-ramas', etq: t('cor.ramas'), linea: true, opciones: [2, 3, 4, 6].map((x) => [String(x), String(x)]), valor: String(est.ramas), onCambio: (v) => { est.ramas = Number(v); cambio(); } }) : null,
         comp && !est.sin ? campoNum({ id: 'c-s', etq: t('cor.s'), valor: est.s, mag: 'diam', paso: 25, min: 25, max: 1000, onCambio: (v) => { est.s = v; cambio(); } }) : null,
         !est.sin ? campoNum({ id: 'c-alfa', etq: t('cor.alfa'), ref: t('cor.alfaRef'), valor: est.alfa, mag: 'ang', paso: 5, min: 45, max: 90, onCambio: (v) => { est.alfa = v; cambio(); } }) : null,
-        campoNum({ id: 'c-theta', etq: t('cor.theta'), valor: thetaDe(est.cot), mag: 'ang1', paso: 1, min: LT.min, max: LT.max, ayuda: t('cor.cotAyuda'), onCambio: (v) => { est.cot = 1 / Math.tan(v * RAD); cambio(); refrescarGauge(); } }),
+        campoNum({ id: 'c-theta', etq: t('cor.theta'), valor: thetaDe(est.cot), mag: 'ang1', paso: 1, min: LT.min, max: LT.max, ayuda: ayudaCot, onCambio: (v) => { est.cot = 1 / Math.tan(v * RAD); cambio(); refrescarGauge(); } }),
       ]),
       gauge,
       boton(t('cor.optimo'), () => {
@@ -183,7 +193,7 @@ function entrada(p, s, sec, ef) {
   const acero = p.aceros.find((m) => m.nombre === (est.aceroCercos ?? s.acero)) ?? p.aceros[0];
   return {
     fck: sec.fck, ktc: est.ktc ?? sec.ktc, fykCercos: acero.fyk, fykLong: sec.fyk,
-    b0: ef.b0 * 1000, d: ef.d * 1000, Ac: sec.Ac * 1e6, Asl: ef.Asl * 1e6, Asc: ef.Asc * 1e6,
+    b0: ef.b0 * 1000, d: ef.d * 1000, z: ef.z * 1000, Ac: sec.Ac * 1e6, Asl: ef.Asl * 1e6, Asc: ef.Asc * 1e6,
     NEd: est.NEd, sigY: est.sigY, cotTheta: est.cot, alfa: est.alfa, circular: sec.circular && est.circ, viga: esViga(s),
     MEd: est.MEd, Dlower: est.Dlower, ductilidad: acero.ductilidad ?? aceroTipificado(acero.nombre)?.ductilidad ?? 'B',
     Dh: sec.circular ? (sec.h - 2 * (sec.r ?? 0)) * 1000 : null,
