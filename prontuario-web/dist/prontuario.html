@@ -1032,6 +1032,14 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
 
 .fila-anc { display: flex; align-items: center; gap: 8px; }
 .fila-anc .seg { flex: 1; }
+
+/* Elección de sección en los módulos de cálculo (guía § 14): desplegable único arriba de los datos y nombre grande en la pastilla */
+.campo[data-c="sel-seccion"] > label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.veredicto.con-sec { grid-template-columns: auto auto minmax(0, 1fr) auto; }
+.veredicto .nom-sec { display: flex; flex-direction: column; justify-content: center; min-width: 0; max-width: 240px; padding-right: var(--e4); border-right: 1px solid var(--linea); }
+.veredicto .nom-sec small { font-size: var(--t-xs); color: var(--tinta-3); text-transform: uppercase; letter-spacing: .06em; font-weight: 600; }
+.veredicto .nom-sec b { font-size: calc(24px + var(--mas)); line-height: 1.1; color: var(--tinta); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 520px) { .veredicto.con-sec { grid-template-columns: auto auto; } .veredicto .nom-sec { grid-column: 1 / -1; border-right: 0; padding-right: 0; max-width: none; } }
 </style>
 
 <header class="barra">
@@ -5726,7 +5734,14 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     return c;
   }
   function selector({ id, etq, opciones, valor, onCambio, nota, linea = false }) {
-    const s = h("select", { id }, ...opciones.map(([v2, e2]) => h("option", { value: v2, selected: String(v2) === String(valor), html: e2 })));
+    const opt = ([v2, e2]) => h("option", { value: v2, selected: String(v2) === String(valor), html: e2 });
+    const grupos2 = /* @__PURE__ */ new Map();
+    for (const o of opciones) {
+      const g = o[2] ?? "";
+      if (!grupos2.has(g)) grupos2.set(g, []);
+      grupos2.get(g).push(o);
+    }
+    const s = h("select", { id }, ...[...grupos2].flatMap(([g, l]) => g ? [h("optgroup", { label: g }, ...l.map(opt))] : l.map(opt)));
     s.addEventListener("change", () => onCambio(s.value));
     const c = marco(id, etq, null, h("div", { class: "caja" }, s), nota).c;
     if (!linea) c.classList.add("apilado");
@@ -7939,10 +7954,11 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     cabeza: () => cabeza2,
     comandos: () => comandos3,
     datos: () => datos4,
+    grupoSeccion: () => grupoSeccion,
     modo: () => modo,
     reiniciar: () => reiniciar3,
     resultados: () => resultados4,
-    selectorSecciones: () => selectorSecciones,
+    rotulaSeccion: () => rotulaSeccion,
     sincronizar: () => sincronizar2
   });
 
@@ -9221,36 +9237,25 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     fila5.append(h("button", { type: "button", class: "mas", title: t("sec.nuevaDe", t(`forma.${est3.forma}`)), onclick: () => elegir2(ctx2, est3.forma, null) }, `+ ${t("sec.nueva")}`));
     el.append(fila5);
   }
-  function selectorSecciones(ctx2, el, { formas, activa: activa3, alElegir }) {
-    ctxCab2 = ctx2;
-    const fila5 = h("div", { class: "selsec", role: "group", "aria-label": t("seccion") });
-    for (const f of formas) {
-      const delTipo = ctx2.p.secciones.filter((x) => x.forma === f);
-      const act = activa3?.forma === f;
-      const titulo = act ? `${t(`forma.${f}`)}<span class="sep">\xB7</span><b>${activa3.nombre}</b>` : t(`forma.${f}`);
-      const caja = h(
-        "div",
-        { class: `desp${act ? " activo" : ""}` },
-        h("button", {
-          type: "button",
-          "aria-haspopup": "listbox",
-          "aria-expanded": String(abierto === f),
-          title: t(`forma.${f}`),
-          html: `${icono2(f)}<span class="nom">${titulo}</span><span class="cnt">${delTipo.length}</span><span class="car">\u25BE</span>`,
-          onclick: (e2) => {
-            e2.stopPropagation();
-            abierto = abierto === f ? null : f;
-            ctx2.pintar();
-          }
-        })
-      );
-      if (abierto === f) caja.append(listaSecciones(ctx2, f, delTipo, act ? activa3.nombre : void 0, (n) => {
-        abierto = null;
-        alElegir(n);
-      }, false));
-      fila5.append(caja);
-    }
-    el.append(fila5);
+  function grupoSeccion(ctx2, { formas, activa: activa3, alElegir }) {
+    const lista = ctx2.p.secciones.filter((x) => formas.includes(x.forma));
+    const varios = new Set(lista.map((x) => x.forma)).size > 1;
+    return grupo(
+      t("g.seccion"),
+      selector({
+        id: "sel-seccion",
+        etq: t("seccion"),
+        valor: activa3?.nombre,
+        onCambio: alElegir,
+        opciones: lista.map((x) => [x.nombre, x.nombre, varios ? t(`forma.${x.forma}`) : void 0])
+      })
+    );
+  }
+  function rotulaSeccion(res, nombre) {
+    const ver = res.querySelector(":scope > .veredicto");
+    if (!ver || !nombre) return;
+    ver.classList.add("con-sec");
+    ver.prepend(h("div", { class: "nom-sec" }, h("small", {}, t("g.seccion")), h("b", { title: nombre }, nombre)));
   }
   function modo(k) {
     est3.pestana = k;
@@ -11050,12 +11055,6 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
   function vigas(p) {
     return p.secciones.map((s, i) => [s, i]).filter(([s]) => s.forma === "rectangular" || s.forma === "T");
   }
-  var mmS = (x) => fmt(x * 1e3, 0);
-  function resumenSeccion2(s) {
-    const g = s.geo;
-    const dim = s.forma === "T" ? `T ${mmS(g.b)} \xD7 ${mmS(g.h)} (b<sub>w</sub> ${mmS(g.bw)}, h<sub>f</sub> ${mmS(g.hf)}) mm` : `${mmS(g.b)} \xD7 ${mmS(g.h)} mm`;
-    return `${dim} \xB7 ${s.hormigon} \xB7 ${s.acero}`;
-  }
   function capa(s, cara2) {
     let c = s.armado.find((g) => g.tipo === "capa" && g.cara === cara2);
     if (!c) {
@@ -11075,6 +11074,10 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     const pos = est4.signo > 0;
     poner(
       form,
+      grupoSeccion(ctx2, { formas: ["rectangular", "T"], activa: s, alElegir: (nombre) => {
+        est4.i = p.secciones.findIndex((x) => x.nombre === nombre);
+        ctx2.pintar();
+      } }),
       segmentado({ ancho: true, etiqueta: t("flex.signo"), opciones: [["1", t("flex.positivo")], ["-1", t("flex.negativo")]], valor: String(est4.signo), onCambio: (v2) => {
         est4.signo = Number(v2);
         ctx2.pintar();
@@ -11089,14 +11092,6 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
           est4.Md = v2;
           cambio();
         } })
-      ),
-      grupo(
-        t("g.seccion"),
-        selector({ id: "f-sec", etq: t("seccion"), opciones: R.map(([x, i]) => [String(i), x.nombre]), valor: String(est4.i), onCambio: (v2) => {
-          est4.i = Number(v2);
-          ctx2.pintar();
-        } }),
-        h("p", { class: "calculada", html: `${resumenSeccion2(s)}<br>${t("flex.deSecciones")}` })
       )
     );
     const ct = capa(s, pos ? "inf" : "sup");
@@ -11130,6 +11125,10 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     ));
   }
   function resultados8(ctx2, res) {
+    resultadosFlexion(ctx2, res);
+    rotulaSeccion(res, ctx2.p.secciones[est4.i]?.nombre);
+  }
+  function resultadosFlexion(ctx2, res) {
     var _a;
     const p = ctx2.p;
     const s = p.secciones[est4.i];
@@ -11434,7 +11433,6 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
   // src/ui/vistas/flexRecta.js
   var flexRecta_exports = {};
   __export(flexRecta_exports, {
-    cabeza: () => cabeza3,
     comandos: () => comandos6,
     datos: () => datos9,
     eMinima: () => eMinima,
@@ -11580,29 +11578,6 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     emin = s ? eMinima(p.norma, s) : 0;
     return s;
   }
-  function cabeza3(ctx2, el) {
-    const s = activa(ctx2.p);
-    if (!s) return;
-    selectorSecciones(ctx2, el, { formas: FORMAS2, activa: s, alElegir: (nombre) => {
-      const i = ctx2.p.secciones.findIndex((x) => x.nombre === nombre);
-      if (i >= 0) {
-        est5.i = i;
-        est5.fi = null;
-        ctx2.pintar();
-      }
-    } });
-  }
-  var mmS2 = (x) => fmt(x * 1e3, 0);
-  function resumenSeccion3(p, s) {
-    const g = s.geo;
-    let dim;
-    if (s.forma === "circular") dim = `\xD8 ${mmS2(g.D)} mm`;
-    else if (s.forma === "generica") {
-      const c = geometriaDe(p, s).caja;
-      dim = `${mmS2(c.xmax - c.xmin)} \xD7 ${mmS2(c.ymax - c.ymin)} mm`;
-    } else dim = `${s.forma === "T" ? "T " : ""}${mmS2(g.b)} \xD7 ${mmS2(g.h)} mm`;
-    return `${dim} \xB7 ${s.hormigon} \xB7 ${s.acero}`;
-  }
   var pares = () => (est5.modo !== "diagrama" ? [{ i: 0, N: est5.NEd, M: Math.abs(est5.MEd) }] : est5.filas.map((f, i) => ({ i, N: nv(f[0]), M: Math.abs(nv(f[1])) }))).filter((x) => Number.isFinite(x.N) && Number.isFinite(x.M)).map((x) => x.N > 0 && x.M < x.N * emin - 1e-9 ? { ...x, M: x.N * emin, subeM: true } : x);
   function fiComun(geo) {
     if (!geo.barras.length || geo.franjas.length) return null;
@@ -11650,6 +11625,14 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     const s = activa(p);
     poner(form, h("div", { class: "cab" }, h("h1", {}, t("menu.flexRecta")), h("p", {}, t("fcr.subtitulo"))));
     if (!s) return poner(form, aviso(t("fcr.sinSec"), "info"));
+    poner(form, grupoSeccion(ctx2, { formas: FORMAS2, activa: s, alElegir: (nombre) => {
+      const i = p.secciones.findIndex((x) => x.nombre === nombre);
+      if (i >= 0) {
+        est5.i = i;
+        est5.fi = null;
+        ctx2.pintar();
+      }
+    } }));
     const cambio = () => ctx2.cambio();
     let c = null;
     try {
@@ -11702,11 +11685,14 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
           }
         }),
         campoFi()
-      ),
-      grupo(t("g.seccion"), h("p", { style: "margin:0;font-size:var(--t-s);color:var(--tinta-2);line-height:1.5", html: `${resumenSeccion3(p, s)}<br>${t("fcr.deSecciones")}` }))
+      )
     );
   }
   function resultados9(ctx2, res) {
+    resultadosFlexRecta(ctx2, res);
+    rotulaSeccion(res, activa(ctx2.p)?.nombre);
+  }
+  function resultadosFlexRecta(ctx2, res) {
     var _a;
     const p = ctx2.p;
     const s = activa(p);
@@ -12814,7 +12800,6 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
   // src/ui/vistas/cortante.js
   var cortante_exports = {};
   __export(cortante_exports, {
-    cabeza: () => cabeza4,
     comandos: () => comandos9,
     datos: () => datos12,
     reiniciar: () => reiniciar6,
@@ -13666,19 +13651,6 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     }
     return p.secciones[est6.i];
   }
-  function cabeza4(ctx2, el) {
-    const p = ctx2.p;
-    if (!nuc(p)) return;
-    const s = activa2(p);
-    if (!s) return;
-    selectorSecciones(ctx2, el, { formas: FORMAS3, activa: s, alElegir: (nombre) => {
-      const i = p.secciones.findIndex((x) => x.nombre === nombre);
-      if (i >= 0) {
-        est6.i = i;
-        cambiaSeccion(ctx2);
-      }
-    } });
-  }
   function datos12(ctx2, form) {
     const p = ctx2.p;
     poner(form, h("div", { class: "cab" }, h("h1", {}, t("m.cortante"))));
@@ -13699,6 +13671,13 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     const R = secciones(p);
     if (!R.length) return poner(form, aviso(t("cor.sinSec"), "info"));
     const s = activa2(p);
+    poner(form, grupoSeccion(ctx2, { formas: FORMAS3, activa: s, alElegir: (nombre) => {
+      const i = p.secciones.findIndex((x) => x.nombre === nombre);
+      if (i >= 0) {
+        est6.i = i;
+        cambiaSeccion(ctx2);
+      }
+    } }));
     let ef;
     let sec;
     try {
@@ -13904,6 +13883,10 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
   var refNorma = "EHE-08";
   var art3 = (a) => `<span class="art">${refNorma} \xB7 ${a}</span>`;
   function resultados12(ctx2, res) {
+    resultadosCortante(ctx2, res);
+    rotulaSeccion(res, nuc(ctx2.p) ? ctx2.p.secciones[est6.i]?.nombre : null);
+  }
+  function resultadosCortante(ctx2, res) {
     var _a;
     const p = ctx2.p;
     const centro = h("article", { class: "panel tarjeta" });

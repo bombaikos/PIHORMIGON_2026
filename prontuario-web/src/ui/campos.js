@@ -121,7 +121,11 @@ export function campoArmado({ id, etq, ref, texto, onCambio, soloBarras, capas }
 
 /** Desplegable. opciones: [[valor, etiqueta(html)]] */
 export function selector({ id, etq, opciones, valor, onCambio, nota, linea = false }) {
-  const s = h('select', { id }, ...opciones.map(([v, e]) => h('option', { value: v, selected: String(v) === String(valor), html: e })));
+  // Una opción puede llevar un tercer elemento: el grupo (optgroup) en el que se muestra
+  const opt = ([v, e]) => h('option', { value: v, selected: String(v) === String(valor), html: e });
+  const grupos = new Map();
+  for (const o of opciones) { const g = o[2] ?? ''; if (!grupos.has(g)) grupos.set(g, []); grupos.get(g).push(o); }
+  const s = h('select', { id }, ...[...grupos].flatMap(([g, l]) => (g ? [h('optgroup', { label: g }, ...l.map(opt))] : l.map(opt))));
   s.addEventListener('change', () => onCambio(s.value));
   const c = marco(id, etq, null, h('div', { class: 'caja' }, s), nota).c;
   if (!linea) c.classList.add('apilado'); // norma § 16: etiqueta arriba, desplegable a todo el ancho; en línea, como un campo numérico
