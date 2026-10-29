@@ -9,7 +9,7 @@ import { aceroTipificado } from '../../core/materiales.js';
 import { datosCortante, geometriaDe } from '../../io/proyecto.js';
 import { t } from '../i18n.js';
 import { fmt, q, qh, ESP, serieDiametros, paraCampo } from '../formato.js';
-import { selectorSecciones } from './secciones.js';
+import { grupoSeccion, rotulaSeccion } from './secciones.js';
 import { h, poner, campoNum, selector, segmentado, grupo, par, aviso, cifras, tabla, boton } from '../campos.js';
 import { veredicto } from './flexion.js';
 import { dibujoCortante } from '../dibujoCortante.js';
@@ -79,18 +79,6 @@ function activa(p) {
   return p.secciones[est.i];
 }
 
-/** Mismo selector de sección que el módulo Secciones (un desplegable por tipo). */
-export function cabeza(ctx, el) {
-  const p = ctx.p;
-  if (!nuc(p)) return;
-  const s = activa(p);
-  if (!s) return;
-  selectorSecciones(ctx, el, { formas: FORMAS, activa: s, alElegir: (nombre) => {
-    const i = p.secciones.findIndex((x) => x.nombre === nombre);
-    if (i >= 0) { est.i = i; cambiaSeccion(ctx); }
-  } });
-}
-
 export function datos(ctx, form) {
   const p = ctx.p;
   poner(form, h('div', { class: 'cab' }, h('h1', {}, t('m.cortante'))));
@@ -102,6 +90,10 @@ export function datos(ctx, form) {
   const R = secciones(p);
   if (!R.length) return poner(form, aviso(t('cor.sinSec'), 'info'));
   const s = activa(p);
+  poner(form, grupoSeccion(ctx, { formas: FORMAS, activa: s, alElegir: (nombre) => {
+    const i = p.secciones.findIndex((x) => x.nombre === nombre);
+    if (i >= 0) { est.i = i; cambiaSeccion(ctx); }
+  } }));
   let ef;
   let sec;
   try { ({ sec, ef } = efectivos(p, s)); } catch (e) { return poner(form, aviso(String(e.message ?? e), 'error')); }
@@ -222,6 +214,11 @@ let refNorma = 'EHE-08';
 const art = (a) => `<span class="art">${refNorma} · ${a}</span>`;
 
 export function resultados(ctx, res) {
+  resultadosCortante(ctx, res);
+  rotulaSeccion(res, nuc(ctx.p) ? ctx.p.secciones[est.i]?.nombre : null);
+}
+
+function resultadosCortante(ctx, res) {
   const p = ctx.p;
   const centro = h('article', { class: 'panel tarjeta' });
   const dcha = h('article', { class: 'panel tarjeta' });

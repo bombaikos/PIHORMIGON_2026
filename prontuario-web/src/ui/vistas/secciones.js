@@ -262,24 +262,24 @@ export function cabeza(ctx, el) {
 }
 
 /**
- * El mismo selector de secciones para otros módulos (Cortante): un desplegable por tipo de la lista `formas`,
- * con la sección activa `activa` (objeto de la sección) en el tipo que le corresponde; sin «+ Nueva».
+ * Elección de sección en los módulos de cálculo (guía § 14): un solo desplegable, lo primero de los datos,
+ * con las secciones de las `formas` dadas agrupadas por tipo. El nombre grande va en la pastilla de resultados
+ * (`rotulaSeccion`); debajo del desplegable no se pone ningún texto más.
  */
-export function selectorSecciones(ctx, el, { formas, activa, alElegir }) {
-  ctxCab = ctx;
-  const fila = h('div', { class: 'selsec', role: 'group', 'aria-label': t('seccion') });
-  for (const f of formas) {
-    const delTipo = ctx.p.secciones.filter((x) => x.forma === f);
-    const act = activa?.forma === f;
-    const titulo = act ? `${t(`forma.${f}`)}<span class="sep">·</span><b>${activa.nombre}</b>` : t(`forma.${f}`);
-    const caja = h('div', { class: `desp${act ? ' activo' : ''}` },
-      h('button', { type: 'button', 'aria-haspopup': 'listbox', 'aria-expanded': String(abierto === f), title: t(`forma.${f}`),
-        html: `${icono(f)}<span class="nom">${titulo}</span><span class="cnt">${delTipo.length}</span><span class="car">▾</span>`,
-        onclick: (e) => { e.stopPropagation(); abierto = abierto === f ? null : f; ctx.pintar(); } }));
-    if (abierto === f) caja.append(listaSecciones(ctx, f, delTipo, act ? activa.nombre : undefined, (n) => { abierto = null; alElegir(n); }, false));
-    fila.append(caja);
-  }
-  el.append(fila);
+export function grupoSeccion(ctx, { formas, activa, alElegir }) {
+  const lista = ctx.p.secciones.filter((x) => formas.includes(x.forma));
+  const varios = new Set(lista.map((x) => x.forma)).size > 1;
+  return grupo(t('g.seccion'),
+    selector({ id: 'sel-seccion', etq: t('seccion'), valor: activa?.nombre, onCambio: alElegir,
+      opciones: lista.map((x) => [x.nombre, x.nombre, varios ? t(`forma.${x.forma}`) : undefined]) }));
+}
+
+/** Pone el nombre de la sección activa, grande, al principio de la pastilla de resultados. */
+export function rotulaSeccion(res, nombre) {
+  const ver = res.querySelector(':scope > .veredicto');
+  if (!ver || !nombre) return;
+  ver.classList.add('con-sec');
+  ver.prepend(h('div', { class: 'nom-sec' }, h('small', {}, t('g.seccion')), h('b', { title: nombre }, nombre)));
 }
 
 /**

@@ -10,6 +10,7 @@ import { t } from '../i18n.js';
 import { eje, fmt, q, qh, ESP, MAG, serieDiametros } from '../formato.js';
 import { h, poner, campoNum, campoArmado, selector, segmentado, grupo, par, aviso, cifras, tabla, pestanas } from '../campos.js';
 import { grafica } from '../grafica.js';
+import { grupoSeccion, rotulaSeccion } from './secciones.js';
 import { DEFS, encuadre, capasSeccion } from '../dibujoSeccion.js';
 
 const est = { i: null, modo: 'comprobar', signo: 1, Md: 180, elemento: 'viga', abiertos: new Set(['mrd']), desp: 0.5 };
@@ -19,14 +20,6 @@ const sub = (a, b) => `${a}<sub>${b}</sub>`;
 
 function vigas(p) {
   return p.secciones.map((s, i) => [s, i]).filter(([s]) => s.forma === 'rectangular' || s.forma === 'T');
-}
-
-const mmS = (x) => fmt(x * 1000, 0);
-/** Resumen de solo lectura de la sección activa. */
-function resumenSeccion(s) {
-  const g = s.geo;
-  const dim = s.forma === 'T' ? `T ${mmS(g.b)} × ${mmS(g.h)} (b<sub>w</sub> ${mmS(g.bw)}, h<sub>f</sub> ${mmS(g.hf)}) mm` : `${mmS(g.b)} × ${mmS(g.h)} mm`;
-  return `${dim} · ${s.hormigon} · ${s.acero}`;
 }
 
 /** Primera capa de una cara (la crea si no existe). */
@@ -47,13 +40,11 @@ export function datos(ctx, form) {
   const pos = est.signo > 0;
 
   poner(form,
+    grupoSeccion(ctx, { formas: ['rectangular', 'T'], activa: s, alElegir: (nombre) => { est.i = p.secciones.findIndex((x) => x.nombre === nombre); ctx.pintar(); } }),
     segmentado({ ancho: true, etiqueta: t('flex.signo'), opciones: [['1', t('flex.positivo')], ['-1', t('flex.negativo')]], valor: String(est.signo), onCambio: (v) => { est.signo = Number(v); ctx.pintar(); } }),
     segmentado({ ancho: true, etiqueta: t('flex.modo'), opciones: [['comprobar', t('comprobar')], ['dimensionar', t('dimensionar')]], valor: est.modo, onCambio: (m) => { est.modo = m; ctx.pintar(); } }),
     grupo(t('g.esfuerzo'),
       campoNum({ id: 'f-md', etq: sub('M', 'Ed') + (pos ? '⁺' : '⁻'), valor: est.Md, mag: 'M', paso: 1, min: 0.1, max: 1e5, nombre: t('flex.momento'), onCambio: (v) => { est.Md = v; cambio(); } })),
-    grupo(t('g.seccion'),
-      selector({ id: 'f-sec', etq: t('seccion'), opciones: R.map(([x, i]) => [String(i), x.nombre]), valor: String(est.i), onCambio: (v) => { est.i = Number(v); ctx.pintar(); } }),
-      h('p', { class: 'calculada', html: `${resumenSeccion(s)}<br>${t('flex.deSecciones')}` })),
   );
   // Con momento positivo se traccionan las barras de la cara inferior; con negativo, las de la superior
   const ct = capa(s, pos ? 'inf' : 'sup');
@@ -71,6 +62,11 @@ export function datos(ctx, form) {
 }
 
 export function resultados(ctx, res) {
+  resultadosFlexion(ctx, res);
+  rotulaSeccion(res, ctx.p.secciones[est.i]?.nombre);
+}
+
+function resultadosFlexion(ctx, res) {
   const p = ctx.p;
   const s = p.secciones[est.i];
   if (!s || (s.forma !== 'rectangular' && s.forma !== 'T')) return;
