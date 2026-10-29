@@ -257,7 +257,7 @@ export function resultados(ctx, res) {
 
   // Centro: sección y celosía
   const geo = geometriaDe(p, s);
-  const lienzo = h('div', { class: 'lienzo', html: dibujoCortante(geo, s, { b0: ef.b0, d: ef.d, z: P.z / 1000, cotTheta: est.cot, alfa: est.alfa, neg: esViga(s) && est.signo < 0, sinArmadura: comp && est.sin }) });
+  const lienzo = h('div', { class: 'lienzo', html: dibujoCortante(geo, s, { b0: ef.b0, d: ef.d, z: P.z / 1000, cotTheta: est.cot, alfa: est.alfa, neg: esViga(s) && est.signo < 0, sinArmadura: comp && est.sin, s: comp ? est.s / 1000 : undefined }) });
   poner(centro, h('h2', {}, t('cor.t.dibujo')), lienzo, notas(sec.circular, P, e23 ? 'e23' : ec));
 
   // Derecha: cifras, tabla (al dimensionar) y filas desplegables
