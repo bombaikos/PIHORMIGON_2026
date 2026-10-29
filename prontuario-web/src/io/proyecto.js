@@ -2,7 +2,7 @@
 // Longitudes en m, áreas en m², resistencias de materiales en MPa (la interfaz muestra mm).
 // Versión 2: secciones con el modelo único (forma, geo, armado) de src/core/geometria.js.
 
-import { materialDeFicha } from '../core/materiales.js';
+import { materialDeFicha, ktcDe } from '../core/materiales.js';
 import { geometria, trapecios, SEP_CAPAS } from '../core/geometria.js';
 import { bruta } from '../core/propiedades.js';
 import { leerCapas } from '../core/armado.js';
@@ -249,7 +249,7 @@ export function datosViga(p, s, signo = 1) {
  */
 export function datosCortante(p, s, { signo = 1, dir = 'h' } = {}) {
   const { fichaH, fichaA } = materialesSeccion(p, s);
-  const comun = { forma: s.forma, nombre: s.nombre, hormigon: s.hormigon, acero: s.acero, fck: fichaH.fck, fyk: fichaA.fyk };
+  const comun = { forma: s.forma, nombre: s.nombre, hormigon: s.hormigon, acero: s.acero, fck: fichaH.fck, fyk: fichaA.fyk, ktc: ktcDe(fichaH, p.norma) };
   if (s.forma === 'rectangular' || s.forma === 'T') {
     const v = datosViga(p, s, signo);
     const b0 = Math.min(...v.trapecios.flatMap((t) => [t.b1, t.b2]));
@@ -263,7 +263,10 @@ export function datosCortante(p, s, { signo = 1, dir = 'h' } = {}) {
     const arm = s.armado.find((a) => a.tipo === 'perimetral');
     const r = arm?.d ?? 0.05;
     const [b0, h] = dir === 'b' ? [s.geo.h, s.geo.b] : [s.geo.b, s.geo.h];
-    return { ...comun, b0, h, d: h - r, Ac, Asl: 0, Asc: A, circular: false, r };
+    // Criterio propio (José Luis, 29/10): Asl = las barras de una cara (la traccionada), que son las del lado que cruza el cortante
+    const nCara = (dir === 'b' ? arm?.ny : arm?.nx) ?? 0;
+    const Asl = nCara * Math.PI * ((arm?.fi ?? 0) / 1000) ** 2 / 4;
+    return { ...comun, b0, h, d: h - r, Ac, Asl, Asc: A, circular: false, r };
   }
   if (s.forma === 'circular') {
     const D = s.geo.D;
@@ -272,7 +275,8 @@ export function datosCortante(p, s, { signo = 1, dir = 'h' } = {}) {
     const d = D / 2 + (D / 2 - r) * Math.SQRT1_2;
     // Ancho eficaz (José Luis, 14/10): cuerda del círculo de diámetro d a d/4 del centro
     const b0 = 2 * Math.sqrt((d / 2) ** 2 - (d / 4) ** 2);
-    return { ...comun, b0, h: D, d, Ac, Asl: 0, Asc: A, circular: true, r };
+    // Criterio propio (José Luis, 29/10): Asl = la mitad de las barras
+    return { ...comun, b0, h: D, d, Ac, Asl: A / 2, Asc: A, circular: true, r };
   }
   throw new ErrorClave('cor.errForma', s.nombre, s.forma);
 }

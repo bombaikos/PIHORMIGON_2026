@@ -90,7 +90,14 @@ export function comprobar(x) {
 
   if (sin) {
     const s = VRdcSinArmadura(P);
-    Object.assign(r, { VRdc: s.VRdc, VRdcConc: s.conc, VRdcMin: s.min, nuMin: s.nuMin, minManda: s.minManda, Vu: s.VRdc, Vu2: s.VRdc, Vu1: null, Vcu: s.VRdc, Vsu: 0, mandaBiela: false });
+    // Límite de biela aunque no haya cercos (6.2.2(6), ec. 6.5): VEd ≤ 0,5 bw d ν fcd, con ν = 0,6(1 − fck/250)
+    const VmaxRef = (0.5 * P.b0 * P.d * 0.6 * (1 - P.fck / 250) * P.fcd) / 1000;
+    Object.assign(r, { VRdc: s.VRdc, VRdcConc: s.conc, VRdcMin: s.min, nuMin: s.nuMin, minManda: s.minManda, Vu: s.VRdc, Vu2: s.VRdc, Vu1: null, VmaxRef, Vcu: s.VRdc, Vsu: 0, mandaBiela: false });
+    if (Number.isFinite(VEd)) {
+      if (VEd > VmaxRef) avisos.push({ clave: 'cor.av.sinBiela', args: [VEd.toFixed(0), VmaxRef.toFixed(0), '6.2.2(6)'] });
+      // Armadura mínima obligatoria en vigas aunque VEd ≤ VRd,c (6.2.1(4)); se puede omitir en losas y piezas menores
+      else if (VEd <= s.VRdc && x.viga !== false) avisos.push({ clave: 'cor.av.minObligatoria', args: ['6.2.1(4)'] });
+    }
   } else {
     const unidad = (P.z * P.fyd * Math.sin(rad(alfa)) * (cotT + cotA)) / 1000; // kN por mm²/mm
     const VRds = x.AswS * unidad;
@@ -154,6 +161,11 @@ export function dimensionar(x, VEd, { diametros = [8, 10, 12, 16, 20], ramas } =
   }
   r.caso = n.manda === 'minima' ? 'minima' : 'calculo';
   r.sinArmaduraBasta = VEd <= sin.VRdc;
+  // VEd ≤ VRd,c: no se requiere armadura de cortante calculada (6.2.1(3)); queda la mínima (9.2.2(5))
+  if (r.sinArmaduraBasta) {
+    r.caso = 'minima'; r.manda = 'minima'; r.AswSNec = 0; n.usar = n.mn; r.AswS = n.mn;
+    r.avisos.push({ clave: 'cor.av.bastaSinArm', args: [VEd.toFixed(0), sin.VRdc.toFixed(0)] });
+  }
   const cm = comprobar({ ...x, VEd, AswS: n.usar, sinArmadura: false });
   r.nu1 = cm.nu1;
   r.sMax = sepMaxima(VEd, cm.VRdMax, P.d, alfa);
@@ -166,7 +178,8 @@ export function dimensionar(x, VEd, { diametros = [8, 10, 12, 16, 20], ramas } =
     if (sOk < S_TABLA_PASO) return { fi, ramas: nr, s: null };
     const AswS = AswSDe(fi, nr, sOk);
     const v = comprobar({ ...x, VEd, AswS, sinArmadura: false });
-    return { fi, ramas: nr, s: sOk, AswS, Vsu: v.VRds, Vu2: v.VRds, Vu: v.Vu };
+    // Si VEd ≤ VRd,c la pieza resiste al menos VRd,c aunque los cercos mínimos aporten menos
+    return { fi, ramas: nr, s: sOk, AswS, Vsu: v.VRds, Vu2: v.VRds, Vu: r.sinArmaduraBasta ? Math.max(v.Vu, sin.VRdc) : v.Vu };
   });
   r.long = decalaje(VEd, n.c.cotTheta, cot(alfa), P.z, P.d);
   return r;

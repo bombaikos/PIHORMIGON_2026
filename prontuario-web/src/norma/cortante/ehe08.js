@@ -229,6 +229,11 @@ export function dimensionar(x, VEd, { diametros = [8, 10, 12, 16, 20], ramas } =
   }
   r.caso = n.manda === 'minima' ? 'minima' : 'calculo';
   r.sinArmaduraBasta = VEd <= sin.Vu2;
+  // Si la pieza resiste sin armadura de cortante no hace falta armadura calculada: se dispone la mínima (44.2.3.4.1)
+  if (r.sinArmaduraBasta) {
+    r.caso = 'minima'; r.manda = 'minima'; r.AswSNec = 0; n.usar = n.mn; r.AswS = n.mn;
+    r.avisos.push({ clave: 'cor.av.bastaSinArm', args: [VEd.toFixed(0), sin.Vu2.toFixed(0)] });
+  }
   r.sMax = sepMaxima(VEd, n.Vu1, P.d, alfa);
   const sTope = Math.floor(Math.min(r.sMax, S_TABLA_MAX) / S_TABLA_PASO) * S_TABLA_PASO;
   const nr = ramas ?? (x.circular ? 2 : x.b0 < 500 ? 2 : 4);

@@ -672,6 +672,11 @@ span.bien { color: var(--ok); font-weight: 600; }
 .info-i:hover, .info-i:focus-visible { color: var(--acento); border-color: var(--acento); outline: none; }
 .info-i::after { content: attr(data-tip); position: absolute; z-index: 20; right: -8px; bottom: calc(100% + 8px); width: 230px; padding: 6px 9px; border: 1px solid var(--linea-fuerte); border-radius: var(--r-campo); background: var(--hoja); box-shadow: var(--sombra); color: var(--tinta); font: 400 var(--t-s)/1.4 var(--f); text-align: left; display: none; pointer-events: none; }
 .info-i:hover::after, .info-i:focus-visible::after { display: block; }
+.info-i.izq { margin: 0 0 0 4px; align-self: center; }
+.info-i.izq::after { right: auto; left: -8px; }
+/* En los pares de datos la (i) va sobre la celda de la etiqueta, sin quitar ancho a la caja (las cajas miden lo mismo) */
+.par2 .campo { position: relative; }
+:root:not([data-densidad="comoda"]) .par2 .campo > .info-i.izq { position: absolute; margin: 0; left: calc(25px + var(--mas) * 2); top: 50%; transform: translateY(-50%); }
 
 
 
@@ -823,6 +828,16 @@ details.an-ce { margin-top: var(--e2); }
 :root .datos .campo.apilado select { height: var(--alto-campo); }
 
 /* Cortante · celosía de Mörsch y aclaraciones plegadas */
+.dib .alz-horm { fill: var(--hormigon); stroke: var(--hormigon-borde); stroke-width: 1.2; }
+.dib .alz-biela { fill: color-mix(in oklab, var(--hormigon) 85%, var(--tinta) 15%); stroke: color-mix(in oklab, var(--hormigon) 55%, var(--tinta) 45%); stroke-width: .8; }
+.dib .rayo-biela { stroke: color-mix(in oklab, var(--hormigon) 55%, var(--tinta) 45%); stroke-width: 1; }
+.dib .alz-cordon { fill: color-mix(in oklab, var(--hormigon) 72%, var(--tinta) 28%); stroke: var(--hormigon-borde); stroke-width: .8; }
+.dib .alz-arm { stroke: var(--armadura-resaltada); stroke-width: 2.6; }
+.dib .alz-cerco { fill: var(--armadura-resaltada); stroke: none; }
+.dib .alz-ang { fill: none; stroke: var(--tinta); stroke-width: 1; }
+.dib .alz-ref { stroke: var(--tinta-2); stroke-width: .8; }
+.dib .alz-txt { paint-order: stroke; stroke: var(--hormigon); stroke-width: 3; }
+.dib .alz-leyenda text { fill: var(--tinta); }
 .dib .cordon { stroke: var(--linea-fuerte); stroke-width: 2.4; fill: none; }
 .dib .biela { fill: none; stroke: var(--compr); stroke-width: 2.2; }
 .dib .tirante { fill: none; stroke: var(--acero); stroke-width: 1.6; }
@@ -985,5 +1000,15 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
 }
 /* Rótulos de los alzados: caen sobre el fondo de la hoja, no sobre el hormigón, y su halo es del color de la hoja */
 .dib text.halo.halo-alz { stroke: var(--hoja); }
+
+/* Cortante: aprovechamiento de biela y de cercos por separado, y fila sugerida de la tabla de cercos */
+.aprov2 { display: grid; gap: 4px; margin: 6px 0; }
+.aprov2 .fila-ap { display: grid; grid-template-columns: minmax(0, 1fr) 96px 44px; align-items: center; gap: 8px; font-size: var(--t-s); color: var(--tinta-3); }
+.aprov2 .fila-ap .v { text-align: right; font-weight: 600; color: var(--tinta); font-variant-numeric: tabular-nums; }
+.aprov2 .pista-barra i { background: var(--ok); }
+.aprov2 .fila-ap.no .pista-barra i { background: var(--no); }
+.tabla-scroll tr.sugerida td { font-weight: 700; background: var(--acento-suave); }
+.tarjeta > .pista { flex: none; }
+
 .fila-anc { display: flex; align-items: center; gap: 8px; }
 .fila-anc .seg { flex: 1; }
