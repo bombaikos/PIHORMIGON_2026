@@ -968,6 +968,9 @@ svg.dib-ras { min-width: 0; }
 .barra .pant-completa svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.5; }
 #menu-archivo button { display: flex; justify-content: space-between; gap: var(--e5); width: 100%; }
 #menu-archivo small { color: var(--tinta-3); }
+
+/* Punzonamiento: fila que manda (perímetros críticos) y fila recomendada (dimensionar) */
+table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento-suave); }
 </style>
 
 <header class="barra">
@@ -4819,7 +4822,20 @@ svg.dib-ras { min-width: 0; }
     "pun.errDatos": "Faltan datos del hormig\xF3n",
     "pun.errFck": (m) => `El hormig\xF3n supera el f<sub>ck</sub> m\xE1ximo de la norma (${m} MPa)`,
     "pun.errArm": "Los cercos necesitan \xF8, ramas, separaci\xF3n radial, primera distancia y per\xEDmetros",
-    "pun.errVEd": "El esfuerzo de punzonamiento debe ser mayor que cero"
+    "pun.errVEd": "El esfuerzo de punzonamiento debe ser mayor que cero",
+    "pun.tipoRama": "Tipo de armadura",
+    "pun.tipoCerrado": "Cercos cerrados",
+    "pun.tipoAbierto": "Cercos abiertos o ramas simples",
+    "pun.tipoStuds": "Conectores (studs)",
+    "pun.motivoTipo": "Solo en EC-2 2023: el tipo de armadura fija el \xF8 m\xE1ximo (12.5.1(3)) y \u03B7sys (8.110, 8.111)",
+    "pun.av.dh": (d, h2) => `El canto \xFAtil d = ${d} mm no es menor que el canto e = ${h2} mm`,
+    "pun.av.alargado": (r) => `Pilar alargado (c<sub>1</sub>/c<sub>2</sub> = ${r}): \u03B2 simplificado y per\xEDmetro de control pueden no valer; rev\xEDsalo como muro`,
+    "pun.av.muro23": "Pilar con un lado mayor que 6d<sub>v</sub>: el EC-2 2023 lo trata como extremo de muro (8.4.2(3))",
+    "pun.av.fiTabla": "Los di\xE1metros marcados \u2717 superan el m\xE1ximo del tipo de armadura (EC-2 2023, 12.5.1(3))",
+    "pun.disp.stExt": (a, m, n) => `En el \xFAltimo per\xEDmetro la separaci\xF3n tangencial s<sub>t</sub> = ${a} mm supera el m\xE1ximo de ${m} mm fuera del primer per\xEDmetro (${n}, 9.4.3(1))`,
+    "pun.tt.rec": "Menos acero entre los di\xE1metros v\xE1lidos",
+    "pun.tt.fiMax": "Di\xE1metro mayor que el m\xE1ximo del tipo de armadura (12.5.1(3))",
+    "pun.tt.manda": "Comprobaci\xF3n m\xE1s exigente (mayor aprovechamiento)"
   };
 
   // src/i18n/punzonamiento.en.js
@@ -5010,7 +5026,20 @@ svg.dib-ras { min-width: 0; }
     "pun.f.vmaxEHE": "F<sub>sd,ef</sub> = \u03B2\xB7V<sub>Ed</sub> \u2264 0.5\xB7f<sub>1cd</sub>\xB7u<sub>0</sub>\xB7d",
     "pun.r.vRdc": "v<sub>Rd,c</sub> / V<sub>Rd,c</sub>",
     "pun.v.minVal": (a, b) => `\u03C1<sub>w</sub> = ${a} \u2030 \u2265 \u03C1<sub>w,min</sub> = ${b} \u2030`,
-    "pun.ver.ecu": (V, Vu, ok, manda) => `${sub8("V", "Ed")} <b>${V}</b> ${ok ? "\u2264" : ">"} ${sub8("V", "u")} <b>${Vu}</b> \xB7 ${manda}`
+    "pun.ver.ecu": (V, Vu, ok, manda) => `${sub8("V", "Ed")} <b>${V}</b> ${ok ? "\u2264" : ">"} ${sub8("V", "u")} <b>${Vu}</b> \xB7 ${manda}`,
+    "pun.tipoRama": "Reinforcement type",
+    "pun.tipoCerrado": "Closed stirrups",
+    "pun.tipoAbierto": "Open stirrups or single legs",
+    "pun.tipoStuds": "Studs (headed)",
+    "pun.motivoTipo": "EC-2 2023 only: the type sets the maximum diameter (12.5.1(3)) and \u03B7sys (8.110, 8.111)",
+    "pun.av.dh": (d, h2) => `The effective depth d = ${d} mm is not smaller than the thickness e = ${h2} mm`,
+    "pun.av.alargado": (r) => `Elongated column (c<sub>1</sub>/c<sub>2</sub> = ${r}): the simplified \u03B2 and the control perimeter may not hold; check it as a wall`,
+    "pun.av.muro23": "Column side larger than 6d<sub>v</sub>: EC-2 2023 treats it as a wall end (8.4.2(3))",
+    "pun.av.fiTabla": "Diameters marked \u2717 exceed the maximum for the reinforcement type (EC-2 2023, 12.5.1(3))",
+    "pun.disp.stExt": (a, m, n) => `At the last ring the tangential spacing s<sub>t</sub> = ${a} mm exceeds the maximum of ${m} mm outside the first perimeter (${n}, 9.4.3(1))`,
+    "pun.tt.rec": "Least steel among the valid diameters",
+    "pun.tt.fiMax": "Diameter larger than the maximum for the reinforcement type (12.5.1(3))",
+    "pun.tt.manda": "Most demanding check (highest utilisation)"
   };
 
   // src/i18n/rasante.es.js
@@ -14332,6 +14361,7 @@ svg.dib-ras { min-width: 0; }
     K_EXT: () => K_EXT,
     RHO_MAX: () => RHO_MAX3,
     SR_MAX: () => SR_MAX2,
+    ST_EXT: () => ST_EXT,
     ST_MAX: () => ST_MAX2,
     areaRama: () => areaRama,
     comprobar: () => comprobar6,
@@ -14346,6 +14376,7 @@ svg.dib-ras { min-width: 0; }
   var A1_MAX2 = 0.5;
   var SR_MAX2 = 0.75;
   var ST_MAX2 = 1.5;
+  var ST_EXT = 2;
   function parametros5(x) {
     validarPilar(x);
     const { fck, d } = x;
@@ -14416,6 +14447,11 @@ svg.dib-ras { min-width: 0; }
       if (a.a1 > A1_MAX2 * x.d + 1e-9) r.disp.push({ clave: "pun.disp.a1", ok: false, args: [a.a1, A1_MAX2 * x.d, ID4] });
       if (a.sr > SR_MAX2 * x.d + 1e-9) r.disp.push({ clave: "pun.disp.sr", ok: false, args: [a.sr, SR_MAX2 * x.d, ID4] });
       if (st > ST_MAX2 * x.d + 1e-9) r.disp.push({ clave: "pun.disp.st", ok: false, args: [st, ST_MAX2 * x.d, ID4] });
+      if (a.nPer >= 2) {
+        const stExt = perimetro(x, dl) / a.ramas;
+        r.stExt = stExt;
+        if (stExt > ST_EXT * x.d + 1e-9) r.disp.push({ clave: "pun.disp.stExt", ok: false, args: [stExt, ST_EXT * x.d, ID4] });
+      }
     }
     if (Number.isFinite(VEd)) {
       r.aprov = VEd / r.Vu;
@@ -14474,6 +14510,7 @@ svg.dib-ras { min-width: 0; }
   var ec2_2023_exports2 = {};
   __export(ec2_2023_exports2, {
     A1_MAX: () => A1_MAX3,
+    FI_MAX_K: () => FI_MAX_K,
     ID: () => ID5,
     SR_MAX: () => SR_MAX3,
     ST_MAX: () => ST_MAX3,
@@ -14492,6 +14529,7 @@ svg.dib-ras { min-width: 0; }
   var A1_MAX3 = 0.5;
   var SR_MAX3 = 0.75;
   var ST_PRIMERO = 0.75;
+  var FI_MAX_K = { abierto: 10, cerrado: 11, studs: 16 };
   var ST_MAX3 = 1.5;
   function parametros6(x) {
     validarPilar(x);
@@ -14504,7 +14542,8 @@ svg.dib-ras { min-width: 0; }
     const fywd = fyk / EC2_2023.gammaS;
     const ddg = ddgDe(fck, x.Dlower ?? 20);
     const rho = Math.sqrt(Math.max(0, x.rhoX ?? 0) * Math.max(0, x.rhoY ?? 0));
-    return { fck, fyk, fywd, ddg, gv, gc, dv: d, rho };
+    const tipo = x.arm?.tipo ?? "cerrado";
+    return { fck, fyk, fywd, ddg, gv, gc, dv: d, rho, tipo };
   }
   function perimetros3(x) {
     const dv = x.d;
@@ -14519,7 +14558,7 @@ svg.dib-ras { min-width: 0; }
     const tope = 0.5 / P.gv * Math.sqrt(P.fck);
     const tau = Math.min(conc, tope);
     const f = u.b05 * P.dv / 1e3;
-    const etaSys = Math.max(1, 0.5 + 0.63 * Math.pow(u.b0 / P.dv, 0.25));
+    const etaSys = Math.max(1, (P.tipo === "studs" ? 0.7 : 0.5) + 0.63 * Math.pow(u.b0 / P.dv, 0.25));
     return { kpb, kpbBruto, conc, tope, tau, topeManda: conc > tope, VRdc: tau * f, etaSys, VRdMax: etaSys * tau * f };
   }
   function etas(P, s, fiW, Vef) {
@@ -14607,7 +14646,7 @@ svg.dib-ras { min-width: 0; }
         r.manda = "exterior";
       }
       r.Vu = r.VuEf / beta2;
-      const fiMax = 11 * Math.sqrt(P.dv / 200);
+      const fiMax = (FI_MAX_K[P.tipo] ?? 11) * Math.sqrt(P.dv / 200);
       r.fiMax = fiMax;
       if (a.fi > fiMax + 1e-9) r.disp.push({ clave: "pun.disp.fiMax", ok: false, args: [a.fi, fiMax] });
       if (a.nPer < 2) r.disp.push({ clave: "pun.disp.dos", ok: false, args: [ID5] });
@@ -14656,7 +14695,7 @@ svg.dib-ras { min-width: 0; }
       const dvOut = P.dv - fi;
       const b05out = u.b05 * Math.pow(P.dv / dvOut / Math.min(1, etaC), 2);
       const nPer = nPerimetrosExt(x, { ...a, ramas: n }, 0.5 * dvOut, b05out, 2, 3 * P.dv);
-      return { fi, ramas: n, nx: gr.nx, ny: gr.ny, Asw, st: u.b05 / n, etaC, etaS, AswNec, nPer, b05out, Vu: VuConArmadura(P, s, fi, VwR).V / beta2, ok: c.VRdcs >= Vef - 1e-9 };
+      return { fi, fiOk: fi <= (FI_MAX_K[P.tipo] ?? 11) * Math.sqrt(P.dv / 200) + 1e-9, ramas: n, nx: gr.nx, ny: gr.ny, Asw, st: u.b05 / n, etaC, etaS, AswNec, nPer, b05out, Vu: VuConArmadura(P, s, fi, VwR).V / beta2, ok: c.VRdcs >= Vef - 1e-9 };
     });
     r.nPer = Math.max(...r.tabla.map((f) => f.nPer));
     return r;
@@ -14878,6 +14917,7 @@ svg.dib-ras { min-width: 0; }
     Dlower: 20,
     armadura: true,
     esq: "cruz",
+    tipoRama: "cerrado",
     nx: 5,
     ny: 5,
     fi: 10,
@@ -14918,7 +14958,7 @@ svg.dib-ras { min-width: 0; }
       Dlower: D.Dlower,
       sinArmadura: !dimensionando && !D.armadura
     };
-    x.arm = { fi: D.fi, ramas: D.esq === "ret" ? ramasReticula(D.pos, D.nx, D.ny) : D.ramas, nx: D.nx, ny: D.ny, sr: D.sr, a1: D.a1, nPer: D.nPer, esq: D.esq };
+    x.arm = { fi: D.fi, ramas: D.esq === "ret" ? ramasReticula(D.pos, D.nx, D.ny) : D.ramas, nx: D.nx, ny: D.ny, sr: D.sr, a1: D.a1, nPer: D.nPer, esq: D.esq, tipo: D.tipoRama };
     return x;
   }
   var campoNum2 = (o) => {
@@ -15053,6 +15093,13 @@ svg.dib-ras { min-width: 0; }
           D.esq = v2;
           ctx2.cambio({ estructura: true });
         } }),
+        (() => {
+          const c = selector({ id: "p-tipo", etq: t("pun.tipoRama"), opciones: [["cerrado", t("pun.tipoCerrado")], ["abierto", t("pun.tipoAbierto")], ["studs", t("pun.tipoStuds")]], valor: D.tipoRama, onCambio: (v2) => {
+            D.tipoRama = v2;
+            cambio();
+          } });
+          return e23 ? c : apaga(c, t("pun.motivoTipo"));
+        })(),
         ...campos
       );
       const leyenda3 = h("legend", {}, comp ? h("label", { class: "tick" }, h("input", { type: "checkbox", id: "p-arm", checked: D.armadura, onchange: (e2) => {
@@ -15096,6 +15143,10 @@ svg.dib-ras { min-width: 0; }
       return;
     }
     const avisos4 = (r.avisos ?? []).filter((a) => a.clave !== "pun.av.fyd400").map((a) => aviso(t(a.clave, ...a.args ?? [])));
+    if (!(x.d < D.h)) avisos4.push(aviso(t("pun.av.dh", fmt(x.d, 0), fmt(D.h, 0))));
+    if (x.tipo === "rect" && Math.max(x.c1, x.c2) > 2 * Math.min(x.c1, x.c2)) avisos4.push(aviso(t("pun.av.alargado", fmt(Math.max(x.c1, x.c2) / Math.min(x.c1, x.c2), 1))));
+    if (e23 && x.tipo === "rect" && Math.max(x.c1, x.c2) > 6 * x.d) avisos4.push(aviso(t("pun.av.muro23")));
+    if (e23 && !comp && r.tabla && r.tabla.some((f) => f.fiOk === false)) avisos4.push(aviso(t("pun.av.fiTabla")));
     const kN = (v2) => q(v2, "N");
     p.calculos.punzonamientoRes = {
       modo: est7.modo,
@@ -15133,8 +15184,19 @@ svg.dib-ras { min-width: 0; }
     poner(dcha, h("h2", {}, t("cor.t.res")), cifras(cifrasDe(r, comp, e23)));
     if (!comp && r.tabla) {
       const cab = [t("pun.tabla.fi"), t("pun.tabla.ramas"), t("pun.tabla.asw"), t("pun.tabla.st"), t("pun.tabla.nPer"), t("pun.tabla.vu")];
-      const filas = r.tabla.map((f) => [`\xF8${f.fi}`, D.esq === "ret" ? `${f.ramas} (${f.nx}\xD7${f.ny})` : String(f.ramas), fmt(f.Asw, 0), fmt(f.st, 0), String(f.nPer), fmt(f.Vu, 0)]);
-      poner(dcha, titulos(tabla(filas, { cabecera: cab, clase: "rejilla-res" }), ["pun.tt.fi", "pun.tt.ramas", "pun.tt.asw", "pun.tt.st", "pun.tt.nPer", "pun.tt.vu"]));
+      const valida = (f) => f.fiOk !== false && f.ok !== false;
+      const rec = r.tabla.filter(valida).reduce((a, b) => !a || b.Asw < a.Asw ? b : a, null);
+      const filas = r.tabla.map((f) => [`\xF8${f.fi}${f.fiOk === false ? " \u2717" : ""}`, D.esq === "ret" ? `${f.ramas} (${f.nx}\xD7${f.ny})` : String(f.ramas), fmt(f.Asw, 0), fmt(f.st, 0), String(f.nPer), fmt(f.Vu, 0)]);
+      const tabDim = tabla(filas, { cabecera: cab, clase: "rejilla-res" });
+      r.tabla.forEach((f, i) => {
+        const tr = tabDim.querySelectorAll("tbody tr")[i];
+        if (f === rec) {
+          tr.classList.add("manda");
+          tr.title = t("pun.tt.rec");
+        }
+        if (f.fiOk === false) tr.title = t("pun.tt.fiMax");
+      });
+      poner(dcha, titulos(tabDim, ["pun.tt.fi", "pun.tt.ramas", "pun.tt.asw", "pun.tt.st", "pun.tt.nPer", "pun.tt.vu"]));
     }
     let rc = comp ? r : null;
     if (!comp && r.caso === "calculo") {
@@ -15211,11 +15273,15 @@ svg.dib-ras { min-width: 0; }
       [t("pun.crit.ctrl", e23 ? nombre("b", "0,5") : nombre("u", "1")), fmt(ctrl, 0), fmt(uCtrl, 0), `${kN(V)} \u2264 ${kN(capCtrl)} kN ${ok(V <= capCtrl + 1e-9)}`],
       [t("pun.crit.ext", e23 ? nombre("b", "0,5,out") : ec ? nombre("u", "out,ef") : nombre("u", "n,ef")), fmt(dl + kd, 0), fmt(uProv, 0), `${fmt(uProv, 0)} \u2265 ${fmt(uReq, 0)} mm ${ok(uProv >= uReq - 1e-6)}`]
     ];
-    return h(
-      "div",
-      { class: "pun-criticos" },
-      titulos(tabla(filas, { cabecera: [t("pun.crit.t"), t("pun.crit.dist"), t("pun.crit.long"), t("pun.crit.comp")], clase: "rejilla-res" }), ["pun.tt.per", "pun.tt.dist", "pun.tt.long", "pun.tt.comp"])
-    );
+    const usos = [V / r.Vmax, V / capCtrl, Number.isFinite(uReq) && uProv > 0 ? uReq / uProv : 0];
+    const iMax = usos.indexOf(Math.max(...usos));
+    const tabCrit = tabla(filas, { cabecera: [t("pun.crit.t"), t("pun.crit.dist"), t("pun.crit.long"), t("pun.crit.comp")], clase: "rejilla-res" });
+    const trM = tabCrit.querySelectorAll("tbody tr")[iMax];
+    if (trM) {
+      trM.classList.add("manda");
+      trM.title = t("pun.tt.manda");
+    }
+    return h("div", { class: "pun-criticos" }, titulos(tabCrit, ["pun.tt.per", "pun.tt.dist", "pun.tt.long", "pun.tt.comp"]));
   }
   var rectTexto = (x) => x.tipo === "rect" ? t("pun.dib.pilarR", fmt(x.c1, 0), fmt(x.c2, 0), t(`pun.${x.pos}`).toLowerCase()) : t("pun.dib.pilarC", fmt(x.D, 0), t(`pun.${x.pos}`).toLowerCase());
   function cifrasDe(r, comp, e23) {

@@ -30,3 +30,9 @@ Módulo construido el 20/10/2026 a partir de `analisis/punzonamiento-plan.md`, c
 - Tick «Armadura de punzonamiento» (por defecto activo); sin tick se calcula sin armadura. Campos que no aplican, en gris.
 - Esquema de armado: Cruz (nº perímetros y ramas/perímetro) o Retícula (nº ramas x y y). Perímetro exterior: casco convexo (cruz) o contorno (retícula) a k·d del último cerco.
 - β editable (simplificado por defecto). Notas tras un (i) junto a «Planta».
+
+## Revisión de la formulación (29/10/2026, Pepiño)
+Informe en `/mnt/project-files/punzonamiento/revision-formulacion-ec2.md`. Contrastado con EC-2 2004+AN (6.4, 9.4.3, AN) y EC-2 2023 (8.4, 12.5.1). Incorporado: st ≤ 2d en el último perímetro (EC-2 2004, 9.4.3(1)); tipo de armadura en EC-2 2023 (cercos cerrados, abiertos o ramas simples, studs): ø máximo (12.7 a 12.9) y ηsys 0.70 en studs (8.110); avisos de d ≥ e, pilar alargado y lado > 6dv (2023); resalte del perímetro que manda y de la fila de menos acero.
+- No incluido por decisión de Pepiño: β calculado con momento y descuento de cargas dentro del perímetro (zapatas y losas de cimentación, más adelante).
+- Pendiente: huecos, capiteles y ábacos, barras levantadas, pilar separado del borde, st ≤ 2d en EHE-08.
+- No hay armadura mínima de punzonamiento en el EC-2 2023 (ni en 8.4 ni en 12.5.1).

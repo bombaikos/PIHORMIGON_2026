@@ -18,6 +18,7 @@ export const K_EXT = 2; // AN 6.4.5(4)
 export const A1_MAX = 0.5; // 9.4.3(4): primera armadura a ≤ d/2 de la cara
 export const SR_MAX = 0.75; // 9.4.3(1)
 export const ST_MAX = 1.5; // 9.4.3(1): dentro del primer perímetro crítico
+export const ST_EXT = 2; // 9.4.3(1): 2d en los perímetros exteriores al primero
 
 export function parametros(x) {
   validarPilar(x);
@@ -95,6 +96,12 @@ export function comprobar(x) {
     if (a.a1 > A1_MAX * x.d + 1e-9) r.disp.push({ clave: 'pun.disp.a1', ok: false, args: [a.a1, A1_MAX * x.d, ID] });
     if (a.sr > SR_MAX * x.d + 1e-9) r.disp.push({ clave: 'pun.disp.sr', ok: false, args: [a.sr, SR_MAX * x.d, ID] });
     if (st > ST_MAX * x.d + 1e-9) r.disp.push({ clave: 'pun.disp.st', ok: false, args: [st, ST_MAX * x.d, ID] });
+    // Perímetros exteriores: separación media en el último perímetro de cercos (9.4.3(1))
+    if (a.nPer >= 2) {
+      const stExt = perimetro(x, dl) / a.ramas;
+      r.stExt = stExt;
+      if (stExt > ST_EXT * x.d + 1e-9) r.disp.push({ clave: 'pun.disp.stExt', ok: false, args: [stExt, ST_EXT * x.d, ID] });
+    }
   }
   if (Number.isFinite(VEd)) {
     r.aprov = VEd / r.Vu;

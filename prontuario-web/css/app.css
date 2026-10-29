@@ -959,3 +959,6 @@ svg.dib-ras { min-width: 0; }
 .barra .pant-completa svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.5; }
 #menu-archivo button { display: flex; justify-content: space-between; gap: var(--e5); width: 100%; }
 #menu-archivo small { color: var(--tinta-3); }
+
+/* Punzonamiento: fila que manda (perímetros críticos) y fila recomendada (dimensionar) */
+table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento-suave); }
