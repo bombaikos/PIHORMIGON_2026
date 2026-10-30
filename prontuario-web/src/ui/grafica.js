@@ -45,7 +45,7 @@ function interpolar(xy, x) {
  * @param {Object} o
  * @param {{nombre:string, xy:number[][], clase?:string, cruz?:boolean}[]} o.series  clase: s1, s2, ref; cruz:false la deja fuera de la cruz
  * @param {{x:number, y:number, etq:string, clase?:string, abajo?:boolean}[]} [o.puntos]  puntos marcados con su rótulo (abajo: bajo el punto) (SVG: subíndices con <tspan class="ind">)
- * @param {{titulo:string, d?:number, dt?:number}} o.ejeX  d: decimales en la cruz; dt: decimales en la tabla (por defecto d + 1)
+ * @param {{titulo:string, d?:number, dt?:number, alternar?:()=>void, ayuda?:string}} o.ejeX  d: decimales en la cruz; dt: decimales en la tabla (por defecto d + 1); alternar: se llama al pulsar el título del eje (por ejemplo, para pasar de escala logarítmica a lineal), con ayuda como texto emergente
  * @param {{titulo:string, d?:number}} o.ejeY
  * @param {{x?:number, y?:number}} [o.rejillaSec]  rejilla secundaria (sin números) cada x e y; solo si es más fina que la principal
  * @param {boolean} [o.invertirY]  el eje y crece hacia abajo (momentos flectores: positivos debajo)
@@ -187,7 +187,7 @@ export function grafica({ series, puntos = [], ejeX, ejeY, archivo = 'grafica', 
     o.push(`<rect class="marco" x="${M.izq}" y="${M.arr}" width="${pw}" height="${ph}"/>`);
     if (vista.y0 < 0 && vista.y1 > 0) o.push(`<line class="eje0" x1="${M.izq}" x2="${W - M.der}" y1="${aY(0)}" y2="${aY(0)}"/>`);
     if (vista.x0 < 0 && vista.x1 > 0) o.push(`<line class="eje0" x1="${aX(0)}" x2="${aX(0)}" y1="${M.arr}" y2="${H - M.aba}"/>`);
-    o.push(`<text class="tit-eje" x="${M.izq + pw / 2}" y="${H - 6}" text-anchor="middle">${ejeX.titulo}</text>`);
+    o.push(`<text class="tit-eje${ejeX.alternar ? ' alt' : ''}" x="${M.izq + pw / 2}" y="${H - 6}" text-anchor="middle">${ejeX.titulo}${ejeX.alternar && ejeX.ayuda ? `<title>${ejeX.ayuda}</title>` : ''}</text>`);
     o.push(`<text class="tit-eje" transform="translate(14 ${M.arr + ph / 2}) rotate(-90)" text-anchor="middle">${ejeY.titulo}</text>`);
     o.push(`<g clip-path="url(#${clip})">`);
     for (const s of series) {
@@ -268,6 +268,11 @@ export function grafica({ series, puntos = [], ejeX, ejeY, archivo = 'grafica', 
     dibujar();
   };
   svg.addEventListener('wheel', (e) => { e.preventDefault(); zoom(pos(e), e.deltaY > 0 ? 1.2 : 1 / 1.2); }, { passive: false });
+  // Pulsar el título del eje X (zona de abajo, donde ya no hay gráfico) alterna la escala. Se mira la posición en pointerup: el svg se redibuja al pulsar y el navegador no llega a emitir «click»
+  const enTituloX = (p) => p.y > H - 24 && p.x > M.izq && p.x < W - M.der;
+  let bajada = null;
+  svg.addEventListener('pointerdown', (e) => { bajada = e.button === 0 ? pos(e) : null; }, true);
+  svg.addEventListener('pointerup', (e) => { const b = bajada; bajada = null; if (ejeX.alternar && b && e.button === 0 && enTituloX(b) && enTituloX(pos(e)) && Math.hypot(pos(e).x - b.x, pos(e).y - b.y) < 5) setTimeout(ejeX.alternar); });
   svg.addEventListener('dblclick', () => { vista = { ...completa }; dibujar(); });
   const dedos = new Map();
   let pellizco = null;
