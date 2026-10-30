@@ -1,4 +1,4 @@
-<title>Prontuario Informático del Hormigón 2026 BETA a</title>
+<title>Prontuario del Hormigón</title>
 <style>
 /* Prontuario web. Estilo según analisis/guia-estilo-prontuario.md (la maqueta de flexión es la referencia).
    Disposición: todo en una pantalla de PC (§ 13): barra de una línea; datos | dibujo | resultados, sin scroll de página. En móvil, una columna. */
@@ -486,6 +486,8 @@ table.rejilla tr.foco td { background: var(--acento-suave); }
 .grafica svg.graf { flex: 1; min-height: 0; width: 100%; display: block; touch-action: none; user-select: none; cursor: crosshair; }
 .graf text { fill: var(--tinta-2); font: calc(12px + var(--mas)) var(--f); font-variant-numeric: tabular-nums; }
 .graf .tit-eje { fill: var(--tinta-2); font-weight: 600; }
+.graf .tit-eje.alt { cursor: pointer; text-decoration: underline dotted; }
+.graf .tit-eje.alt:hover { fill: var(--acento); }
 .graf .etq-punto { fill: var(--tinta); font-weight: 600; }
 .graf .punto-calculo { fill: var(--hoja); stroke: var(--tinta); stroke-width: 2; }
 .graf .punto-calculo.ok { fill: var(--ok); stroke: var(--hoja); }
@@ -2669,6 +2671,24 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     "rg.avT0": "La edad de carga debe ser de al menos 1 d\xEDa.",
     "rg.avNoLineal": (l, s) => `\u03C3<sub>c</sub> = ${s} MPa supera ${l} MPa: la fluencia deja de ser lineal y se usa el coeficiente corregido.`,
     "rg.avNoLinealEHE": (l, s) => `\u03C3<sub>c</sub> = ${s} MPa supera ${l} MPa (0,45\xB7f<sub>cm</sub>(t<sub>0</sub>)): la EHE-08 no da modelo de fluencia no lineal.`,
+    "rg.AcAyuda": "Secci\xF3n total de hormig\xF3n",
+    "rg.uAyuda": "Per\xEDmetro en contacto con la atm\xF3sfera",
+    "rg.hCargas": "Escalones de carga",
+    "rg.hHumedad": "Humedad en el tiempo",
+    "rg.avHR": "La humedad relativa debe estar entre 20 y 100 %.",
+    "rg.historia": "Historia",
+    "rg.tablaPhi": "Tabla \u03C6",
+    "rg.elastica": "El\xE1stica",
+    "rg.diferida": "Diferida",
+    "rg.avHistoria": "Introduce al menos un escal\xF3n de carga y una humedad.",
+    "rg.eje": "en columnas",
+    "rg.eje2": "en filas",
+    "rg.notaHistoria": "Compresi\xF3n y acortamiento positivos. \u03C6 y \u03B5_cs con la humedad del instante t.",
+    "rg.phiEvolucion": "Evoluci\xF3n de \u03C6 con t para cada edad de carga",
+    "rg.avSigHist": (t0, s, l) => `Con la carga de t = ${t0} d la tensi\xF3n acumulada (${s} MPa) supera 0,45\xB7f_cm (${l} MPa): los resultados lineales no valen.`,
+    "rg.avTraccion": (t0) => `Con el escal\xF3n de t = ${t0} d la tensi\xF3n acumulada es de tracci\xF3n: el modelo no vale con fisuraci\xF3n.`,
+    "rg.alternaEscala": "Pulsa para alternar escala logar\xEDtmica y lineal",
+    "rg.phiNota": "Con la humedad de la tabla en cada instante t.",
     "rg.fluencia": "Fluencia",
     "rg.retraccion": "Retracci\xF3n",
     "rg.total": "Total",
@@ -3660,6 +3680,24 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     "rg.avT0": "The age at loading must be at least 1 day.",
     "rg.avNoLineal": (l, s) => `\u03C3<sub>c</sub> = ${s} MPa exceeds ${l} MPa: creep is no longer linear and the corrected coefficient is used.`,
     "rg.avNoLinealEHE": (l, s) => `\u03C3<sub>c</sub> = ${s} MPa exceeds ${l} MPa (0.45\xB7f<sub>cm</sub>(t<sub>0</sub>)): EHE-08 gives no non-linear creep model.`,
+    "rg.AcAyuda": "Gross concrete area",
+    "rg.uAyuda": "Perimeter in contact with the atmosphere",
+    "rg.hCargas": "Load steps",
+    "rg.hHumedad": "Humidity over time",
+    "rg.avHR": "Relative humidity must be between 20 and 100 %.",
+    "rg.historia": "History",
+    "rg.tablaPhi": "\u03C6 table",
+    "rg.elastica": "Elastic",
+    "rg.diferida": "Creep",
+    "rg.avHistoria": "Enter at least one load step and one humidity.",
+    "rg.eje": "in columns",
+    "rg.eje2": "in rows",
+    "rg.notaHistoria": "Compression and shortening positive. \u03C6 and \u03B5_cs use the humidity at time t.",
+    "rg.phiEvolucion": "\u03C6 against t for each loading age",
+    "rg.avSigHist": (t0, s, l) => `At the load of t = ${t0} d the accumulated stress (${s} MPa) exceeds 0.45\xB7f_cm (${l} MPa): linear results are not valid.`,
+    "rg.avTraccion": (t0) => `At the step of t = ${t0} d the accumulated stress is tensile: the model is not valid with cracking.`,
+    "rg.alternaEscala": "Click to switch between logarithmic and linear scale",
+    "rg.phiNota": "With the humidity of the table at each time t.",
     "rg.fluencia": "Creep",
     "rg.retraccion": "Shrinkage",
     "rg.total": "Total",
@@ -6748,6 +6786,34 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     }
     return phi;
   }
+  function humedadEn(tabla3, t2) {
+    const T = tabla3.slice().sort((a, b) => a[0] - b[0]);
+    if (!T.length) return NaN;
+    if (t2 <= T[0][0]) return T[0][1];
+    for (let i = 1; i < T.length; i++) {
+      if (t2 <= T[i][0]) return T[i][0] === T[i - 1][0] ? T[i][1] : T[i - 1][1] + (T[i][1] - T[i - 1][1]) * (t2 - T[i - 1][0]) / (T[i][0] - T[i - 1][0]);
+    }
+    return T.at(-1)[1];
+  }
+  function historia(norma2, { fck, fcm, fctm, Ecm, Ec28, cemento = "N", h0, ts, cargas, humedad, tiempos }) {
+    const Ec0 = Ec28 ?? 1.05 * Ecm;
+    const E0 = cargas.map(([t0]) => evolucionEdad(norma2, { fck, fcm, fctm, Ecm, cemento, t: t0 }).Ecm);
+    return tiempos.map((t2) => {
+      const HR = humedadEn(humedad, t2);
+      let elastica = 0;
+      let diferida = 0;
+      cargas.forEach(([t0, ds], j) => {
+        if (t2 < t0) return;
+        elastica += ds / E0[j];
+        if (t2 > t0) diferida += ds * fluencia(norma2, { fck, HR, h0, t0, t: t2, cemento }).phi / Ec0;
+      });
+      const rc = -retraccion(norma2, { fck, HR, h0, t: t2, ts, cemento }).total;
+      return { t: t2, HR, elastica, diferida, retraccion: rc, total: elastica + diferida + rc };
+    });
+  }
+  function tablaFluencia(norma2, { fck, cemento = "N", h0, humedad }, t0s, ts) {
+    return t0s.map((t0) => ts.map((t2) => t2 > t0 ? fluencia(norma2, { fck, HR: humedadEn(humedad, t2), h0, t0, t: t2, cemento }).phi : null));
+  }
 
   // src/ui/filasPlegables.js
   function filasPlegables(envoltorio, cuentas) {
@@ -7002,7 +7068,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
       o.push(`<rect class="marco" x="${M.izq}" y="${M.arr}" width="${pw}" height="${ph}"/>`);
       if (vista.y0 < 0 && vista.y1 > 0) o.push(`<line class="eje0" x1="${M.izq}" x2="${W - M.der}" y1="${aY(0)}" y2="${aY(0)}"/>`);
       if (vista.x0 < 0 && vista.x1 > 0) o.push(`<line class="eje0" x1="${aX(0)}" x2="${aX(0)}" y1="${M.arr}" y2="${H - M.aba}"/>`);
-      o.push(`<text class="tit-eje" x="${M.izq + pw / 2}" y="${H - 6}" text-anchor="middle">${ejeX.titulo}</text>`);
+      o.push(`<text class="tit-eje${ejeX.alternar ? " alt" : ""}" x="${M.izq + pw / 2}" y="${H - 6}" text-anchor="middle">${ejeX.titulo}${ejeX.alternar && ejeX.ayuda ? `<title>${ejeX.ayuda}</title>` : ""}</text>`);
       o.push(`<text class="tit-eje" transform="translate(14 ${M.arr + ph / 2}) rotate(-90)" text-anchor="middle">${ejeY.titulo}</text>`);
       o.push(`<g clip-path="url(#${clip})">`);
       for (const s of series) {
@@ -7080,6 +7146,16 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
       e2.preventDefault();
       zoom(pos(e2), e2.deltaY > 0 ? 1.2 : 1 / 1.2);
     }, { passive: false });
+    const enTituloX = (p) => p.y > H - 24 && p.x > M.izq && p.x < W - M.der;
+    let bajada = null;
+    svg.addEventListener("pointerdown", (e2) => {
+      bajada = e2.button === 0 ? pos(e2) : null;
+    }, true);
+    svg.addEventListener("pointerup", (e2) => {
+      const b = bajada;
+      bajada = null;
+      if (ejeX.alternar && b && e2.button === 0 && enTituloX(b) && enTituloX(pos(e2)) && Math.hypot(pos(e2).x - b.x, pos(e2).y - b.y) < 5) setTimeout(ejeX.alternar);
+    });
     svg.addEventListener("dblclick", () => {
       vista = { ...completa };
       dibujar();
@@ -7780,11 +7856,11 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     reiniciar: () => reiniciar2,
     resultados: () => resultados3
   });
-  var est2 = { hormigon: null, cemento: null, HR: 70, h0: 200, t0: 28, ts: null, modo: "final", t: 365, sigma: 0, pestana: "fluencia" };
+  var est2 = { hormigon: null, cemento: null, HR: 70, Ac: 0.2, u: 2, h0: 200, t0: 28, ts: null, modo: "final", t: 365, sigma: 0, pestana: "fluencia", logT: true, cargas: [["28", "8"], ["90", "4"]], humedad: [["28", "70"], ["90", "70"], ["365", "60"], ["1000", "60"], ["3650", "60"]] };
   var sub12 = (a, b) => `${a}<sub>${b}</sub>`;
   var U2 = (ud) => `${ESP}<span class="u u-cab">[${ud}]</span>`;
   function reiniciar2() {
-    Object.assign(est2, { hormigon: null, cemento: null, HR: 70, h0: 200, t0: 28, ts: null, modo: "final", t: 365, sigma: 0, pestana: "fluencia" });
+    Object.assign(est2, { hormigon: null, cemento: null, HR: 70, Ac: 0.2, u: 2, h0: 200, t0: 28, ts: null, modo: "final", t: 365, sigma: 0, pestana: "fluencia", logT: true, cargas: [["28", "8"], ["90", "4"]], humedad: [["28", "70"], ["90", "70"], ["365", "60"], ["1000", "60"], ["3650", "60"]] });
   }
   function hormigonActivo(ctx2) {
     const L = ctx2.p.hormigones;
@@ -7798,6 +7874,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     if (!m) return poner(form, aviso(t("rg.sinHormigon"), ""));
     const cem = est2.cemento ?? m.cemento ?? "N";
     const cambio = () => ctx2.pintar();
+    const hist = est2.pestana === "historia" || est2.pestana === "phi";
     poner(
       form,
       grupo(
@@ -7814,18 +7891,25 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
       ),
       grupo(
         t("rg.ambiente"),
-        campoNum({ id: "rg-hr", etq: t("rg.HR") + U2("%"), valor: est2.HR, paso: 5, min: 20, max: 100, onCambio: (v2) => {
+        hist ? null : campoNum({ id: "rg-hr", etq: t("rg.HR") + U2("%"), valor: est2.HR, paso: 5, min: 20, max: 100, onCambio: (v2) => {
           est2.HR = v2;
           cambio();
         } }),
-        campoNum({ id: "rg-h0", etq: sub12("h", "0") + U2("mm"), ayuda: t("rg.h0Ayuda"), valor: est2.h0, paso: 50, min: 20, max: 5e3, onCambio: (v2) => {
-          est2.h0 = v2;
+        campoNum({ id: "rg-ac", etq: sub12("A", "c") + U2("m\xB2"), ayuda: t("rg.AcAyuda"), valor: est2.Ac, paso: 0.05, min: 1e-3, max: 100, onCambio: (v2) => {
+          est2.Ac = v2;
+          est2.h0 = 2e3 * est2.Ac / est2.u;
           cambio();
-        } })
+        } }),
+        campoNum({ id: "rg-u", etq: "u" + U2("m"), ayuda: t("rg.uAyuda"), valor: est2.u, paso: 0.1, min: 0.01, max: 1e3, onCambio: (v2) => {
+          est2.u = v2;
+          est2.h0 = 2e3 * est2.Ac / est2.u;
+          cambio();
+        } }),
+        h("p", { class: "sub", html: `${sub12("h", "0")} = 2\xB7${sub12("A", "c")}/u = ${fmt(est2.h0, 0)}${ESP}mm` })
       ),
       grupo(
         t("rg.edades"),
-        campoNum({ id: "rg-t0", etq: sub12("t", "0") + U2(t("dias")), ayuda: t("rg.t0Ayuda"), valor: est2.t0, paso: 1, min: 1, max: 36500, onCambio: (v2) => {
+        hist ? null : campoNum({ id: "rg-t0", etq: sub12("t", "0") + U2(t("dias")), ayuda: t("rg.t0Ayuda"), valor: est2.t0, paso: 1, min: 1, max: 36500, onCambio: (v2) => {
           est2.t0 = v2;
           cambio();
         } }),
@@ -7833,22 +7917,48 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
           est2.ts = v2;
           cambio();
         } }),
-        selector({ id: "rg-modo", etq: t("rg.edadCalculo"), opciones: [["final", norma2 === "EC2-2023" ? t("rg.cincuenta") : t("rg.infinito")], ["otra", t("rg.otra")]], valor: est2.modo, onCambio: (v2) => {
+        hist ? null : selector({ id: "rg-modo", etq: t("rg.edadCalculo"), opciones: [["final", norma2 === "EC2-2023" ? t("rg.cincuenta") : t("rg.infinito")], ["otra", t("rg.otra")]], valor: est2.modo, onCambio: (v2) => {
           est2.modo = v2;
           cambio();
         } }),
-        est2.modo === "otra" ? campoNum({ id: "rg-t", etq: "t" + U2(t("dias")), valor: est2.t, paso: 30, min: est2.t0 + 1, max: 1e5, onCambio: (v2) => {
+        !hist && est2.modo === "otra" ? campoNum({ id: "rg-t", etq: "t" + U2(t("dias")), valor: est2.t, paso: 30, min: est2.t0 + 1, max: 1e5, onCambio: (v2) => {
           est2.t = v2;
           cambio();
         } }) : null
       ),
-      grupo(
+      hist ? null : grupo(
         t("rg.carga"),
         campoNum({ id: "rg-sig", etq: sub12("\u03C3", "c") + U2("MPa"), ayuda: t("rg.sigAyuda", N.art.fluencia), valor: est2.sigma, paso: 1, min: 0, max: 100, onCambio: (v2) => {
           est2.sigma = v2;
           cambio();
         } })
-      )
+      ),
+      hist ? grupo(
+        t("rg.hCargas"),
+        rejilla({
+          id: "rg-cargas",
+          altoMax: 90,
+          columnas: [{ titulo: `${sub12("t", "0")} [${t("dias")}]`, num: true }, { titulo: `\u0394${sub12("\u03C3", "c")} [MPa]`, num: true }],
+          filas: est2.cargas,
+          onCambio: (f) => {
+            est2.cargas = f.map((r) => [r[0], r[1]]);
+            cambio();
+          }
+        })
+      ) : null,
+      hist ? grupo(
+        t("rg.hHumedad"),
+        rejilla({
+          id: "rg-humedad",
+          altoMax: 96,
+          columnas: [{ titulo: `t [${t("dias")}]`, num: true }, { titulo: "HR [%]", num: true, validar: (v2) => +v2 >= 20 && +v2 <= 100 ? null : t("rg.avHR") }],
+          filas: est2.humedad,
+          onCambio: (f) => {
+            est2.humedad = f.map((r) => [r[0], r[1]]);
+            cambio();
+          }
+        })
+      ) : null
     );
   }
   var art2 = (N, k) => `<span class="art">${N.corto} \xB7 ${N.art[k]}</span>`;
@@ -7895,11 +8005,96 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
       avisar: ctx2.avisar
     });
   }
+  var PESTANAS = () => [["fluencia", t("rg.fluencia")], ["retraccion", t("rg.retraccion")], ["historia", t("rg.historia")], ["phi", t("rg.tablaPhi")]];
+  function historiaDatos(m, E) {
+    const num4 = (f) => f.map((r) => [Number(r[0]), Number(r[1])]).filter((r) => r.every(Number.isFinite));
+    const cargas = num4(est2.cargas).filter((r) => r[0] > 0).sort((a, b) => a[0] - b[0]);
+    const humedad = num4(est2.humedad).filter((r) => r[0] >= 0 && r[1] >= 20 && r[1] <= 100).sort((a, b) => a[0] - b[0]);
+    const tiempos = [.../* @__PURE__ */ new Set([...humedad.map((r) => r[0]), ...cargas.map((r) => r[0])])].filter((x) => x > 0).sort((a, b) => a - b);
+    const o = { fck: m.fck, fcm: E.q.fcm, fctm: E.q.fctm, Ecm: E.q.Ec, Ec28: E.q.Ec28, cemento: E.cemento, h0: est2.h0, ts: E.ts, cargas, humedad, tiempos };
+    return { cargas, humedad, tiempos, o };
+  }
+  var dias = (x) => fmt(x, x < 10 ? 1 : 0).replace(/\.0$/, "");
+  function resultadosHistoria(ctx2, res, m, N, E) {
+    const D = historiaDatos(m, E);
+    const lg = (x) => est2.logT ? Math.log10(x) : x;
+    const centro = h(
+      "article",
+      { class: "panel tarjeta" },
+      pestanas({ lista: PESTANAS(), activa: est2.pestana, onCambio: (k) => {
+        est2.pestana = k;
+        ctx2.pintar();
+      } }),
+      h("p", { class: "sub" }, `${m.nombre} \xB7 ${N.corto}`)
+    );
+    if (!D.cargas.length || D.humedad.length < 1) {
+      poner(res, h("div", { class: "cuerpo" }, centro));
+      return poner(centro, aviso(t("rg.avHistoria"), ""));
+    }
+    const tMin = Math.max(Math.min(D.tiempos[0], D.cargas[0][0]) * 0.999, 0.5);
+    const tMax = Math.max(D.tiempos.at(-1), D.cargas.at(-1)[0] * 1.5);
+    const grid = [...logx(tMin, tMax, 90), ...D.cargas.flatMap(([t0]) => [t0, t0 - 1e-3])].sort((a, b) => a - b);
+    const G = historia(E.norma, { ...D.o, tiempos: grid });
+    const serie = (k, f = 1e3) => G.map((g) => [lg(g.t), g[k] * f]);
+    const H = historia(E.norma, D.o);
+    if (est2.pestana === "phi") {
+      const T = D.tiempos;
+      const PHI = tablaFluencia(E.norma, D.o, D.cargas.map((c) => c[0]), T);
+      const cab2 = [`${sub12("t", "0")}${ESP}\\${ESP}t`, ...T.map((x) => dias(x))];
+      poner(centro, h("div", { class: "lienzo" }, h("div", { class: "edad" }, tabla(PHI.map((f, i) => [dias(D.cargas[i][0]), ...f.map((v2) => v2 === null ? "\u2013" : fmt(v2, 2))]), { cabecera: cab2, clase: "num excel" })), h("p", { class: "sub", html: `\u03C6(t, ${sub12("t", "0")}) \xB7 t ${t("rg.eje")} [${t("dias")}], ${sub12("t", "0")} ${t("rg.eje2")} [${t("dias")}]` })));
+      const t0s = D.cargas.slice(0, 5).map((c) => c[0]);
+      const series2 = t0s.map((t0, i) => {
+        const ts = logx(t0 * 1.02, Math.max(tMax, t0 * 3), 60);
+        return { nombre: `t\u2080 = ${dias(t0)} d`, xy: ts.map((tt) => [lg(tt), fluencia(E.norma, { fck: m.fck, HR: humedadEn(D.humedad, tt), h0: est2.h0, t0, t: tt, cemento: E.cemento }).phi]), clase: `s${i + 1}` };
+      });
+      const dib = h(
+        "article",
+        { class: "panel tarjeta" },
+        h("h2", { html: `\u03C6(t, ${sub12("t", "0")})` }),
+        h("p", { class: "sub" }, t("rg.phiEvolucion")),
+        h("div", { class: "lienzo" }, grafica({ series: series2, ejeX: { titulo: est2.logT ? "log\u2081\u2080 t [d\xEDas]" : "t [d\xEDas]", d: est2.logT ? 2 : 0, alternar: () => {
+          est2.logT = !est2.logT;
+          ctx2.pintar();
+        }, ayuda: t("rg.alternaEscala") }, ejeY: { titulo: "\u03C6(t, t\u2080)", d: 2 }, archivo: "fluencia-historia", avisar: ctx2.avisar }))
+      );
+      return poner(res, h("div", { class: "cuerpo" }, centro, dib));
+    }
+    const series = [
+      { nombre: t("rg.total"), xy: serie("total"), clase: "s1" },
+      { nombre: t("rg.elastica"), xy: serie("elastica"), clase: "s2" },
+      { nombre: t("rg.diferida"), xy: serie("diferida"), clase: "s3" },
+      { nombre: t("rg.retraccion"), xy: serie("retraccion"), clase: "s4" }
+    ];
+    poner(centro, h("div", { class: "lienzo" }, grafica({ series, ejeX: { titulo: est2.logT ? "log\u2081\u2080 t [d\xEDas]" : "t [d\xEDas]", d: est2.logT ? 2 : 0, alternar: () => {
+      est2.logT = !est2.logT;
+      ctx2.pintar();
+    }, ayuda: t("rg.alternaEscala") }, ejeY: { titulo: "\u03B5 [\u2030]", d: 3 }, archivo: "historia-deformaciones", avisar: ctx2.avisar })));
+    const e2 = (x) => fmt(x * 1e6, 0);
+    const fil = H.map((g) => [dias(g.t), fmt(g.HR, 0), e2(g.elastica), e2(g.diferida), e2(g.retraccion), e2(g.total)]);
+    const cab = [`t<br><span class="u u-cab">[${t("dias")}]</span>`, `HR<br><span class="u u-cab">[%]</span>`, `${sub12("\u03B5", "el")}<br><span class="u u-cab">[\xB710\u207B\u2076]</span>`, `${sub12("\u03B5", "dif")}<br><span class="u u-cab">[\xB710\u207B\u2076]</span>`, `${sub12("\u03B5", "cs")}<br><span class="u u-cab">[\xB710\u207B\u2076]</span>`, `${sub12("\u03B5", "tot")}<br><span class="u u-cab">[\xB710\u207B\u2076]</span>`];
+    const tarjeta = h(
+      "article",
+      { class: "panel tarjeta" },
+      h("h2", {}, t("rg.historia")),
+      h("p", { class: "sub" }, t("rg.notaHistoria")),
+      h("div", { class: "edad" }, tabla(fil, { cabecera: cab, clase: "num excel" }))
+    );
+    const avisos4 = [];
+    const lim = limiteTension(E.norma, { fck: m.fck, fcmT0: E.q.fcm });
+    let acum = 0;
+    for (const [t0, ds] of D.cargas) {
+      acum += ds;
+      if (acum > 0.45 * E.q.fcm) avisos4.push(["", t("rg.avSigHist", dias(t0), fmt(acum, 1), fmt(0.45 * E.q.fcm, 1))]);
+      if (acum < 0) avisos4.push(["", t("rg.avTraccion", dias(t0))]);
+    }
+    poner(res, ...avisos4.slice(0, 2).map(([k, x]) => aviso(x, k)), h("div", { class: "cuerpo" }, centro, tarjeta));
+  }
   function resultados3(ctx2, res) {
     const m = hormigonActivo(ctx2);
     if (!m) return;
     const N = normaMat(ctx2.p.norma);
     const E = entradas(ctx2, m);
+    if (est2.pestana === "historia" || est2.pestana === "phi") return resultadosHistoria(ctx2, res, m, N, E);
     const tF = Number.isFinite(E.tFin) ? E.tFin : void 0;
     const flu = fluencia(E.norma, { ...E.base, t: tF });
     const ret = retraccion(E.norma, { ...E.base, t: tF, ts: E.ts });
@@ -7912,7 +8107,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     const dib = h(
       "article",
       { class: "panel tarjeta" },
-      pestanas({ lista: [["fluencia", t("rg.fluencia")], ["retraccion", t("rg.retraccion")]], activa: est2.pestana === "retraccion" ? "retraccion" : "fluencia", onCambio: (k) => {
+      pestanas({ lista: PESTANAS(), activa: est2.pestana, onCambio: (k) => {
         est2.pestana = k;
         ctx2.pintar();
       } }),
@@ -17222,7 +17417,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
   }
 
   // src/ui/app.js
-  var EMISION = true ? "29.10.26" : (/* @__PURE__ */ new Date()).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "2-digit" }).replace(/\//g, ".");
+  var EMISION = typeof __FECHA_EMISION__ !== "undefined" ? __FECHA_EMISION__ : (/* @__PURE__ */ new Date()).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "2-digit" }).replace(/\//g, ".");
   function vistaSecciones(m, propia) {
     const fijar = (f) => (...a) => {
       modo(m);
