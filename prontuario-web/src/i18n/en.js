@@ -114,7 +114,7 @@ export default {
   'rg.resumida': 'Summary', 'rg.completa': 'Full', 'rg.lineas': 'Lines shown', 'rg.activaLinea': 'Turn on at least one line in the legend.',
   'rg.t0Gauge': 'Loading age t<sub>0</sub>', 'rg.resultados': 'Results',
   'rg.ambiente': 'Environment and member', 'rg.HR': 'Relative humidity', 'rg.h0Ayuda': 'Notional size 2·A<sub>c</sub>/u',
-  'rg.edades': 'Ages', 'rg.t0Ayuda': 'Concrete age at loading', 'rg.tsAyuda': 'Age at start of drying (end of curing)',
+  'rg.edades': 'Ages', 'rg.t0Ayuda': 'Concrete age at loading', 'rg.tsAyuda': 'Age at start of drying (end of curing), not the loading age t₀. It only affects shrinkage; loading ages are in the table.',
   'rg.edadCalculo': 'Age of calculation', 'rg.infinito': 'Infinite time', 'rg.cincuenta': '50 years', 'rg.otra': 'Other age',
   'rg.carga': 'Load', 'rg.sigAyuda': (a) => `Sustained compressive stress; non-linear creep if high (${a})`,
   'rg.avT0': 'The age at loading must be at least 1 day.',

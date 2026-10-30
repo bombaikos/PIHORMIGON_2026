@@ -119,7 +119,7 @@ export default {
   'rg.resumida': 'Resumida', 'rg.completa': 'Completa', 'rg.lineas': 'Líneas mostradas', 'rg.activaLinea': 'Activa al menos una línea en la leyenda.',
   'rg.t0Gauge': 'Edad de carga t<sub>0</sub>', 'rg.resultados': 'Resultados',
   'rg.ambiente': 'Ambiente y pieza', 'rg.HR': 'Humedad relativa', 'rg.h0Ayuda': 'Espesor medio 2·A<sub>c</sub>/u',
-  'rg.edades': 'Edades', 'rg.t0Ayuda': 'Edad del hormigón al cargar', 'rg.tsAyuda': 'Edad al empezar el secado (fin del curado)',
+  'rg.edades': 'Edades', 'rg.t0Ayuda': 'Edad del hormigón al cargar', 'rg.tsAyuda': 'Edad al empezar el secado (fin del curado), distinta de la edad de carga t₀. Solo afecta a la retracción; la edad de carga está en la tabla.',
   'rg.edadCalculo': 'Edad de cálculo', 'rg.infinito': 'Tiempo infinito', 'rg.cincuenta': '50 años', 'rg.otra': 'Otra edad',
   'rg.carga': 'Carga', 'rg.sigAyuda': (a) => `Tensión de compresión mantenida; fluencia no lineal si es alta (${a})`,
   'rg.avT0': 'La edad de carga debe ser de al menos 1 día.',
