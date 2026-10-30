@@ -20,3 +20,8 @@ Si A_s1 < A_s,min mecánica (EHE-08 42.3.2, EC-2 AN 9.2.1.1(1), EC-2 2023 12.2) 
 
 ## Gráfico
 Pestaña «Gráfico» junto a Resultados: eje X A_s1 (mm²), eje Y M_Rd (kN·m). Dos curvas: solo A_s1, y con armadura de compresión A_s2 = A_s1 − A_lim (la mínima que mantiene plastificada la de tracción, la misma regla del dimensionamiento). Línea de M_Ed y punto de la sección (o de la dimensionada). Llega a 1,3·A_lim.
+
+## Modo Diagrama y cápsula (30/10/2026)
+- Cápsula Comprobación · Dimensionamiento · Diagrama bajo el desplegable Sección; luego «Signo del momento» (desplegable + Positivo / − Negativo). Pepiño la aprueba y la extenderá a todos los módulos (`segmentado({ capsula: true })`, `.seg.capsula`).
+- Diagrama: X = A_s [mm²] con A_s1 (principal, continua) y A_s2 (cara opuesta, a trazos); Y = M_Rd [kN·m]; línea de M_Ed con deslizador; la sección con la fibra neutra y las armaduras necesarias se actualizan en directo.
+- El dimensionamiento con armadura de compresión no pasa de rotura media (x/d ≤ 0,448 del EC-2 5.5(4)); se explica en la (i) junto a A_s2,req. Opción `xdMax` de `dimensionar`/`curvaDiseno`; sin ella queda el criterio del Prontuario 3.1 (x = x_lim) que usan los tests de validación.

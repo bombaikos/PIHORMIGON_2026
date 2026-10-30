@@ -223,6 +223,7 @@ export default {
   'flex.subtitulo': 'Viga rectangular o en T en ELU (módulo TN1)', 'flex.modo': 'Tipo de cálculo', 'flex.momento': 'El momento',
   'flex.sinRect': 'No hay vigas (Rec viga o T) en el proyecto. Créalas en Secciones.',
   'flex.signo': 'Signo del momento', 'flex.positivo': '+ Positivo', 'flex.negativo': '− Negativo',
+  'flex.infoAs2': (x) => `Si M_Ed supera lo que resiste la sección con solo A_s1 sin pasar de x/d = ${x}, se dispone armadura de compresión A_s2. El dimensionamiento no pasa de rotura media (x/d máx. ${x}, EC-2 5.5(4)); para una rotura dúctil habría que poner aún más A_s2.`,
   'flex.v.comprobar': 'Comprobación', 'flex.v.dimensionar': 'Dimensionamiento', 'flex.diagrama': 'Diagrama de dimensionamiento', 'g.principal': '(principal)', 'g.opuesta': '(cara opuesta)',
   'flex.armDiagrama': 'En el Diagrama la armadura sale del dimensionamiento: mueve M<sub>Ed</sub> con el deslizador.', 'flex.deslizaMd': 'Momento de cálculo M_Ed',
   'flex.deSecciones': 'La sección viene de Secciones; aquí solo se cambia la armadura.', 'caraSup': 'cara superior',

@@ -888,6 +888,7 @@ details.an-ce { margin-top: var(--e2); }
 .nota-diag { margin: 0; font-size: var(--t-s); color: var(--tinta-2); line-height: 1.5; flex-shrink: 0; }
 .fcr-lado { display: flex; flex-direction: column; gap: var(--e3); min-width: 0; min-height: 0; overflow: auto; }
 .fcr-sec svg { width: 100%; height: auto; max-height: 190px; }
+.fcr-lado .fcr-sec svg { max-height: min(300px, 42vh); }
 .fcr-lado table { width: 100%; }
 
 /* Punzonamiento · planta con perímetros de control, perímetro exterior y ramas de cercos */

@@ -86,3 +86,17 @@ test('Diagrama de dimensionamiento: M crece con A_s1, A_s2 nula hasta A_lim y la
   cerca(r.Ainf, A, 2e-3);
   cerca(r.Asup, c.as2[Math.floor(c.as2.length / 2)][0], 2e-3);
 });
+
+test('Dimensionar con xdMax: con compresión la fibra neutra queda en el límite de rotura media', () => {
+  for (const nombre of ['ejemplo_1', 'ejemplo_3']) for (const signo of [1, -1]) {
+    const p = proyectoNuevo();
+    const d = datosViga(p, viga(p, nombre), signo);
+    const xdMax = clasificarRotura(d, 0).umbralMedia;
+    const r = dimensionar(d, 600, { xdMax });
+    if (r.caso !== 'doble') continue;
+    const rot = clasificarRotura(d, r.x);
+    assert.ok(rot.xd <= xdMax + 1e-3, `x/d = ${rot.xd}`);
+    assert.notEqual(rot.clase, 'fragil');
+    cerca(r.Mu, 600, 1e-3);
+  }
+});

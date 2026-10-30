@@ -214,6 +214,7 @@ export default {
   'flex.subtitulo': 'Rectangular or T beam at ULS (module TN1)', 'flex.modo': 'Calculation', 'flex.momento': 'The moment',
   'flex.sinRect': 'The project has no beams (rectangular beam or T). Create them in Sections.',
   'flex.signo': 'Moment sign', 'flex.positivo': '+ Positive', 'flex.negativo': '− Negative',
+  'flex.infoAs2': (x) => `When M_Ed exceeds the resistance with only A_s1 at x/d = ${x}, compression reinforcement A_s2 is provided. The design stays within medium failure (max. x/d ${x}, EC-2 5.5(4)); ductile failure would need even more A_s2.`,
   'flex.v.comprobar': 'Check', 'flex.v.dimensionar': 'Design', 'flex.diagrama': 'Design diagram', 'g.principal': '(main)', 'g.opuesta': '(opposite face)',
   'flex.armDiagrama': 'In the Diagram the reinforcement comes from the design: move M<sub>Ed</sub> with the slider.', 'flex.deslizaMd': 'Design moment M_Ed',
   'flex.deSecciones': 'The section comes from Sections; only the reinforcement can be changed here.', 'caraSup': 'top face',

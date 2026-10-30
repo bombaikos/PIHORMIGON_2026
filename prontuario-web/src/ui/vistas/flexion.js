@@ -73,7 +73,9 @@ function resultadosFlexion(ctx, res) {
   const geo = geometriaDe(p, s);
   const d = datosViga(p, s, est.signo);
   const neg = est.signo < 0;
-  const opt = { elemento: est.elemento };
+  // Con compresión el dimensionamiento no pasa de la rotura media (x/d máx. del EC-2 5.5(4))
+  const xdMax = clasificarRotura(d, 0).umbralMedia;
+  const opt = { elemento: est.elemento, xdMax };
   let r;
   let dim = null;
   let prop = null;
@@ -117,13 +119,13 @@ function resultadosFlexion(ctx, res) {
   const Asreq = dim && dim.caso !== 'escuadria' ? dim.Ainf : NaN;
   const cif = est.modo === 'comprobar'
     ? [[sub('M', 'Rd'), qh(r.Mu, 'M')], [t('c.x'), qh(r.x, 'long')], ['x / d', fmt(rot.xd, 3)], [sub('A', 's1,req'), qh(Asreq, 'As')]]
-    : [[sub('A', 's1,req'), qh(r.Ainf, 'As')], [sub('A', 's2,req'), qh(r.Asup, 'As')], [t('c.x'), qh(r.x, 'long')], ['x / d', fmt(rot.xd, 3)]];
+    : [[sub('A', 's1,req'), qh(r.Ainf, 'As')], [`${sub('A', 's2,req')}${infoAs2(xdMax)}`, qh(r.Asup, 'As')], [t('c.x'), qh(r.x, 'long')], ['x / d', fmt(rot.xd, 3)]];
 
   const [caraT, caraC] = neg ? ['sup', 'inf'] : ['inf', 'sup'];
   const dibGeo = est.modo === 'comprobar' ? geo : geometriaDe(p, { ...s, armado: [
     { tipo: 'capa', cara: caraT, texto: String(Math.round(r.Ainf * 1e6)), d: d.rinf },
     ...(r.Asup > 0 ? [{ tipo: 'capa', cara: caraC, texto: String(Math.round(r.Asup * 1e6)), d: d.rsup }] : [])] });
-  if (est.modo === 'diagrama') return res.append(panelDiagrama(ctx, { s, d, r, rot, cif, dibGeo, avisos }));
+  if (est.modo === 'diagrama') return res.append(panelDiagrama(ctx, { s, d, neg, xdMax }));
   // Sección muy ancha (más de 2 : 1): se ve un tramo de proporción 2 : 1 y un deslizador lo recorre
   const ancha = dibGeo.caja.xmax - dibGeo.caja.xmin > 2 * dibGeo.h;
   const lienzo = h('div', { class: 'lienzo', html: dibujoFlexion(dibGeo, s, d, r, est.desp) });
@@ -161,14 +163,18 @@ function interp(xy, x) {
   }
   return xy.at(-1)[1];
 }
+/** (i) junto a A_s2,req: por qué se dispone y hasta dónde llega el dimensionamiento. */
+const infoAs2 = (xd) => `<span class="info-i izq" tabindex="0" role="img" aria-label="${t('flex.infoAs2', fmt(xd, 3))}" data-tip="${t('flex.infoAs2', fmt(xd, 3))}">i</span>`;
 const ind = (a, b) => `${a}<tspan class="ind" dy="3">${b}</tspan>`;
 
 /**
  * Modo Diagrama (como el del Prontuario 3.1): en X la armadura (A_s1 de la cara traccionada y A_s2 de la opuesta),
  * en Y el momento resistente. Una línea horizontal marca M_Ed; un deslizador la mueve y los puntos dan A_s1 y A_s2.
+ * A la derecha, la sección con la fibra neutra y las armaduras necesarias se actualizan mientras se arrastra.
  */
-function panelDiagrama(ctx, { s, d, r, rot, cif, dibGeo, avisos }) {
-  const c = curvaDiseno(d, { elemento: est.elemento });
+function panelDiagrama(ctx, { s, d, neg, xdMax }) {
+  const p = ctx.p;
+  const c = curvaDiseno(d, { elemento: est.elemento, xdMax });
   const KA = MAG.As.f;
   const as1 = c.as1.map(([a, m]) => [a * KA, m]);
   const as2 = c.as2.map(([a, m]) => [a * KA, m]);
@@ -184,7 +190,7 @@ function panelDiagrama(ctx, { s, d, r, rot, cif, dibGeo, avisos }) {
       ...(A2 > 0 ? [{ x: A2, y: Md, etq: `${ind('A', 's2')} = ${fmt(A2, 0)}`, clase: 's2', abajo: true, marca: 'neutro' }] : []),
       { x: c.Amin * KA, y: c.Mmin, etq: ind('A', 's,min'), clase: 'ref', abajo: true, marca: 'neutro' },
     ];
-    const g = grafica({
+    return grafica({
       series: [
         { nombre: `${ind('A', 's1')} ${t('g.principal')}`, clase: 's1', xy: as1 },
         { nombre: `${ind('A', 's2')} ${t('g.opuesta')}`, clase: 's2', xy: as2 },
@@ -196,41 +202,57 @@ function panelDiagrama(ctx, { s, d, r, rot, cif, dibGeo, avisos }) {
       archivo: `Diagrama flexion ${s.nombre}${est.signo < 0 ? ' M-' : ' M+'}`,
       avisar: ctx.avisar,
     });
-    return g;
+  };
+  // Columna de la derecha: se rehace con cada M_Ed del deslizador (dimensionar tarda milisegundos)
+  const lado = h('aside', { class: 'fcr-lado' });
+  const pintarLado = (Md) => {
+    let r;
+    try { r = dimensionar(d, Md, { elemento: est.elemento, xdMax }); } catch { r = null; }
+    if (!r || r.caso === 'escuadria') return lado.replaceChildren(aviso(t('a.escuadria', q(r?.MuMax ?? NaN, 'M'))));
+    const rot = clasificarRotura(d, r.x);
+    lado.replaceChildren(
+      h('div', { class: 'fcr-sec', html: dibujoSeccionViva(p, s, d, r, neg) }),
+      roturaChip(rot),
+      cifras([[sub('A', 's1,req'), qh(r.Ainf, 'As')], [`${sub('A', 's2,req')}${infoAs2(xdMax)}`, qh(r.Asup, 'As')], [t('c.x'), qh(r.x, 'long')], ['x / d', fmt(rot.xd, 3)]]));
   };
   let graf = dibujar(est.Md);
   caja.append(graf);
+  pintarLado(est.Md);
   const Mlo = Math.ceil(c.Mmin);
   const Mhi = Math.floor(c.Mmax);
-  const valor = h('output', { class: 'desl-valor', html: `${sub('M', 'Ed')} = <b>${fmt(est.Md, MAG.M.d)}</b> ${MAG.M.ud}` });
+  const texto = (Md) => `${sub('M', 'Ed')} = <b>${fmt(Md, MAG.M.d)}</b> ${MAG.M.ud}`;
+  const valor = h('output', { class: 'desl-valor', html: texto(est.Md) });
   const deslizador = h('input', { type: 'range', class: 'desliza-sec', min: Mlo, max: Mhi, step: 1, value: Math.min(Math.max(est.Md, Mlo), Mhi), 'aria-label': t('flex.deslizaMd') });
   deslizador.addEventListener('input', () => {
     const Md = +deslizador.value;
     est.Md = Md;
-    valor.innerHTML = `${sub('M', 'Ed')} = <b>${fmt(Md, MAG.M.d)}</b> ${MAG.M.ud}`;
+    valor.innerHTML = texto(Md);
     const campo = document.getElementById('f-md');
     if (campo) campo.value = fmt(Md, MAG.M.d);
     const nuevo = dibujar(Md);
     graf.replaceWith(nuevo);
     graf = nuevo;
+    pintarLado(Md);
   });
   deslizador.addEventListener('change', () => ctx.cambio());
   caja.append(h('div', { class: 'desl-md' }, valor, deslizador));
-  const lado = h('aside', { class: 'fcr-lado' },
-    h('div', { class: 'fcr-sec', html: dibujoSeccionPeq(dibGeo, s, d) }),
-    roturaChip(rot), cifras(cif),
-    ...(avisos.length ? avisos.map((a) => aviso(a)) : []));
   return h('article', { class: 'panel tarjeta' }, h('h2', {}, `${t('flex.diagrama')} · ${s.nombre}`),
     h('div', { class: 'fcr-diag' }, caja, lado));
 }
 
-/** Sección pequeña con su armadura. */
-function dibujoSeccionPeq(geo, s, d) {
-  const e = encuadre(geo, 150, 150, { completa: true });
+/** Sección con la armadura calculada, la zona comprimida y la fibra neutra (x) a su profundidad. */
+function dibujoSeccionViva(p, s, d, r, neg) {
+  const [caraT, caraC] = neg ? ['sup', 'inf'] : ['inf', 'sup'];
+  const geo = geometriaDe(p, { ...s, armado: [
+    { tipo: 'capa', cara: caraT, texto: String(Math.round(r.Ainf * 1e6)), d: d.rinf },
+    ...(r.Asup > 0 ? [{ tipo: 'capa', cara: caraC, texto: String(Math.round(r.Asup * 1e6)), d: d.rsup }] : [])] });
+  const e = encuadre(geo, 190, 250, { completa: true });
   const x0 = 46;
-  const y0 = 10;
-  const { svg, hp, bp } = capasSeccion(geo, s, { e, x0, y0, x: null, id: 'fsd', cotasCapas: false });
-  return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${x0 + bp + 30} ${y0 + hp + 44}" role="img" aria-label="${t('g.seccion')}">${DEFS}${svg}</svg>`;
+  const y0 = 14;
+  const { svg, hp, bp } = capasSeccion(geo, s, { e, x0, y0, x: r.x, id: 'fsd', cotasCapas: false, abajo: neg });
+  const yn = neg ? y0 + hp - Math.min(r.x, d.h) * e.s : y0 + Math.min(r.x, d.h) * e.s;
+  const en = `<line class="en" x1="${x0 - 8}" y1="${yn}" x2="${x0 + bp + 8}" y2="${yn}"/><text x="${x0 + bp + 12}" y="${yn + 4}" style="fill:var(--acento)">x = ${fmt(r.x * 1000, 0)}</text>`;
+  return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${x0 + bp + 70} ${y0 + hp + 44}" role="img" aria-label="${t('g.seccion')}">${DEFS}${svg}${en}</svg>`;
 }
 
 export function veredicto(clase, sello, etq, valor, ecu, barra) {

@@ -163,12 +163,13 @@ function cuantiasEC2(d, elemento, Nd) {
  * Momento límite sin armadura de compresión (HallaMlim): plano con εcu arriba y
  * εy en la armadura de tracción; momento del bloque comprimido respecto a d.
  */
-export function momentoLimite(d) {
+export function momentoLimite(d, xdMax) {
   const ecu = d.hormigon.comp[d.hormigon.comp.length - 1][0];
   const ey = epsPlastificacion(d.acero);
   const dd = d.h - d.rinf;
-  const kappa = (Math.abs(ecu) + ey) / dd;
-  const xlim = Math.abs(ecu) / kappa;
+  // Con xdMax (x/d máximo admitido) el plano se queda en esa profundidad si es menor que la de plastificación
+  const xlim = xdMax > 0 ? Math.min(xdMax * dd, (Math.abs(ecu) / (Math.abs(ecu) + ey)) * dd) : (Math.abs(ecu) / (Math.abs(ecu) + ey)) * dd;
+  const kappa = Math.abs(ecu) / xlim;
   const sec = seccionRectangular({ ...d, barrasExtra: [] }, 0, 0);
   const { N, M } = esfuerzos(sec, ecu, kappa, dd);
   return { Mlim: M, Nlim: N, xlim, kappa };
@@ -253,11 +254,11 @@ export function comprobar(d, { Nd = 0, elemento = 'viga' } = {}) {
  * @param {number} Md [kN·m] positivo
  * @param {{Nd?:number, elemento?:string}} [opc]
  */
-export function dimensionar(d, Md, { Nd = 0, elemento = 'viga' } = {}) {
+export function dimensionar(d, Md, { Nd = 0, elemento = 'viga', xdMax } = {}) {
   if (!(Md > 0)) throw new Error('El momento solicitante debe ser un número positivo');
   const N = -Nd;
   const c = cuantiasMinMax(d, elemento, { Nd });
-  const lim = momentoLimite(d);
+  const lim = momentoLimite(d, xdMax);
   const base = { Md, cuantias: c, Mlim: lim.Mlim, xlim: lim.xlim };
 
   const rMin = Mu(d, c.Amin, 0, N);
@@ -443,7 +444,9 @@ export function clasificarRotura(d, x) {
   const umbralDuctil = (0.8 - k1) / k2;
   const umbralMedia = (1 - k1) / k2;
   const redMax = Math.max(0, 1 - (k1 + k2 * xd));
-  const clase = xd > xdLim || xd > umbralMedia ? 'fragil' : xd > umbralDuctil ? 'media' : 'ductil';
+  // Tolerancia: el dimensionamiento con compresión se queda justo en el límite de la clase media
+  const tol = 1e-3;
+  const clase = xd > xdLim + tol || xd > umbralMedia + tol ? 'fragil' : xd > umbralDuctil + tol ? 'media' : 'ductil';
   return { xd, clase, umbralDuctil, umbralMedia, xdLim, redMax, k1, k2, ecu, norma: 'EC2-2004', ref: 'UNE-EN 1992-1-1, 5.5(4) y AN (k1 = 0,44; k3 = 0,54)' };
 }
 
@@ -456,9 +459,9 @@ export function clasificarRotura(d, x) {
  * @returns {{as1:number[][], as2:number[][], Alim:number, Amin:number, Amax:number, Mlim:number, Mmin:number, Mmax:number}}
  *   as1 = [A_s1 (m²), M (kN·m)], as2 = [A_s2 (m²), M (kN·m)]
  */
-export function curvaDiseno(d, { Nd = 0, elemento = 'viga', n = 60 } = {}) {
+export function curvaDiseno(d, { Nd = 0, elemento = 'viga', n = 60, xdMax } = {}) {
   const c = cuantiasMinMax(d, elemento, { Nd });
-  const lim = momentoLimite(d);
+  const lim = momentoLimite(d, xdMax);
   const Alim = -lim.Nlim / resistenciaCalculo(d.acero);
   const Atope = Math.max(Math.min(Alim + Math.max(0, (c.Amax - Alim) / 2), 1.3 * Alim), 1.5 * c.Amin);
   const N = -Nd;
