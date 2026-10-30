@@ -1048,3 +1048,5 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
 .edad table.excel th, .edad table.excel td { background: var(--campo); }
 .fig-ley .lienzo{order:1}.fig-ley .leyenda-v{order:2}
 #rg-historia td, #rg-historia tr.nueva td { background: var(--campo); } #rg-historia td.sel, #rg-historia tr.foco td { background: var(--acento-suave); }
+.tarjeta .seg.ancho{display:grid;grid-auto-flow:column;grid-auto-columns:1fr}.tarjeta .seg.ancho button{flex:none}
+#rg-historia td { height: 22px; } #rg-historia th { padding-block: 2px; }

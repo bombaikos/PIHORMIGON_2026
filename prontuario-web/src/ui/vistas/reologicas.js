@@ -13,7 +13,7 @@ import { rejilla } from '../rejilla.js';
 import { grafica } from '../grafica.js';
 
 const TIEMPOS = [3, 7, 14, 28, 60, 90, 180, 360, 1000, 3650];
-const filasPorDefecto = () => TIEMPOS.map((tt) => [String(tt), '60', tt === 28 ? '8' : tt === 90 ? '4' : '0']);
+const filasPorDefecto = () => TIEMPOS.map((tt) => [String(tt), '60', '0']);
 const inicial = () => ({ hormigon: null, cemento: null, Ac: 0.2, u: 2, h0: 200, ts: null, pestana: 'historia', logT: false, completa: false, t0: 28,
   filas: filasPorDefecto(), ver: { elastica: true, diferida: true, retraccion: true, total: true } });
 const est = inicial();
@@ -37,15 +37,15 @@ export function datos(ctx, form) {
   const h0 = () => { est.h0 = (2000 * est.Ac) / est.u; };
   poner(form,
     grupo(null,
-      selector({ id: 'rg-hor', etq: t('hormigon'), opciones: L.map((x) => [x.nombre, `${x.nombre} · f<sub>ck</sub> ${x.fck}`]), valor: m.nombre, onCambio: (v) => { est.hormigon = v; est.cemento = null; cambio(); } }),
+      selector({ id: 'rg-hor', etq: t('hormigon'), opciones: L.map((x) => [x.nombre, x.nombre]), valor: m.nombre, onCambio: (v) => { est.hormigon = v; est.cemento = null; cambio(); } }),
       selector({ id: 'rg-cem', etq: t('mat.cemento'), opciones: ['S', 'N', 'R'].map((c) => [c, t(`mat.cem.${c}`)]), valor: cem, onCambio: (v) => { est.cemento = v; cambio(); } })),
     grupo(t('rg.ambiente'),
       campoNum({ id: 'rg-ac', etq: sub('A', 'c') + U('m²'), ayuda: t('rg.AcAyuda'), valor: est.Ac, paso: 0.05, min: 0.001, max: 100, onCambio: (v) => { est.Ac = v; h0(); cambio(); } }),
       campoNum({ id: 'rg-u', etq: 'u' + U('m'), ayuda: t('rg.uAyuda'), valor: est.u, paso: 0.1, min: 0.01, max: 1000, onCambio: (v) => { est.u = v; h0(); cambio(); } }),
       h('p', { class: 'sub', html: `${sub('h', '0')} = 2·${sub('A', 'c')}/u = ${fmt(est.h0, 0)}${ESP}mm` }),
-      campoNum({ id: 'rg-ts', etq: sub('t', 's') + U(t('dias')), ayuda: t('rg.tsAyuda'), valor: est.ts ?? (norma === 'EC2-2023' ? 1 : 7), paso: 1, min: 0, max: 365, onCambio: (v) => { est.ts = v; cambio(); } })),
+      campoNum({ id: 'rg-ts', etq: sub('t', 's') + U(t('dias')), info: t('rg.tsAyuda'), valor: est.ts ?? 1, paso: 1, min: 0, max: 365, onCambio: (v) => { est.ts = v; cambio(); } })),
     grupo(t('rg.hHistoria'),
-      rejilla({ id: 'rg-historia', altoMax: 270,
+      rejilla({ id: 'rg-historia', altoMax: 340,
         columnas: [{ titulo: `t [${t('dias')}]`, num: true, validar: (v) => (+v > 0 ? null : t('rg.avTpos')) },
           { titulo: 'HR [%]', num: true, validar: (v) => (+v >= 20 && +v <= 100 ? null : t('rg.avHR')) },
           { titulo: `Δ${sub('σ', 'c')} [MPa]`, num: true }],
@@ -68,7 +68,7 @@ function entradas(ctx, m) {
   const norma = ctx.p.norma;
   const q = propiedadesHormigon(m.fck, norma, opcionesHormigon(m, norma));
   const cemento = est.cemento ?? m.cemento ?? 'N';
-  const ts = est.ts ?? (norma === 'EC2-2023' ? 1 : 7);
+  const ts = est.ts ?? 1;
   return { norma, q, cemento, ts };
 }
 
@@ -140,14 +140,14 @@ export function resultados(ctx, res) {
   const LINEAS = [['elastica', 'rg.elastica', 's2'], ['diferida', 'rg.diferida', 's3'], ['retraccion', 'rg.retraccion', 's4'], ['total', 'rg.total', 's1']];
   const lienzo = h('div', { class: 'lienzo' });
   const dibuja = () => {
-    const G = H(mallaFig);
+    const G = H(mallaFig).map((g) => ({ ...g, secado: g.retraccion - g.autogena }));
     const ser = (k, nombre, clase) => ({ nombre, xy: G.map((g) => [lg(g.t), g[k] * 1000]), clase });
     const activas = LINEAS.filter(([k]) => est.ver[k]);
     const series = [];
     for (const [k, tx, cl] of activas) {
-      series.push(ser(k, t(tx), cl));
+      series.push(ser(k, k === 'retraccion' && activas.length === 1 ? t('rg.retraccionTot') : t(tx), cl));
       // Con la retracción como única línea se ve también su parte autógena
-      if (k === 'retraccion' && activas.length === 1) series.push(ser('autogena', t('rg.autogena'), 's5'));
+      if (k === 'retraccion' && activas.length === 1) { series.push(ser('autogena', t('rg.autogena'), 's5'), ser('secado', t('rg.secado'), 's2')); }
     }
     if (!series.length) return lienzo.replaceChildren(h('p', { class: 'sub' }, t('rg.activaLinea')));
     lienzo.replaceChildren(grafica({ series, sinTabla: true, ejeX: ejeX(dibuja), ejeY: { titulo: 'ε [‰]', d: 3 }, archivo: 'historia-deformaciones', avisar: ctx.avisar }));
@@ -169,7 +169,7 @@ export function resultados(ctx, res) {
     marco.replaceChildren(tabla(R.map((g) => [dias(g.t), fmt(g.tension, 1), e(g.elastica), e(g.diferida), e(g.retraccion), e(g.total)]), { cabecera: cab, clase: 'num excel' }));
   };
   const tarjeta = h('article', { class: 'panel tarjeta' }, h('h2', {}, t('rg.resultados')), h('p', { class: 'sub' }, t('rg.notaHistoria')),
-    segmentado({ opciones: [[false, t('rg.resumida')], [true, t('rg.completa')]], valor: est.completa, etiqueta: t('rg.resultados'),
+    segmentado({ opciones: [[false, t('rg.resumida')], [true, t('rg.completa')]], valor: est.completa, etiqueta: t('rg.resultados'), ancho: true,
       onCambio: (v) => { est.completa = v; tarjeta.querySelectorAll('.seg button').forEach((b, i) => b.setAttribute('aria-checked', String((i === 1) === v))); pintaTabla(); } }),
     marco);
   pintaTabla();
