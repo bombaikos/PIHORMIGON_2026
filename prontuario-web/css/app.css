@@ -1043,3 +1043,4 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
 .desl-md .desl-valor { font-size: var(--t-s); color: var(--tinta-2); white-space: nowrap; }
 .desl-md .desliza-sec { flex: 1; }
 .fcr-graf > .grafica { flex: 1; min-height: 0; }
+.seg button:disabled { opacity: .5; cursor: not-allowed; }

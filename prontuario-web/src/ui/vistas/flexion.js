@@ -29,6 +29,19 @@ function capa(s, cara) {
   return c;
 }
 
+const XD = (U) => ({ ductil: U.umbralDuctil, media: U.umbralMedia, fragil: U.xdLim });
+
+/** Rotura admitida al dimensionar con armadura de compresión: límite de x/d antes de ponerla. */
+function rotAdmitida(ctx, p, s) {
+  let U = null;
+  try { U = clasificarRotura(datosViga(p, s, est.signo), 0); } catch { /* sin datos: sin valores */ }
+  const lim = U ? XD(U) : {};
+  const aplica = est.modo !== 'comprobar';
+  return h('div', { class: 'campo apilado', title: aplica ? undefined : t('flex.rotAdmNoAplica') },
+    h('span', { class: 'etq-grupo' }, t('flex.rotAdm'), U ? h('span', { class: 'info-i izq', tabindex: 0, role: 'img', 'aria-label': t('flex.infoRotAdm'), 'data-tip': t('flex.infoRotAdm') }, 'i') : null),
+    segmentado({ ancho: true, etiqueta: t('flex.rotAdm'), opciones: ['ductil', 'media', 'fragil'].map((k) => [k, `${t(`rot.${k}`)}${U ? ` <span class="n">${fmt(lim[k], 3)}</span>` : ''}`, aplica ? {} : { disabled: true }]), valor: est.rotura, onCambio: (v) => { est.rotura = v; ctx.pintar(); } }));
+}
+
 export function datos(ctx, form) {
   const p = ctx.p;
   const R = vigas(p);
@@ -44,7 +57,8 @@ export function datos(ctx, form) {
     segmentado({ ancho: true, capsula: true, etiqueta: t('flex.modo'), opciones: [['comprobar', t('flex.v.comprobar')], ['dimensionar', t('flex.v.dimensionar')], ['diagrama', t('fcr.modoDiagrama')]], valor: est.modo, onCambio: (m) => { est.modo = m; ctx.pintar(); } }),
     selector({ id: 'f-signo', etq: t('flex.signo'), linea: true, opciones: [['1', t('flex.positivo')], ['-1', t('flex.negativo')]], valor: String(est.signo), onCambio: (v) => { est.signo = Number(v); ctx.pintar(); } }),
     grupo(t('g.esfuerzo'),
-      campoNum({ id: 'f-md', etq: sub('M', 'Ed') + (pos ? '⁺' : '⁻'), valor: est.Md, mag: 'M', paso: 1, min: 0.1, max: 1e5, nombre: t('flex.momento'), onCambio: (v) => { est.Md = v; cambio(); } })),
+      campoNum({ id: 'f-md', etq: sub('M', 'Ed') + (pos ? '⁺' : '⁻'), valor: est.Md, mag: 'M', paso: 1, min: 0.1, max: 1e5, nombre: t('flex.momento'), onCambio: (v) => { est.Md = v; cambio(); } }),
+      rotAdmitida(ctx, ctx.p, s)),
   );
   // Con momento positivo se traccionan las barras de la cara inferior; con negativo, las de la superior
   const ct = capa(s, pos ? 'inf' : 'sup');
@@ -73,8 +87,8 @@ function resultadosFlexion(ctx, res) {
   const geo = geometriaDe(p, s);
   const d = datosViga(p, s, est.signo);
   const neg = est.signo < 0;
-  // Con compresión el dimensionamiento no pasa de la rotura media (x/d máx. del EC-2 5.5(4))
-  const xdMax = clasificarRotura(d, 0).umbralMedia;
+  // Con compresión el dimensionamiento no pasa del x/d de la rotura admitida (dúctil, media o frágil)
+  const xdMax = XD(clasificarRotura(d, 0))[est.rotura];
   const opt = { elemento: est.elemento, xdMax };
   let r;
   let dim = null;
@@ -103,7 +117,8 @@ function resultadosFlexion(ctx, res) {
     const cu = r.cuantias;
     if (r.Ainf < (cu.Amec ?? 0) - 1e-12) avisos.push(t('a.minMec', q(cu.Amec, 'As'), q(r.Ainf, 'As'), cu.regla ?? ''));
     else if (r.Ainf < (cu.Ageo ?? 0) - 1e-12) avisos.push(t('a.minGeo', q(cu.Ageo, 'As'), q(r.Ainf, 'As')));
-    if (r.Ainf > r.cuantias.Amax) avisos.push(t('a.maxima'));
+    if (r.Ainf > cu.Amax) avisos.push(t('a.max1', q(cu.Amax, 'As'), q(r.Ainf, 'As')));
+    if (r.Asup > cu.Amax2) avisos.push(t('a.max2', q(cu.Amax2, 'As'), q(r.Asup, 'As'), cu.refMax2));
   } else {
     if (r.caso === 'escuadria') {
       res.append(veredicto('nocumple', t('aumentar'), t('armaduraNec'), '—', t('a.escuadria', q(r.MuMax, 'M'))));
@@ -164,7 +179,7 @@ function interp(xy, x) {
   return xy.at(-1)[1];
 }
 /** (i) junto a A_s2,req: por qué se dispone y hasta dónde llega el dimensionamiento. */
-const infoAs2 = (xd) => `<span class="info-i izq" tabindex="0" role="img" aria-label="${t('flex.infoAs2', fmt(xd, 3))}" data-tip="${t('flex.infoAs2', fmt(xd, 3))}">i</span>`;
+const infoAs2 = (xd) => `<span class="info-i izq" tabindex="0" role="img" aria-label="${t('flex.infoAs2', fmt(xd, 3), t(`rot.${est.rotura}`).toLowerCase())}" data-tip="${t('flex.infoAs2', fmt(xd, 3), t(`rot.${est.rotura}`).toLowerCase())}">i</span>`;
 const ind = (a, b) => `${a}<tspan class="ind" dy="3">${b}</tspan>`;
 
 /**

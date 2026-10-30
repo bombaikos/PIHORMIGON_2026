@@ -100,3 +100,32 @@ test('Dimensionar con xdMax: con compresión la fibra neutra queda en el límite
     cerca(r.Mu, 600, 1e-3);
   }
 });
+
+test('Coherencia de cuantías: dimensionar y diagrama respetan A_s,min de tracción y los máximos de cada cara en las tres normas', () => {
+  for (const norma of ['EHE-08', 'EC2-2004', 'EC2-2023']) for (const nombre of ['ejemplo_1', 'ejemplo_3']) for (const signo of [1, -1]) {
+    const p = proyectoNuevo();
+    p.norma = norma;
+    const d = datosViga(p, viga(p, nombre), signo);
+    const U = clasificarRotura(d, 0);
+    for (const xdMax of [U.umbralDuctil, U.umbralMedia, U.xdLim]) {
+      const c = curvaDiseno(d, { xdMax });
+      const k = c.Amin;
+      const eps = 1e-9;
+      assert.ok(c.as1[0][0] >= k - eps, 'el diagrama parte de A_s,min');
+      for (const [A] of c.as1) assert.ok(A <= c.Amax + eps, `${norma} A_s1 ≤ Amax`);
+      for (const [A] of c.as2) assert.ok(A <= c.Amax2 + eps, `${norma} A_s2 ≤ Amax2`);
+      for (const Md of [30, 150, 400, 900]) {
+        const r = dimensionar(d, Md, { xdMax });
+        if (r.caso === 'escuadria') continue;
+        assert.ok(r.Ainf >= k - 1e-7, `${norma} ${nombre} ${Md}: A_s1 ≥ A_s,min`);
+        assert.ok(r.Ainf <= r.cuantias.Amax + 1e-7, `${norma} A_s1 ≤ Amax`);
+        assert.ok(r.Asup <= r.cuantias.Amax2 + 1e-7, `${norma} A_s2 ≤ Amax2`);
+      }
+    }
+  }
+  // EC-2 2023 adopta el máximo 0,04·Ac del EC-2 2004 + AN
+  const p = proyectoNuevo();
+  p.norma = 'EC2-2023';
+  const d = datosViga(p, viga(p, 'ejemplo_1'), 1);
+  cerca(curvaDiseno(d).Amax, 0.04 * d.Ac, 1e-12);
+});
