@@ -139,6 +139,11 @@ Cada nivel de control tiene un aspecto propio, para que no se confundan menú, s
    - **No lleva título aparte** («Cómo se calcula…»): **la propia fila del resultado se despliega** al pulsarla, con un ▸ delante de la etiqueta. Al abrirse, la fila y su explicación toman juntas el fondo chocolate con borde fino; cerrada, la fila es como las demás (pedido el 11/10).
    - Va en el panel de resultados, plegada por defecto. Con la extensión del texto, las filas de resultados pueden ser más anchas para que la expresión ocupe menos líneas.
 
+10. **Elección de sección en los módulos de cálculo** (Flexión simple, Flexión compuesta recta, Cortante y todos los que vengan; decidido el 29/10 por Pepiño, opción B). **Regla común**:
+   - Un **único desplegable «Sección»**, lo **primero de los datos** (justo bajo el título del módulo), con las secciones válidas agrupadas por tipo. No hay fila de tipos encima de las columnas; los cinco desplegables por tipo son solo del módulo Secciones.
+   - El **nombre de la sección va grande en la pastilla de resultados**, a la izquierda del aprovechamiento (rótulo pequeño «Sección» y nombre a 24 px + `--mas`, en negrita).
+   - **Debajo del desplegable no se pone ningún texto** (ni resumen de dimensiones y materiales, ni «La sección viene de Secciones»).
+   - En código: `grupoSeccion()` en datos y `rotulaSeccion()` al final de `resultados()` (`vistas/secciones.js`); lo comprueba `tests/seccionActiva.test.js`.
 
 ## 15. Gráficos de vigas y leyes de esfuerzos (módulo Análisis; decidido el 11 de octubre de 2026)
 Convenciones fijadas con José Luis al hacer el módulo de vigas de un vano. Valen para cualquier módulo parecido (pórticos, ménsulas, losas en una dirección, ejes de carga). Código de referencia: `src/ui/vistas/vigas.js` y `src/ui/vigaLeyes.js`; gráfica común en `src/ui/grafica.js`; exportación en `src/ui/exportarSvg.js`.

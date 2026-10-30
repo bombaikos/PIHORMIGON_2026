@@ -1025,3 +1025,11 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
 
 .fila-anc { display: flex; align-items: center; gap: 8px; }
 .fila-anc .seg { flex: 1; }
+
+/* Elección de sección en los módulos de cálculo (guía § 14): desplegable único arriba de los datos y nombre grande en la pastilla */
+.campo[data-c="sel-seccion"] > label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.veredicto.con-sec { grid-template-columns: auto auto minmax(0, 1fr) auto; }
+.veredicto .nom-sec { display: flex; flex-direction: column; justify-content: center; min-width: 0; max-width: 240px; padding-right: var(--e4); border-right: 1px solid var(--linea); }
+.veredicto .nom-sec small { font-size: var(--t-xs); color: var(--tinta-3); text-transform: uppercase; letter-spacing: .06em; font-weight: 600; }
+.veredicto .nom-sec b { font-size: calc(24px + var(--mas)); line-height: 1.1; color: var(--tinta); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 520px) { .veredicto.con-sec { grid-template-columns: auto auto; } .veredicto .nom-sec { grid-column: 1 / -1; border-right: 0; padding-right: 0; max-width: none; } }

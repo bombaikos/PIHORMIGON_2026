@@ -16,7 +16,7 @@ import { NORMAS } from '../../norma/normas.js';
 import { geometriaDe, materialesSeccion, sepCapas } from '../../io/proyecto.js';
 import { t } from '../i18n.js';
 import { fmt, q, qh, MAG, ESP, serieDiametros } from '../formato.js';
-import { selectorSecciones } from './secciones.js';
+import { grupoSeccion, rotulaSeccion } from './secciones.js';
 import { h, poner, campoNum, selector, segmentado, grupo, aviso, cifras, pestanas } from '../campos.js';
 import { rejilla } from '../rejilla.js';
 import { grafica } from '../grafica.js';
@@ -48,25 +48,6 @@ function activa(p) {
   const s = est.i >= 0 ? p.secciones[est.i] : null;
   emin = s ? eMinima(p.norma, s) : 0;
   return s;
-}
-
-export function cabeza(ctx, el) {
-  const s = activa(ctx.p);
-  if (!s) return;
-  selectorSecciones(ctx, el, { formas: FORMAS, activa: s, alElegir: (nombre) => {
-    const i = ctx.p.secciones.findIndex((x) => x.nombre === nombre);
-    if (i >= 0) { est.i = i; est.fi = null; ctx.pintar(); }
-  } });
-}
-
-const mmS = (x) => fmt(x * 1000, 0);
-function resumenSeccion(p, s) {
-  const g = s.geo;
-  let dim;
-  if (s.forma === 'circular') dim = `Ø ${mmS(g.D)} mm`;
-  else if (s.forma === 'generica') { const c = geometriaDe(p, s).caja; dim = `${mmS(c.xmax - c.xmin)} × ${mmS(c.ymax - c.ymin)} mm`; }
-  else dim = `${s.forma === 'T' ? 'T ' : ''}${mmS(g.b)} × ${mmS(g.h)} mm`;
-  return `${dim} · ${s.hormigon} · ${s.acero}`;
 }
 
 /** Pares (N, M) válidos de la tabla, con su fila. */
@@ -131,6 +112,10 @@ export function datos(ctx, form) {
   const s = activa(p);
   poner(form, h('div', { class: 'cab' }, h('h1', {}, t('menu.flexRecta')), h('p', {}, t('fcr.subtitulo'))));
   if (!s) return poner(form, aviso(t('fcr.sinSec'), 'info'));
+  poner(form, grupoSeccion(ctx, { formas: FORMAS, activa: s, alElegir: (nombre) => {
+    const i = p.secciones.findIndex((x) => x.nombre === nombre);
+    if (i >= 0) { est.i = i; est.fi = null; ctx.pintar(); }
+  } }));
   const cambio = () => ctx.cambio();
   let c = null;
   try { c = calculo(p, s); } catch { /* el error se muestra en resultados */ }
@@ -158,11 +143,15 @@ export function datos(ctx, form) {
         columnas: [{ titulo: `${sub('N', 'Ed')} [kN]`, num: true }, { titulo: `${sub('M', 'Ed')} [kN·m]`, num: true }],
         filas: est.filas, calculada: { titulo: 'γ', f: coefFila },
         onCambio: (f) => { est.filas = f.map((r) => [r[0], r[1]]); cambio(); } }),
-      campoFi()),
-    grupo(t('g.seccion'), h('p', { style: 'margin:0;font-size:var(--t-s);color:var(--tinta-2);line-height:1.5', html: `${resumenSeccion(p, s)}<br>${t('fcr.deSecciones')}` })));
+      campoFi()));
 }
 
 export function resultados(ctx, res) {
+  resultadosFlexRecta(ctx, res);
+  rotulaSeccion(res, activa(ctx.p)?.nombre);
+}
+
+function resultadosFlexRecta(ctx, res) {
   const p = ctx.p;
   const s = activa(p);
   if (!s) return;
