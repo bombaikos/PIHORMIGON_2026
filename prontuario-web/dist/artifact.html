@@ -1035,6 +1035,23 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
 .veredicto .nom-sec small { font-size: var(--t-xs); color: var(--tinta-3); text-transform: uppercase; letter-spacing: .06em; font-weight: 600; }
 .veredicto .nom-sec b { font-size: calc(24px + var(--mas)); line-height: 1.1; color: var(--tinta); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (max-width: 520px) { .veredicto.con-sec { grid-template-columns: auto auto; } .veredicto .nom-sec { grid-column: 1 / -1; border-right: 0; padding-right: 0; max-width: none; } }
+
+/* Propiedades reológicas: figura con leyenda vertical y deslizador de t0 */
+.fig-ley{display:flex;flex-direction:column;gap:6px;flex:1;min-height:0}
+.fig-ley .lienzo{flex:1;min-width:0}
+.leyenda-v{display:flex;flex-direction:row;flex-wrap:wrap;justify-content:center;gap:4px 18px;font-size:12px}
+.ley-item{display:flex;align-items:center;gap:6px;cursor:pointer;white-space:nowrap}
+.ley-muestra{width:34px;height:10px;flex:none}
+.gauge-fila{display:flex;align-items:center;gap:10px;font-size:12px}
+.gauge{flex:1}
+.gauge-valor{min-width:70px;text-align:right;font-weight:600}
+
+/* Tablas de resultados: fondo blanco, gris solo para los datos */
+.edad table.excel th, .edad table.excel td { background: var(--campo); }
+.fig-ley .lienzo{order:1}.fig-ley .leyenda-v{order:2}
+#rg-historia td, #rg-historia tr.nueva td { background: var(--campo); } #rg-historia td.sel, #rg-historia tr.foco td { background: var(--acento-suave); }
+.tarjeta .seg.ancho{display:grid;grid-auto-flow:column;grid-auto-columns:1fr}.tarjeta .seg.ancho button{flex:none}
+#rg-historia td { height: 22px; } #rg-historia th { padding-block: 2px; }
 </style>
 
 <header class="barra">
@@ -2626,7 +2643,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     "mat.gDeformacion": "Deformabilidad",
     "mat.gDuctilidad": "Ductilidad",
     "mat.alfaAyuda": (a) => `Cansancio del hormig\xF3n (${a})`,
-    "mat.gammaAyuda": (g, a, art5) => `Por defecto ${g}; ${a} en situaciones accidentales (${art5})`,
+    "mat.gammaAyuda": (g, a, art4) => `Por defecto ${g}; ${a} en situaciones accidentales (${art4})`,
     "mat.arido": "\xC1rido",
     "mat.cemento": "Cemento",
     "mat.cem.S": "S \xB7 endurecimiento lento",
@@ -2656,12 +2673,26 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     "mat.ramaHoriz": "rama horizontal",
     dias: "d\xEDas",
     "rg.sinHormigon": "El proyecto no tiene hormigones: cr\xE9alos en Materiales \xB7 Crear y editar.",
+    "rg.historiaDef": "Historia deformacional",
+    "rg.coefFluencia": "Coeficiente de fluencia",
+    "rg.hHistoria": "Historia de humedad y tensi\xF3n",
+    "rg.avTpos": "El tiempo debe ser mayor que 0.",
+    "rg.hNota": "\u0394\u03C3: incremento de tensi\xF3n de compresi\xF3n aplicado en cada instante. HR: humedad relativa desde ese instante.",
+    "rg.avTabla": "La tabla de historia tiene valores no num\xE9ricos: corr\xEDgelos.",
+    "rg.avOrden": "Los tiempos de la historia deben ir en orden creciente, sin repetir: ord\xE9nalos para ver resultados.",
+    "rg.retraccionTot": "Retracci\xF3n total",
+    "rg.resumida": "Resumida",
+    "rg.completa": "Completa",
+    "rg.lineas": "L\xEDneas mostradas",
+    "rg.activaLinea": "Activa al menos una l\xEDnea en la leyenda.",
+    "rg.t0Gauge": "Edad de carga t<sub>0</sub>",
+    "rg.resultados": "Resultados",
     "rg.ambiente": "Ambiente y pieza",
     "rg.HR": "Humedad relativa",
     "rg.h0Ayuda": "Espesor medio 2\xB7A<sub>c</sub>/u",
     "rg.edades": "Edades",
     "rg.t0Ayuda": "Edad del hormig\xF3n al cargar",
-    "rg.tsAyuda": "Edad al empezar el secado (fin del curado)",
+    "rg.tsAyuda": "Edad al empezar el secado (fin del curado). Por defecto 1 d\xEDa; el valor habitual depende de la norma y del curado. No es la edad de carga t\u2080, que est\xE1 en la tabla de historia. Solo afecta a la retracci\xF3n.",
     "rg.edadCalculo": "Edad de c\xE1lculo",
     "rg.infinito": "Tiempo infinito",
     "rg.cincuenta": "50 a\xF1os",
@@ -3635,7 +3666,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     "mat.gDeformacion": "Deformability",
     "mat.gDuctilidad": "Ductility",
     "mat.alfaAyuda": (a) => `Long-term effects coefficient (${a})`,
-    "mat.gammaAyuda": (g, a, art5) => `Default ${g}; ${a} in accidental situations (${art5})`,
+    "mat.gammaAyuda": (g, a, art4) => `Default ${g}; ${a} in accidental situations (${art4})`,
     "mat.arido": "Aggregate",
     "mat.cemento": "Cement",
     "mat.cem.S": "S \xB7 slow hardening",
@@ -3665,12 +3696,26 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     "mat.ramaHoriz": "horizontal branch",
     dias: "days",
     "rg.sinHormigon": "The project has no concretes: create them in Materials \xB7 Create and edit.",
+    "rg.historiaDef": "Strain history",
+    "rg.coefFluencia": "Creep coefficient",
+    "rg.hHistoria": "Humidity and stress history",
+    "rg.avTpos": "Time must be greater than 0.",
+    "rg.hNota": "\u0394\u03C3: compressive stress increment applied at each instant. RH: relative humidity from that instant.",
+    "rg.avTabla": "The history table has non-numeric values: fix them.",
+    "rg.avOrden": "History times must be increasing, with no repeats: reorder them to see results.",
+    "rg.retraccionTot": "Total shrinkage",
+    "rg.resumida": "Summary",
+    "rg.completa": "Full",
+    "rg.lineas": "Lines shown",
+    "rg.activaLinea": "Turn on at least one line in the legend.",
+    "rg.t0Gauge": "Loading age t<sub>0</sub>",
+    "rg.resultados": "Results",
     "rg.ambiente": "Environment and member",
     "rg.HR": "Relative humidity",
     "rg.h0Ayuda": "Notional size 2\xB7A<sub>c</sub>/u",
     "rg.edades": "Ages",
     "rg.t0Ayuda": "Concrete age at loading",
-    "rg.tsAyuda": "Age at start of drying (end of curing)",
+    "rg.tsAyuda": "Age at start of drying (end of curing). Default 1 day; the usual value depends on the code and curing. It is not the loading age t\u2080, which is in the history table. It only affects shrinkage.",
     "rg.edadCalculo": "Age of calculation",
     "rg.infinito": "Infinite time",
     "rg.cincuenta": "50 years",
@@ -4284,7 +4329,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     "an.cerca": "\u2264 10 \xF8",
     "an.lejos": "> 10 \xF8",
     "an.titulo": "Longitudes en mm",
-    "an.sub": (art5) => `${art5}. Redondeadas por exceso a 5 mm.`,
+    "an.sub": (art4) => `${art4}. Redondeadas por exceso a 5 mm.`,
     "an.col.d": "\xF8",
     "an.col.anclaje": (e2) => `Anclaje ${sub3("l", "bd")} (${e2})`,
     "an.col.solapo": (e2) => `Solapo ${sub3("l", "s")} (${e2})`,
@@ -4355,7 +4400,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     "an.pctAyuda": "Percentage of the section reinforcement lapped in the same zone",
     "an.dist": "Distance a between laps",
     "an.titulo": "Lengths in mm",
-    "an.sub": (art5) => `${art5}. Rounded up to 5 mm.`,
+    "an.sub": (art4) => `${art4}. Rounded up to 5 mm.`,
     "an.col.anclaje": (e2) => `Anchorage ${sub4("l", "bd")} (${e2})`,
     "an.col.solapo": (e2) => `Lap ${sub4("l", "s")} (${e2})`,
     "an.col.I": "Position I",
@@ -4491,7 +4536,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     "cor.cmdDimensionar": "Cortante: dimensionar",
     "cor.ok": "cumple",
     "cor.noOk": "no cumple",
-    "cor.avs.sep": (s, smax, art5 = "44.2.3.4.1") => `La separaci\xF3n s = ${s} mm supera el m\xE1ximo ${smax} mm de ${art5} para este cortante`,
+    "cor.avs.sep": (s, smax, art4 = "44.2.3.4.1") => `La separaci\xF3n s = ${s} mm supera el m\xE1ximo ${smax} mm de ${art4} para este cortante`,
     "cor.avs.trans": (m) => `La separaci\xF3n entre ramas no puede pasar de ${m} mm (d y 500 mm); comprueba el n\xFAmero de ramas`,
     "cor.avs.noCumple": (V, Vu) => `V<sub>Ed</sub> ${V} es mayor que V<sub>u</sub> ${Vu}`,
     // Avisos del núcleo
@@ -4501,7 +4546,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     "cor.av.traccion": "Hay tracci\xF3n en el hormig\xF3n (\u03C3'cd < 0): el t\xE9rmino del axil resta; el K vale 1",
     "cor.av.axilGrande": "\u03C3'<sub>cd</sub> mayor que f<sub>cd</sub>: la compresi\xF3n es excesiva (K = 0)",
     "cor.av.fck60": "Sin cercos, f<sub>cv</sub> no pasa de 60 MPa (44.2.3.2.1.2)",
-    "cor.av.minima": (a, m, art5 = "44.2.3.4.1") => `La armadura A<sub>sw</sub>/s = ${a} mm\xB2/m es menor que la m\xEDnima ${m} mm\xB2/m (${art5})`,
+    "cor.av.minima": (a, m, art4 = "44.2.3.4.1") => `La armadura A<sub>sw</sub>/s = ${a} mm\xB2/m es menor que la m\xEDnima ${m} mm\xB2/m (${art4})`,
     "cor.av.tercio": "Con cercos inclinados, al menos 1/3 de la armadura necesaria y la m\xEDnima deben ir a 90\xB0 (44.2.3.4.1)",
     "cor.r.minVal": (a, m) => `${a} \u2265 ${m} mm\xB2/m`,
     // Dibujo
@@ -4584,8 +4629,8 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     "cor.circNota23": "d = D/2 + (D/2 \u2212 r)\xB70,707 y b<sub>w</sub> = 0,866\xB7d. Con cercos circulares A<sub>sw</sub> se multiplica por b<sub>w</sub>/D<sub>h</sub> (8.2.3(9)), con D<sub>h</sub> \u2248 D \u2212 2r. La norma pide una z de secci\xF3n inscrita; aqu\xED z = 0,9 d.",
     // Revisión EC-2 (29/10)
     "cor.av.bastaSinArm": (v2, vc) => `V<sub>Ed</sub> ${v2} kN no supera la resistencia sin armadura de cortante (${vc} kN): no hace falta armadura calculada y se dispone la m\xEDnima`,
-    "cor.av.sinBiela": (v2, lim, art5) => `V<sub>Ed</sub> ${v2} kN supera el m\xE1ximo de la biela comprimida (${lim} kN, ${art5}): ni con cercos cumplir\xEDa; hay que aumentar la secci\xF3n`,
-    "cor.av.minObligatoria": (art5) => `Cumple sin cercos, pero en vigas se exige armadura m\xEDnima de cortante aunque el c\xE1lculo no la pida (${art5}); solo puede omitirse en losas o piezas de poca importancia`,
+    "cor.av.sinBiela": (v2, lim, art4) => `V<sub>Ed</sub> ${v2} kN supera el m\xE1ximo de la biela comprimida (${lim} kN, ${art4}): ni con cercos cumplir\xEDa; hay que aumentar la secci\xF3n`,
+    "cor.av.minObligatoria": (art4) => `Cumple sin cercos, pero en vigas se exige armadura m\xEDnima de cortante aunque el c\xE1lculo no la pida (${art4}); solo puede omitirse en losas o piezas de poca importancia`,
     "cor.av.d500": "Con d &gt; 500 mm, en vigas isost\xE1ticas la armadura m\xEDnima de cortante es obligatoria (8.2.1(2))",
     "cor.AslInfoPilar": "Criterio propio del Prontuario (a revisar): Asl = las barras de una cara, la traccionada. Se puede cambiar.",
     "cor.AslInfoCirc": "Criterio propio del Prontuario (a revisar): Asl = la mitad de las barras, las del lado traccionado. Se puede cambiar.",
@@ -4677,7 +4722,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     "cor.r.long": "Longitudinal reinforcement (shift)",
     "cor.ok": "passes",
     "cor.noOk": "fails",
-    "cor.avs.sep": (s, smax, art5 = "44.2.3.4.1") => `The spacing s = ${s} mm exceeds the ${smax} mm limit of ${art5} for this shear`,
+    "cor.avs.sep": (s, smax, art4 = "44.2.3.4.1") => `The spacing s = ${s} mm exceeds the ${smax} mm limit of ${art4} for this shear`,
     "cor.avs.trans": (m) => `The spacing between legs must not exceed ${m} mm (d and 500 mm); check the number of legs`,
     "cor.av.fyd400": (f) => `f<sub>y\u03B1,d</sub> is limited to 400 MPa for stirrups (40.2; the steel would give ${f} MPa)`,
     "cor.av.rho": (r) => `\u03C1<sub>l</sub> = ${r} \u2030 is capped at 20 \u2030 in the formulas`,
@@ -4685,7 +4730,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     "cor.av.traccion": "There is tension in the concrete (\u03C3'cd < 0): the axial term subtracts; K = 1",
     "cor.av.axilGrande": "\u03C3'<sub>cd</sub> greater than f<sub>cd</sub>: excessive compression (K = 0)",
     "cor.av.fck60": "Without stirrups, f<sub>cv</sub> is not taken above 60 MPa (44.2.3.2.1.2)",
-    "cor.av.minima": (a, m, art5 = "44.2.3.4.1") => `A<sub>sw</sub>/s = ${a} mm\xB2/m is below the minimum ${m} mm\xB2/m (${art5})`,
+    "cor.av.minima": (a, m, art4 = "44.2.3.4.1") => `A<sub>sw</sub>/s = ${a} mm\xB2/m is below the minimum ${m} mm\xB2/m (${art4})`,
     "cor.av.tercio": "With inclined stirrups, at least 1/3 of the required reinforcement and the minimum must be at 90\xB0 (44.2.3.4.1)",
     "cor.dib.sec": "Section",
     "cor.dib.celosia": "Truss",
@@ -4767,8 +4812,8 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     "cor.circNota23": "d = D/2 + (D/2 \u2212 r)\xB70.707 and b<sub>w</sub> = 0.866\xB7d. With circular hoops A<sub>sw</sub> is multiplied by b<sub>w</sub>/D<sub>h</sub> (8.2.3(9)), with D<sub>h</sub> \u2248 D \u2212 2r. The code asks for the z of an inscribed section; here z = 0.9 d.",
     // EC-2 review (29/10)
     "cor.av.bastaSinArm": (v2, vc) => `V<sub>Ed</sub> ${v2} kN does not exceed the resistance without shear reinforcement (${vc} kN): no calculated reinforcement is needed and the minimum is provided`,
-    "cor.av.sinBiela": (v2, lim, art5) => `V<sub>Ed</sub> ${v2} kN exceeds the maximum of the compression strut (${lim} kN, ${art5}): it would not pass even with stirrups; enlarge the section`,
-    "cor.av.minObligatoria": (art5) => `Passes without stirrups, but beams need minimum shear reinforcement even if the calculation does not ask for it (${art5}); it can only be omitted in slabs or minor members`,
+    "cor.av.sinBiela": (v2, lim, art4) => `V<sub>Ed</sub> ${v2} kN exceeds the maximum of the compression strut (${lim} kN, ${art4}): it would not pass even with stirrups; enlarge the section`,
+    "cor.av.minObligatoria": (art4) => `Passes without stirrups, but beams need minimum shear reinforcement even if the calculation does not ask for it (${art4}); it can only be omitted in slabs or minor members`,
     "cor.av.d500": "With d &gt; 500 mm, minimum shear reinforcement is mandatory in statically determinate beams (8.2.1(2))",
     "cor.AslInfoPilar": "Prontuario own criterion (to be reviewed): Asl = the bars of one face, the tension one. It can be changed.",
     "cor.AslInfoCirc": "Prontuario own criterion (to be reviewed): Asl = half of the bars, those on the tension side. It can be changed.",
@@ -6516,15 +6561,15 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
       pintar2();
       verActiva();
     }
-    function editar(inicial) {
+    function editar(inicial2) {
       const td = celda(act.r, act.c);
       if (!td) return;
       const previo = datos16[act.r]?.[act.c] ?? "";
-      editor = h("input", { class: "editor-rejilla", value: inicial ?? previo, spellcheck: "false", autocomplete: "off" });
+      editor = h("input", { class: "editor-rejilla", value: inicial2 ?? previo, spellcheck: "false", autocomplete: "off" });
       td.replaceChildren(editor);
       td.classList.add("editando");
       editor.focus();
-      if (inicial === void 0) editor.select();
+      if (inicial2 === void 0) editor.select();
       else editor.setSelectionRange(editor.value.length, editor.value.length);
       editor.addEventListener("keydown", (e2) => {
         e2.stopPropagation();
@@ -6541,7 +6586,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
           terminar(false);
           tabla3.focus();
         }
-        if ((e2.key === "ArrowUp" || e2.key === "ArrowDown") && inicial !== void 0) return fin(e2.key === "ArrowUp" ? -1 : 1, 0);
+        if ((e2.key === "ArrowUp" || e2.key === "ArrowDown") && inicial2 !== void 0) return fin(e2.key === "ArrowUp" ? -1 : 1, 0);
       });
       editor.addEventListener("blur", () => terminar(true));
     }
@@ -6665,7 +6710,6 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
   // src/core/reologia.js
   var T_INF = 1e12;
   var T_FINAL_2023 = 50 * 365;
-  var edadFinal = (norma2) => norma2 === "EC2-2023" ? T_FINAL_2023 : Infinity;
   var esFin = (t2) => !Number.isFinite(t2) || t2 >= T_INF;
   var S_EDAD = { R: 0.2, N: 0.25, S: 0.38 };
   function sC2023(cemento, fck) {
@@ -6769,23 +6813,6 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
   function retraccion(norma2, o) {
     return norma2 === "EC2-2023" ? retraccion2023(o) : retraccion2004(norma2, o);
   }
-  function limiteTension(norma2, { fck, fcmT0 }) {
-    if (norma2 === "EC2-2023") return 0.4 * fcmT0;
-    if (norma2 === "EC2-2004") return 0.45 * fckEdad(fck, fcmT0, 0);
-    return 0.45 * fcmT0;
-  }
-  function fluenciaNoLineal(norma2, phi, sigma2, { fck, fcmT0, t0 }) {
-    if (!(sigma2 > 0)) return phi;
-    if (norma2 === "EC2-2023") {
-      const k = sigma2 / fcmT0;
-      return k > 0.4 ? phi * Math.exp(1.5 * (k - 0.4)) : phi;
-    }
-    if (norma2 === "EC2-2004") {
-      const k = sigma2 / (t0 >= 28 ? fck : Math.min(fck, fcmT0 - 8));
-      return k > 0.45 ? phi * Math.exp(1.5 * (k - 0.45)) : phi;
-    }
-    return phi;
-  }
   function humedadEn(tabla3, t2) {
     const T = tabla3.slice().sort((a, b) => a[0] - b[0]);
     if (!T.length) return NaN;
@@ -6807,8 +6834,9 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
         elastica += ds / E0[j];
         if (t2 > t0) diferida += ds * fluencia(norma2, { fck, HR, h0, t0, t: t2, cemento }).phi / Ec0;
       });
-      const rc = -retraccion(norma2, { fck, HR, h0, t: t2, ts, cemento }).total;
-      return { t: t2, HR, elastica, diferida, retraccion: rc, total: elastica + diferida + rc };
+      const r = retraccion(norma2, { fck, HR, h0, t: t2, ts, cemento });
+      const rc = -r.total;
+      return { t: t2, HR, elastica, diferida, retraccion: rc, autogena: -r.autogena, tension: cargas.reduce((a, [t0, ds]) => t2 >= t0 ? a + ds : a, 0), total: elastica + diferida + rc };
     });
   }
   function tablaFluencia(norma2, { fck, cemento = "N", h0, humedad }, t0s, ts) {
@@ -6942,7 +6970,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     const [x1, y1] = xy[i];
     return x1 === x0 ? y1 : y0 + (y1 - y0) * (x - x0) / (x1 - x0);
   }
-  function grafica({ series, puntos = [], ejeX, ejeY, archivo: archivo2 = "grafica", rejillaSec = null, invertirY = false, avisar: avisar2 = () => {
+  function grafica({ series, puntos = [], ejeX, ejeY, archivo: archivo2 = "grafica", rejillaSec = null, invertirY = false, sinTabla = false, avisar: avisar2 = () => {
   } }) {
     const sinDec = (e2) => /\((kN|kN·m|mm²)\)/.test(plano(e2.titulo)) ? { ...e2, d: 0, dt: 0 } : e2;
     ejeX = sinDec(ejeX);
@@ -7012,7 +7040,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
       bCopiar.title = tabular ? t("graf.copiarTablaTit") : `${t("graf.copiarTit")} (Ctrl+C)`;
       if (!tabular && listo) dibujar();
     }
-    caja.append(barra3, svg, tabla3, tip, modo2);
+    caja.append(barra3, svg, tabla3, tip, ...sinTabla ? [] : [modo2]);
     ponerModo(false);
     const todos = [...series.flatMap((s) => s.xy), ...puntos.map((p) => [p.x, p.y])].filter(([x, y]) => Number.isFinite(x) && Number.isFinite(y));
     const ext = (i) => {
@@ -7402,7 +7430,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
         type: "button",
         role: "option",
         "aria-current": s.nombre === activo ? "true" : void 0,
-        html: `${icono(tipo)}${s.nombre}<span class="nombre-sec">${breve(tipo, s)}</span>`,
+        html: `${icono(tipo)}${s.nombre}${tipo === "hormigones" ? "" : `<span class="nombre-sec">${breve(tipo, s)}</span>`}`,
         onclick: () => elegir(ctx2, tipo, s.nombre)
       })));
       if (!filas.children.length) filas.append(h("span", { class: "vacio" }, lista.length ? t("sec.ningunaCoincide") : t("sec.ningunaTipo")));
@@ -7856,11 +7884,27 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     reiniciar: () => reiniciar2,
     resultados: () => resultados3
   });
-  var est2 = { hormigon: null, cemento: null, HR: 70, Ac: 0.2, u: 2, h0: 200, t0: 28, ts: null, modo: "final", t: 365, sigma: 0, pestana: "fluencia", logT: true, cargas: [["28", "8"], ["90", "4"]], humedad: [["28", "70"], ["90", "70"], ["365", "60"], ["1000", "60"], ["3650", "60"]] };
+  var TIEMPOS = [3, 7, 14, 28, 60, 90, 180, 360, 1e3, 3650];
+  var filasPorDefecto = () => TIEMPOS.map((tt) => [String(tt), "60", "0"]);
+  var inicial = () => ({
+    hormigon: null,
+    cemento: null,
+    Ac: 0.2,
+    u: 2,
+    h0: 200,
+    ts: null,
+    pestana: "historia",
+    logT: false,
+    completa: false,
+    t0: 28,
+    filas: filasPorDefecto(),
+    ver: { elastica: true, diferida: true, retraccion: true, total: true }
+  });
+  var est2 = inicial();
   var sub12 = (a, b) => `${a}<sub>${b}</sub>`;
   var U2 = (ud) => `${ESP}<span class="u u-cab">[${ud}]</span>`;
   function reiniciar2() {
-    Object.assign(est2, { hormigon: null, cemento: null, HR: 70, Ac: 0.2, u: 2, h0: 200, t0: 28, ts: null, modo: "final", t: 365, sigma: 0, pestana: "fluencia", logT: true, cargas: [["28", "8"], ["90", "4"]], humedad: [["28", "70"], ["90", "70"], ["365", "60"], ["1000", "60"], ["3650", "60"]] });
+    Object.assign(est2, inicial());
   }
   function hormigonActivo(ctx2) {
     const L = ctx2.p.hormigones;
@@ -7870,16 +7914,17 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     const L = ctx2.p.hormigones;
     const m = hormigonActivo(ctx2);
     const norma2 = ctx2.p.norma;
-    const N = normaMat(norma2);
     if (!m) return poner(form, aviso(t("rg.sinHormigon"), ""));
     const cem = est2.cemento ?? m.cemento ?? "N";
     const cambio = () => ctx2.pintar();
-    const hist = est2.pestana === "historia" || est2.pestana === "phi";
+    const h0 = () => {
+      est2.h0 = 2e3 * est2.Ac / est2.u;
+    };
     poner(
       form,
       grupo(
         null,
-        selector({ id: "rg-hor", etq: t("hormigon"), opciones: L.map((x) => [x.nombre, `${x.nombre} \xB7 f<sub>ck</sub> ${x.fck}`]), valor: m.nombre, onCambio: (v2) => {
+        selector({ id: "rg-hor", etq: t("hormigon"), opciones: L.map((x) => [x.nombre, x.nombre]), valor: m.nombre, onCambio: (v2) => {
           est2.hormigon = v2;
           est2.cemento = null;
           cambio();
@@ -7891,133 +7936,88 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
       ),
       grupo(
         t("rg.ambiente"),
-        hist ? null : campoNum({ id: "rg-hr", etq: t("rg.HR") + U2("%"), valor: est2.HR, paso: 5, min: 20, max: 100, onCambio: (v2) => {
-          est2.HR = v2;
-          cambio();
-        } }),
         campoNum({ id: "rg-ac", etq: sub12("A", "c") + U2("m\xB2"), ayuda: t("rg.AcAyuda"), valor: est2.Ac, paso: 0.05, min: 1e-3, max: 100, onCambio: (v2) => {
           est2.Ac = v2;
-          est2.h0 = 2e3 * est2.Ac / est2.u;
+          h0();
           cambio();
         } }),
         campoNum({ id: "rg-u", etq: "u" + U2("m"), ayuda: t("rg.uAyuda"), valor: est2.u, paso: 0.1, min: 0.01, max: 1e3, onCambio: (v2) => {
           est2.u = v2;
-          est2.h0 = 2e3 * est2.Ac / est2.u;
+          h0();
           cambio();
         } }),
-        h("p", { class: "sub", html: `${sub12("h", "0")} = 2\xB7${sub12("A", "c")}/u = ${fmt(est2.h0, 0)}${ESP}mm` })
-      ),
-      grupo(
-        t("rg.edades"),
-        hist ? null : campoNum({ id: "rg-t0", etq: sub12("t", "0") + U2(t("dias")), ayuda: t("rg.t0Ayuda"), valor: est2.t0, paso: 1, min: 1, max: 36500, onCambio: (v2) => {
-          est2.t0 = v2;
-          cambio();
-        } }),
-        campoNum({ id: "rg-ts", etq: sub12("t", "s") + U2(t("dias")), ayuda: t("rg.tsAyuda"), valor: est2.ts ?? (norma2 === "EC2-2023" ? 1 : 7), paso: 1, min: 0, max: 365, onCambio: (v2) => {
+        h("p", { class: "sub", html: `${sub12("h", "0")} = 2\xB7${sub12("A", "c")}/u = ${fmt(est2.h0, 0)}${ESP}mm` }),
+        campoNum({ id: "rg-ts", etq: sub12("t", "s") + U2(t("dias")), info: t("rg.tsAyuda"), valor: est2.ts ?? 1, paso: 1, min: 0, max: 365, onCambio: (v2) => {
           est2.ts = v2;
-          cambio();
-        } }),
-        hist ? null : selector({ id: "rg-modo", etq: t("rg.edadCalculo"), opciones: [["final", norma2 === "EC2-2023" ? t("rg.cincuenta") : t("rg.infinito")], ["otra", t("rg.otra")]], valor: est2.modo, onCambio: (v2) => {
-          est2.modo = v2;
-          cambio();
-        } }),
-        !hist && est2.modo === "otra" ? campoNum({ id: "rg-t", etq: "t" + U2(t("dias")), valor: est2.t, paso: 30, min: est2.t0 + 1, max: 1e5, onCambio: (v2) => {
-          est2.t = v2;
-          cambio();
-        } }) : null
-      ),
-      hist ? null : grupo(
-        t("rg.carga"),
-        campoNum({ id: "rg-sig", etq: sub12("\u03C3", "c") + U2("MPa"), ayuda: t("rg.sigAyuda", N.art.fluencia), valor: est2.sigma, paso: 1, min: 0, max: 100, onCambio: (v2) => {
-          est2.sigma = v2;
           cambio();
         } })
       ),
-      hist ? grupo(
-        t("rg.hCargas"),
+      grupo(
+        t("rg.hHistoria"),
         rejilla({
-          id: "rg-cargas",
-          altoMax: 90,
-          columnas: [{ titulo: `${sub12("t", "0")} [${t("dias")}]`, num: true }, { titulo: `\u0394${sub12("\u03C3", "c")} [MPa]`, num: true }],
-          filas: est2.cargas,
+          id: "rg-historia",
+          altoMax: 340,
+          columnas: [
+            { titulo: `t [${t("dias")}]`, num: true, validar: (v2) => +v2 > 0 ? null : t("rg.avTpos") },
+            { titulo: "HR [%]", num: true, validar: (v2) => +v2 >= 20 && +v2 <= 100 ? null : t("rg.avHR") },
+            { titulo: `\u0394${sub12("\u03C3", "c")} [MPa]`, num: true }
+          ],
+          filas: est2.filas,
           onCambio: (f) => {
-            est2.cargas = f.map((r) => [r[0], r[1]]);
+            est2.filas = f.map((r) => [r[0], r[1], r[2]]);
             cambio();
           }
         })
-      ) : null,
-      hist ? grupo(
-        t("rg.hHumedad"),
-        rejilla({
-          id: "rg-humedad",
-          altoMax: 96,
-          columnas: [{ titulo: `t [${t("dias")}]`, num: true }, { titulo: "HR [%]", num: true, validar: (v2) => +v2 >= 20 && +v2 <= 100 ? null : t("rg.avHR") }],
-          filas: est2.humedad,
-          onCambio: (f) => {
-            est2.humedad = f.map((r) => [r[0], r[1]]);
-            cambio();
-          }
-        })
-      ) : null
+      )
     );
   }
-  var art2 = (N, k) => `<span class="art">${N.corto} \xB7 ${N.art[k]}</span>`;
-  var F2 = (s) => `<span class="f">${s}</span>`;
-  var Nn2 = (s) => `<span class="n">${s}</span>`;
-  var e6 = (x) => fmt(x * 1e6, 0);
+  var PESTANAS = () => [["historia", t("rg.historiaDef")], ["fluencia", t("rg.coefFluencia")]];
+  var logx = (a, b, n = 60) => Array.from({ length: n + 1 }, (_2, i) => a * Math.pow(b / a, i / n));
+  var dias = (x) => fmt(x, x < 10 && x !== Math.round(x) ? 1 : 0);
+  function leerTabla() {
+    const filas = est2.filas.map((r) => r.map(Number));
+    const ok = filas.length > 0 && filas.every((r) => r.every(Number.isFinite));
+    const orden = ok && filas.every((r, i) => i === 0 || r[0] > filas[i - 1][0]);
+    return { filas, ok, orden };
+  }
   function entradas(ctx2, m) {
     const norma2 = ctx2.p.norma;
     const q2 = propiedadesHormigon(m.fck, norma2, opcionesHormigon(m, norma2));
     const cemento = est2.cemento ?? m.cemento ?? "N";
-    const ts = est2.ts ?? (norma2 === "EC2-2023" ? 1 : 7);
-    const tFin = est2.modo === "otra" ? Math.max(est2.t, est2.t0 + 1) : edadFinal(norma2);
-    const base2 = { fck: m.fck, HR: est2.HR, h0: est2.h0, t0: est2.t0, cemento };
-    return { norma: norma2, q: q2, cemento, ts, tFin, base: base2 };
+    const ts = est2.ts ?? 1;
+    return { norma: norma2, q: q2, cemento, ts };
   }
-  var logx = (a, b, n = 60) => Array.from({ length: n + 1 }, (_2, i) => a * Math.pow(b / a, i / n));
-  function curvas(ctx2, E, N) {
-    const tMax = Math.max(Number.isFinite(E.tFin) ? E.tFin : 36500, est2.t0 * 2);
-    const ver = est2.pestana === "retraccion" ? "retraccion" : "fluencia";
-    const desde = ver === "fluencia" ? est2.t0 * 1.02 : Math.max(E.ts + 0.5, 1);
-    const ts = logx(desde, tMax);
-    const lg = (x) => Math.log10(x);
-    if (ver === "fluencia") {
-      const xy = ts.map((tt) => [lg(tt), fluencia(E.norma, { ...E.base, t: tt }).phi]);
-      return grafica({
-        series: [{ nombre: "\u03C6(t, t\u2080)", xy, clase: "s1" }],
-        puntos: [{ x: lg(tMax), y: xy.at(-1)[1], etq: "" }],
-        ejeX: { titulo: "log\u2081\u2080 t [d\xEDas]", d: 2 },
-        ejeY: { titulo: "\u03C6(t, t\u2080)", d: 2 },
-        archivo: "fluencia",
-        avisar: ctx2.avisar
-      });
+  function paraNucleo(m, E, filas) {
+    const humedad = filas.map((r) => [r[0], r[1]]);
+    const cargas = filas.filter((r) => r[2] !== 0).map((r) => [r[0], r[2]]);
+    return { fck: m.fck, fcm: E.q.fcm, fctm: E.q.fctm, Ecm: E.q.Ec, Ec28: E.q.Ec28, cemento: E.cemento, h0: est2.h0, ts: E.ts, cargas, humedad };
+  }
+  function resultados3(ctx2, res) {
+    const m = hormigonActivo(ctx2);
+    if (!m) return;
+    const N = normaMat(ctx2.p.norma);
+    const E = entradas(ctx2, m);
+    const T = leerTabla();
+    if (!T.ok) return poner(res, aviso(t("rg.avTabla"), "error"));
+    if (!T.orden) return poner(res, aviso(t("rg.avOrden"), "error"));
+    const base2 = paraNucleo(m, E, T.filas);
+    const tiempos = T.filas.map((r) => r[0]);
+    const tMin = tiempos[0];
+    const tMax = tiempos.at(-1);
+    const avisos4 = [];
+    let acum = 0;
+    for (const [t0, ds] of T.filas.map((r) => [r[0], r[2]])) {
+      acum += ds;
+      if (acum > 0.45 * E.q.fcm) {
+        avisos4.push(["", t("rg.avSigHist", dias(t0), fmt(acum, 1), fmt(0.45 * E.q.fcm, 1))]);
+        break;
+      }
+      if (acum < 0) {
+        avisos4.push(["", t("rg.avTraccion", dias(t0))]);
+        break;
+      }
     }
-    const r = (tt) => retraccion(E.norma, { ...E.base, t: tt, ts: E.ts });
-    const total = ts.map((tt) => [lg(tt), r(tt).total * 1e3]);
-    const sec = ts.map((tt) => [lg(tt), r(tt).secado * 1e3]);
-    const aut = ts.map((tt) => [lg(tt), r(tt).autogena * 1e3]);
-    return grafica({
-      series: [{ nombre: t("rg.total"), xy: total, clase: "s1" }, { nombre: t("rg.secado"), xy: sec, clase: "s2" }, { nombre: t("rg.autogena"), xy: aut, clase: "ref" }],
-      puntos: [{ x: lg(tMax), y: total.at(-1)[1], etq: "" }],
-      ejeX: { titulo: "log\u2081\u2080 t [d\xEDas]", d: 2 },
-      ejeY: { titulo: "\u03B5 [\u2030]", d: 3 },
-      archivo: "retraccion",
-      avisar: ctx2.avisar
-    });
-  }
-  var PESTANAS = () => [["fluencia", t("rg.fluencia")], ["retraccion", t("rg.retraccion")], ["historia", t("rg.historia")], ["phi", t("rg.tablaPhi")]];
-  function historiaDatos(m, E) {
-    const num4 = (f) => f.map((r) => [Number(r[0]), Number(r[1])]).filter((r) => r.every(Number.isFinite));
-    const cargas = num4(est2.cargas).filter((r) => r[0] > 0).sort((a, b) => a[0] - b[0]);
-    const humedad = num4(est2.humedad).filter((r) => r[0] >= 0 && r[1] >= 20 && r[1] <= 100).sort((a, b) => a[0] - b[0]);
-    const tiempos = [.../* @__PURE__ */ new Set([...humedad.map((r) => r[0]), ...cargas.map((r) => r[0])])].filter((x) => x > 0).sort((a, b) => a - b);
-    const o = { fck: m.fck, fcm: E.q.fcm, fctm: E.q.fctm, Ecm: E.q.Ec, Ec28: E.q.Ec28, cemento: E.cemento, h0: est2.h0, ts: E.ts, cargas, humedad, tiempos };
-    return { cargas, humedad, tiempos, o };
-  }
-  var dias = (x) => fmt(x, x < 10 ? 1 : 0).replace(/\.0$/, "");
-  function resultadosHistoria(ctx2, res, m, N, E) {
-    const D = historiaDatos(m, E);
-    const lg = (x) => est2.logT ? Math.log10(x) : x;
+    poner(res, ...avisos4.map(([k, x]) => aviso(x, k)));
     const centro = h(
       "article",
       { class: "panel tarjeta" },
@@ -8027,113 +8027,132 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
       } }),
       h("p", { class: "sub" }, `${m.nombre} \xB7 ${N.corto}`)
     );
-    if (!D.cargas.length || D.humedad.length < 1) {
-      poner(res, h("div", { class: "cuerpo" }, centro));
-      return poner(centro, aviso(t("rg.avHistoria"), ""));
-    }
-    const tMin = Math.max(Math.min(D.tiempos[0], D.cargas[0][0]) * 0.999, 0.5);
-    const tMax = Math.max(D.tiempos.at(-1), D.cargas.at(-1)[0] * 1.5);
-    const grid = [...logx(tMin, tMax, 90), ...D.cargas.flatMap(([t0]) => [t0, t0 - 1e-3])].sort((a, b) => a - b);
-    const G = historia(E.norma, { ...D.o, tiempos: grid });
-    const serie = (k, f = 1e3) => G.map((g) => [lg(g.t), g[k] * f]);
-    const H = historia(E.norma, D.o);
-    if (est2.pestana === "phi") {
-      const T = D.tiempos;
-      const PHI = tablaFluencia(E.norma, D.o, D.cargas.map((c) => c[0]), T);
-      const cab2 = [`${sub12("t", "0")}${ESP}\\${ESP}t`, ...T.map((x) => dias(x))];
-      poner(centro, h("div", { class: "lienzo" }, h("div", { class: "edad" }, tabla(PHI.map((f, i) => [dias(D.cargas[i][0]), ...f.map((v2) => v2 === null ? "\u2013" : fmt(v2, 2))]), { cabecera: cab2, clase: "num excel" })), h("p", { class: "sub", html: `\u03C6(t, ${sub12("t", "0")}) \xB7 t ${t("rg.eje")} [${t("dias")}], ${sub12("t", "0")} ${t("rg.eje2")} [${t("dias")}]` })));
-      const t0s = D.cargas.slice(0, 5).map((c) => c[0]);
-      const series2 = t0s.map((t0, i) => {
-        const ts = logx(t0 * 1.02, Math.max(tMax, t0 * 3), 60);
-        return { nombre: `t\u2080 = ${dias(t0)} d`, xy: ts.map((tt) => [lg(tt), fluencia(E.norma, { fck: m.fck, HR: humedadEn(D.humedad, tt), h0: est2.h0, t0, t: tt, cemento: E.cemento }).phi]), clase: `s${i + 1}` };
+    const lg = (x) => est2.logT ? Math.log10(x) : x;
+    const ejeX = (redibujar) => ({ titulo: est2.logT ? "log\u2081\u2080 t [d\xEDas]" : "t [d\xEDas]", d: est2.logT ? 2 : 0, alternar: () => {
+      est2.logT = !est2.logT;
+      redibujar();
+    }, ayuda: t("rg.alternaEscala") });
+    if (est2.pestana === "fluencia") {
+      const PHI = tablaFluencia(E.norma, { ...base2, humedad: base2.humedad }, tiempos, tiempos);
+      const cab = [`${sub12("t", "0")}${ESP}\\${ESP}t`, ...tiempos.map((x) => dias(x))];
+      poner(
+        centro,
+        h(
+          "div",
+          { class: "lienzo" },
+          h("div", { class: "edad" }, tabla(PHI.map((f, i) => [dias(tiempos[i]), ...f.map((v2) => v2 === null ? "\u2013" : fmt(v2, 2))]), { cabecera: cab, clase: "num excel" })),
+          h("p", { class: "sub", html: `\u03C6(t, ${sub12("t", "0")}) \xB7 t ${t("rg.eje")} [${t("dias")}], ${sub12("t", "0")} ${t("rg.eje2")} [${t("dias")}]` })
+        )
+      );
+      est2.t0 = Math.min(Math.max(est2.t0, tMin), tMax);
+      const lienzo2 = h("div", { class: "lienzo" });
+      const etqT0 = h("output", { class: "gauge-valor" });
+      const dibuja2 = () => {
+        const t0 = est2.t0;
+        const ts = est2.logT ? logx(Math.min(t0 * 1.02, tMax), Math.max(tMax, t0 * 1.03), 60) : Array.from({ length: 61 }, (_2, i) => t0 * 1.02 + (Math.max(tMax, t0 * 1.03) - t0 * 1.02) * i / 60);
+        const xy = ts.map((tt) => [lg(tt), fluencia(E.norma, { fck: m.fck, HR: humedadEn(base2.humedad, tt), h0: est2.h0, t0, t: tt, cemento: E.cemento }).phi]);
+        etqT0.textContent = `t\u2080 = ${fmt(t0, 0)} d`;
+        lienzo2.replaceChildren(grafica({ series: [{ nombre: `t\u2080 = ${fmt(t0, 0)} d`, xy, clase: "s1" }], sinTabla: true, ejeX: ejeX(dibuja2), ejeY: { titulo: "\u03C6(t, t\u2080)", d: 2 }, archivo: "fluencia", avisar: ctx2.avisar }));
+      };
+      const gauge = h("input", {
+        type: "range",
+        class: "gauge",
+        min: String(tMin),
+        max: String(tMax),
+        step: "1",
+        value: String(est2.t0),
+        "aria-label": t("rg.t0Gauge"),
+        oninput: (e2) => {
+          est2.t0 = Number(e2.target.value);
+          dibuja2();
+        }
       });
+      dibuja2();
       const dib = h(
         "article",
         { class: "panel tarjeta" },
         h("h2", { html: `\u03C6(t, ${sub12("t", "0")})` }),
         h("p", { class: "sub" }, t("rg.phiEvolucion")),
-        h("div", { class: "lienzo" }, grafica({ series: series2, ejeX: { titulo: est2.logT ? "log\u2081\u2080 t [d\xEDas]" : "t [d\xEDas]", d: est2.logT ? 2 : 0, alternar: () => {
-          est2.logT = !est2.logT;
-          ctx2.pintar();
-        }, ayuda: t("rg.alternaEscala") }, ejeY: { titulo: "\u03C6(t, t\u2080)", d: 2 }, archivo: "fluencia-historia", avisar: ctx2.avisar }))
+        lienzo2,
+        h("div", { class: "gauge-fila" }, h("span", { class: "etq", html: t("rg.t0Gauge") }), gauge, etqT0)
       );
       return poner(res, h("div", { class: "cuerpo" }, centro, dib));
     }
-    const series = [
-      { nombre: t("rg.total"), xy: serie("total"), clase: "s1" },
-      { nombre: t("rg.elastica"), xy: serie("elastica"), clase: "s2" },
-      { nombre: t("rg.diferida"), xy: serie("diferida"), clase: "s3" },
-      { nombre: t("rg.retraccion"), xy: serie("retraccion"), clase: "s4" }
-    ];
-    poner(centro, h("div", { class: "lienzo" }, grafica({ series, ejeX: { titulo: est2.logT ? "log\u2081\u2080 t [d\xEDas]" : "t [d\xEDas]", d: est2.logT ? 2 : 0, alternar: () => {
-      est2.logT = !est2.logT;
-      ctx2.pintar();
-    }, ayuda: t("rg.alternaEscala") }, ejeY: { titulo: "\u03B5 [\u2030]", d: 3 }, archivo: "historia-deformaciones", avisar: ctx2.avisar })));
-    const e2 = (x) => fmt(x * 1e6, 0);
-    const fil = H.map((g) => [dias(g.t), fmt(g.HR, 0), e2(g.elastica), e2(g.diferida), e2(g.retraccion), e2(g.total)]);
-    const cab = [`t<br><span class="u u-cab">[${t("dias")}]</span>`, `HR<br><span class="u u-cab">[%]</span>`, `${sub12("\u03B5", "el")}<br><span class="u u-cab">[\xB710\u207B\u2076]</span>`, `${sub12("\u03B5", "dif")}<br><span class="u u-cab">[\xB710\u207B\u2076]</span>`, `${sub12("\u03B5", "cs")}<br><span class="u u-cab">[\xB710\u207B\u2076]</span>`, `${sub12("\u03B5", "tot")}<br><span class="u u-cab">[\xB710\u207B\u2076]</span>`];
+    const saltos = base2.cargas.flatMap(([t0]) => [t0, t0 - 1e-3]);
+    const mallaFig = [...logx(tMin, tMax, 90), ...tiempos, ...saltos].filter((x) => x >= tMin * 0.999).sort((a, b) => a - b);
+    const mallaTabla = [.../* @__PURE__ */ new Set([...logx(tMin, tMax, 40).map((x) => Math.round(x)), ...tiempos])].sort((a, b) => a - b);
+    const H = (tt) => historia(E.norma, { ...base2, tiempos: tt });
+    const LINEAS = [["elastica", "rg.elastica", "s2"], ["diferida", "rg.diferida", "s3"], ["retraccion", "rg.retraccion", "s4"], ["total", "rg.total", "s1"]];
+    const lienzo = h("div", { class: "lienzo" });
+    const dibuja = () => {
+      const G = H(mallaFig).map((g) => ({ ...g, secado: g.retraccion - g.autogena }));
+      const ser = (k, nombre, clase) => ({ nombre, xy: G.map((g) => [lg(g.t), g[k] * 1e3]), clase });
+      const activas = LINEAS.filter(([k]) => est2.ver[k]);
+      const series = [];
+      for (const [k, tx2, cl3] of activas) {
+        series.push(ser(k, k === "retraccion" && activas.length === 1 ? t("rg.retraccionTot") : t(tx2), cl3));
+        if (k === "retraccion" && activas.length === 1) {
+          series.push(ser("autogena", t("rg.autogena"), "s5"), ser("secado", t("rg.secado"), "s2"));
+        }
+      }
+      if (!series.length) return lienzo.replaceChildren(h("p", { class: "sub" }, t("rg.activaLinea")));
+      lienzo.replaceChildren(grafica({ series, sinTabla: true, ejeX: ejeX(dibuja), ejeY: { titulo: "\u03B5 [\u2030]", d: 3 }, archivo: "historia-deformaciones", avisar: ctx2.avisar }));
+    };
+    const muestra = (cl3) => {
+      const s = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      s.setAttribute("class", "graf ley-muestra");
+      s.setAttribute("width", "34");
+      s.setAttribute("height", "10");
+      s.innerHTML = `<line class="serie ${cl3}" x1="1" x2="33" y1="5" y2="5"/>`;
+      return s;
+    };
+    const leyenda3 = h(
+      "div",
+      { class: "leyenda-v", role: "group", "aria-label": t("rg.lineas") },
+      ...LINEAS.map(([k, tx2, cl3]) => h(
+        "label",
+        { class: "ley-item" },
+        h("input", { type: "checkbox", checked: est2.ver[k], onchange: (e2) => {
+          est2.ver[k] = e2.target.checked;
+          dibuja();
+        } }),
+        muestra(cl3),
+        h("span", { html: t(tx2) })
+      ))
+    );
+    dibuja();
+    poner(centro, h("div", { class: "fig-ley" }, lienzo, leyenda3));
+    const marco2 = h("div", { class: "edad tabla-res" });
+    const pintaTabla = () => {
+      const R = H(est2.completa ? mallaTabla : tiempos);
+      const e2 = (x) => fmt(x * 1e6, 0);
+      const cab = [
+        `t<br><span class="u u-cab">[${t("dias")}]</span>`,
+        `${sub12("\u03C3", "c")}<br><span class="u u-cab">[MPa]</span>`,
+        ...["el", "dif", "cs", "tot"].map((k) => `${sub12("\u03B5", k)}<br><span class="u u-cab">[\xB710\u207B\u2076]</span>`)
+      ];
+      marco2.replaceChildren(tabla(R.map((g) => [dias(g.t), fmt(g.tension, 1), e2(g.elastica), e2(g.diferida), e2(g.retraccion), e2(g.total)]), { cabecera: cab, clase: "num excel" }));
+    };
     const tarjeta = h(
       "article",
       { class: "panel tarjeta" },
-      h("h2", {}, t("rg.historia")),
+      h("h2", {}, t("rg.resultados")),
       h("p", { class: "sub" }, t("rg.notaHistoria")),
-      h("div", { class: "edad" }, tabla(fil, { cabecera: cab, clase: "num excel" }))
+      segmentado({
+        opciones: [[false, t("rg.resumida")], [true, t("rg.completa")]],
+        valor: est2.completa,
+        etiqueta: t("rg.resultados"),
+        ancho: true,
+        onCambio: (v2) => {
+          est2.completa = v2;
+          tarjeta.querySelectorAll(".seg button").forEach((b, i) => b.setAttribute("aria-checked", String(i === 1 === v2)));
+          pintaTabla();
+        }
+      }),
+      marco2
     );
-    const avisos4 = [];
-    const lim = limiteTension(E.norma, { fck: m.fck, fcmT0: E.q.fcm });
-    let acum = 0;
-    for (const [t0, ds] of D.cargas) {
-      acum += ds;
-      if (acum > 0.45 * E.q.fcm) avisos4.push(["", t("rg.avSigHist", dias(t0), fmt(acum, 1), fmt(0.45 * E.q.fcm, 1))]);
-      if (acum < 0) avisos4.push(["", t("rg.avTraccion", dias(t0))]);
-    }
-    poner(res, ...avisos4.slice(0, 2).map(([k, x]) => aviso(x, k)), h("div", { class: "cuerpo" }, centro, tarjeta));
-  }
-  function resultados3(ctx2, res) {
-    const m = hormigonActivo(ctx2);
-    if (!m) return;
-    const N = normaMat(ctx2.p.norma);
-    const E = entradas(ctx2, m);
-    if (est2.pestana === "historia" || est2.pestana === "phi") return resultadosHistoria(ctx2, res, m, N, E);
-    const tF = Number.isFinite(E.tFin) ? E.tFin : void 0;
-    const flu = fluencia(E.norma, { ...E.base, t: tF });
-    const ret = retraccion(E.norma, { ...E.base, t: tF, ts: E.ts });
-    const edad = evolucionEdad(E.norma, { fck: m.fck, fcm: E.q.fcm, fctm: E.q.fctm, Ecm: E.q.Ec, cemento: E.cemento, t: est2.t0 });
-    const lim = limiteTension(E.norma, { fck: m.fck, fcmT0: edad.fcm });
-    const avisos4 = [];
-    if (est2.t0 < 1) avisos4.push(["error", t("rg.avT0")]);
-    if (est2.sigma > lim) avisos4.push(["", t(E.norma === "EHE-08" ? "rg.avNoLinealEHE" : "rg.avNoLineal", fmt(lim, 1), fmt(est2.sigma, 1))]);
-    poner(res, ...avisos4.map(([k, x]) => aviso(x, k)));
-    const dib = h(
-      "article",
-      { class: "panel tarjeta" },
-      pestanas({ lista: PESTANAS(), activa: est2.pestana, onCambio: (k) => {
-        est2.pestana = k;
-        ctx2.pintar();
-      } }),
-      h("p", { class: "sub" }, `${m.nombre} \xB7 ${N.corto}`),
-      h("div", { class: "lienzo" }, curvas(ctx2, E, N))
-    );
-    const filas = [];
-    const cuentas = [];
-    const fila5 = (etq, val, cuenta) => {
-      filas.push([etq, val]);
-      cuentas.push(cuenta ?? null);
-    };
-    const ec = E.q.Ec;
-    fila5(`${sub12("f", "cm")}(${sub12("t", "0")})${U2("MPa")}`, fmt(edad.fcm, 1), F2(`${sub12("f", "cm")}(t) = ${sub12("\u03B2", "cc")}(t)\xB7${sub12("f", "cm")}`) + Nn2(`${sub12("\u03B2", "cc")}(${est2.t0}) = ${fmt(edad.beta, 3)}`) + art2(N, "edad"));
-    fila5(`\u03C6(${tF ? "t" : "\u221E"}, ${sub12("t", "0")})`, fmt(flu.phi, 2), F2(`\u03C6(t, ${sub12("t", "0")}) = ${sub12("\u03C6", "0")}\xB7${sub12("\u03B2", "c")}(t, ${sub12("t", "0")})`) + Nn2(E.norma === "EC2-2023" ? `${sub12("\u03C6", "b")} = ${fmt(flu.phiBasica, 2)}; ${sub12("\u03C6", "d")} = ${fmt(flu.phiSecado, 2)}` : `${sub12("\u03C6", "0")} = ${fmt(flu.phi0, 2)}; ${sub12("\u03B2", "c")} = ${fmt(flu.bc, 3)}`) + art2(N, "fluencia"));
-    if (est2.sigma > 0) {
-      const nl = fluenciaNoLineal(E.norma, flu.phi, est2.sigma, { fck: m.fck, fcmT0: edad.fcm, t0: est2.t0 });
-      fila5(`${sub12("\u03C6", "nl")}`, fmt(nl, 2), F2(`\u03C6<sub>nl</sub> = \u03C6\xB7exp(1.5\xB7(k<sub>\u03C3</sub> \u2212 ${E.norma === "EC2-2023" ? "0.40" : "0.45"}))`) + Nn2(`= ${fmt(nl, 2)}`) + art2(N, "fluencia"));
-    }
-    fila5(`${sub12("E", "c,ef")}${U2("MPa")}`, fmt(ec / (1 + flu.phi), 0), F2(`${sub12("E", "c,ef")} = ${sub12("E", "cm")}/(1 + \u03C6)`) + Nn2(`= ${fmt(ec, 0)}/(1 + ${fmt(flu.phi, 2)}) = ${fmt(ec / (1 + flu.phi), 0)}`) + art2(N, "fluencia"));
-    fila5(`${sub12("\u03B5", "cs")}${U2("\xB710\u207B\u2076")}`, e6(ret.total), F2(`${sub12("\u03B5", "cs")} = ${sub12("\u03B5", "cd")} + ${sub12("\u03B5", "ca")}`) + Nn2(`${e6(ret.secado)} + ${e6(ret.autogena)} = ${e6(ret.total)}`) + art2(N, "retraccion"));
-    fila5(`${sub12("\u03B5", "cd")}${U2("\xB710\u207B\u2076")}`, e6(ret.secado), Nn2(t("rg.cuentaSecado")) + art2(N, "retraccion"));
-    fila5(`${sub12("\u03B5", "ca")}${U2("\xB710\u207B\u2076")}`, e6(ret.autogena), Nn2(t("rg.cuentaAutogena")) + art2(N, "retraccion"));
-    const tarjeta = h("article", { class: "panel tarjeta" }, h("h2", {}, t("rg.valores")), h("p", { class: "sub" }, tF ? `t = ${fmt(tF, 0)} ${t("dias")}` : t("rg.valorFinal")));
-    poner(tarjeta, filasPlegables(tabla(filas), cuentas));
-    poner(res, h("div", { class: "cuerpo" }, dib, tarjeta));
+    pintaTabla();
+    poner(res, h("div", { class: "cuerpo" }, centro, tarjeta));
   }
 
   // src/ui/vistas/secciones.js
@@ -9958,14 +9977,14 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     const area = (pred) => [...geo.barras, ...geo.franjas].filter(pred).reduce((a, b) => a + b.A, 0);
     const cara2 = (c) => (b) => s.armado[b.grupo]?.tipo === "capa" && s.armado[b.grupo].cara === c;
     const fila5 = (etq, As, Amin) => [etq, v(As, "As"), As + 1e-12 >= Amin ? v(Amin, "As") : `<span class="mal">${v(Amin, "As")}</span>`];
-    const art5 = p.norma === "EHE-08" ? "42.3.2" : p.norma === "EC2-2004" ? "AN 9.2.1.1(1)" : "12.2(2)";
+    const art4 = p.norma === "EHE-08" ? "42.3.2" : p.norma === "EC2-2004" ? "AN 9.2.1.1(1)" : "12.2(2)";
     const fct = sub14("f", "ct,m,fl");
     let filas;
     let cuentas;
     if (viga) {
       const dd = p.norma === "EC2-2023";
       const expr = dd ? `${sub14("A", "s,min")} = ${sub14("f", "ct,m")}\xB7W / (z\xB7${sub14("f", "yk")})` : `${sub14("A", "s,min")} = ${fct}\xB7W / (z\xB7${sub14("f", "yd")})`;
-      const cuenta = (etq, W, Amin) => `<span class="f">${expr}</span><span class="n">${etq}: W = ${q4(W)} m\xB3 \xB7 z \u2248 0,8h = ${v(r.z, "long")} \xB7 ${dd ? sub14("f", "ct,m") : fct} = ${fmt(r.fct / 1e3, 2)} MPa \xB7 ${dd ? sub14("f", "yk") : sub14("f", "yd")} = ${fmt(r.f / 1e3, 0)} MPa \u2192 ${v(Amin, "As")}</span><span class="art">${ref3} \xB7 ${art5}</span>`;
+      const cuenta = (etq, W, Amin) => `<span class="f">${expr}</span><span class="n">${etq}: W = ${q4(W)} m\xB3 \xB7 z \u2248 0,8h = ${v(r.z, "long")} \xB7 ${dd ? sub14("f", "ct,m") : fct} = ${fmt(r.fct / 1e3, 2)} MPa \xB7 ${dd ? sub14("f", "yk") : sub14("f", "yd")} = ${fmt(r.f / 1e3, 0)} MPa \u2192 ${v(Amin, "As")}</span><span class="art">${ref3} \xB7 ${art4}</span>`;
       filas = [fila5(`${t("cmin.inf")} <span class="nota">M+</span>`, area(cara2("inf")), r.inf.A), fila5(`${t("cmin.sup")} <span class="nota">M\u2212</span>`, area(cara2("sup")), r.sup.A)];
       cuentas = [cuenta(t("cmin.inf"), r.inf.W, r.inf.A), cuenta(t("cmin.sup"), r.sup.W, r.sup.A)];
     } else {
@@ -11509,7 +11528,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
   }
   function traza(p, d, r, Asreq, rot) {
     const fam = NORMAS[p.norma];
-    const art5 = (a, b, c) => `<span class="art">${fam.ref} \xB7 ${p.norma === "EC2-2004" ? c ?? b : fam.familia === "EHE" ? a : b}</span>`;
+    const art4 = (a, b, c) => `<span class="art">${fam.ref} \xB7 ${p.norma === "EC2-2004" ? c ?? b : fam.familia === "EHE" ? a : b}</span>`;
     const fcd = d.hormigon.fk / d.hormigon.gamma / 1e3;
     const meseta = Math.max(...d.hormigon.comp.map((x) => -x[1])) / 1e3;
     const fyd = d.acero.fk / d.acero.gamma / 1e3;
@@ -11523,23 +11542,23 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     const filas = [
       { id: "mrd", nom: t("r.MRd"), val: q(r.Mu, "M"), cuenta: `<span class="f">${t("f.equilibrio")}</span>
       <span class="n">${sub18("F", "s1")} = ${sub18("A", "s1")}\xB7${sub18("\u03C3", "s1")} = ${q(r.Ainf, "As")} \xD7 ${q(r.sigAinf, "tensionKN")} = ${q(Fs1, "N")}</span>
-      <span class="n">${sub18("F", "c")} = ${q(Fc, "N")} \xB7 ${sub18("F", "s2")} = ${q(Fs2, "N")} \xB7 ${t("f.brazo")} z = ${sub18("M", "Rd")}/${sub18("F", "s1")} = ${q(z, "long")}</span>${art5("art. 42.1", "8.1.1", "6.1")}` },
+      <span class="n">${sub18("F", "c")} = ${q(Fc, "N")} \xB7 ${sub18("F", "s2")} = ${q(Fs2, "N")} \xB7 ${t("f.brazo")} z = ${sub18("M", "Rd")}/${sub18("F", "s1")} = ${q(z, "long")}</span>${art4("art. 42.1", "8.1.1", "6.1")}` },
       { id: "x", nom: t("r.x"), val: q(r.x, "long"), cuenta: `<span class="f">x = ${sub18("\u03B5", "c")} / (${sub18("\u03B5", "c")} + ${sub18("\u03B5", "s1")}) \xB7 d</span>
-      <span class="n">x = ${fmt(ecu * 1e3, 2)} / (${fmt(ecu * 1e3, 2)} + ${fmt(es * 1e3, 2)}) \xD7 ${q(dd, "long")} = ${q(r.x, "long")}</span>${art5("art. 42.1.3", "8.1.1", "6.1")}` },
-      { id: "epsc", nom: t("r.epsc"), val: q(ecu, "def"), cuenta: `<span class="f">${t("f.pivote")}</span><span class="n">${sub18("\u03B5", "c")} = ${q(ecu, "def")} ${t("f.fibraSup")}</span>${art5("art. 39.5", "5.1.6", "3.1.7")}` },
+      <span class="n">x = ${fmt(ecu * 1e3, 2)} / (${fmt(ecu * 1e3, 2)} + ${fmt(es * 1e3, 2)}) \xD7 ${q(dd, "long")} = ${q(r.x, "long")}</span>${art4("art. 42.1.3", "8.1.1", "6.1")}` },
+      { id: "epsc", nom: t("r.epsc"), val: q(ecu, "def"), cuenta: `<span class="f">${t("f.pivote")}</span><span class="n">${sub18("\u03B5", "c")} = ${q(ecu, "def")} ${t("f.fibraSup")}</span>${art4("art. 39.5", "5.1.6", "3.1.7")}` },
       { id: "g0", nom: t("r.ss1"), val: q(r.sigAinf, "tensionKN"), cuenta: `<span class="f">${sub18("\u03C3", "s1")} = min(${sub18("E", "s")}\xB7${sub18("\u03B5", "s1")}; ${sub18("f", "yd")}), ${sub18("f", "yd")} = ${sub18("f", "yk")}/${sub18("\u03B3", "S")}</span>
-      <span class="n">${sub18("\u03B5", "s1")} = ${q(es, "def")} \xB7 ${sub18("f", "yd")} = ${fmt(d.acero.fk / 1e3, 0)} / ${fmt(d.acero.gamma, 2)} = ${q(fyd, "tension")}</span>${art5("art. 38.4", "5.2.4", "3.2.7")}` },
+      <span class="n">${sub18("\u03B5", "s1")} = ${q(es, "def")} \xB7 ${sub18("f", "yd")} = ${fmt(d.acero.fk / 1e3, 0)} / ${fmt(d.acero.gamma, 2)} = ${q(fyd, "tension")}</span>${art4("art. 38.4", "5.2.4", "3.2.7")}` },
       { id: "fcd", nom: t("r.fcd"), val: q(meseta, "tension"), cuenta: `<span class="f">${t("f.meseta")}</span>
-      <span class="n">${sub18("f", "ck")}/${sub18("\u03B3", "C")} = ${fmt(d.hormigon.fk / 1e3, 0)} / ${fmt(d.hormigon.gamma, 2)} = ${q(fcd, "tension")} \u2192 ${q(meseta, "tension")}</span>${art5("art. 39.4", "5.1.6", "3.1.6")}` },
+      <span class="n">${sub18("f", "ck")}/${sub18("\u03B3", "C")} = ${fmt(d.hormigon.fk / 1e3, 0)} / ${fmt(d.hormigon.gamma, 2)} = ${q(fcd, "tension")} \u2192 ${q(meseta, "tension")}</span>${art4("art. 39.4", "5.1.6", "3.1.6")}` },
       { id: "amin", nom: t("r.amin"), val: `${q(r.cuantias.Amin, "As", { ud: false })} / ${q(r.Ainf, "As")}`, cuenta: `<span class="f">${t("f.minima")}</span>
-      <span class="n">${q(r.Ainf, "As")} ${r.Ainf >= r.cuantias.Amin - 1e-12 ? "\u2265" : "<"} ${q(r.cuantias.Amin, "As")}${r.cuantias.regla ? ` \xB7 ${r.cuantias.regla}` : ""}</span>${art5("art. 42.3", "12.2", "AN 9.2.1.1")}` }
+      <span class="n">${q(r.Ainf, "As")} ${r.Ainf >= r.cuantias.Amin - 1e-12 ? "\u2265" : "<"} ${q(r.cuantias.Amin, "As")}${r.cuantias.regla ? ` \xB7 ${r.cuantias.regla}` : ""}</span>${art4("art. 42.3", "12.2", "AN 9.2.1.1")}` }
     ];
     filas.push({ id: "rotura", nom: t("r.rotura"), val: t(`rot.${rot.clase}`), cuenta: `<span class="f">${t("f.rotura")}</span>
       <span class="n">\u03B4 \u2265 ${fmt(rot.k1, 2)} + ${fmt(rot.k2, 2)}\xB7x/d (k<sub>2</sub> = 1,25\xB7(0,6 + 0,0014/\u03B5<sub>cu2</sub>), \u03B5<sub>cu2</sub> = ${fmt(rot.ecu * 1e3, 1)} \u2030) \u2192 r = 1 \u2212 \u03B4 = ${fmt(rot.redMax * 100, 1)} % con x/d = ${fmt(rot.xd, 3)}</span>
       <span class="n">${t("rot.ductil")}: r \u2265 20 % \u2192 x/d \u2264 ${fmt(rot.umbralDuctil, 3)} \xB7 ${t("rot.media")}: 0 &lt; r &lt; 20 % \u2192 x/d \u2264 ${fmt(rot.umbralMedia, 3)} \xB7 ${t("rot.fragil")}: x/d &gt; ${fmt(rot.umbralMedia, 3)} ${t("f.o")} x/d &gt; x/d<sub>lim</sub> = ${fmt(rot.xdLim, 3)} (${t("f.sobrearmada")})</span>
       <span class="n">${t("f.rotEHE")}</span><span class="art">${rot.ref}</span>` });
-    if (r.Mlim !== void 0) filas.push({ id: "mlim", nom: t("r.mlim"), val: q(r.Mlim, "M"), cuenta: `<span class="f">${t("f.mlim")}</span>${art5("art. 42.1", "8.1.1", "6.1")}` });
-    if (est4.modo === "comprobar" && Number.isFinite(Asreq)) filas.push({ id: "asnec", nom: t("r.asreq"), val: q(Asreq, "As"), cuenta: `<span class="f">${t("f.estricta")}</span><span class="n">${t("dispuesta")} ${q(r.Ainf, "As")} \xB7 ${t("margen")} ${q(r.Ainf - Asreq, "As")}</span>${art5("art. 42.1", "8.1.1", "6.1")}` });
+    if (r.Mlim !== void 0) filas.push({ id: "mlim", nom: t("r.mlim"), val: q(r.Mlim, "M"), cuenta: `<span class="f">${t("f.mlim")}</span>${art4("art. 42.1", "8.1.1", "6.1")}` });
+    if (est4.modo === "comprobar" && Number.isFinite(Asreq)) filas.push({ id: "asnec", nom: t("r.asreq"), val: q(Asreq, "As"), cuenta: `<span class="f">${t("f.estricta")}</span><span class="n">${t("dispuesta")} ${q(r.Ainf, "As")} \xB7 ${t("margen")} ${q(r.Ainf - Asreq, "As")}</span>${art4("art. 42.1", "8.1.1", "6.1")}` });
     const cont = h("div", { class: "traza" }, ...filas.map((f) => {
       const det = h(
         "details",
@@ -11993,12 +12012,12 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
   }
   function traza2(p, d, dH, gmin) {
     const fam = NORMAS[p.norma];
-    const art5 = (a, b, c) => `<span class="art">${fam.ref} \xB7 ${p.norma === "EC2-2004" ? c ?? b : fam.familia === "EHE" ? a : b}</span>`;
+    const art4 = (a, b, c) => `<span class="art">${fam.ref} \xB7 ${p.norma === "EC2-2004" ? c ?? b : fam.familia === "EHE" ? a : b}</span>`;
     const filas = [
       { id: "coef", nom: t("fcr.coefSeg"), val: sigla(gmin), cuenta: `<span class="f">${t("fcr.f.rayo")}</span>` },
       { id: "mrd", nom: t("fcr.contorno"), val: `${fmt(d.pos.length + d.neg.length, 0)} ${t("fcr.puntosCont")}`, cuenta: `<span class="f">${t("fcr.f.contorno")}</span>
-      <span class="n">${t("fcr.f.ref", q(d.yref, "long"))}</span>${art5("art. 42.1", "8.1.1", "6.1")}` },
-      { id: "nrd", nom: sub19("N", "Rd"), val: q(d.Ncomp, "N"), cuenta: `<span class="f">${t("fcr.f.nrd")}</span>${art5("art. 42.1", "8.1.1", "6.1")}` },
+      <span class="n">${t("fcr.f.ref", q(d.yref, "long"))}</span>${art4("art. 42.1", "8.1.1", "6.1")}` },
+      { id: "nrd", nom: sub19("N", "Rd"), val: q(d.Ncomp, "N"), cuenta: `<span class="f">${t("fcr.f.nrd")}</span>${art4("art. 42.1", "8.1.1", "6.1")}` },
       { id: "env", nom: t("fcr.hormigon"), val: q(dH.Ncomp, "N"), cuenta: `<span class="f">${t("fcr.f.env")}</span>` }
     ];
     return h("div", { class: "traza" }, ...filas.map((f) => {
@@ -12128,7 +12147,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
   });
 
   // src/norma/fuego.js
-  var TIEMPOS = [30, 60, 90, 120, 180, 240];
+  var TIEMPOS2 = [30, 60, 90, 120, 180, 240];
   var ELEMENTOS = ["pilar", "muro", "viga", "losa"];
   var ETA_PILAR = [0.2, 0.5, 0.7];
   var ETA_MURO = [0.35, 0.7];
@@ -12247,7 +12266,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
   var col = (lista) => lista.map((x) => [[Array.isArray(x) ? x : [x]]]);
   function fuego(e2) {
     const ehe = e2.norma === "EHE-08" || e2.norma === "EHE-98";
-    const k = TIEMPOS.indexOf(e2.R);
+    const k = TIEMPOS2.indexOf(e2.R);
     if (k < 0) throw new Error(`Tiempo no tabulado: R ${e2.R}`);
     const caras2 = e2.caras === "dos";
     const notas4 = [];
@@ -12354,7 +12373,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
       sinCaras = true;
       notas4.push("f.pilar.eheCaras");
     }
-    const out = filas.map((f, i) => ({ R: TIEMPOS[i], cel: f, activa: i === k }));
+    const out = filas.map((f, i) => ({ R: TIEMPOS2[i], cel: f, activa: i === k }));
     const ceTabla = tabla3;
     if (!ehe) {
       articulo2 = articulo2.replace("Anejo 20, ", "");
@@ -12516,7 +12535,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
         "div",
         { class: "fu-campo" },
         h("span", { class: "etq-grupo" }, t("fu.tiempo")),
-        segmentado({ opciones: TIEMPOS.map((r) => [r, `R ${r}`]), valor: D.R, ancho: true, etiqueta: t("fu.tiempo"), onCambio: (v2) => {
+        segmentado({ opciones: TIEMPOS2.map((r) => [r, `R ${r}`]), valor: D.R, ancho: true, etiqueta: t("fu.tiempo"), onCambio: (v2) => {
           D.R = v2;
           cambio();
         } })
@@ -12571,7 +12590,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     const D = estado(p);
     const r = fuego(entrada(p, D));
     const ref3 = r.fuente === "EHE-08" ? "EHE-08" : "UNE-EN 1992-1-2";
-    const art5 = `${ref3} \xB7 ${r.articulo} \xB7 ${t("fu.tabla")} ${r.tabla}`;
+    const art4 = `${ref3} \xB7 ${r.articulo} \xB7 ${t("fu.tabla")} ${r.tabla}`;
     const sinValor = r.opciones.length === 0;
     const o = r.opciones[0];
     const etqD = sub21(r.dimEtq, "min");
@@ -12580,7 +12599,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
       "div",
       { class: `veredicto sin-barra${sinValor ? " atencion" : ""}` },
       h("div", { class: "ratio" }, h("span", { class: "etq", html: o?.a == null ? `${t("fu.minimo")} ${etqD}` : `${etqD} / ${sub21("a", "min")}` }), h("span", { class: "v", html: valor })),
-      h("div", { class: "medidor" }, h("div", { class: "ecu", html: sinValor ? t("fu.sinValor") : `${r.crit} ${D.R} \xB7 ${r.opciones.length > 1 ? t("fu.opciones", r.opciones.length) : ""}<span class="art">${art5}</span>` })),
+      h("div", { class: "medidor" }, h("div", { class: "ecu", html: sinValor ? t("fu.sinValor") : `${r.crit} ${D.R} \xB7 ${r.opciones.length > 1 ? t("fu.opciones", r.opciones.length) : ""}<span class="art">${art4}</span>` })),
       h("span", {}, "")
     ));
     const centro = h("article", { class: "panel tarjeta" });
@@ -12596,7 +12615,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     poner(
       centro,
       h("h2", { html: t("fu.tablaTitulo") }),
-      h("p", { class: "nota", html: t("fu.tablaSub", art5) }),
+      h("p", { class: "nota", html: t("fu.tablaSub", art4) }),
       tb,
       h("p", { class: "nota", html: t("fu.unidades") })
     );
@@ -12883,7 +12902,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
       res.append(h("div", { class: "cuerpo" }, centro, dcha));
       return;
     }
-    const art5 = articulo(p, D);
+    const art4 = articulo(p, D);
     const ehe = idNorma(p) === "EHE-08";
     const esf = comp ? t("an.compresion") : t("an.traccion");
     const cab = h(
@@ -12949,7 +12968,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
         h("h2", { class: "an-h", html: `${t("m.anclaje")} <span class="an-mat">${r.hor.nombre} ${r.ace.nombre}</span>` }),
         h("button", { type: "button", class: "tecla", id: "an-copiar", title: t("graf.copiarTablaTit"), onclick: copiar }, t("graf.copiar"))
       ),
-      h("p", { class: "nota", html: `${t("an.titulo")}. ${t("an.sub", art5)}` }),
+      h("p", { class: "nota", html: `${t("an.titulo")}. ${t("an.sub", art4)}` }),
       h("div", { class: "tabla-scroll" }, tablaEl),
       h("p", { class: "fu-leyenda", html: t("an.leyenda") }),
       h("p", { class: "nota an-ficha", id: "an-ficha", html: ficha })
@@ -14069,7 +14088,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
   };
   var fila2 = (id, nom, val, cuenta) => ({ id, nom, val, cuenta });
   var refNorma = "EHE-08";
-  var art3 = (a) => `<span class="art">${refNorma} \xB7 ${a}</span>`;
+  var art2 = (a) => `<span class="art">${refNorma} \xB7 ${a}</span>`;
   function resultados12(ctx2, res) {
     resultadosCortante(ctx2, res);
     rotulaSeccion(res, nuc(ctx2.p) ? ctx2.p.secciones[est6.i]?.nombre : null);
@@ -14189,7 +14208,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
         "vu1",
         t("cor.ec.r.vmax"),
         q(Vmax, "N"),
-        `<span class="f">${t("cor.ec.f.vmax")}</span><span class="n">${t("cor.ec.f.nu1")}</span><span class="n">${nu == null ? "" : `\u03BD<sub>1</sub> = ${n13(nu, 3)} \xB7 `}\u03B1<sub>cw</sub> = 1 \xB7 b<sub>w</sub> = ${n13(P.b0, 0)} \xB7 z = ${n13(P.z, 0)} mm \xB7 f<sub>cd</sub> = ${n13(P.fcd, 0)} MPa \xB7 (cotg \u03B8 + cotg \u03B1)/(1 + cotg\xB2\u03B8) = ${n13((r.cotTheta + cotA) / (1 + r.cotTheta ** 2), 3)}</span>${art3("6.2.3(3), AN")}`
+        `<span class="f">${t("cor.ec.f.vmax")}</span><span class="n">${t("cor.ec.f.nu1")}</span><span class="n">${nu == null ? "" : `\u03BD<sub>1</sub> = ${n13(nu, 3)} \xB7 `}\u03B1<sub>cw</sub> = 1 \xB7 b<sub>w</sub> = ${n13(P.b0, 0)} \xB7 z = ${n13(P.z, 0)} mm \xB7 f<sub>cd</sub> = ${n13(P.fcd, 0)} MPa \xB7 (cotg \u03B8 + cotg \u03B1)/(1 + cotg\xB2\u03B8) = ${n13((r.cotTheta + cotA) / (1 + r.cotTheta ** 2), 3)}</span>${art2("6.2.3(3), AN")}`
       ));
     }
     if (comp && r.sinArmadura && r.VmaxRef != null) {
@@ -14197,7 +14216,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
         "vlim",
         t("cor.ec.r.vlim"),
         q(r.VmaxRef, "N"),
-        `<span class="f">${t("cor.ec.f.vlim")}</span><span class="n">b<sub>w</sub> = ${n13(P.b0, 0)} \xB7 d = ${n13(P.d, 0)} mm \xB7 f<sub>cd</sub> = ${n13(P.fcd, 0)} MPa \xB7 \u03BD = ${n13(0.6 * (1 - P.fck / 250), 3)}</span>${art3("6.2.2(6)")}`
+        `<span class="f">${t("cor.ec.f.vlim")}</span><span class="n">b<sub>w</sub> = ${n13(P.b0, 0)} \xB7 d = ${n13(P.d, 0)} mm \xB7 f<sub>cd</sub> = ${n13(P.fcd, 0)} MPa \xB7 \u03BD = ${n13(0.6 * (1 - P.fck / 250), 3)}</span>${art2("6.2.2(6)")}`
       ));
     }
     if (comp && r.sinArmadura) {
@@ -14205,7 +14224,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
         "vcu",
         t("cor.ec.r.vc"),
         q(r.Vu, "N"),
-        `<span class="f">${t("cor.ec.f.vc")}</span><span class="n">${t("cor.ec.f.vcPar")}</span><span class="n">k = ${n13(P.k, 3)} \xB7 \u03C1<sub>l</sub> = ${n13(P.rho * 1e3, 2)} \u2030 \xB7 \u03C3<sub>cp</sub> = ${n13(P.sigCpLim)} MPa \xB7 \u03BD<sub>m\xEDn</sub> = ${n13(r.nuMin, 3)} MPa</span><span class="n">${t("cor.v.concMin", n13(r.VRdcConc, 0), n13(r.VRdcMin, 0))}</span>${art3("6.2.2(1), AN")}`
+        `<span class="f">${t("cor.ec.f.vc")}</span><span class="n">${t("cor.ec.f.vcPar")}</span><span class="n">k = ${n13(P.k, 3)} \xB7 \u03C1<sub>l</sub> = ${n13(P.rho * 1e3, 2)} \u2030 \xB7 \u03C3<sub>cp</sub> = ${n13(P.sigCpLim)} MPa \xB7 \u03BD<sub>m\xEDn</sub> = ${n13(r.nuMin, 3)} MPa</span><span class="n">${t("cor.v.concMin", n13(r.VRdcConc, 0), n13(r.VRdcMin, 0))}</span>${art2("6.2.2(1), AN")}`
       ));
     }
     if (comp && !r.sinArmadura) {
@@ -14213,13 +14232,13 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
         "vsu",
         t("cor.ec.r.vs"),
         q(r.VRds, "N"),
-        `<span class="f">${t("cor.ec.f.vs")}</span><span class="n">z = ${n13(P.z, 0)} mm \xB7 A<sub>sw</sub>/s = ${n13(x.AswS, 3)} mm\xB2/mm \xB7 f<sub>ywd</sub> = ${n13(P.fyd, 0)} MPa</span>${art3("6.2.3(3), (4)")}`
+        `<span class="f">${t("cor.ec.f.vs")}</span><span class="n">z = ${n13(P.z, 0)} mm \xB7 A<sub>sw</sub>/s = ${n13(x.AswS, 3)} mm\xB2/mm \xB7 f<sub>ywd</sub> = ${n13(P.fyd, 0)} MPa</span>${art2("6.2.3(3), (4)")}`
       ));
       f.push(fila2(
         "min",
         t("cor.r.min"),
         r.minima.ok ? t("cor.ok") : t("cor.noOk"),
-        `<span class="f">${t("cor.ec.f.min")}</span><span class="n">${t("cor.r.minVal", n13(x.AswS * 1e3, 0), n13(r.minima.AswSMin * 1e3, 0))}</span>${art3("AN 9.2.2(5)")}`
+        `<span class="f">${t("cor.ec.f.min")}</span><span class="n">${t("cor.r.minVal", n13(x.AswS * 1e3, 0), n13(r.minima.AswSMin * 1e3, 0))}</span>${art2("AN 9.2.2(5)")}`
       ));
     }
     if (comp) {
@@ -14227,18 +14246,18 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
         "sep",
         t("cor.r.sep"),
         r.sinArmadura ? "\u2014" : `${fmt(est6.s, 0)} \u2264 ${fmt(r.sep, 0)} mm`,
-        `<span class="f">${t("cor.ec.f.sep")}</span><span class="n">V<sub>Ed</sub> = ${n13(est6.VEd, 0)} kN \u2192 s<sub>l,m\xE1x</sub> \u2264 ${n13(r.sep, 0)} mm \xB7 ${t("cor.avs.trans", n13(r.sepTrans, 0))}</span>${art3("AN 9.2.2(6), (8)")}`
+        `<span class="f">${t("cor.ec.f.sep")}</span><span class="n">V<sub>Ed</sub> = ${n13(est6.VEd, 0)} kN \u2192 s<sub>l,m\xE1x</sub> \u2264 ${n13(r.sep, 0)} mm \xB7 ${t("cor.avs.trans", n13(r.sepTrans, 0))}</span>${art2("AN 9.2.2(6), (8)")}`
       ));
       f.push(fila2(
         "long",
         t("cor.ec.r.long"),
         r.long.dT == null ? `a<sub>l</sub> ${fmt(r.long.sd, 0)} mm` : `\u0394F<sub>td</sub> ${q(r.long.dT, "N")}`,
-        `<span class="f">${t("cor.ec.f.long")}</span><span class="n">${r.long.dT == null ? "" : `\u0394F<sub>td</sub> = ${n13(r.long.dT, 0)} kN \xB7 `}a<sub>l</sub> = ${n13(r.long.sd, 0)} mm</span>${art3("6.2.3(7); 9.2.1.3(2)")}`
+        `<span class="f">${t("cor.ec.f.long")}</span><span class="n">${r.long.dT == null ? "" : `\u0394F<sub>td</sub> = ${n13(r.long.dT, 0)} kN \xB7 `}a<sub>l</sub> = ${n13(r.long.sd, 0)} mm</span>${art2("6.2.3(7); 9.2.1.3(2)")}`
       ));
     } else if (r.caso !== "biela") {
-      f.push(fila2("min", t("cor.r.min"), q(r.AswSMin, "AswS"), `<span class="f">${t("cor.ec.f.min")}</span><span class="n">${n13(r.AswSMin * 1e3, 0)} mm\xB2/m</span>${art3("AN 9.2.2(5)")}`));
-      f.push(fila2("sep", t("cor.r.sep"), `\u2264 ${fmt(r.sMax, 0)} mm`, `<span class="f">${t("cor.ec.f.sep")}</span>${art3("AN 9.2.2(6), (8)")}`));
-      f.push(fila2("long", t("cor.ec.r.long"), `\u0394F<sub>td</sub> ${q(r.long.dT, "N")}`, `<span class="f">${t("cor.ec.f.long")}</span><span class="n">\u0394F<sub>td</sub> = ${n13(r.long.dT, 0)} kN \xB7 a<sub>l</sub> = ${n13(r.long.sd, 0)} mm</span>${art3("6.2.3(7); 9.2.1.3(2)")}`));
+      f.push(fila2("min", t("cor.r.min"), q(r.AswSMin, "AswS"), `<span class="f">${t("cor.ec.f.min")}</span><span class="n">${n13(r.AswSMin * 1e3, 0)} mm\xB2/m</span>${art2("AN 9.2.2(5)")}`));
+      f.push(fila2("sep", t("cor.r.sep"), `\u2264 ${fmt(r.sMax, 0)} mm`, `<span class="f">${t("cor.ec.f.sep")}</span>${art2("AN 9.2.2(6), (8)")}`));
+      f.push(fila2("long", t("cor.ec.r.long"), `\u0394F<sub>td</sub> ${q(r.long.dT, "N")}`, `<span class="f">${t("cor.ec.f.long")}</span><span class="n">\u0394F<sub>td</sub> = ${n13(r.long.dT, 0)} kN \xB7 a<sub>l</sub> = ${n13(r.long.sd, 0)} mm</span>${art2("6.2.3(7); 9.2.1.3(2)")}`));
     }
     return f;
   }
@@ -14252,11 +14271,11 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
         "vu1",
         t("cor.ec.r.vmax"),
         q(comp ? r.VRdMax : r.Vu1, "N"),
-        `<span class="f">${t("cor.e3.f.vmax")}</span><span class="n">${t("cor.e3.f.nu")}</span><span class="n">\u03BD = 0,5 \xB7 b<sub>w</sub> = ${n13(P.b0, 0)} \xB7 z = ${n13(P.z, 0)} mm \xB7 k<sub>tc</sub> = ${P.ktc != null ? P.ktc.toFixed(2) : "\u2014"} \xB7 f<sub>cd</sub> = ${n13(P.fcd, 1)} MPa \xB7 (cotg \u03B8 + cotg \u03B1)/(1 + cotg\xB2\u03B8) = ${n13((r.cotTheta + cotA) / (1 + r.cotTheta ** 2), 3)}</span>${art3("8.2.3(5), (6)")}`
+        `<span class="f">${t("cor.e3.f.vmax")}</span><span class="n">${t("cor.e3.f.nu")}</span><span class="n">\u03BD = 0,5 \xB7 b<sub>w</sub> = ${n13(P.b0, 0)} \xB7 z = ${n13(P.z, 0)} mm \xB7 k<sub>tc</sub> = ${P.ktc != null ? P.ktc.toFixed(2) : "\u2014"} \xB7 f<sub>cd</sub> = ${n13(P.fcd, 1)} MPa \xB7 (cotg \u03B8 + cotg \u03B1)/(1 + cotg\xB2\u03B8) = ${n13((r.cotTheta + cotA) / (1 + r.cotTheta ** 2), 3)}</span>${art2("8.2.3(5), (6)")}`
       ));
     }
     if (comp && r.sinArmadura && r.VmaxRef != null) {
-      f.push(fila2("vlim", t("cor.ec.r.vlim"), q(r.VmaxRef, "N"), `<span class="f">${t("cor.e3.f.vlim")}</span>${art3("8.2.3(5), (6)")}`));
+      f.push(fila2("vlim", t("cor.ec.r.vlim"), q(r.VmaxRef, "N"), `<span class="f">${t("cor.e3.f.vlim")}</span>${art2("8.2.3(5), (6)")}`));
     }
     const dsin = comp && r.sinArmadura ? r : !comp ? VRdcDe(r) : null;
     if (dsin) {
@@ -14264,7 +14283,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
         "vcu",
         t("cor.ec.r.vc"),
         q(dsin.Vu, "N"),
-        `<span class="f">${t("cor.e3.f.vc")}</span><span class="n">${t("cor.e3.f.vcPar")}</span><span class="n">\u03C1<sub>l</sub> = ${n13(P.rho * 1e3, 2)} \u2030 \xB7 d<sub>dg</sub> = ${n13(P.ddg, 0)} mm \xB7 \u03B3<sub>V</sub> = ${n13(P.gv, 0)} \xB7 d = ${n13(P.d, 0)}${dsin.efecto ? ` \xB7 a<sub>cs</sub> = ${n13(dsin.acs, 0)} mm \xB7 a<sub>v</sub> = ${n13(dsin.av, 0)} mm \xB7 k<sub>vp</sub> = ${n13(dsin.kvp, 2)} \u2192 d<sub>ef</sub> = ${n13(dsin.dEf, 0)} mm` : ""}</span><span class="n">\u03C4<sub>Rd,c</sub> = ${n13(dsin.tauC, 3)} MPa \xB7 \u03C4<sub>Rdc,m\xEDn</sub> = ${n13(dsin.tauMin, 3)} MPa</span><span class="n">${t("cor.v.concMin", n13(dsin.VRdcConc, 0), n13(dsin.VRdcMin, 0))}</span>${art3("8.2.1(4), 8.2.2(2)-(4)")}`
+        `<span class="f">${t("cor.e3.f.vc")}</span><span class="n">${t("cor.e3.f.vcPar")}</span><span class="n">\u03C1<sub>l</sub> = ${n13(P.rho * 1e3, 2)} \u2030 \xB7 d<sub>dg</sub> = ${n13(P.ddg, 0)} mm \xB7 \u03B3<sub>V</sub> = ${n13(P.gv, 0)} \xB7 d = ${n13(P.d, 0)}${dsin.efecto ? ` \xB7 a<sub>cs</sub> = ${n13(dsin.acs, 0)} mm \xB7 a<sub>v</sub> = ${n13(dsin.av, 0)} mm \xB7 k<sub>vp</sub> = ${n13(dsin.kvp, 2)} \u2192 d<sub>ef</sub> = ${n13(dsin.dEf, 0)} mm` : ""}</span><span class="n">\u03C4<sub>Rd,c</sub> = ${n13(dsin.tauC, 3)} MPa \xB7 \u03C4<sub>Rdc,m\xEDn</sub> = ${n13(dsin.tauMin, 3)} MPa</span><span class="n">${t("cor.v.concMin", n13(dsin.VRdcConc, 0), n13(dsin.VRdcMin, 0))}</span>${art2("8.2.1(4), 8.2.2(2)-(4)")}`
       ));
     }
     if (comp && !r.sinArmadura) {
@@ -14272,13 +14291,13 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
         "vsu",
         t("cor.ec.r.vs"),
         q(r.VRds, "N"),
-        `<span class="f">${t("cor.e3.f.vs")}</span><span class="n">z = ${n13(P.z, 0)} mm \xB7 A<sub>sw</sub>/s = ${n13(x.AswS, 3)} mm\xB2/mm${r.factorCirc < 1 ? ` \xD7 b<sub>w</sub>/D<sub>h</sub> (${n13(r.factorCirc, 2)})` : ""} \xB7 f<sub>ywd</sub> = ${n13(P.fyd, 0)} MPa</span>${art3("8.2.3(5), (13)")}`
+        `<span class="f">${t("cor.e3.f.vs")}</span><span class="n">z = ${n13(P.z, 0)} mm \xB7 A<sub>sw</sub>/s = ${n13(x.AswS, 3)} mm\xB2/mm${r.factorCirc < 1 ? ` \xD7 b<sub>w</sub>/D<sub>h</sub> (${n13(r.factorCirc, 2)})` : ""} \xB7 f<sub>ywd</sub> = ${n13(P.fyd, 0)} MPa</span>${art2("8.2.3(5), (13)")}`
       ));
       f.push(fila2(
         "min",
         t("cor.r.min"),
         r.minima.ok ? t("cor.ok") : t("cor.noOk"),
-        `<span class="f">${t("cor.e3.f.min")}</span><span class="n">\u03C1<sub>w,m\xEDn</sub> = ${n13(r.minima.rhoWMin * 1e3, 2)} \u2030 (${t("cor.e3.clase", P.ductilidad)}) \xB7 ${t("cor.r.minVal", n13(r.AswEf * 1e3, 0), n13(r.minima.AswSMin * 1e3, 0))}</span>${art3("12.2(4)")}`
+        `<span class="f">${t("cor.e3.f.min")}</span><span class="n">\u03C1<sub>w,m\xEDn</sub> = ${n13(r.minima.rhoWMin * 1e3, 2)} \u2030 (${t("cor.e3.clase", P.ductilidad)}) \xB7 ${t("cor.r.minVal", n13(r.AswEf * 1e3, 0), n13(r.minima.AswSMin * 1e3, 0))}</span>${art2("12.2(4)")}`
       ));
     }
     if (comp) {
@@ -14286,12 +14305,12 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
         "sep",
         t("cor.r.sep"),
         r.sinArmadura ? "\u2014" : `${fmt(est6.s, 0)} \u2264 ${fmt(r.sep, 0)} mm`,
-        `<span class="f">${t("cor.e3.f.sep")}</span><span class="n">s<sub>l,m\xE1x</sub> \u2264 ${n13(r.sep, 0)} mm \xB7 ${t("cor.avs.trans", n13(r.sepTrans, 0))}</span>${art3("Tabla 12.1")}`
+        `<span class="f">${t("cor.e3.f.sep")}</span><span class="n">s<sub>l,m\xE1x</sub> \u2264 ${n13(r.sep, 0)} mm \xB7 ${t("cor.avs.trans", n13(r.sepTrans, 0))}</span>${art2("Tabla 12.1")}`
       ));
       f.push(longitudinal23(r));
     } else if (r.caso !== "biela") {
-      f.push(fila2("min", t("cor.r.min"), q(r.AswSMin, "AswS"), `<span class="f">${t("cor.e3.f.min")}</span><span class="n">${n13(r.AswSMin * 1e3, 0)} mm\xB2/m</span>${art3("12.2(4)")}`));
-      f.push(fila2("sep", t("cor.r.sep"), `\u2264 ${fmt(r.sMax, 0)} mm`, `<span class="f">${t("cor.e3.f.sep")}</span>${art3("Tabla 12.1")}`));
+      f.push(fila2("min", t("cor.r.min"), q(r.AswSMin, "AswS"), `<span class="f">${t("cor.e3.f.min")}</span><span class="n">${n13(r.AswSMin * 1e3, 0)} mm\xB2/m</span>${art2("12.2(4)")}`));
+      f.push(fila2("sep", t("cor.r.sep"), `\u2264 ${fmt(r.sMax, 0)} mm`, `<span class="f">${t("cor.e3.f.sep")}</span>${art2("Tabla 12.1")}`));
       f.push(longitudinal23(r));
     }
     return f;
@@ -14302,7 +14321,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     const l = r.long;
     const val = l.dT == null ? `a<sub>l</sub> ${fmt(l.sd, 0)} mm` : `\u0394F<sub>td</sub> ${q(l.dT, "N")}`;
     const cuenta = `${l.dT == null ? "" : `N<sub>Vd</sub> = ${n13(l.NVd, 0)} kN \u2192 \u0394F<sub>td</sub> = N<sub>Vd</sub>/2 = ${n13(l.dT, 0)} kN \xB7 `}${l.Ftd != null ? `F<sub>td</sub> = ${n13(l.Ftd, 0)} kN \xB7 ` : ""}a<sub>l</sub> = ${n13(l.sd, 0)} mm`;
-    return fila2("long", t("cor.ec.r.long"), val, `<span class="f">${t("cor.e3.f.long")}</span><span class="n">${cuenta}</span>${art3("8.2.3(8); 12.3.2(1)")}`);
+    return fila2("long", t("cor.ec.r.long"), val, `<span class="f">${t("cor.e3.f.long")}</span><span class="n">${cuenta}</span>${art2("8.2.3(8); 12.3.2(1)")}`);
   }
   function trazas(p, r, x, comp, ef) {
     if (r.norma === "EC2-2004") return trazasEC2(r, x, comp);
@@ -14314,51 +14333,51 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
       "vu1",
       t("cor.r.Vu1"),
       q(r.Vu1, "N"),
-      `<span class="f">${t("cor.f.Vu1")}</span><span class="n">${t("cor.f.f1cd", P.fck)} \u2192 ${n13(P.f1cd)} MPa</span><span class="n">${t("cor.f.K")}</span><span class="n">\u03C3'<sub>cd</sub> = (${n13(P.NEd, 0)}\xB710\xB3 \u2212 ${n13(P.Asc, 0)}\xB7${n13(P.fyd, 0)}) / ${n13(x.Ac, 0)} = ${n13(P.sigCd)} MPa \u2192 K = ${n13(r.K, 3)}</span><span class="n">${n13(r.K, 3)} \xD7 ${n13(P.f1cd)} \xD7 ${n13(P.b0, 0)} \xD7 ${n13(P.d, 0)} \xD7 ${n13((r.cotTheta + (r.alfa >= 90 ? 0 : 1 / Math.tan(r.alfa * Math.PI / 180))) / (1 + r.cotTheta ** 2), 3)} = ${q(r.Vu1, "N")}</span>${art3("44.2.3.1")}`
+      `<span class="f">${t("cor.f.Vu1")}</span><span class="n">${t("cor.f.f1cd", P.fck)} \u2192 ${n13(P.f1cd)} MPa</span><span class="n">${t("cor.f.K")}</span><span class="n">\u03C3'<sub>cd</sub> = (${n13(P.NEd, 0)}\xB710\xB3 \u2212 ${n13(P.Asc, 0)}\xB7${n13(P.fyd, 0)}) / ${n13(x.Ac, 0)} = ${n13(P.sigCd)} MPa \u2192 K = ${n13(r.K, 3)}</span><span class="n">${n13(r.K, 3)} \xD7 ${n13(P.f1cd)} \xD7 ${n13(P.b0, 0)} \xD7 ${n13(P.d, 0)} \xD7 ${n13((r.cotTheta + (r.alfa >= 90 ? 0 : 1 / Math.tan(r.alfa * Math.PI / 180))) / (1 + r.cotTheta ** 2), 3)} = ${q(r.Vu1, "N")}</span>${art2("44.2.3.1")}`
     ));
     if (comp) {
       f.push(fila2(
         "vcu",
         r.sinArmadura ? t("cor.r.Vu2") : t("cor.r.Vcu"),
         q(r.Vcu, "N"),
-        `<span class="f">${r.sinArmadura ? t("cor.f.Vu2sin") : t("cor.f.Vcu")}</span><span class="n">${t("cor.f.xi")}</span><span class="n">\u03BE = ${n13(P.xi, 3)} \xB7 \u03C1<sub>l</sub> = ${n13(P.rho * 1e3, 2)} \u2030 \xB7 f<sub>cv</sub> = ${n13(r.sinArmadura ? Math.min(P.fck, 60) : P.fck, 0)} MPa \xB7 \u03C3'<sub>cd</sub> = ${n13(P.sigCdLim)} MPa</span><span class="n">${t("cor.v.concMin", n13(r.VcuConc, 0), n13(r.VcuMin, 0))}</span>` + (r.sinArmadura ? "" : `<span class="n">${t("cor.f.beta")}</span><span class="n">cotg \u03B8<sub>e</sub> = ${n13(r.cotE, 3)} (\u03B8<sub>e</sub> = ${n13(r.thetaE, 0)}\xB0) \u2192 \u03B2 = ${n13(r.beta, 3)}</span><span class="n">${t("cor.f.thetaE")}</span>`) + art3(r.sinArmadura ? "44.2.3.2.1.2" : "44.2.3.2.2")
+        `<span class="f">${r.sinArmadura ? t("cor.f.Vu2sin") : t("cor.f.Vcu")}</span><span class="n">${t("cor.f.xi")}</span><span class="n">\u03BE = ${n13(P.xi, 3)} \xB7 \u03C1<sub>l</sub> = ${n13(P.rho * 1e3, 2)} \u2030 \xB7 f<sub>cv</sub> = ${n13(r.sinArmadura ? Math.min(P.fck, 60) : P.fck, 0)} MPa \xB7 \u03C3'<sub>cd</sub> = ${n13(P.sigCdLim)} MPa</span><span class="n">${t("cor.v.concMin", n13(r.VcuConc, 0), n13(r.VcuMin, 0))}</span>` + (r.sinArmadura ? "" : `<span class="n">${t("cor.f.beta")}</span><span class="n">cotg \u03B8<sub>e</sub> = ${n13(r.cotE, 3)} (\u03B8<sub>e</sub> = ${n13(r.thetaE, 0)}\xB0) \u2192 \u03B2 = ${n13(r.beta, 3)}</span><span class="n">${t("cor.f.thetaE")}</span>`) + art2(r.sinArmadura ? "44.2.3.2.1.2" : "44.2.3.2.2")
       ));
       if (!r.sinArmadura) {
         f.push(fila2(
           "vsu",
           t("cor.r.Vsu"),
           q(r.Vsu, "N"),
-          `<span class="f">${t("cor.f.Vsu")}</span><span class="n">z = 0,9 d = ${n13(P.z, 0)} mm \xB7 A<sub>sw</sub>/s = ${n13(x.AswS, 3)} mm\xB2/mm \xB7 f<sub>y\u03B1,d</sub> = ${n13(P.fyd, 0)} MPa${r.reduc < 1 ? " \xB7 \xD7 0,85 (cercos circulares)" : ""}</span><span class="n">V<sub>u2</sub> = ${n13(r.Vcu, 0)} + ${n13(r.Vsu, 0)} = ${q(r.Vu2, "N")}</span>${art3("44.2.3.2.2")}`
+          `<span class="f">${t("cor.f.Vsu")}</span><span class="n">z = 0,9 d = ${n13(P.z, 0)} mm \xB7 A<sub>sw</sub>/s = ${n13(x.AswS, 3)} mm\xB2/mm \xB7 f<sub>y\u03B1,d</sub> = ${n13(P.fyd, 0)} MPa${r.reduc < 1 ? " \xB7 \xD7 0,85 (cercos circulares)" : ""}</span><span class="n">V<sub>u2</sub> = ${n13(r.Vcu, 0)} + ${n13(r.Vsu, 0)} = ${q(r.Vu2, "N")}</span>${art2("44.2.3.2.2")}`
         ));
         f.push(fila2(
           "min",
           t("cor.r.min"),
           r.minima.ok ? t("cor.ok") : t("cor.noOk"),
-          `<span class="f">${t("cor.f.min")}</span><span class="n">${t("cor.r.minVal", n13(x.AswS * 1e3, 0), n13(r.minima.AswSMin * 1e3, 0))}</span>${art3("44.2.3.4.1")}`
+          `<span class="f">${t("cor.f.min")}</span><span class="n">${t("cor.r.minVal", n13(x.AswS * 1e3, 0), n13(r.minima.AswSMin * 1e3, 0))}</span>${art2("44.2.3.4.1")}`
         ));
       }
       f.push(fila2(
         "sep",
         t("cor.r.sep"),
         r.sinArmadura ? "\u2014" : `${fmt(est6.s, 0)} \u2264 ${fmt(r.sep, 0)} mm`,
-        `<span class="f">${t("cor.f.sep")}</span><span class="n">V<sub>Ed</sub> = ${n13(est6.VEd, 0)} kN \xB7 V<sub>u1</sub> = ${n13(r.Vu1, 0)} kN \u2192 s<sub>t</sub> \u2264 ${n13(r.sep, 0)} mm \xB7 ${t("cor.avs.trans", n13(r.sepTrans, 0))}</span>${art3("44.2.3.4.1")}`
+        `<span class="f">${t("cor.f.sep")}</span><span class="n">V<sub>Ed</sub> = ${n13(est6.VEd, 0)} kN \xB7 V<sub>u1</sub> = ${n13(r.Vu1, 0)} kN \u2192 s<sub>t</sub> \u2264 ${n13(r.sep, 0)} mm \xB7 ${t("cor.avs.trans", n13(r.sepTrans, 0))}</span>${art2("44.2.3.4.1")}`
       ));
       f.push(fila2(
         "long",
         t("cor.r.long"),
         `\u0394T ${q(r.long.dT, "N")}`,
-        `<span class="f">${t("cor.f.long")}</span><span class="n">\u0394T = ${n13(r.long.dT, 0)} kN \xB7 s<sub>d</sub> = ${n13(r.long.sd, 0)} mm</span>${art3("44.2.3.4.2")}`
+        `<span class="f">${t("cor.f.long")}</span><span class="n">\u0394T = ${n13(r.long.dT, 0)} kN \xB7 s<sub>d</sub> = ${n13(r.long.sd, 0)} mm</span>${art2("44.2.3.4.2")}`
       ));
     } else if (r.caso !== "biela") {
       f.push(fila2(
         "vcu",
         t("cor.r.Vcu"),
         q(r.Vcu, "N"),
-        `<span class="f">${t("cor.f.Vcu")}</span><span class="n">\u03B2 = ${n13(r.beta, 3)} (cotg \u03B8<sub>e</sub> = ${n13(r.cotE, 3)})</span><span class="n">${t("cor.f.beta")}</span>${art3("44.2.3.2.2")}`
+        `<span class="f">${t("cor.f.Vcu")}</span><span class="n">\u03B2 = ${n13(r.beta, 3)} (cotg \u03B8<sub>e</sub> = ${n13(r.cotE, 3)})</span><span class="n">${t("cor.f.beta")}</span>${art2("44.2.3.2.2")}`
       ));
-      f.push(fila2("min", t("cor.r.min"), q(r.AswSMin, "AswS"), `<span class="f">${t("cor.f.min")}</span><span class="n">${n13(r.AswSMin * 1e3, 0)} mm\xB2/m</span>${art3("44.2.3.4.1")}`));
-      f.push(fila2("sep", t("cor.r.sep"), `\u2264 ${fmt(r.sMax, 0)} mm`, `<span class="f">${t("cor.f.sep")}</span>${art3("44.2.3.4.1")}`));
-      f.push(fila2("long", t("cor.r.long"), `\u0394T ${q(r.long.dT, "N")}`, `<span class="f">${t("cor.f.long")}</span><span class="n">\u0394T = ${n13(r.long.dT, 0)} kN \xB7 s<sub>d</sub> = ${n13(r.long.sd, 0)} mm</span>${art3("44.2.3.4.2")}`));
+      f.push(fila2("min", t("cor.r.min"), q(r.AswSMin, "AswS"), `<span class="f">${t("cor.f.min")}</span><span class="n">${n13(r.AswSMin * 1e3, 0)} mm\xB2/m</span>${art2("44.2.3.4.1")}`));
+      f.push(fila2("sep", t("cor.r.sep"), `\u2264 ${fmt(r.sMax, 0)} mm`, `<span class="f">${t("cor.f.sep")}</span>${art2("44.2.3.4.1")}`));
+      f.push(fila2("long", t("cor.r.long"), `\u0394T ${q(r.long.dT, "N")}`, `<span class="f">${t("cor.f.long")}</span><span class="n">\u0394T = ${n13(r.long.dT, 0)} kN \xB7 s<sub>d</sub> = ${n13(r.long.sd, 0)} mm</span>${art2("44.2.3.4.2")}`));
     }
     return f;
   }
@@ -15460,7 +15479,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
   };
   var fila3 = (id, nom, val, cuenta) => ({ id, nom, val, cuenta });
   var refNorma2 = "EHE-08";
-  var art4 = (a) => `<span class="art">${refNorma2} \xB7 ${a}</span>`;
+  var art3 = (a) => `<span class="art">${refNorma2} \xB7 ${a}</span>`;
   var n1 = (v2, d = 2) => fmt(v2, d);
   function datos13(ctx2, form) {
     const p = ctx2.p;
@@ -15785,7 +15804,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     "per",
     t("pun.r.per"),
     e23 ? q(r.u.b05, "diam") : q(r.u.u1, "diam"),
-    `<span class="f">${t(e23 ? "pun.f.per23" : "pun.f.per")}</span><span class="n">${e23 ? `${sub24("b", "0,5")} = ${n1(r.u.b05, 0)} mm \xB7 ${sub24("b", "0")} = ${n1(r.u.b0, 0)} mm \xB7 d<sub>v</sub> = ${n1(x.d, 0)} mm` : `${sub24("u", "1")} = ${n1(r.u.u1, 0)} mm (2d = ${n1(2 * x.d, 0)} mm) \xB7 ${sub24("u", "0")} = ${n1(r.u.u0, 0)} mm`}</span>${art4(e23 ? "8.4.2(2)-(3)" : refNorma2 === "EHE-08" ? "46.2, 46.4.3" : "6.4.2, 6.4.5(3)")}`
+    `<span class="f">${t(e23 ? "pun.f.per23" : "pun.f.per")}</span><span class="n">${e23 ? `${sub24("b", "0,5")} = ${n1(r.u.b05, 0)} mm \xB7 ${sub24("b", "0")} = ${n1(r.u.b0, 0)} mm \xB7 d<sub>v</sub> = ${n1(x.d, 0)} mm` : `${sub24("u", "1")} = ${n1(r.u.u1, 0)} mm (2d = ${n1(2 * x.d, 0)} mm) \xB7 ${sub24("u", "0")} = ${n1(r.u.u0, 0)} mm`}</span>${art3(e23 ? "8.4.2(2)-(3)" : refNorma2 === "EHE-08" ? "46.2, 46.4.3" : "6.4.2, 6.4.5(3)")}`
   );
   function trazasEHE(r, x, comp) {
     const P = r.P;
@@ -15794,32 +15813,32 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
       "tau",
       t("pun.r.tau"),
       `${fmt(r.tau.tau, 2)}<span class="u">${ESP}MPa</span>`,
-      `<span class="f">${t("pun.f.tauEHE")}</span><span class="n">\u03BE = ${n1(P.xi, 2)} \xB7 \u03C1<sub>l</sub> = ${n1(P.rho * 1e3, 2)} \u2030 \xB7 f<sub>cv</sub> = ${n1(P.fcv, 0)} MPa \xB7 \u03C3'<sub>cd</sub> = ${n1(P.sigCdLim)} MPa</span><span class="n">${t("pun.v.concMin", fmt(r.tau.conc, 2), fmt(r.tau.min, 2))}</span>${art4("46.3")}`
+      `<span class="f">${t("pun.f.tauEHE")}</span><span class="n">\u03BE = ${n1(P.xi, 2)} \xB7 \u03C1<sub>l</sub> = ${n1(P.rho * 1e3, 2)} \u2030 \xB7 f<sub>cv</sub> = ${n1(P.fcv, 0)} MPa \xB7 \u03C3'<sub>cd</sub> = ${n1(P.sigCdLim)} MPa</span><span class="n">${t("pun.v.concMin", fmt(r.tau.conc, 2), fmt(r.tau.min, 2))}</span>${art3("46.3")}`
     ));
     f.push(fila3(
       "vc",
       t("pun.r.vc"),
       q(r.Vc, "N"),
-      `<span class="f">${t("pun.f.vcEHE")}</span><span class="n">${fmt(r.tau.tau, 2)} \xD7 ${n1(r.u.u1, 0)} \xD7 ${n1(x.d, 0)} / ${n1(r.beta, 2)} = ${q(r.Vc, "N")}</span>${art4("46.3")}`
+      `<span class="f">${t("pun.f.vcEHE")}</span><span class="n">${fmt(r.tau.tau, 2)} \xD7 ${n1(r.u.u1, 0)} \xD7 ${n1(x.d, 0)} / ${n1(r.beta, 2)} = ${q(r.Vc, "N")}</span>${art3("46.3")}`
     ));
     f.push(fila3(
       "vmax",
       t("pun.r.vmax"),
       q(r.Vmax, "N"),
-      `<span class="f">${t("pun.f.vmaxEHE")}</span><span class="n">${t("cor.f.f1cd", P.fck)} \u2192 ${n1(P.f1cd)} MPa \xB7 ${sub24("u", "0")} = ${n1(r.u.u0, 0)} mm</span>${art4("46.4.3")}`
+      `<span class="f">${t("pun.f.vmaxEHE")}</span><span class="n">${t("cor.f.f1cd", P.fck)} \u2192 ${n1(P.f1cd)} MPa \xB7 ${sub24("u", "0")} = ${n1(r.u.u0, 0)} mm</span>${art3("46.4.3")}`
     ));
     if (comp && !r.sinArmadura) {
       f.push(fila3(
         "vcs",
         t("pun.r.vcs"),
         q(r.Vcs, "N"),
-        `<span class="f">${t("pun.f.vcsEHE")}</span><span class="n">${sub24("A", "sw")} = ${n1(r.Asw, 0)} mm\xB2 \xB7 s = ${n1(x.arm.sr, 0)} mm \xB7 f<sub>y\u03B1,d</sub> = ${n1(P.fyd, 0)} MPa${P.topada ? ` (${t("pun.tope400")})` : ""}</span><span class="n">0,75 \xD7 ${n1(r.F0, 0)} + ${n1(r.Fs, 0)} = ${n1(r.Fcs, 0)} kN \u2192 ${q(r.Vcs, "N")} (\xF7 \u03B2)</span>${art4("46.4.1")}`
+        `<span class="f">${t("pun.f.vcsEHE")}</span><span class="n">${sub24("A", "sw")} = ${n1(r.Asw, 0)} mm\xB2 \xB7 s = ${n1(x.arm.sr, 0)} mm \xB7 f<sub>y\u03B1,d</sub> = ${n1(P.fyd, 0)} MPa${P.topada ? ` (${t("pun.tope400")})` : ""}</span><span class="n">0,75 \xD7 ${n1(r.F0, 0)} + ${n1(r.Fs, 0)} = ${n1(r.Fcs, 0)} kN \u2192 ${q(r.Vcs, "N")} (\xF7 \u03B2)</span>${art3("46.4.1")}`
       ));
       f.push(fila3(
         "ext",
         t("pun.r.ext"),
         q(r.Vext, "N"),
-        `<span class="f">${t("pun.f.extEHE")}</span><span class="n">${sub24("u", "n,ef")} = ${n1(r.unEf, 0)} mm (a 2d = ${n1(2 * x.d, 0)} mm del \xFAltimo per\xEDmetro, que est\xE1 a ${n1(r.deltaUltimo, 0)} mm del pilar)</span>${art4("46.4.2")}`
+        `<span class="f">${t("pun.f.extEHE")}</span><span class="n">${sub24("u", "n,ef")} = ${n1(r.unEf, 0)} mm (a 2d = ${n1(2 * x.d, 0)} mm del \xFAltimo per\xEDmetro, que est\xE1 a ${n1(r.deltaUltimo, 0)} mm del pilar)</span>${art3("46.4.2")}`
       ));
       f.push(...filasDisp(r, x));
     } else if (!comp && r.caso === "calculo") {
@@ -15827,13 +15846,13 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
         "asw",
         t("pun.r.asw"),
         `${fmt(r.AswNec, 0)}<span class="u">${ESP}mm\xB2</span>`,
-        `<span class="f">${t("pun.f.aswEHE")}</span><span class="n">\u03B2\xB7V<sub>Ed</sub> = ${n1(r.Fef, 0)} kN \xB7 0,75 \u03C4<sub>rd</sub> u<sub>1</sub> d = ${n1(0.75 * r.F0, 0)} kN \xB7 s = ${n1(r.sr, 0)} mm</span>${art4("46.4.1")}`
+        `<span class="f">${t("pun.f.aswEHE")}</span><span class="n">\u03B2\xB7V<sub>Ed</sub> = ${n1(r.Fef, 0)} kN \xB7 0,75 \u03C4<sub>rd</sub> u<sub>1</sub> d = ${n1(0.75 * r.F0, 0)} kN \xB7 s = ${n1(r.sr, 0)} mm</span>${art3("46.4.1")}`
       ));
       f.push(fila3(
         "nper",
         t("pun.r.nper"),
         String(r.nPer),
-        `<span class="f">${t("pun.f.nperEHE")}</span><span class="n">${sub24("u", "n,ef")} \u2265 ${n1(r.unReq, 0)} mm \u2192 \u03B4 = ${n1(r.deltaExt, 0)} mm; a<sub>1</sub> = ${n1(r.a1, 0)} mm, s = ${n1(r.sr, 0)} mm</span>${art4("46.4.2")}`
+        `<span class="f">${t("pun.f.nperEHE")}</span><span class="n">${sub24("u", "n,ef")} \u2265 ${n1(r.unReq, 0)} mm \u2192 \u03B4 = ${n1(r.deltaExt, 0)} mm; a<sub>1</sub> = ${n1(r.a1, 0)} mm, s = ${n1(r.sr, 0)} mm</span>${art3("46.4.2")}`
       ));
     }
     return f;
@@ -15845,38 +15864,38 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
       "tau",
       t("pun.r.vRdc"),
       `${fmt(r.v.v, 2)}<span class="u">${ESP}MPa</span>`,
-      `<span class="f">${t("pun.f.vRdcEC")}</span><span class="n">k = ${n1(P.k, 2)} \xB7 \u03C1<sub>l</sub> = ${n1(P.rho * 1e3, 2)} \u2030 \xB7 \u03C3<sub>cp</sub> = ${n1(P.sigCp)} MPa \xB7 \u03BD<sub>m\xEDn</sub> = ${n1(r.v.nuMin, 2)} MPa</span><span class="n">${t("pun.v.concMin", fmt(r.v.conc, 2), fmt(r.v.min, 2))}</span>${art4("6.4.4(1), AN")}`
+      `<span class="f">${t("pun.f.vRdcEC")}</span><span class="n">k = ${n1(P.k, 2)} \xB7 \u03C1<sub>l</sub> = ${n1(P.rho * 1e3, 2)} \u2030 \xB7 \u03C3<sub>cp</sub> = ${n1(P.sigCp)} MPa \xB7 \u03BD<sub>m\xEDn</sub> = ${n1(r.v.nuMin, 2)} MPa</span><span class="n">${t("pun.v.concMin", fmt(r.v.conc, 2), fmt(r.v.min, 2))}</span>${art3("6.4.4(1), AN")}`
     ));
     f.push(fila3(
       "vc",
       t("pun.r.vc"),
       q(r.Vc, "N"),
-      `<span class="f">${t("pun.f.vcEC")}</span><span class="n">${fmt(r.v.v, 2)} \xD7 ${n1(r.u.u1, 0)} \xD7 ${n1(x.d, 0)} / ${n1(r.beta, 2)} = ${q(r.Vc, "N")}</span>${art4("6.4.3(2), (3)")}`
+      `<span class="f">${t("pun.f.vcEC")}</span><span class="n">${fmt(r.v.v, 2)} \xD7 ${n1(r.u.u1, 0)} \xD7 ${n1(x.d, 0)} / ${n1(r.beta, 2)} = ${q(r.Vc, "N")}</span>${art3("6.4.3(2), (3)")}`
     ));
     f.push(fila3(
       "vmax",
       t("pun.r.vmax"),
       q(r.Vmax, "N"),
-      `<span class="f">${t("pun.f.vmaxEC")}</span><span class="n">\u03BD = ${n1(P.nu, 2)} \xB7 f<sub>cd</sub> = ${n1(P.fcd)} MPa \u2192 v<sub>Rd,m\xE1x</sub> = ${n1(P.vRdMax)} MPa \xB7 ${sub24("u", "0")} = ${n1(r.u.u0, 0)} mm</span>${art4("6.4.5(3), AN")}`
+      `<span class="f">${t("pun.f.vmaxEC")}</span><span class="n">\u03BD = ${n1(P.nu, 2)} \xB7 f<sub>cd</sub> = ${n1(P.fcd)} MPa \u2192 v<sub>Rd,m\xE1x</sub> = ${n1(P.vRdMax)} MPa \xB7 ${sub24("u", "0")} = ${n1(r.u.u0, 0)} mm</span>${art3("6.4.5(3), AN")}`
     ));
     if (comp && !r.sinArmadura) {
       f.push(fila3(
         "vcs",
         t("pun.r.vcs"),
         q(r.Vcs, "N"),
-        `<span class="f">${t("pun.f.vcsEC")}</span><span class="n">${sub24("A", "sw")} = ${n1(r.Asw, 0)} mm\xB2 \xB7 s<sub>r</sub> = ${n1(x.arm.sr, 0)} mm \xB7 f<sub>ywd,ef</sub> = ${n1(P.fywdEf, 0)} MPa (f<sub>ywd</sub> = ${n1(P.fywd, 0)})</span><span class="n">0,75 \xD7 ${n1(r.F0, 0)} + ${n1(r.Fs, 0)} = ${n1(r.Fcs, 0)} kN \u2192 ${q(r.Vcs, "N")} (\xF7 \u03B2)</span>${art4("6.4.5(1)")}`
+        `<span class="f">${t("pun.f.vcsEC")}</span><span class="n">${sub24("A", "sw")} = ${n1(r.Asw, 0)} mm\xB2 \xB7 s<sub>r</sub> = ${n1(x.arm.sr, 0)} mm \xB7 f<sub>ywd,ef</sub> = ${n1(P.fywdEf, 0)} MPa (f<sub>ywd</sub> = ${n1(P.fywd, 0)})</span><span class="n">0,75 \xD7 ${n1(r.F0, 0)} + ${n1(r.Fs, 0)} = ${n1(r.Fcs, 0)} kN \u2192 ${q(r.Vcs, "N")} (\xF7 \u03B2)</span>${art3("6.4.5(1)")}`
       ));
       f.push(fila3(
         "ext",
         t("pun.r.ext"),
         q(r.Vext, "N"),
-        `<span class="f">${t("pun.f.extEC")}</span><span class="n">${sub24("u", "out,ef")} \u2264 ${n1(r.uOutEf, 0)} mm (k\xB7d = ${n1(2 * x.d, 0)} mm del \xFAltimo per\xEDmetro, a ${n1(r.deltaUltimo, 0)} mm del pilar)</span>${art4("6.4.5(4), AN")}`
+        `<span class="f">${t("pun.f.extEC")}</span><span class="n">${sub24("u", "out,ef")} \u2264 ${n1(r.uOutEf, 0)} mm (k\xB7d = ${n1(2 * x.d, 0)} mm del \xFAltimo per\xEDmetro, a ${n1(r.deltaUltimo, 0)} mm del pilar)</span>${art3("6.4.5(4), AN")}`
       ));
       f.push(fila3(
         "min",
         t("pun.r.min"),
         r.minima.ok ? t("cor.ok") : t("cor.noOk"),
-        `<span class="f">${t("pun.f.minEC")}</span><span class="n">${t("pun.v.minVal", n1(r.minima.rhoW * 1e3, 2), n1(r.minima.rhoMin * 1e3, 2))}</span>${art4("9.4.3(2), (9.11)")}`
+        `<span class="f">${t("pun.f.minEC")}</span><span class="n">${t("pun.v.minVal", n1(r.minima.rhoW * 1e3, 2), n1(r.minima.rhoMin * 1e3, 2))}</span>${art3("9.4.3(2), (9.11)")}`
       ));
       f.push(...filasDisp(r, x));
     } else if (!comp && r.caso === "calculo") {
@@ -15884,13 +15903,13 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
         "asw",
         t("pun.r.asw"),
         `${fmt(r.AswNec, 0)}<span class="u">${ESP}mm\xB2</span>`,
-        `<span class="f">${t("pun.f.aswEC")}</span><span class="n">\u03B2\xB7V<sub>Ed</sub> = ${n1(r.Fef, 0)} kN \xB7 0,75 v<sub>Rd,c</sub> u<sub>1</sub> d = ${n1(0.75 * r.F0, 0)} kN \xB7 s<sub>r</sub> = ${n1(r.sr, 0)} mm</span>${art4("6.4.5(1)")}`
+        `<span class="f">${t("pun.f.aswEC")}</span><span class="n">\u03B2\xB7V<sub>Ed</sub> = ${n1(r.Fef, 0)} kN \xB7 0,75 v<sub>Rd,c</sub> u<sub>1</sub> d = ${n1(0.75 * r.F0, 0)} kN \xB7 s<sub>r</sub> = ${n1(r.sr, 0)} mm</span>${art3("6.4.5(1)")}`
       ));
       f.push(fila3(
         "nper",
         t("pun.r.nper"),
         String(r.nPer),
-        `<span class="f">${t("pun.f.nperEC")}</span><span class="n">${sub24("u", "out,ef")} = ${n1(r.uOutReq, 0)} mm \u2192 \u03B4 = ${n1(r.deltaOut, 0)} mm; m\xEDnimo 2 per\xEDmetros</span>${art4("6.4.5(4), 9.4.3(1)")}`
+        `<span class="f">${t("pun.f.nperEC")}</span><span class="n">${sub24("u", "out,ef")} = ${n1(r.uOutReq, 0)} mm \u2192 \u03B4 = ${n1(r.deltaOut, 0)} mm; m\xEDnimo 2 per\xEDmetros</span>${art3("6.4.5(4), 9.4.3(1)")}`
       ));
     }
     return f;
@@ -15903,44 +15922,44 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
       "kpb",
       t("pun.r.kpb"),
       n1(s.kpb, 2),
-      `<span class="f">${t("pun.f.kpb")}</span><span class="n">${sub24("b", "0")} = ${n1(r.u.b0, 0)} mm \xB7 ${sub24("b", "0,5")} = ${n1(r.u.b05, 0)} mm \u2192 3,6\xB7(1 \u2212 ${n1(r.u.b0 / r.u.b05, 2)}) = ${n1(s.kpbBruto, 2)}</span>${art4("8.4.3(1), (8.96)")}`
+      `<span class="f">${t("pun.f.kpb")}</span><span class="n">${sub24("b", "0")} = ${n1(r.u.b0, 0)} mm \xB7 ${sub24("b", "0,5")} = ${n1(r.u.b05, 0)} mm \u2192 3,6\xB7(1 \u2212 ${n1(r.u.b0 / r.u.b05, 2)}) = ${n1(s.kpbBruto, 2)}</span>${art3("8.4.3(1), (8.96)")}`
     ));
     f.push(fila3(
       "tau",
       t("pun.r.tau"),
       `${fmt(s.tau, 2)}<span class="u">${ESP}MPa</span>`,
-      `<span class="f">${t("pun.f.tau23")}</span><span class="n">\u03C1<sub>l</sub> = ${n1(P.rho * 1e3, 2)} \u2030 \xB7 d<sub>dg</sub> = ${n1(P.ddg, 0)} mm \xB7 \u03B3<sub>V</sub> = ${n1(P.gv, 1)} \xB7 d<sub>v</sub> = ${n1(x.d, 0)} mm</span><span class="n">${t("pun.v.tau23", fmt(s.conc, 2), fmt(s.tope, 2))}</span>${art4("8.4.3(1), (8.94)")}`
+      `<span class="f">${t("pun.f.tau23")}</span><span class="n">\u03C1<sub>l</sub> = ${n1(P.rho * 1e3, 2)} \u2030 \xB7 d<sub>dg</sub> = ${n1(P.ddg, 0)} mm \xB7 \u03B3<sub>V</sub> = ${n1(P.gv, 1)} \xB7 d<sub>v</sub> = ${n1(x.d, 0)} mm</span><span class="n">${t("pun.v.tau23", fmt(s.conc, 2), fmt(s.tope, 2))}</span>${art3("8.4.3(1), (8.94)")}`
     ));
     f.push(fila3(
       "vc",
       t("pun.r.vRdc"),
       q(s.VRdc, "N"),
-      `<span class="f">${t("pun.f.vRdc23")}</span><span class="n">${fmt(s.tau, 2)} \xD7 ${n1(r.u.b05, 0)} \xD7 ${n1(x.d, 0)} = ${q(s.VRdc, "N")} \u2192 ${q(r.Vc, "N")} (\xF7 \u03B2<sub>e</sub> = ${n1(r.beta, 2)})</span>${art4("8.4.2(6), (8.92)")}`
+      `<span class="f">${t("pun.f.vRdc23")}</span><span class="n">${fmt(s.tau, 2)} \xD7 ${n1(r.u.b05, 0)} \xD7 ${n1(x.d, 0)} = ${q(s.VRdc, "N")} \u2192 ${q(r.Vc, "N")} (\xF7 \u03B2<sub>e</sub> = ${n1(r.beta, 2)})</span>${art3("8.4.2(6), (8.92)")}`
     ));
     f.push(fila3(
       "vmax",
       t("pun.r.vmax"),
       q(r.Vmax, "N"),
-      `<span class="f">${t("pun.f.vmax23")}</span><span class="n">\u03B7<sub>sys</sub> = ${n1(s.etaSys, 2)} (b<sub>0</sub>/d<sub>v</sub> = ${n1(r.u.b0 / x.d, 2)}) \u2192 V<sub>Rd,m\xE1x</sub> = ${q(s.VRdMax, "N")}</span>${art4("8.4.4(5), (8.111)")}`
+      `<span class="f">${t("pun.f.vmax23")}</span><span class="n">\u03B7<sub>sys</sub> = ${n1(s.etaSys, 2)} (b<sub>0</sub>/d<sub>v</sub> = ${n1(r.u.b0 / x.d, 2)}) \u2192 V<sub>Rd,m\xE1x</sub> = ${q(s.VRdMax, "N")}</span>${art3("8.4.4(5), (8.111)")}`
     ));
     if (comp && !r.sinArmadura) {
       f.push(fila3(
         "etas",
         t("pun.r.etas"),
         `${fmt(r.etaC, 2)} \xB7 ${fmt(r.etaS, 2)}`,
-        `<span class="f">${t("pun.f.etas")}</span><span class="n">V<sub>Ed,ef</sub> = ${n1(Number.isFinite(r.VEd) ? r.beta * r.VEd : r.VuEf, 0)} kN \u2192 \u03B7<sub>c</sub> = ${n1(r.etaC, 2)} \xB7 \u03B7<sub>s</sub> = ${n1(r.etaS, 2)} (\u2264 0,8) \xB7 \u03C6<sub>w</sub> = ${n1(x.arm.fi, 0)} mm</span>${art4("8.4.4(1), (8.105), (8.106)")}`
+        `<span class="f">${t("pun.f.etas")}</span><span class="n">V<sub>Ed,ef</sub> = ${n1(Number.isFinite(r.VEd) ? r.beta * r.VEd : r.VuEf, 0)} kN \u2192 \u03B7<sub>c</sub> = ${n1(r.etaC, 2)} \xB7 \u03B7<sub>s</sub> = ${n1(r.etaS, 2)} (\u2264 0,8) \xB7 \u03C6<sub>w</sub> = ${n1(x.arm.fi, 0)} mm</span>${art3("8.4.4(1), (8.105), (8.106)")}`
       ));
       f.push(fila3(
         "vcs",
         t("pun.r.vcs"),
         q(r.VuEf / r.beta, "N"),
-        `<span class="f">${t("pun.f.vcs23")}</span><span class="n">${sub24("A", "sw,per")} = ${n1(r.Asw, 0)} mm\xB2 \xB7 s<sub>r</sub> = ${n1(r.srEf, 0)} mm \xB7 f<sub>ywd</sub> = ${n1(P.fywd, 0)} MPa \u2192 V<sub>w</sub> = ${q(r.Vw, "N")}</span><span class="n">${t("pun.v.vcs23", n1(r.VRdcs, 0), q(r.VuEf, "N"))}</span>${art4("8.4.4(1), (8.104), (8.107)")}`
+        `<span class="f">${t("pun.f.vcs23")}</span><span class="n">${sub24("A", "sw,per")} = ${n1(r.Asw, 0)} mm\xB2 \xB7 s<sub>r</sub> = ${n1(r.srEf, 0)} mm \xB7 f<sub>ywd</sub> = ${n1(P.fywd, 0)} MPa \u2192 V<sub>w</sub> = ${q(r.Vw, "N")}</span><span class="n">${t("pun.v.vcs23", n1(r.VRdcs, 0), q(r.VuEf, "N"))}</span>${art3("8.4.4(1), (8.104), (8.107)")}`
       ));
       f.push(fila3(
         "ext",
         t("pun.r.ext"),
         n1(r.b05out, 0) + `${ESP}mm`,
-        `<span class="f">${t("pun.f.ext23")}</span><span class="n">d<sub>v,out</sub> = ${n1(r.dvOut, 0)} mm \xB7 ${sub24("b", "0,5,out")} = ${n1(r.b05out, 0)} mm \u2192 \u03B4 = ${n1(r.deltaOut, 0)} mm; el \xFAltimo per\xEDmetro est\xE1 a ${n1(r.deltaUltimo, 0)} mm${r.extOk ? "" : " (" + t("pun.noLlega") + ")"}</span>${art4("8.4.4(7), (8.112)")}`
+        `<span class="f">${t("pun.f.ext23")}</span><span class="n">d<sub>v,out</sub> = ${n1(r.dvOut, 0)} mm \xB7 ${sub24("b", "0,5,out")} = ${n1(r.b05out, 0)} mm \u2192 \u03B4 = ${n1(r.deltaOut, 0)} mm; el \xFAltimo per\xEDmetro est\xE1 a ${n1(r.deltaUltimo, 0)} mm${r.extOk ? "" : " (" + t("pun.noLlega") + ")"}</span>${art3("8.4.4(7), (8.112)")}`
       ));
       f.push(...filasDisp(r, x));
     } else if (!comp && r.caso === "calculo") {
@@ -15948,20 +15967,20 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
         "etas",
         t("pun.r.etas"),
         `${fmt(r.etaCEf, 2)}`,
-        `<span class="f">${t("pun.f.etasDim")}</span><span class="n">V<sub>Ed,ef</sub> = ${n1(r.Vef, 0)} kN \u2192 \u03B7<sub>c</sub> = ${n1(r.etaCEf, 2)}; \u03B7<sub>s</sub> por di\xE1metro en la tabla</span>${art4("8.4.4(1)")}`
+        `<span class="f">${t("pun.f.etasDim")}</span><span class="n">V<sub>Ed,ef</sub> = ${n1(r.Vef, 0)} kN \u2192 \u03B7<sub>c</sub> = ${n1(r.etaCEf, 2)}; \u03B7<sub>s</sub> por di\xE1metro en la tabla</span>${art3("8.4.4(1)")}`
       ));
       f.push(fila3(
         "nper",
         t("pun.r.nper"),
         String(r.nPer),
-        `<span class="f">${t("pun.f.nper23")}</span><span class="n">${sub24("b", "0,5,out")} \u2192 \u03B4 = ${n1(r.deltaOut, 0)} mm; a<sub>1</sub> = ${n1(r.a1, 0)} mm, s<sub>1</sub> = ${n1(r.sr, 0)} mm; m\xEDnimo 2 per\xEDmetros</span>${art4("8.4.4(7), 12.5.1(2)")}`
+        `<span class="f">${t("pun.f.nper23")}</span><span class="n">${sub24("b", "0,5,out")} \u2192 \u03B4 = ${n1(r.deltaOut, 0)} mm; a<sub>1</sub> = ${n1(r.a1, 0)} mm, s<sub>1</sub> = ${n1(r.sr, 0)} mm; m\xEDnimo 2 per\xEDmetros</span>${art3("8.4.4(7), 12.5.1(2)")}`
       ));
     }
     return f;
   }
   function filasDisp(r, x) {
-    if (!r.disp?.length) return [fila3("disp", t("pun.r.disp"), t("cor.ok"), `<span class="f">${t("pun.f.disp")}</span>${art4(refNorma2 === "EC-2 2023" ? "12.5.1" : refNorma2 === "EHE-08" ? "46.5" : "9.4.3")}`)];
-    return [fila3("disp", t("pun.r.disp"), t("cor.noOk"), `<span class="f">${t("pun.f.disp")}</span>${r.disp.map((dd) => `<span class="n">${t(dd.clave, ...dd.args.map((v2) => typeof v2 === "number" ? fmt(v2, 0) : v2))}</span>`).join("")}${art4(refNorma2 === "EC-2 2023" ? "12.5.1" : refNorma2 === "EHE-08" ? "46.5" : "9.4.3")}`)];
+    if (!r.disp?.length) return [fila3("disp", t("pun.r.disp"), t("cor.ok"), `<span class="f">${t("pun.f.disp")}</span>${art3(refNorma2 === "EC-2 2023" ? "12.5.1" : refNorma2 === "EHE-08" ? "46.5" : "9.4.3")}`)];
+    return [fila3("disp", t("pun.r.disp"), t("cor.noOk"), `<span class="f">${t("pun.f.disp")}</span>${r.disp.map((dd) => `<span class="n">${t(dd.clave, ...dd.args.map((v2) => typeof v2 === "number" ? fmt(v2, 0) : v2))}</span>`).join("")}${art3(refNorma2 === "EC-2 2023" ? "12.5.1" : refNorma2 === "EHE-08" ? "46.5" : "9.4.3")}`)];
   }
   function notas2(p, D) {
     const e23 = es232(p);
@@ -16449,21 +16468,21 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
   var REF = { "EHE-08": "EHE-08", EC2: "EC-2 + AN", "EC2-2023": "EC-2 2023" };
   function filaTraza(r, x, comp, D, N) {
     const ref3 = N.id === "EHE-08" ? REF["EHE-08"] : N.id === "EC2-2004" ? REF.EC2 : REF["EC2-2023"];
-    const art5 = (a) => `<span class="art">${ref3} \xB7 ${a}</span>`;
+    const art4 = (a) => `<span class="art">${ref3} \xB7 ${a}</span>`;
     const P = r.P;
     const f = [];
     f.push(fila4(
       "tau",
       t("ras.r.tau"),
       MPa(r.tauEd),
-      `<span class="f">${t(N.id === "EHE-08" ? "ras.f.tauEHE" : N.id === "EC2-2004" ? "ras.f.tauEC" : "ras.f.tau23")}</span><span class="n">${sub25("R", "Ed")} = ${q(D.REd, "N")} \xB7 b = ${n12(D.b, 0)} mm \xB7 L = ${n12(D.L, 0)} mm \u2192 ${MPa(r.tauEd)}</span>` + art5(N.id === "EHE-08" ? "47.1" : N.id === "EC2-2004" ? "6.2.5 (6.24)" : "8.2.6(4) (8.74)")
+      `<span class="f">${t(N.id === "EHE-08" ? "ras.f.tauEHE" : N.id === "EC2-2004" ? "ras.f.tauEC" : "ras.f.tau23")}</span><span class="n">${sub25("R", "Ed")} = ${q(D.REd, "N")} \xB7 b = ${n12(D.b, 0)} mm \xB7 L = ${n12(D.L, 0)} mm \u2192 ${MPa(r.tauEd)}</span>` + art4(N.id === "EHE-08" ? "47.1" : N.id === "EC2-2004" ? "6.2.5 (6.24)" : "8.2.6(4) (8.74)")
     ));
     const res = comp ? r.res : r.caso === "calculo" ? N.resistencia(P, r.rhoNec, r.tauEd) : N.resistencia(P, 0, r.tauEd);
     const rho = comp ? r.rho : r.rhoNec ?? 0;
     const arm = res.contabiliza;
-    if (N.id === "EHE-08") filasEHE(f, P, res, rho, arm, art5);
-    else if (N.id === "EC2-2004") filasEC(f, P, res, rho, art5);
-    else filas23(f, P, res, rho, art5);
+    if (N.id === "EHE-08") filasEHE(f, P, res, rho, arm, art4);
+    else if (N.id === "EC2-2004") filasEC(f, P, res, rho, art4);
+    else filas23(f, P, res, rho, art4);
     if (comp) {
       f.push(fila4(
         "res",
@@ -16474,112 +16493,112 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     }
     return f;
   }
-  function filasEHE(f, P, res, rho, arm, art5) {
+  function filasEHE(f, P, res, rho, arm, art4) {
     f.push(fila4(
       "coh",
       t("ras.r.coh"),
       MPa(P.coh),
-      `<span class="f">${t("ras.f.cohEHE")}</span><span class="n">\u03B2 = ${n12(P.R.beta, 2)} \xB7 (1,30 \u2212 0,30\xB7${n12(P.fck, 0)}/25) = ${n12(P.factor, 3)} \xB7 f<sub>ct,d</sub> = ${n12(P.fctd, 3)} MPa${P.tracc ? ` \xB7 ${t("ras.v.tracc")}` : ""}</span>${art5("47.2.1")}`
+      `<span class="f">${t("ras.f.cohEHE")}</span><span class="n">\u03B2 = ${n12(P.R.beta, 2)} \xB7 (1,30 \u2212 0,30\xB7${n12(P.fck, 0)}/25) = ${n12(P.factor, 3)} \xB7 f<sub>ct,d</sub> = ${n12(P.fctd, 3)} MPa${P.tracc ? ` \xB7 ${t("ras.v.tracc")}` : ""}</span>${art4("47.2.1")}`
     ));
     if (arm) {
       f.push(fila4(
         "estado",
         t("ras.r.estado"),
         String(res.estado),
-        `<span class="f">${t("ras.f.estado")}</span><span class="n">${t(res.estado === 1 ? "ras.v.estado1" : "ras.v.estado2", fmt(2.5 * P.coh, 3))}</span>${art5("47.2.2.1, 47.2.2.2")}`
+        `<span class="f">${t("ras.f.estado")}</span><span class="n">${t(res.estado === 1 ? "ras.v.estado1" : "ras.v.estado2", fmt(2.5 * P.coh, 3))}</span>${art4("47.2.2.1, 47.2.2.2")}`
       ));
       f.push(fila4(
         "cosido",
         t("ras.r.cosido"),
         MPa(res.cosido),
-        `<span class="f">${t("ras.f.cosidoEHE")}</span><span class="n">\u03C1 = ${n12(rho * 1e3, 2)} \u2030 \xB7 f<sub>y\u03B1,d</sub> = ${n12(P.fyd, 0)} MPa${P.topada ? ` (${t("ras.tope400")})` : ""} \xB7 \u03BC = ${n12(res.mu, 1)} \xB7 \u03B1 = ${n12(P.alfa, 0)}\xB0</span>${art5("47.2.2.2, tabla 47.2.2.2")}`
+        `<span class="f">${t("ras.f.cosidoEHE")}</span><span class="n">\u03C1 = ${n12(rho * 1e3, 2)} \u2030 \xB7 f<sub>y\u03B1,d</sub> = ${n12(P.fyd, 0)} MPa${P.topada ? ` (${t("ras.tope400")})` : ""} \xB7 \u03BC = ${n12(res.mu, 1)} \xB7 \u03B1 = ${n12(P.alfa, 0)}\xB0</span>${art4("47.2.2.2, tabla 47.2.2.2")}`
       ));
       f.push(fila4(
         "fric",
         t("ras.r.fric"),
         MPa(res.fric),
-        `<span class="f">${t("ras.f.fric")}</span><span class="n">\u03BC = ${n12(res.mu, 1)} \xB7 \u03C3<sub>cd</sub> = ${n12(P.sigN, 2)} MPa</span>${art5("47.2.2")}`
+        `<span class="f">${t("ras.f.fric")}</span><span class="n">\u03BC = ${n12(res.mu, 1)} \xB7 \u03C3<sub>cd</sub> = ${n12(P.sigN, 2)} MPa</span>${art4("47.2.2")}`
       ));
     } else {
       f.push(fila4(
         "cosido",
         t("ras.r.cosido"),
         t("ras.noContab"),
-        `<span class="f">${t("ras.f.rhoMin")}</span><span class="n">\u03C1 = ${n12(rho * 1e3, 2)} \u2030 &lt; ${n12(1e-3 * 1e3, 2)} \u2030</span>${art5("47.2")}`
+        `<span class="f">${t("ras.f.rhoMin")}</span><span class="n">\u03C1 = ${n12(rho * 1e3, 2)} \u2030 &lt; ${n12(1e-3 * 1e3, 2)} \u2030</span>${art4("47.2")}`
       ));
     }
     f.push(fila4(
       "lim",
       t("ras.r.lim"),
       MPa(P.lim),
-      `<span class="f">${t("ras.f.limEHE")}</span><span class="n">f<sub>cd</sub> = ${n12(P.fcd)} MPa \u2192 ${MPa(P.lim)}</span>${art5("47.2.2")}`
+      `<span class="f">${t("ras.f.limEHE")}</span><span class="n">f<sub>cd</sub> = ${n12(P.fcd)} MPa \u2192 ${MPa(P.lim)}</span>${art4("47.2.2")}`
     ));
   }
-  function filasEC(f, P, res, rho, art5) {
+  function filasEC(f, P, res, rho, art4) {
     f.push(fila4(
       "coh",
       t("ras.r.coh"),
       MPa(P.coh),
-      `<span class="f">${t("ras.f.cohEC")}</span><span class="n">c = ${n12(P.R.c, 3)} \xB7 f<sub>ctd</sub> = ${n12(P.fctd, 3)} MPa${P.tracc ? ` \xB7 ${t("ras.v.tracc")}` : ""}</span>${art5("6.2.5(1), (2), (5)")}`
+      `<span class="f">${t("ras.f.cohEC")}</span><span class="n">c = ${n12(P.R.c, 3)} \xB7 f<sub>ctd</sub> = ${n12(P.fctd, 3)} MPa${P.tracc ? ` \xB7 ${t("ras.v.tracc")}` : ""}</span>${art4("6.2.5(1), (2), (5)")}`
     ));
     f.push(fila4(
       "fric",
       t("ras.r.fric"),
       MPa(res.fric),
-      `<span class="f">${t("ras.f.fric")}</span><span class="n">\u03BC = ${n12(P.R.mu, 1)} \xB7 \u03C3<sub>n</sub> = ${n12(P.sigN, 2)} MPa (\u2264 0,6 f<sub>cd</sub> = ${n12(0.6 * P.fcd)} MPa)</span>${art5("6.2.5(1)")}`
+      `<span class="f">${t("ras.f.fric")}</span><span class="n">\u03BC = ${n12(P.R.mu, 1)} \xB7 \u03C3<sub>n</sub> = ${n12(P.sigN, 2)} MPa (\u2264 0,6 f<sub>cd</sub> = ${n12(0.6 * P.fcd)} MPa)</span>${art4("6.2.5(1)")}`
     ));
     f.push(fila4(
       "cosido",
       t("ras.r.cosido"),
       MPa(res.cosido),
-      `<span class="f">${t("ras.f.cosidoEC")}</span><span class="n">\u03C1 = ${n12(rho * 1e3, 2)} \u2030 \xB7 f<sub>yd</sub> = ${n12(P.fyd, 0)} MPa \xB7 \u03BC = ${n12(P.R.mu, 1)} \xB7 \u03B1 = ${n12(P.alfa, 0)}\xB0</span>${art5("6.2.5(1) (6.25)")}`
+      `<span class="f">${t("ras.f.cosidoEC")}</span><span class="n">\u03C1 = ${n12(rho * 1e3, 2)} \u2030 \xB7 f<sub>yd</sub> = ${n12(P.fyd, 0)} MPa \xB7 \u03BC = ${n12(P.R.mu, 1)} \xB7 \u03B1 = ${n12(P.alfa, 0)}\xB0</span>${art4("6.2.5(1) (6.25)")}`
     ));
     f.push(fila4(
       "lim",
       t("ras.r.lim"),
       MPa(P.lim),
-      `<span class="f">${t("ras.f.limEC")}</span><span class="n">\u03BD = ${n12(P.nu, 3)} \xB7 f<sub>cd</sub> = ${n12(P.fcd)} MPa \u2192 ${MPa(P.lim)}</span>${art5("6.2.5(1) (6.25), 6.2.2(6) AN")}`
+      `<span class="f">${t("ras.f.limEC")}</span><span class="n">\u03BD = ${n12(P.nu, 3)} \xB7 f<sub>cd</sub> = ${n12(P.fcd)} MPa \u2192 ${MPa(P.lim)}</span>${art4("6.2.5(1) (6.25), 6.2.2(6) AN")}`
     ));
   }
-  function filas23(f, P, res, rho, art5) {
+  function filas23(f, P, res, rho, art4) {
     const cv = P.anclado ? "c<sub>v1</sub>" : "c<sub>v2</sub>";
     f.push(fila4(
       "coh",
       t("ras.r.coh"),
       MPa(P.coh),
-      `<span class="f">${t(P.anclado ? "ras.f.coh23a" : "ras.f.coh23b")}</span><span class="n">${cv} = ${n12(P.cv, 3)}${P.topping ? " (\xD7 1,2)" : ""} \xB7 \u221Af<sub>ck</sub> = ${n12(Math.sqrt(P.fck), 3)} \xB7 \u03B3<sub>c</sub> = ${n12(P.gc, 2)}${P.tracc ? ` \xB7 ${t("ras.v.tracc")}` : ""}</span>${art5("8.2.6(5), (7), tabla 8.2")}`
+      `<span class="f">${t(P.anclado ? "ras.f.coh23a" : "ras.f.coh23b")}</span><span class="n">${cv} = ${n12(P.cv, 3)}${P.topping ? " (\xD7 1,2)" : ""} \xB7 \u221Af<sub>ck</sub> = ${n12(Math.sqrt(P.fck), 3)} \xB7 \u03B3<sub>c</sub> = ${n12(P.gc, 2)}${P.tracc ? ` \xB7 ${t("ras.v.tracc")}` : ""}</span>${art4("8.2.6(5), (7), tabla 8.2")}`
     ));
     f.push(fila4(
       "fric",
       t("ras.r.fric"),
       MPa(res.fric),
-      `<span class="f">${t("ras.f.fric")}</span><span class="n">\u03BC<sub>v</sub> = ${n12(P.mu, 1)} \xB7 \u03C3<sub>n</sub> = ${n12(P.sigN, 2)} MPa (\u2264 0,6 f<sub>cd</sub> = ${n12(0.6 * P.fcd)} MPa)</span>${art5("8.2.6(5)")}`
+      `<span class="f">${t("ras.f.fric")}</span><span class="n">\u03BC<sub>v</sub> = ${n12(P.mu, 1)} \xB7 \u03C3<sub>n</sub> = ${n12(P.sigN, 2)} MPa (\u2264 0,6 f<sub>cd</sub> = ${n12(0.6 * P.fcd)} MPa)</span>${art4("8.2.6(5)")}`
     ));
     if (P.anclado) {
       f.push(fila4(
         "cosido",
         t("ras.r.cosido"),
         MPa(res.cosido),
-        `<span class="f">${t("ras.f.cosido23a")}</span><span class="n">\u03C1 = ${n12(rho * 1e3, 2)} \u2030 \xB7 f<sub>yd</sub> = ${n12(P.fyd, 0)} MPa \xB7 \u03BC<sub>v</sub> = ${n12(P.mu, 1)} \xB7 \u03B1 = ${n12(P.alfa, 0)}\xB0</span>${art5("8.2.6(5) (8.76)")}`
+        `<span class="f">${t("ras.f.cosido23a")}</span><span class="n">\u03C1 = ${n12(rho * 1e3, 2)} \u2030 \xB7 f<sub>yd</sub> = ${n12(P.fyd, 0)} MPa \xB7 \u03BC<sub>v</sub> = ${n12(P.mu, 1)} \xB7 \u03B1 = ${n12(P.alfa, 0)}\xB0</span>${art4("8.2.6(5) (8.76)")}`
       ));
       f.push(fila4(
         "lim",
         t("ras.r.lim"),
         MPa(res.lim),
-        `<span class="f">${t("ras.f.lim23a")}</span><span class="n">f<sub>cd</sub> = ${n12(P.fcd)} MPa \u2192 0,30 f<sub>cd</sub> + \u03C1 f<sub>yd</sub> cos\u03B1 = ${MPa(res.lim)}</span>${art5("8.2.6(5) (8.76)")}`
+        `<span class="f">${t("ras.f.lim23a")}</span><span class="n">f<sub>cd</sub> = ${n12(P.fcd)} MPa \u2192 0,30 f<sub>cd</sub> + \u03C1 f<sub>yd</sub> cos\u03B1 = ${MPa(res.lim)}</span>${art4("8.2.6(5) (8.76)")}`
       ));
     } else {
       f.push(fila4(
         "cosido",
         t("ras.r.cosido"),
         MPa(res.cosido),
-        `<span class="f">${t("ras.f.cosido23b")}</span><span class="n">\u03C1 = ${n12(rho * 1e3, 2)} \u2030 \xB7 k<sub>v</sub> = ${n12(P.R.kv, 1)} \xB7 k<sub>dowel</sub> = ${n12(P.kdowel, 1)} \xB7 f<sub>yd</sub> = ${n12(P.fyd, 0)} MPa \xB7 f<sub>cd</sub> = ${n12(P.fcd)} MPa</span>${art5("8.2.6(7) (8.77)")}`
+        `<span class="f">${t("ras.f.cosido23b")}</span><span class="n">\u03C1 = ${n12(rho * 1e3, 2)} \u2030 \xB7 k<sub>v</sub> = ${n12(P.R.kv, 1)} \xB7 k<sub>dowel</sub> = ${n12(P.kdowel, 1)} \xB7 f<sub>yd</sub> = ${n12(P.fyd, 0)} MPa \xB7 f<sub>cd</sub> = ${n12(P.fcd)} MPa</span>${art4("8.2.6(7) (8.77)")}`
       ));
       f.push(fila4(
         "lim",
         t("ras.r.lim"),
         MPa(res.lim),
-        `<span class="f">${t("ras.f.lim23b")}</span><span class="n">f<sub>cd</sub> = ${n12(P.fcd)} MPa \u2192 ${MPa(res.lim)}</span>${art5("8.2.6(7) (8.77)")}`
+        `<span class="f">${t("ras.f.lim23b")}</span><span class="n">f<sub>cd</sub> = ${n12(P.fcd)} MPa \u2192 ${MPa(res.lim)}</span>${art4("8.2.6(7) (8.77)")}`
       ));
     }
   }
@@ -16994,9 +17013,9 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     const [R0, M0, T0, Y0] = sol;
     const en_x = (x) => {
       const a = sumar(x);
-      const F3 = lineal2(x);
+      const F2 = lineal2(x);
       const u = [R0, M0, T0, Y0];
-      return F3.map((f, i) => f.reduce((s, v2, j) => s + v2 * u[j], 0) + a[i]);
+      return F2.map((f, i) => f.reduce((s, v2, j) => s + v2 * u[j], 0) + a[i]);
     };
     const xs = /* @__PURE__ */ new Set();
     for (let i = 0; i <= n; i++) xs.add(L * i / n);
