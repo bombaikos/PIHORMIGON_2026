@@ -47,13 +47,14 @@ function interpolar(xy, x) {
  * @param {{x:number, y:number, etq:string, clase?:string, abajo?:boolean}[]} [o.puntos]  puntos marcados con su rótulo (abajo: bajo el punto) (SVG: subíndices con <tspan class="ind">)
  * @param {{titulo:string, d?:number, dt?:number, alternar?:()=>void, ayuda?:string}} o.ejeX  d: decimales en la cruz; dt: decimales en la tabla (por defecto d + 1); alternar: se llama al pulsar el título del eje (por ejemplo, para pasar de escala logarítmica a lineal), con ayuda como texto emergente
  * @param {{titulo:string, d?:number}} o.ejeY
+ * @param {boolean} [o.sinTabla]  sin el selector Gráfico/Tabla (la tabla numérica va aparte)
  * @param {{x?:number, y?:number}} [o.rejillaSec]  rejilla secundaria (sin números) cada x e y; solo si es más fina que la principal
  * @param {boolean} [o.invertirY]  el eje y crece hacia abajo (momentos flectores: positivos debajo)
  * @param {string} [o.archivo]  nombre base al guardar
  * @param {(texto:string)=>void} [o.avisar]
  * @returns {HTMLElement}
  */
-export function grafica({ series, puntos = [], ejeX, ejeY, archivo = 'grafica', rejillaSec = null, invertirY = false, avisar = () => {} }) {
+export function grafica({ series, puntos = [], ejeX, ejeY, archivo = 'grafica', rejillaSec = null, invertirY = false, sinTabla = false, avisar = () => {} }) {
   // Guía § 1: fuerzas [kN], momentos [kN·m] y áreas de armadura [mm²] sin decimales, también en la cruz y en la tabla, diga lo que diga el módulo
   const sinDec = (e) => (/\((kN|kN·m|mm²)\)/.test(plano(e.titulo)) ? { ...e, d: 0, dt: 0 } : e);
   ejeX = sinDec(ejeX);
@@ -129,7 +130,7 @@ export function grafica({ series, puntos = [], ejeX, ejeY, archivo = 'grafica', 
     bCopiar.title = tabular ? t('graf.copiarTablaTit') : `${t('graf.copiarTit')} (Ctrl+C)`;
     if (!tabular && listo) dibujar();
   }
-  caja.append(barra, svg, tabla, tip, modo);
+  caja.append(barra, svg, tabla, tip, ...(sinTabla ? [] : [modo]));
   ponerModo(false);
 
   // Vista completa: todos los datos, con el 0 dentro y un 10 % de margen por todos los bordes

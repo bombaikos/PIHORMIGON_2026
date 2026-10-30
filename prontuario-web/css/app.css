@@ -1033,3 +1033,13 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
 .veredicto .nom-sec small { font-size: var(--t-xs); color: var(--tinta-3); text-transform: uppercase; letter-spacing: .06em; font-weight: 600; }
 .veredicto .nom-sec b { font-size: calc(24px + var(--mas)); line-height: 1.1; color: var(--tinta); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (max-width: 520px) { .veredicto.con-sec { grid-template-columns: auto auto; } .veredicto .nom-sec { grid-column: 1 / -1; border-right: 0; padding-right: 0; max-width: none; } }
+
+/* Propiedades reológicas: figura con leyenda vertical y deslizador de t0 */
+.fig-ley{display:flex;gap:12px;align-items:stretch;flex:1;min-height:0}
+.fig-ley .lienzo{flex:1;min-width:0}
+.leyenda-v{display:flex;flex-direction:column;gap:6px;font-size:12px;padding-top:8px}
+.ley-item{display:flex;align-items:center;gap:6px;cursor:pointer;white-space:nowrap}
+.ley-muestra{width:34px;height:10px;flex:none}
+.gauge-fila{display:flex;align-items:center;gap:10px;font-size:12px}
+.gauge{flex:1}
+.gauge-valor{min-width:70px;text-align:right;font-weight:600}
