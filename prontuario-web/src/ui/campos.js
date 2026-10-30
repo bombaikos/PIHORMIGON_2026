@@ -133,8 +133,8 @@ export function selector({ id, etq, opciones, valor, onCambio, nota, linea = fal
 }
 
 /** Botones segmentados (radio). */
-export function segmentado({ opciones, valor, onCambio, ancho = false, etiqueta }) {
-  return h('div', { class: `seg${ancho ? ' ancho' : ''}`, role: 'radiogroup', 'aria-label': etiqueta },
+export function segmentado({ opciones, valor, onCambio, ancho = false, capsula = false, etiqueta }) {
+  return h('div', { class: `seg${ancho ? ' ancho' : ''}${capsula ? ' capsula' : ''}`, role: 'radiogroup', 'aria-label': etiqueta },
     ...opciones.map(([v, e, extra = {}]) => h('button', { type: 'button', role: 'radio', 'aria-checked': String(v === valor), html: e, ...extra, onclick: () => onCambio(v) })));
 }
 

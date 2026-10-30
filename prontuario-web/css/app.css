@@ -1033,3 +1033,12 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
 .veredicto .nom-sec small { font-size: var(--t-xs); color: var(--tinta-3); text-transform: uppercase; letter-spacing: .06em; font-weight: 600; }
 .veredicto .nom-sec b { font-size: calc(24px + var(--mas)); line-height: 1.1; color: var(--tinta); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (max-width: 520px) { .veredicto.con-sec { grid-template-columns: auto auto; } .veredicto .nom-sec { grid-column: 1 / -1; border-right: 0; padding-right: 0; max-width: none; } }
+
+/* Cápsula: opción excluyente de modo de cálculo (propuesta en Flexión simple, pendiente de visto bueno) */
+.seg.capsula { border-radius: 999px; padding: 2px; gap: 2px; background: var(--hoja); }
+.seg.capsula button { border-radius: 999px; min-height: 26px; font-size: var(--t-xs); padding-inline: 4px; }
+.seg.capsula button[aria-checked="true"] { background: var(--acento-suave); color: var(--acento); font-weight: 600; box-shadow: inset 0 0 0 1px var(--acento); }
+.desl-md { display: flex; align-items: center; gap: var(--e3); flex-shrink: 0; }
+.desl-md .desl-valor { font-size: var(--t-s); color: var(--tinta-2); white-space: nowrap; }
+.desl-md .desliza-sec { flex: 1; }
+.fcr-graf > .grafica { flex: 1; min-height: 0; }

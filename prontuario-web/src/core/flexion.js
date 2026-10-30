@@ -448,26 +448,30 @@ export function clasificarRotura(d, x) {
 }
 
 /**
- * Curva MRd–As1 de la sección para dos disposiciones de armadura:
- *  - «simple»: solo A_s1 (sin armadura de compresión);
- *  - «doble»: con A_s2 = máx(0, A_s1 − A_lim), la mínima que mantiene plastificada la de tracción
- *    (la misma regla que usa el dimensionamiento tras el momento límite).
+ * Diagrama de dimensionamiento de una sección: para cada A_s1 (armadura de la cara traccionada, «principal»)
+ * el momento resistente M_Rd y la armadura de la cara opuesta A_s2 que usa el dimensionamiento:
+ * A_s2 = máx(0, A_s1 − A_lim), la mínima que mantiene plastificada la de tracción (nula hasta M_lim).
+ * Parte de A_s,min y llega a 1,3·A_lim.
  * @param {DatosRect} d
- * @returns {{simple:number[][], doble:number[][], Alim:number, Amin:number, Amax:number, Mlim:number}}  puntos [A (m²), M (kN·m)]
+ * @returns {{as1:number[][], as2:number[][], Alim:number, Amin:number, Amax:number, Mlim:number, Mmin:number, Mmax:number}}
+ *   as1 = [A_s1 (m²), M (kN·m)], as2 = [A_s2 (m²), M (kN·m)]
  */
-export function curvaMRd(d, { Nd = 0, elemento = 'viga', n = 40 } = {}) {
+export function curvaDiseno(d, { Nd = 0, elemento = 'viga', n = 60 } = {}) {
   const c = cuantiasMinMax(d, elemento, { Nd });
   const lim = momentoLimite(d);
   const Alim = -lim.Nlim / resistenciaCalculo(d.acero);
-  // Hasta algo más de A_lim: ahí se separan las dos curvas y se ve lo que aporta la armadura de compresión
-  const Atope = Math.min(Alim + Math.max(0, (c.Amax - Alim) / 2), 1.3 * Alim);
+  const Atope = Math.max(Math.min(Alim + Math.max(0, (c.Amax - Alim) / 2), 1.3 * Alim), 1.5 * c.Amin);
   const N = -Nd;
-  const simple = [];
-  const doble = [];
-  for (let i = 1; i <= n; i++) {
-    const A = (Atope * i) / n;
-    try { simple.push([A, Mu(d, A, 0, N).M]); } catch { /* sin plano admisible */ }
-    try { doble.push([A, Mu(d, A, Math.max(0, A - Alim), N).M]); } catch { /* idem */ }
+  const as1 = [];
+  const as2 = [];
+  for (let i = 0; i <= n; i++) {
+    const A = c.Amin + (Atope - c.Amin) * (i / n);
+    const A2 = Math.max(0, A - Alim);
+    try {
+      const M = Mu(d, A, A2, N).M;
+      as1.push([A, M]);
+      as2.push([A2, M]);
+    } catch { /* sin plano admisible */ }
   }
-  return { simple, doble, Alim, Amin: c.Amin, Amax: c.Amax, Mlim: lim.Mlim };
+  return { as1, as2, Alim, Amin: c.Amin, Amax: c.Amax, Mlim: lim.Mlim, Mmin: as1[0]?.[1], Mmax: as1.at(-1)?.[1] };
 }

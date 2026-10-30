@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { proyectoNuevo, datosViga } from '../src/io/proyecto.js';
-import { comprobar, dimensionar, clasificarRotura, curvaMRd } from '../src/core/flexion.js';
+import { comprobar, dimensionar, clasificarRotura, curvaDiseno } from '../src/core/flexion.js';
 
 const cerca = (a, b, tol) => assert.ok(Math.abs(a - b) <= tol * Math.max(1, Math.abs(b)), `${a} no está a ${tol} de ${b}`);
 const viga = (p, nombre) => p.secciones.find((s) => s.nombre === nombre);
@@ -69,15 +69,20 @@ test('Clase de rotura con el criterio del EC-2 5.5(4) en las tres normas (εcu2 
   }
 });
 
-test('Curva MRd–As1: con compresión nunca queda por debajo y coincide hasta Alim', () => {
+test('Diagrama de dimensionamiento: M crece con A_s1, A_s2 nula hasta A_lim y la curva reproduce dimensionar', () => {
   const p = proyectoNuevo();
   const d = datosViga(p, viga(p, 'ejemplo_1'), 1);
-  const c = curvaMRd(d);
-  assert.equal(c.simple.length, c.doble.length);
-  c.simple.forEach(([A, M], i) => {
-    assert.ok(c.doble[i][1] >= M - 1e-6);
-    if (A <= c.Alim) cerca(c.doble[i][1], M, 1e-9);
-    if (i) assert.ok(M >= c.simple[i - 1][1] - 1e-6, 'creciente');
+  const c = curvaDiseno(d);
+  assert.ok(c.as1.length > 40);
+  cerca(c.as1[0][0], c.Amin, 1e-12);
+  c.as1.forEach(([A, M], i) => {
+    if (i) assert.ok(M >= c.as1[i - 1][1] - 1e-6, 'creciente');
+    if (A <= c.Alim) assert.equal(c.as2[i][0], 0);
+    else cerca(c.as2[i][0], A - c.Alim, 1e-12);
   });
-  assert.ok(c.doble.at(-1)[1] > c.simple.at(-1)[1]);
+  // A mitad de camino, dimensionar con ese M da la armadura de la curva
+  const [A, M] = c.as1[Math.floor(c.as1.length / 2)];
+  const r = dimensionar(d, M);
+  cerca(r.Ainf, A, 2e-3);
+  cerca(r.Asup, c.as2[Math.floor(c.as2.length / 2)][0], 2e-3);
 });
