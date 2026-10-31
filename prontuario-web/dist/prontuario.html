@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 </head>
 <body>
-<title>Prontuario del Hormigón</title>
+<title>Prontuario Informático del Hormigón 2026 BETA a</title>
 <style>
 /* Prontuario web. Estilo según analisis/guia-estilo-prontuario.md (la maqueta de flexión es la referencia).
    Disposición: todo en una pantalla de PC (§ 13): barra de una línea; datos | dibujo | resultados, sin scroll de página. En móvil, una columna. */
@@ -17684,7 +17684,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
   }
 
   // src/ui/app.js
-  var EMISION = typeof __FECHA_EMISION__ !== "undefined" ? __FECHA_EMISION__ : (/* @__PURE__ */ new Date()).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "2-digit" }).replace(/\//g, ".");
+  var EMISION = true ? "31.10.26" : (/* @__PURE__ */ new Date()).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "2-digit" }).replace(/\//g, ".");
   function vistaSecciones(m, propia) {
     const fijar = (f) => (...a) => {
       modo(m);
