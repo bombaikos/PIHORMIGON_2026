@@ -23,6 +23,7 @@ import * as punzonamiento from './vistas/punzonamiento.js';
 import * as rasante from './vistas/rasante.js';
 import * as vigas1vano from './vistas/vigas.js';
 import { guardarProyecto, abrirProyecto, nuevoProyecto } from './vistas/proyecto.js';
+import { iniciarGlobos } from './globo.js';
 
 // Fecha de emisión de la versión BETA (dd.mm.aa): la inyecta tools/build.mjs al empaquetar;
 // sin empaquetar (desarrollo) se usa la de hoy
@@ -314,6 +315,7 @@ function leerPref(k) { try { return localStorage.getItem(`prontuario-web:${k}`);
 /* ---------- arranque ---------- */
 
 export function iniciar() {
+  iniciarGlobos();
   ponerLengua(lenguaActual());
   const guardado = cargarLocal();
   estado.proyecto = guardado ?? proyectoNuevo(t('ejemploNombre'));
