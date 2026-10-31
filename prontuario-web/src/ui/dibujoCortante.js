@@ -3,7 +3,7 @@
 
 import { fmt } from './formato.js';
 import { t } from './i18n.js';
-import { DEFS, encuadre, capasSeccion } from './dibujoSeccion.js';
+import { DEFS, encuadre, capasSeccion, topeEscala, SECCION_MAX } from './dibujoSeccion.js';
 
 const mm = (x) => fmt(x * 1000, 0);
 const sub = (b, s) => `${b}<tspan baseline-shift="sub" font-size="75%">${s}</tspan>`;
@@ -14,7 +14,7 @@ const sub = (b, s) => `${b}<tspan baseline-shift="sub" font-size="75%">${s}</tsp
  * @param {{b0:number, d:number, z:number, cotTheta:number, alfa:number, neg?:boolean, sinArmadura?:boolean}} c  longitudes en m
  */
 export function dibujoCortante(geo, sec, c) {
-  const e = encuadre(geo, 200, 240, { completa: false });
+  const e = encuadre(geo, 200, Math.min(240, SECCION_MAX), { completa: false });
   const x0 = 46;
   const y0 = 34;
   const { svg, hp, bp } = capasSeccion(geo, sec, { e, x0, y0, id: 'cor', cotasCapas: false, abajo: !!c.neg });
@@ -111,5 +111,5 @@ export function dibujoCortante(geo, sec, c) {
     (c.sinArmadura ? '' : `<rect class="alz-cerco" x="${xe + 176}" y="${y3 - 6}" width="18" height="4"/><text x="${xe + 200}" y="${y3}">${t('cor.dib.cercos')}</text>`) + '</g>');
   const W = xe + ANCHO + 90;
   const H = Math.max(y0 + hp + (sec.forma === 'T' ? 92 : 64), y3 + 14);
-  return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${W.toFixed(0)} ${H.toFixed(0)}" role="img" aria-label="${t('cor.dib.aria', mm(c.b0), mm(c.d))}">${out.join('')}</svg>`;
+  return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${W.toFixed(0)} ${H.toFixed(0)}"${topeEscala(W, H)} role="img" aria-label="${t('cor.dib.aria', mm(c.b0), mm(c.d))}">${out.join('')}</svg>`;
 }
