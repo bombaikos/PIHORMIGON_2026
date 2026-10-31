@@ -58,6 +58,7 @@ Resumen de lo decidido por José Luis (fechas de 2026). Cada módulo tiene su de
 - Sin botón Calcular: cada cambio recalcula.
 - Proceso: **ver el resultado en Chromium antes de subir**, nunca código a ciegas; enseñar a José Luis antes de subir cambios de interfaz.
 - Si una regla de un hilo choca con la guía común (`bombaikos/guia-de-diseno`), manda la guía y se avisa del choque antes de aplicar nada.
+- Tamaño máximo de la sección dibujada (31/10, Pepiño): lado mayor ≤ 300 px en todo el Prontuario; sin ampliar el dibujo por encima de su escala natural. Guía § 8; `SECCION_MAX`/`topeEscala()`.
 
 ## Repositorios
 - `bombaikos/pihormigon_2026`: código (fuente de verdad). `bombaikos/guia-de-diseno`: guía común de diseño (nacida de VLASTA; guía de reglas, no diario). Bitbucket `ines_dev/pih_2026`: copia automática, solo lectura para los hilos.

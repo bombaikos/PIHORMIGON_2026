@@ -11,7 +11,7 @@ import { eje, fmt, q, qh, ESP, MAG, serieDiametros } from '../formato.js';
 import { h, poner, campoNum, campoArmado, selector, segmentado, grupo, par, aviso, cifras, tabla, pestanas, regleta } from '../campos.js';
 import { grafica } from '../grafica.js';
 import { grupoSeccion, rotulaSeccion } from './secciones.js';
-import { DEFS, encuadre, capasSeccion } from '../dibujoSeccion.js';
+import { DEFS, encuadre, capasSeccion, topeEscala, SECCION_MAX } from '../dibujoSeccion.js';
 
 const est = { i: null, modo: 'comprobar', signo: 1, Md: 180, elemento: 'viga', abiertos: new Set(['mrd']), desp: 0.5 };
 export function reiniciar() { est.i = null; }
@@ -266,7 +266,7 @@ function dibujoSeccionViva(p, s, d, r, neg) {
   const { svg, hp, bp } = capasSeccion(geo, s, { e, x0, y0, x: r.x, id: 'fsd', cotasCapas: false, abajo: neg });
   const yn = neg ? y0 + hp - Math.min(r.x, d.h) * e.s : y0 + Math.min(r.x, d.h) * e.s;
   const en = `<line class="en" x1="${x0 - 8}" y1="${yn}" x2="${x0 + bp + 8}" y2="${yn}"/><text x="${x0 + bp + 12}" y="${yn + 4}" style="fill:var(--acento)">x = ${fmt(r.x * 1000, 0)}</text>`;
-  return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${x0 + bp + 70} ${y0 + hp + 44}" role="img" aria-label="${t('g.seccion')}">${DEFS}${svg}${en}</svg>`;
+  return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${x0 + bp + 70} ${y0 + hp + 44}"${topeEscala(x0 + bp + 70, y0 + hp + 44)} role="img" aria-label="${t('g.seccion')}">${DEFS}${svg}${en}</svg>`;
 }
 
 export function veredicto(clase, sello, etq, valor, ecu, barra) {
@@ -358,7 +358,7 @@ function traza(p, d, r, Asreq, rot) {
 function dibujoFlexion(geo, s, d, r, desp = 0.5) {
   const W = 680;
   const top = 56;
-  const e = encuadre(geo, 300, 290, { desp });
+  const e = encuadre(geo, SECCION_MAX, SECCION_MAX, { desp });
   const x0 = 64;
   const y0 = top;
   const neg = d.signo < 0;
@@ -409,7 +409,7 @@ function dibujoFlexion(geo, s, d, r, desp = 0.5) {
   }
   const Wt = Math.max(W, t0 + 110);
   out.push(`<text x="${x0}" y="${H - 8}" style="fill:var(--tinta-3)">${t('notaDib')}</text>`);
-  return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${Wt} ${H}" role="img" aria-label="${t('dibFlexAria', fmt(d.b * 1000, 0), fmt(d.h * 1000, 0), fmt(r.x * 1000, 0))}">${out.join('')}</svg>`;
+  return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${Wt} ${H}"${topeEscala(Wt, H)} role="img" aria-label="${t('dibFlexAria', fmt(d.b * 1000, 0), fmt(d.h * 1000, 0), fmt(r.x * 1000, 0))}">${out.join('')}</svg>`;
 }
 
 export function comandos(ctx) {

@@ -9199,6 +9199,8 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     const tx2 = lado === "izq" ? x - 6 : x + 12;
     return `<line class="cota" x1="${x}" y1="${y1}" x2="${x}" y2="${y2}" marker-start="url(#tic)" marker-end="url(#tic)"/>` + (xRef !== void 0 ? `<line class="ref" x1="${x - 4}" y1="${y1}" x2="${xRef}" y2="${y1}"/><line class="ref" x1="${x - 4}" y1="${y2}" x2="${xRef}" y2="${y2}"/>` : "") + `<text x="${tx2}" y="${(y1 + y2) / 2}" text-anchor="middle" transform="rotate(-90 ${tx2} ${(y1 + y2) / 2})">${texto}</text>`;
   }
+  var SECCION_MAX = 300;
+  var topeEscala = (W, H) => ` style="max-width:${Math.ceil(W)}px;max-height:${Math.ceil(H)}px"`;
   function encuadre(geo, anchoMax, altoMax, { completa = false, desp = 0.5 } = {}) {
     const { xmin, xmax } = geo.caja;
     const b = xmax - xmin;
@@ -9302,7 +9304,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     }
     return { svg: out.join(""), hp, bp };
   }
-  function dibujoSeccion(geo, sec, { ancho = 560, alto = 320, x = null } = {}) {
+  function dibujoSeccion(geo, sec, { ancho = 560, alto = SECCION_MAX, x = null } = {}) {
     const margenIzq = 64;
     const margenDer = sec.forma === "generica" ? 40 : 175;
     const e2 = encuadre(geo, ancho - margenIzq - margenDer, alto, { completa: true });
@@ -9312,7 +9314,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     const W = Math.max(ancho, x0 + bp + margenDer);
     const H = y0 + hp + (sec.forma === "T" ? 76 : 50);
     const aria = t("dib.aria", mm(geo.caja.xmax - geo.caja.xmin), mm(geo.h), geo.barras.length);
-    return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${W} ${H}" role="img" aria-label="${aria}">${DEFS}${svg}</svg>`;
+    return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${W} ${H}"${topeEscala(W, H)} role="img" aria-label="${aria}">${DEFS}${svg}</svg>`;
   }
 
   // src/ui/vistas/secciones.js
@@ -11651,7 +11653,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     const { svg, hp, bp } = capasSeccion(geo, s, { e: e2, x0, y0, x: r.x, id: "fsd", cotasCapas: false, abajo: neg });
     const yn = neg ? y0 + hp - Math.min(r.x, d.h) * e2.s : y0 + Math.min(r.x, d.h) * e2.s;
     const en = `<line class="en" x1="${x0 - 8}" y1="${yn}" x2="${x0 + bp + 8}" y2="${yn}"/><text x="${x0 + bp + 12}" y="${yn + 4}" style="fill:var(--acento)">x = ${fmt(r.x * 1e3, 0)}</text>`;
-    return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${x0 + bp + 70} ${y0 + hp + 44}" role="img" aria-label="${t("g.seccion")}">${DEFS}${svg}${en}</svg>`;
+    return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${x0 + bp + 70} ${y0 + hp + 44}"${topeEscala(x0 + bp + 70, y0 + hp + 44)} role="img" aria-label="${t("g.seccion")}">${DEFS}${svg}${en}</svg>`;
   }
   function veredicto(clase, sello, etq, valor, ecu, barra3) {
     const icos = {
@@ -11753,7 +11755,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
   function dibujoFlexion(geo, s, d, r, desp = 0.5) {
     const W = 680;
     const top = 56;
-    const e2 = encuadre(geo, 300, 290, { desp });
+    const e2 = encuadre(geo, SECCION_MAX, SECCION_MAX, { desp });
     const x0 = 64;
     const y0 = top;
     const neg = d.signo < 0;
@@ -11801,7 +11803,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     }
     const Wt = Math.max(W, t0 + 110);
     out.push(`<text x="${x0}" y="${H - 8}" style="fill:var(--tinta-3)">${t("notaDib")}</text>`);
-    return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${Wt} ${H}" role="img" aria-label="${t("dibFlexAria", fmt(d.b * 1e3, 0), fmt(d.h * 1e3, 0), fmt(r.x * 1e3, 0))}">${out.join("")}</svg>`;
+    return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${Wt} ${H}"${topeEscala(Wt, H)} role="img" aria-label="${t("dibFlexAria", fmt(d.b * 1e3, 0), fmt(d.h * 1e3, 0), fmt(r.x * 1e3, 0))}">${out.join("")}</svg>`;
   }
   function comandos5(ctx2) {
     return [
@@ -12161,7 +12163,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     const x0 = 46;
     const y0 = 10;
     const { svg, hp, bp } = capasSeccion(geo, s, { e: e2, x0, y0, x: null, id: "fcrs", cotasCapas: false });
-    return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${x0 + bp + 30} ${y0 + hp + 32}" role="img" aria-label="${t("g.seccion")}">${DEFS}${svg}</svg>`;
+    return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${x0 + bp + 30} ${y0 + hp + 32}"${topeEscala(x0 + bp + 30, y0 + hp + 32)} role="img" aria-label="${t("g.seccion")}">${DEFS}${svg}</svg>`;
   }
   function tablaEsfuerzos(gam) {
     const filas = gam.map((x) => [
@@ -12252,7 +12254,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     const top = 56;
     const x0 = 64;
     const y0 = top;
-    const em = encuadre(geo, 300, 290, { desp: 0.5 });
+    const em = encuadre(geo, SECCION_MAX, SECCION_MAX, { desp: 0.5 });
     const xn = Number.isFinite(e2.x) ? Math.min(Math.max(e2.x, 0), geo.h) : 0;
     const { svg, hp, bp } = capasSeccion(geo, s, { e: em, x0, y0, x: e2.x > 0 ? e2.x : null, id: "fcr", cotasCapas: false });
     const Y = (y) => y0 + y * em.s;
@@ -12305,7 +12307,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     }
     const Wt = t0 + 215;
     const H = y0 + hp + 40;
-    return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${Wt} ${H}" role="img" aria-label="${t("fcr.dibujoAria")}">${out.join("")}</svg>`;
+    return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${Wt} ${H}"${topeEscala(Wt, H)} role="img" aria-label="${t("fcr.dibujoAria")}">${out.join("")}</svg>`;
   }
   function cifrasArmadura(c, dim) {
     const mm4 = (x, dd) => `${fmt(x, dd)}<span class="u"> mm</span>`;
@@ -13876,7 +13878,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
   // src/ui/dibujoCortante.js
   var mm2 = (x) => fmt(x * 1e3, 0);
   function dibujoCortante(geo, sec, c) {
-    const e2 = encuadre(geo, 200, 240, { completa: false });
+    const e2 = encuadre(geo, 200, Math.min(240, SECCION_MAX), { completa: false });
     const x0 = 46;
     const y0 = 34;
     const { svg, hp, bp } = capasSeccion(geo, sec, { e: e2, x0, y0, id: "cor", cotasCapas: false, abajo: !!c.neg });
@@ -13960,7 +13962,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     out.push(`<g class="alz-leyenda"><rect class="alz-biela" x="${xe}" y="${y3 - 9}" width="18" height="10"/><text x="${xe + 24}" y="${y3}">${t("cor.dib.biela")}</text>` + (c.sinArmadura ? "" : `<rect class="alz-cerco" x="${xe + 176}" y="${y3 - 6}" width="18" height="4"/><text x="${xe + 200}" y="${y3}">${t("cor.dib.cercos")}</text>`) + "</g>");
     const W = xe + ANCHO3 + 90;
     const H = Math.max(y0 + hp + (sec.forma === "T" ? 92 : 64), y3 + 14);
-    return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${W.toFixed(0)} ${H.toFixed(0)}" role="img" aria-label="${t("cor.dib.aria", mm2(c.b0), mm2(c.d))}">${out.join("")}</svg>`;
+    return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${W.toFixed(0)} ${H.toFixed(0)}"${topeEscala(W, H)} role="img" aria-label="${t("cor.dib.aria", mm2(c.b0), mm2(c.d))}">${out.join("")}</svg>`;
   }
 
   // src/ui/vistas/cortante.js

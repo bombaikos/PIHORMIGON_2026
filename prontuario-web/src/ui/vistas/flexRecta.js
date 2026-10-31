@@ -20,7 +20,7 @@ import { grupoSeccion, rotulaSeccion } from './secciones.js';
 import { h, poner, campoNum, selector, segmentado, grupo, aviso, cifras, pestanas } from '../campos.js';
 import { rejilla } from '../rejilla.js';
 import { grafica } from '../grafica.js';
-import { dibujoSeccion, DEFS, encuadre, capasSeccion } from '../dibujoSeccion.js';
+import { dibujoSeccion, DEFS, encuadre, capasSeccion, topeEscala, SECCION_MAX } from '../dibujoSeccion.js';
 import { veredicto } from './flexion.js';
 
 // Solo secciones con armadura simétrica respecto al eje de flexión (pilar rectangular y circular): basta el diagrama con M ≥ 0
@@ -208,7 +208,7 @@ function dibujoSeccionPeq(geo, s) {
   const x0 = 46;
   const y0 = 10;
   const { svg, hp, bp } = capasSeccion(geo, s, { e, x0, y0, x: null, id: 'fcrs', cotasCapas: false });
-  return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${x0 + bp + 30} ${y0 + hp + 32}" role="img" aria-label="${t('g.seccion')}">${DEFS}${svg}</svg>`;
+  return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${x0 + bp + 30} ${y0 + hp + 32}"${topeEscala(x0 + bp + 30, y0 + hp + 32)} role="img" aria-label="${t('g.seccion')}">${DEFS}${svg}</svg>`;
 }
 
 function tablaEsfuerzos(gam) {
@@ -292,7 +292,7 @@ function dibujoRotura(geo, s, c, e) {
   const top = 56;
   const x0 = 64;
   const y0 = top;
-  const em = encuadre(geo, 300, 290, { desp: 0.5 });
+  const em = encuadre(geo, SECCION_MAX, SECCION_MAX, { desp: 0.5 });
   const xn = Number.isFinite(e.x) ? Math.min(Math.max(e.x, 0), geo.h) : 0;
   const { svg, hp, bp } = capasSeccion(geo, s, { e: em, x0, y0, x: e.x > 0 ? e.x : null, id: 'fcr', cotasCapas: false });
   const Y = (y) => y0 + y * em.s;
@@ -338,7 +338,7 @@ function dibujoRotura(geo, s, c, e) {
   }
   const Wt = t0 + 215;
   const H = y0 + hp + 40;
-  return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${Wt} ${H}" role="img" aria-label="${t('fcr.dibujoAria')}">${out.join('')}</svg>`;
+  return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${Wt} ${H}"${topeEscala(Wt, H)} role="img" aria-label="${t('fcr.dibujoAria')}">${out.join('')}</svg>`;
 }
 
 /** Cifras de la armadura: ø de cálculo, o en Dimensionar ø estricto y propuesto con sus áreas. */

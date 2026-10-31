@@ -27,6 +27,12 @@ function cotaV(x, y1, y2, texto, xRef, lado = 'izq') {
     + `<text x="${tx}" y="${(y1 + y2) / 2}" text-anchor="middle" transform="rotate(-90 ${tx} ${(y1 + y2) / 2})">${texto}</text>`;
 }
 
+/** Lado mayor máximo de la sección dibujada, en px de pantalla (guía § 8): ningún dibujo se amplía por encima de su tamaño natural. */
+export const SECCION_MAX = 300;
+
+/** Atributo style que impide ampliar un SVG (1 unidad del viewBox = 1 px como máximo), de modo que la sección no pase de SECCION_MAX px. */
+export const topeEscala = (W, H) => ` style="max-width:${Math.ceil(W)}px;max-height:${Math.ceil(H)}px"`;
+
 /**
  * Escala y encuadre para una caja de dibujo.
  * @param {{completa?: boolean, desp?: number}} [o]  completa: dibuja toda la anchura; desp: posición del tramo (0 izquierda, 1 derecha)
@@ -152,7 +158,7 @@ export function capasSeccion(geo, sec, { e, x0, y0, x = null, id = 'd', cotasCap
 }
 
 /** SVG de la sección sola, para la pantalla de Secciones. */
-export function dibujoSeccion(geo, sec, { ancho = 560, alto = 320, x = null } = {}) {
+export function dibujoSeccion(geo, sec, { ancho = 560, alto = SECCION_MAX, x = null } = {}) {
   const margenIzq = 64;
   // En Secciones se ve siempre la sección entera, por ancha que sea; la genérica no lleva cotas a la derecha
   const margenDer = sec.forma === 'generica' ? 40 : 175;
@@ -163,5 +169,5 @@ export function dibujoSeccion(geo, sec, { ancho = 560, alto = 320, x = null } = 
   const W = Math.max(ancho, x0 + bp + margenDer);
   const H = y0 + hp + (sec.forma === 'T' ? 76 : 50);
   const aria = t('dib.aria', mm(geo.caja.xmax - geo.caja.xmin), mm(geo.h), geo.barras.length);
-  return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${W} ${H}" role="img" aria-label="${aria}">${DEFS}${svg}</svg>`;
+  return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${W} ${H}"${topeEscala(W, H)} role="img" aria-label="${aria}">${DEFS}${svg}</svg>`;
 }

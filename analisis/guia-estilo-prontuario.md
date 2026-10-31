@@ -65,6 +65,7 @@ Esta guía recoge las decisiones de José Luis (8 de octubre de 2026) y las reco
 - Al pasar el ratón por un elemento se resalta a la vez en el dibujo y en la tabla.
 
 - **Los textos de dibujos y gráficas miden siempre lo mismo en pantalla**: 12 px las cotas y valores y 10 px los rótulos de cada diagrama, aunque el SVG se escale. La escala real se mide al dibujar y al cambiar el tamaño de la ventana (variable CSS `--k`), y la fuente se divide por ella.
+- **Tamaño máximo de la sección dibujada** (Pepiño, 31/10): el lado mayor de la sección en pantalla no pasa de **300 px**, en todos los módulos (Secciones, Flexión simple y compuesta, Cortante…). El dibujo no se amplía por encima de su tamaño natural (1 unidad del viewBox = 1 px como máximo): en pantallas grandes sobra espacio debajo y a la derecha, y no se agranda la sección. En columnas estrechas el SVG sí se reduce. En código: `SECCION_MAX` y `topeEscala()` de `src/ui/dibujoSeccion.js`; todo dibujo nuevo con sección los usa.
 
 ## 9. Gráficas
 - Mantienen la misma paleta y la misma fuente.
