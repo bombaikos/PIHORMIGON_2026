@@ -17,6 +17,8 @@ Actualizado: 31/10/2026. **Actualiza este archivo al cerrar cada tarea.** El est
 
 - **Flexión compuesta esviada** (fusionada 31/10; PR 39–41 y siguiente): Rec pilar y genéricas, diagrama de interacción Mx–My con regleta de axil (rosa en tracción), selector e_mín en una dirección. Rama `flexion-esviada-6` (PR abierto): tarjeta de diagnóstico con «Coeficiente de seguridad» (sin la palabra γ ni |OQ|/|OP|); figura con Mx y My como vectores de doble punta (Mx>0 a la izquierda, My>0 hacia arriba); Diagrama con selector «Constante» N | Mx | My (diagramas N–M a momento fijo, superficie de rotura muestreada una vez y γ a excentricidad constante). Ver `analisis/flexion-esviada-decisiones.md`.
 
+- **ELS ▸ Estado tensional** (rama `els-estado-tensional`, sin PR): motor hecho (`src/core/estadoTensional.js`, 10 tests); falta vista, menú, i18n y test de pantalla. Maqueta aprobada en concepto en `analisis/maqueta/estado-tensional.html`; decisiones en `analisis/estado-tensional-decisiones.md`.
+
 ## A medias / pendiente conocido
 - **Cápsula de modo** (Comprobación | Dimensionamiento | Diagrama): José Luis la extenderá a todos los módulos.
 - **Durabilidad**: tablas propias de EHE-08 y EC-2 2004 (hoy cmin,dur manual en parte).
