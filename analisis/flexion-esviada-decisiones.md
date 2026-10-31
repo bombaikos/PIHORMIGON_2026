@@ -32,5 +32,5 @@ Como el «esviada por β» del 3.1: para cada dirección θ de la fibra más com
 - γ en N–M: análogo al de Mx–My. Con el momento fijo M0 y excentricidad constante (e = M/N), γ = λ con λ·(N, M) sobre el diagrama (Q = λ·P). Un punto dentro tiene γ ≥ 1 (el corte más lejano); fuera, el corte más cercano por debajo de 1 (0 si no hay).
 - Cada punto lleva su N y el otro momento; todos usan el momento fijo de la regleta. Con N constante siguen usando el N de la regleta.
 - Los ejes del diagrama N–M son fijos: N entre las capacidades de tracción y compresión; el otro momento hasta su máximo.
-- El diagnóstico de la tarjeta grande ya no muestra γ (solo sección, estado y barra).
+- La tarjeta grande de diagnóstico no lleva la palabra «γ» ni «|OQ|/|OP|», pero sí el coeficiente de seguridad (número) con esa etiqueta (Pepiño, 31/10).
 - Figura de la sección: Mx y My como vectores de doble punta en gris (regla de la mano derecha: Mx>0 apunta a la izquierda, My>0 hacia arriba); β antihorario; x perpendicular a la recta neutra.

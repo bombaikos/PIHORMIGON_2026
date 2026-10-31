@@ -1123,8 +1123,6 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
 @media (min-width: 1100px) and (min-height: 600px) { .fcr-diag.fcr-ancho { grid-template-columns: minmax(0, 1fr) minmax(300px, 500px); } }
 .fce-tabla table.rejilla th, .fce-tabla table.rejilla td { font-size: 11px; padding-inline: 3px; }
 .fcr-ancho .fcr-lado .fcr-sec svg { max-height: min(230px, 32vh); }
-.veredicto.con-sec.sin-ratio { grid-template-columns: auto minmax(0, 1fr) auto; }
-.veredicto.sin-ratio:not(.con-sec) { grid-template-columns: minmax(0, 1fr) auto; }
 .dib .mom { stroke: var(--tinta-3); stroke-width: 1.8; fill: none; }
 .dib .mom-t { fill: var(--tinta-2); font-weight: 700; }
 .dib .mom-t .sub { font-size: 9px; font-weight: 600; }
@@ -13073,14 +13071,14 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       }
     } else {
       const ok = gmin >= 1 - 1e-6;
-      res.append(sinRatio(veredicto(
+      res.append(veredicto(
         ok ? "cumple" : "nocumple",
         ok ? t("cumple") : t("noCumple"),
-        "",
-        "",
+        t("fcr.coefSeg"),
+        sigla2(gmin),
         `${sub20("N", "Ed")} <b>${q(gam[0].N, "N")}</b> \xB7 ${sub20("M", "x,Ed")} <b>${q(gam[0].Mx, "M")}</b> \xB7 ${sub20("M", "y,Ed")} <b>${q(gam[0].My, "M")}</b>`,
         Math.min(1 / Math.max(gmin, 1e-9) / 1.25, 1)
-      )));
+      ));
     }
     const Asd = c.As0 * c.k;
     if (Asd + 1e-12 < c.Amin) res.append(aviso(t("fcr.bajoMin", q(Asd, "As"), q(c.Amin, "As"))));
@@ -13088,11 +13086,6 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     if (gam.some((x) => x.subeM)) res.append(aviso(t("fce.subeEmin", est6.dirEmin === "y" ? t("fce.dirY") : t("fce.dirX"), fmt(emin2[est6.dirEmin] * 1e3, 0)), "info"));
     if (gam.some((x) => x.N > c.lim.Ncomp + 1e-9 || x.N < c.lim.Ntrac - 1e-9)) res.append(aviso(t("fce.fueraAxil", `${q(c.lim.Ntrac, "N")} \u2026 ${q(c.lim.Ncomp, "N")}`)));
     return resultadoUnico2(ctx2, res, { s, c, gam: gam[0], gmin, dim });
-  }
-  function sinRatio(v2) {
-    v2.querySelector(".ratio")?.remove();
-    v2.classList.add("sin-ratio");
-    return v2;
   }
   function veredictoDiagrama(c) {
     let gs;
@@ -13106,18 +13099,18 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       gs = puntosNM(c, M0, true).pts.map((x) => x.g);
       etq = `${sub20("M", est6.fijo === "My" ? "y" : "x")} = ${fmt(M0, MAG.M.d)} ${MAG.M.ud}`;
     }
-    if (!gs.length) return sinRatio(veredicto("atencion", t("fce.sinPuntos"), "", "", etq));
+    if (!gs.length) return veredicto("atencion", t("fce.sinPuntos"), t("fcr.coefSeg"), "\u2014", etq);
     const gmin = Math.min(...gs);
     const fuera = gs.filter((g) => g < 1 - 1e-6).length;
     const ok = fuera === 0;
-    return sinRatio(veredicto(
+    return veredicto(
       ok ? "cumple" : "nocumple",
       ok ? t("cumple") : t("noCumple"),
-      "",
-      "",
+      t("fcr.coefSeg"),
+      sigla2(gmin),
       `${etq} \xB7 ${t("fce.puntosFuera", fuera, gs.length)}`,
       Math.min(1 / Math.max(gmin, 1e-9) / 1.25, 1)
-    ));
+    );
   }
   function graficoMxMy(ctx2, c, gam, s) {
     const axiles = [];

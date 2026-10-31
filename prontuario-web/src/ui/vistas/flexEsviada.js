@@ -186,8 +186,8 @@ function resultadosEsviada(ctx, res) {
     }
   } else {
     const ok = gmin >= 1 - 1e-6;
-    res.append(sinRatio(veredicto(ok ? 'cumple' : 'nocumple', ok ? t('cumple') : t('noCumple'), '', '',
-      `${sub('N', 'Ed')} <b>${q(gam[0].N, 'N')}</b> · ${sub('M', 'x,Ed')} <b>${q(gam[0].Mx, 'M')}</b> · ${sub('M', 'y,Ed')} <b>${q(gam[0].My, 'M')}</b>`, Math.min(1 / Math.max(gmin, 1e-9) / 1.25, 1))));
+    res.append(veredicto(ok ? 'cumple' : 'nocumple', ok ? t('cumple') : t('noCumple'), t('fcr.coefSeg'), sigla(gmin),
+      `${sub('N', 'Ed')} <b>${q(gam[0].N, 'N')}</b> · ${sub('M', 'x,Ed')} <b>${q(gam[0].Mx, 'M')}</b> · ${sub('M', 'y,Ed')} <b>${q(gam[0].My, 'M')}</b>`, Math.min(1 / Math.max(gmin, 1e-9) / 1.25, 1)));
   }
 
   const Asd = c.As0 * c.k;
@@ -196,13 +196,6 @@ function resultadosEsviada(ctx, res) {
   if (gam.some((x) => x.subeM)) res.append(aviso(t('fce.subeEmin', est.dirEmin === 'y' ? t('fce.dirY') : t('fce.dirX'), fmt(emin[est.dirEmin] * 1000, 0)), 'info'));
   if (gam.some((x) => x.N > c.lim.Ncomp + 1e-9 || x.N < c.lim.Ntrac - 1e-9)) res.append(aviso(t('fce.fueraAxil', `${q(c.lim.Ntrac, 'N')} … ${q(c.lim.Ncomp, 'N')}`)));
   return resultadoUnico(ctx, res, { s, c, gam: gam[0], gmin, dim });
-}
-
-/** La tarjeta de diagnóstico no lleva el número γ (Pepiño, 31/10): solo sección, estado y barra. */
-function sinRatio(v) {
-  v.querySelector('.ratio')?.remove();
-  v.classList.add('sin-ratio');
-  return v;
 }
 
 /** Pastilla del modo Diagrama: los puntos escritos frente al diagrama al axil de la regleta. */
@@ -219,12 +212,12 @@ function veredictoDiagrama(c) {
     gs = puntosNM(c, M0, true).pts.map((x) => x.g);
     etq = `${sub('M', est.fijo === 'My' ? 'y' : 'x')} = ${fmt(M0, MAG.M.d)} ${MAG.M.ud}`;
   }
-  if (!gs.length) return sinRatio(veredicto('atencion', t('fce.sinPuntos'), '', '', etq));
+  if (!gs.length) return veredicto('atencion', t('fce.sinPuntos'), t('fcr.coefSeg'), '—', etq);
   const gmin = Math.min(...gs);
   const fuera = gs.filter((g) => g < 1 - 1e-6).length;
   const ok = fuera === 0;
-  return sinRatio(veredicto(ok ? 'cumple' : 'nocumple', ok ? t('cumple') : t('noCumple'), '', '',
-    `${etq} · ${t('fce.puntosFuera', fuera, gs.length)}`, Math.min(1 / Math.max(gmin, 1e-9) / 1.25, 1)));
+  return veredicto(ok ? 'cumple' : 'nocumple', ok ? t('cumple') : t('noCumple'), t('fcr.coefSeg'), sigla(gmin),
+    `${etq} · ${t('fce.puntosFuera', fuera, gs.length)}`, Math.min(1 / Math.max(gmin, 1e-9) / 1.25, 1));
 }
 
 /** Contornos Mx–My (x = My, y = Mx, la cara comprimida cae del lado del signo): uno por cada axil distinto, con los esfuerzos. */
