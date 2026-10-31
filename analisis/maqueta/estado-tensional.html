@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Maqueta · ELS · Estado tensional</title>
+<style>
+:root{--suelo:oklch(96.4% .005 240);--hoja:oklch(99.6% .002 240);--campo:#fff;--campo-borde:oklch(78% .05 252);--nota:oklch(94.8% .014 78);--nota-borde:oklch(85.5% .024 75);
+--tinta:oklch(24% .02 248);--tinta-2:oklch(44% .02 248);--tinta-3:oklch(57% .016 248);--linea:oklch(90% .008 240);--linea-fuerte:oklch(80% .012 240);
+--acento:oklch(47% .13 252);--acento-suave:oklch(93.5% .03 252);--hormigon:oklch(90% .006 85);--hormigon-borde:oklch(60% .01 85);--compr:oklch(62% .09 252);
+--traccion:oklch(66% .008 250);--acero:oklch(30% .012 250);--ok:oklch(46% .11 152);--ok-fondo:oklch(95% .035 152);--no:oklch(50% .17 27);--atencion:oklch(50% .1 70);--atencion-fondo:oklch(96% .04 85);
+--f:system-ui,'Segoe UI Variable Text','Segoe UI',Roboto,Arial,sans-serif;--s:14px;--m:16px}
+*{box-sizing:border-box}html,body{margin:0;height:100%;overflow:hidden}
+body{background:var(--suelo);color:var(--tinta);font:var(--s)/1.35 var(--f);font-variant-numeric:tabular-nums;display:flex;flex-direction:column}
+.barra{height:52px;flex:none;display:flex;align-items:center;gap:20px;padding:0 16px;background:var(--hoja);border-bottom:1px solid var(--linea)}
+.barra b{font-size:var(--m)}.menu{display:flex;gap:6px;font-size:var(--m);color:var(--tinta-2)}
+.menu span{padding:5px 10px;border-radius:6px}.menu .on{background:var(--acento-suave);color:var(--acento);font-weight:600}.menu .off{opacity:.45}
+.norma{margin-left:auto;border:1px solid var(--linea-fuerte);border-radius:4px;padding:3px 8px}
+main{flex:1;min-height:0;display:grid;grid-template-columns:255px 1fr 345px;gap:10px;padding:10px}
+.panel{background:var(--hoja);border:1px solid var(--linea);border-radius:10px;padding:12px;min-height:0;overflow:hidden;display:flex;flex-direction:column;gap:8px}
+h1{font-size:var(--s);margin:0;font-weight:700}
+.fila{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:28px}
+.fila label{color:var(--tinta-2)}
+.caja{width:130px;height:28px;border:1px solid var(--campo-borde);background:var(--campo);border-radius:6px;padding:0 8px;font:inherit;text-align:right;color:var(--tinta)}
+.caja:disabled,.caja.gris{background:var(--suelo);border-color:var(--linea);color:var(--tinta-3)}
+select.caja{text-align:left}
+.u{color:var(--tinta-3)}
+.capsula{display:flex}.capsula button{flex:1;border:1px solid var(--linea-fuerte);background:var(--hoja);font:inherit;padding:5px 4px;cursor:pointer;color:var(--tinta-2);margin-left:-1px}
+.capsula button:first-child{border-radius:6px 0 0 6px;margin:0}.capsula button:last-child{border-radius:0 6px 6px 0}
+.capsula button.on{background:var(--acento-suave);color:var(--acento);border-bottom:2px solid var(--acento);font-weight:600}
+.sep{border-top:1px solid var(--linea);margin:2px 0}
+.rot{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--tinta-3)}
+.chk{display:flex;align-items:center;gap:8px;cursor:pointer}.chk i{width:16px;height:16px;border:1px solid var(--campo-borde);border-radius:4px;background:#fff;display:grid;place-items:center;color:var(--acento);font-style:normal;font-size:12px;line-height:1}
+.chk.on i{background:var(--acento-suave);border-color:var(--acento)}
+/* regleta */
+.regleta{display:grid;grid-template-columns:50px 1fr 90px;align-items:center;gap:8px}
+.regleta .n{text-align:right;color:var(--tinta)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:20px;background:transparent;margin:0}
+input[type=range]::-webkit-slider-runnable-track{height:8px;border-radius:4px;background:var(--rr,var(--acento-suave))}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--acento);margin-top:-4px;border:2px solid #fff;box-shadow:0 0 0 1px var(--acento)}
+/* centro */
+.centro{align-items:center}.dib{width:100%;flex:1;min-height:0}.cab{width:100%;display:flex;align-items:center;gap:10px}.cab .capsula{width:260px}.reglas{width:80%;display:flex;flex-direction:column;gap:2px}
+/* resultados */
+.pastilla{display:flex;align-items:center;gap:14px;border:1px solid var(--linea-fuerte);border-radius:10px;padding:8px 12px}
+.pastilla .nom{font-size:calc(14px + 2px + 8px);font-weight:700;line-height:1}
+.pastilla .gr{margin-left:auto;text-align:right}.pastilla .gr b{font-size:28px;line-height:1;font-weight:700}
+.chip{display:inline-block;border-radius:4px;padding:1px 7px;font-size:12px;font-weight:600}
+.chip.fis{background:var(--atencion-fondo);color:var(--atencion);border:1px solid oklch(80% .08 80)}.chip.nof{background:var(--ok-fondo);color:var(--ok)}
+table{border-collapse:collapse;width:100%}th{font-weight:600;color:var(--tinta-3);text-align:right;padding:2px 4px;font-size:12px;border-bottom:1px solid var(--linea)}
+td{padding:2px 4px;text-align:right}th:first-child,td:first-child{text-align:left}tr.res td{background:var(--acento-suave)}
+.tri td:first-child{color:var(--tinta-2)}.tri tr.act td{font-weight:600}
+.aviso{background:var(--atencion-fondo);border:1px solid oklch(80% .08 80);border-radius:6px;padding:6px 8px;color:var(--atencion)}
+.btn{align-self:flex-end;border:1px solid var(--linea-fuerte);background:var(--hoja);border-radius:6px;padding:3px 10px;font:inherit;color:var(--tinta-2)}
+.tabla{overflow:hidden;min-height:0}
+sub{font-size:.75em}
+</style></head><body>
+<div class="barra"><b>Prontuario del hormigón</b><div class="menu"><span class="off">Materiales</span><span class="off">Secciones</span><span class="off">ELU</span><span class="on">ELS ▾</span><span class="off">Fuego</span></div>
+<span class="u">ELS ▸ Flechas y fisuración | <b style="color:var(--acento)">Estado tensional</b></span><span class="norma">EC-2 2004 + AN</span></div>
+<main>
+<section class="panel" id="datos">
+ <h1>Estado tensional</h1>
+ <div class="fila"><label>Sección</label><select class="caja"><optgroup label="Rec pilar"><option>P-1 · 400×600 mm</option><option>P-2 · 400×600 mm (PR)</option></optgroup><optgroup label="Rec viga"><option>V-1 · 300×500 mm</option></optgroup></select></div>
+ <div class="rot">Datos del estado</div>
+ <div class="capsula" id="modos"><button data-m="1">N, M<sub>x</sub>, M<sub>y</sub></button><button data-m="2">ε<sub>cdg</sub>, κ<sub>x</sub>, κ<sub>y</sub></button><button data-m="3">ε<sub>sup</sub>, β, x</button></div>
+ <div id="campos"></div>
+ <div class="sep"></div>
+ <div class="rot">Hormigón (de la sección: C25/30)</div>
+ <div class="fila"><label>γ<sub>C</sub> [—]<span class="u" id="hgc"></span></label><input class="caja" id="gc" value="1.50"></div>
+ <div class="fila"><label>α<sub>cc</sub> [—]<span class="u" id="hacc"></span></label><input class="caja" id="acc" value="1.00"></div>
+ <div class="fila"><label>φ(t,t<sub>0</sub>) [—]</label><input class="caja" id="phi" value="0.00"></div>
+ <div class="chk" id="lineal"><i></i><span>Ley lineal (E<sub>cm</sub>)</span></div>
+ <div class="fila"><label>E<sub>c,eff</sub> [MPa]</label><input class="caja gris" id="ecv" disabled></div>
+ <div class="fila"><label>n = E<sub>s</sub>/E<sub>c,eff</sub></label><input class="caja gris" id="nn" disabled></div>
+ <div class="aviso" id="avlin" style="display:none">⚠ Ley lineal activa: no es el diagrama del material de la sección.</div>
+ <div class="aviso" id="avpr" style="display:none">⚠ La sección trae diagrama parábola-rectángulo (de rotura): no representa la rigidez en servicio.</div>
+ <div class="aviso" id="avisos" style="display:none"></div>
+</section>
+<section class="panel centro" id="centro">
+  <svg class="dib" id="svg" viewBox="0 0 860 540"></svg>
+ <div class="reglas" id="reglas"></div>
+</section>
+<section class="panel" id="res"></section>
+</main>
+<script>
+const B=400,H=600,Es=200000,CELDA=10,A1=Math.PI*100; // D20
+const barras=[];for(const x of[-150,0,150])for(const y of[-250,0,250])if(x||y)barras.push({x,y,A:314});
+let tracc=false,modo=1,gc=1.5,acc=1,phi=0,lineal=false;
+const fcm=33,Ecm=31500,eps1=2.07,kS=1.05*Ecm*eps1/1000/fcm,fctm=2.6;
+const fac=()=>acc/gc,EcT=()=>fac()*Ecm/(1+phi);
+function sigC(e){ // e: deformación absoluta, compresión +; MPa
+ if(e<=0)return tracc?EcT()*e:0;
+ if(lineal)return EcT()*e;
+ const et=e*1000/(1+phi)/eps1;const st=et>1?fcm*(kS*1-1)/(1+(kS-2)):fcm*(kS*et-et*et)/(1+(kS-2)*et);
+ const tail=et>1?fcm*(kS*et-et*et)/(1+(kS-2)*et):st;return fac()*Math.max(tail,0)}
+const Ec=31500;
+const v={1:{N:1200,Mx:180,My:60},2:{e0:.35,kx:3.2,ky:1.1},3:{es:1.1,b:50.4,xm:487}};
+const rng={N:[-2000,4000,1],Mx:[-400,400,1],My:[-300,300,1],e0:[-1.5,2,.01],es:[-1.5,3.5,.01],kx:[-10,10,.01],ky:[-10,10,.01],b:[0,360,.5],x:[0,1,.001]};
+const nom={N:'N',Mx:'M<sub>x</sub>',My:'M<sub>y</sub>',e0:'ε<sub>cdg</sub>',es:'ε<sub>sup</sub>',kx:'κ<sub>x</sub>',ky:'κ<sub>y</sub>',b:'β',x:'x'};
+const uni={es:'‰',N:'kN',Mx:'kN·m',My:'kN·m',e0:'‰',kx:'‰/m',ky:'‰/m',b:'°',x:'mm'};
+const dec={es:2,N:0,Mx:0,My:0,e0:2,kx:2,ky:2,b:1,x:0};
+const fm=(x,d)=>(Math.abs(x)<.5*10**-d?0:x).toFixed(d).replace('-','−');
+// ---- motor (maqueta): elástico lineal, ε = e0 + ky·x − kx·y (compresión +), e0 en ‰, κ en ‰/m
+function integra(e0,kx,ky){let N=0,Mx=0,My=0;const f=1e-3,g=1e-6;
+ for(let x=-B/2+CELDA/2;x<B/2;x+=CELDA)for(let y=-H/2+CELDA/2;y<H/2;y+=CELDA){const e=e0*f+ky*g*x-kx*g*y;const s=sigC(e);const dF=s*CELDA*CELDA;N+=dF;Mx+=dF*-y;My+=dF*x}
+ for(const b of barras){const e=e0*f+ky*g*b.x-kx*g*b.y;const dF=Es*e*b.A;N+=dF;Mx+=dF*-b.y;My+=dF*b.x}
+ return[N/1e3,Mx/1e6,My/1e6]}
+function resuelve(N,Mx,My){let p=[0,0,0];const sc=[1e-1,1,1];const R=q=>{const r=integra(...q);return[r[0]-N,r[1]-Mx,r[2]-My]};
+ for(let it=0;it<60;it++){const r=R(p);const nr=Math.hypot(r[0]/50,r[1]/10,r[2]/10);if(nr<1e-4)return p;
+  const J=[0,1,2].map(j=>{const q=p.slice();q[j]+=sc[j]*.01;const r2=R(q);return r2.map((a,i)=>(a-r[i])/(sc[j]*.01))});
+  const d=gauss(J,r);if(!d)return null;let l=1;for(let k=0;k<12;k++){const q=p.map((a,i)=>a-l*d[i]);const r2=R(q);if(Math.hypot(r2[0]/50,r2[1]/10,r2[2]/10)<nr){p=q;break}l/=2;if(k==11)p=p.map((a,i)=>a-l*d[i])}}
+ return null}
+function gauss(J,r){const M=[0,1,2].map(i=>[J[0][i],J[1][i],J[2][i],r[i]]);for(let i=0;i<3;i++){let m=i;for(let k=i+1;k<3;k++)if(Math.abs(M[k][i])>Math.abs(M[m][i]))m=k;if(Math.abs(M[m][i])<1e-12)return null;[M[i],M[m]]=[M[m],M[i]];for(let k=0;k<3;k++)if(k!=i){const c=M[k][i]/M[i][i];for(let j=i;j<4;j++)M[k][j]-=c*M[i][j]}}return[0,1,2].map(i=>M[i][3]/M[i][i])}
+const smaxDe=b=>{const t=b*Math.PI/180;return B/2*Math.abs(Math.cos(t))+H/2*Math.abs(Math.sin(t))};
+// estado completo a partir del plano
+function estado(e0,kx,ky){const [N,Mx,My]=integra(e0,kx,ky);const k=Math.hypot(kx,ky);const b=k>1e-9?((Math.atan2(kx,ky)*180/Math.PI)+360)%360:null;
+ const eps=(x,y)=>e0+(ky*x-kx*y)/1000;const esq=[[-B/2,-H/2],[B/2,-H/2],[B/2,H/2],[-B/2,H/2]];const es=esq.map(c=>eps(...c));
+ const emax=Math.max(...es),emin=Math.min(...es);const sc=emax*Ec/1e3*1e3/1e3; // MPa = Ec·ε(‰)/1000
+ const sMax=sigC(emax/1000),sMin=sigC(emin/1000);
+ const xN=b===null?null:smaxDe(b)+e0/(k/1000);
+ const bs=barras.map((q,i)=>{const e=eps(q.x,q.y);return{i:i+1,x:q.x,y:q.y,e,s:Es*e/1000}});
+ return{N,Mx,My,e0,kx,ky,b,x:xN,emax,emin,sMax,sMin,bs,fis:!tracc}}
+function calcula(){tracc=true;let r=calcula0();if(!r.err&&-EcT()*r.emin/1000<=fctm)return r;tracc=false;return calcula0()}
+function calcula0(){const V=v[modo];
+ if(modo==1){const p=resuelve(V.N,V.Mx,V.My);if(!p)return{err:'No hay equilibrio con este material: el esfuerzo no se puede resistir (p. ej. tracción con hormigón sin tracción y la armadura plastificando en la realidad).'};return estado(...p)}
+ if(modo==2)return estado(V.e0,V.kx,V.ky);
+ const sm=smaxDe(V.b);const xs=V.es<0?-V.xm:V.xm;const g=V.xm===Infinity?0:V.es/xs;if(g<0)return{err:'x y ε<sub>sup</sub> incompatibles.'};
+ const t=V.b*Math.PI/180;const e0=V.es-g*sm;return estado(e0,g*1000*Math.sin(t),g*1000*Math.cos(t))}
+// ---- interfaz
+const XM=600,X0=30;
+const xSig=()=>{const V=v[3];return V.xm===Infinity?'∞':fm(V.es<0?-V.xm:V.xm,0)};
+const disp=k=>modo==3&&k=='x'?xSig():fm(v[modo][k],dec[k]);
+const rv=k=>modo==3&&k=='x'?(v[3].xm===Infinity?1:Math.max(0,(v[3].xm-X0)/(v[3].xm-X0+XM))):v[modo][k];
+let ultimo=null;const vista='A';
+function campos(){const ks=modo==1?['N','Mx','My']:modo==2?['e0','kx','ky']:['es','b','x'];
+ document.getElementById('campos').innerHTML=ks.map(k=>`<div class="fila"><label>${nom[k]} [${uni[k]}]</label><input class="caja" data-k="${k}" value="${disp(k)}"></div>`).join('');
+ document.getElementById('reglas').innerHTML=ks.map(k=>`<div class="regleta"><span>${nom[k]}</span><input type="range" data-k="${k}" min="${rng[k][0]}" max="${rng[k][1]}" step="${rng[k][2]}" value="${rv(k)}"><span class="n"><b class="vv" data-v="${k}" style="font-weight:400">${disp(k)}</b> <span class="u">${uni[k]}</span></span></div>`).join('');
+ document.querySelectorAll('#modos button').forEach(b=>b.classList.toggle('on',b.dataset.m==modo))}
+function pinta(){const r=calcula();const av=document.getElementById('avisos');
+ if(r.err){av.style.display='block';av.innerHTML='⚠ '+r.err;document.getElementById('res').style.opacity=.45;document.getElementById('svg').style.opacity=.45;return}
+ av.style.display='none';document.getElementById('res').style.opacity=1;document.getElementById('svg').style.opacity=1;ultimo=r;dibuja(r);resultados(r)}
+function recorta(poly,f){const out=[];for(let i=0;i<poly.length;i++){const a=poly[i],b=poly[(i+1)%poly.length],fa=f(a),fb=f(b);if(fa>=0)out.push(a);if((fa>=0)!=(fb>=0)){const t=fa/(fa-fb);out.push([a[0]+t*(b[0]-a[0]),a[1]+t*(b[1]-a[1])])}}return out}
+function dibuja(r){
+ const sv=document.getElementById('svg');const W=sv.clientWidth||860,Hh=sv.clientHeight||540,cy=Hh/2+6,S=Math.min(.9,(Hh-60)/722);sv.setAttribute('viewBox',`0 0 ${W} ${Hh}`);let s='<defs><pattern id="ray" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="var(--compr)" stroke-width="1.5"/></pattern></defs>';const rect=[[-B/2,-H/2],[B/2,-H/2],[B/2,H/2],[-B/2,H/2]];
+ const f=p=>r.e0+(r.ky*p[0]-r.kx*p[1])/1000;
+ const k=Math.hypot(r.kx,r.ky),def=r.b===null;const bb=def?90:r.b,t=bb*Math.PI/180;
+ const u=[Math.cos(t),-Math.sin(t)],vv=[Math.sin(t),Math.cos(t)],sm=smaxDe(bb),extV=B/2*Math.abs(Math.sin(t))+H/2*Math.abs(Math.cos(t));
+ const g=def?0:k/1000;const emax=r.emax,emin=r.emin;
+ const tens=Math.max(0,-emin),sE=Math.min(160,(W*.30)/S/Math.max(Math.abs(emax),Math.abs(emin),.5))*(vista=='A'?1:.9);
+ const D=extV+50+tens*sE+ (vista=='B'?30:0);
+ let cx,T,PP;
+ if(vista=='A'){cx=W*.30;T=p=>[cx+S*(p[0]*vv[0]+p[1]*vv[1]),cy+S*(-(p[0]*u[0]+p[1]*u[1]))];PP=(uc,wc)=>[cx+S*(wc+D),cy-S*uc]}
+ else{cx=W*.34;const sg=vv[0]>=-1e-9?1:-1;T=p=>[cx+S*p[0],cy+S*p[1]];PP=(uc,wc)=>[cx+S*(uc*u[0]+(wc+sg*D)*vv[0]),cy+S*(uc*u[1]+(wc+sg*D)*vv[1])]}
+ const P=pts=>pts.map(q=>q[0].toFixed(1)+','+q[1].toFixed(1)).join(' ');
+ s+=`<polygon points="${P(rect.map(T))}" fill="var(--hormigon)" stroke="var(--hormigon-borde)" stroke-width="1.5"/>`;
+ const zc=recorta(rect,tracc?()=>1:f);if(zc.length>2)s+=`<polygon points="${P(zc.map(T))}" fill="var(--compr)" fill-opacity=".12"/><polygon points="${P(zc.map(T))}" fill="url(#ray)"/>`;
+ // recta neutra: a lo largo del eje w, a la profundidad x
+ let xN=r.x;const hu=2*sm;
+ if(!def&&xN!==null&&isFinite(xN)){const uc=sm-xN;const a=PP(uc,-(extV+30+D)),b2=PP(uc,extV+30+ (vista=='A'?D+120:D+120));
+  let n1,n2;if(vista=='A'){n1=[cx-S*(extV+30),cy-S*uc];n2=[cx+S*(D+210),cy-S*uc]}else{n1=[cx+S*(uc*u[0]-(extV+40)*vv[0]),cy+S*(uc*u[1]-(extV+40)*vv[1])];const sg=vv[0]>=-1e-9?1:-1;n2=[cx+S*(uc*u[0]+(sg*D+ 200)*vv[0]),cy+S*(uc*u[1]+(sg*D+200)*vv[1])];}
+  s+=`<line x1="${n1[0]}" y1="${n1[1]}" x2="${n2[0]}" y2="${n2[1]}" stroke="var(--tinta)" stroke-width="1.5" stroke-dasharray="7 4"/><text x="${n1[0]}" y="${n1[1]-6}" font-size="12" fill="var(--tinta-2)">fibra neutra</text>`}
+ // c.d.g.
+ const c0=T([0,0]);s+=`<path d="M${c0[0]-7} ${c0[1]}H${c0[0]+7}M${c0[0]} ${c0[1]-7}V${c0[1]+7}" stroke="var(--tinta-3)"/>`;
+ // barras
+ const smx=Math.max(...r.bs.map(b=>Math.abs(b.s)))||1;
+ for(const b of r.bs){const q=T([b.x,b.y]);const c=b.s>=0;const rr=6+Math.min(4,Math.abs(b.s)/smx*4);s+=`<circle cx="${q[0]}" cy="${q[1]}" r="${rr}" fill="${c?'var(--acento)':'var(--traccion)'}" stroke="var(--acero)" stroke-width="1.5"/><text x="${q[0]}" y="${q[1]+rr+11}" font-size="10" text-anchor="middle" fill="var(--tinta-2)">${fm(b.s,0)}</text>`}
+ // ejes reales y β (inset en A; sobre c.d.g. en B)
+ if(vista=='A'){const ix=80,iy=84,sc=.1;const Ti=p=>[ix+sc*p[0],iy+sc*p[1]];
+  s+=`<text x="${ix-45}" y="${iy-56}" font-size="10" fill="var(--tinta-3)" style="text-transform:uppercase">Orientación real</text><polygon points="${P(rect.map(Ti))}" fill="var(--hormigon)" stroke="var(--hormigon-borde)"/>`;
+  s+=`<path d="M${ix-48} ${iy}H${ix+50}" stroke="var(--tinta-3)"/><text x="${ix+52}" y="${iy+4}" font-size="11" fill="var(--tinta-3)">x</text><path d="M${ix} ${iy-50}V${iy+52}" stroke="var(--tinta-3)"/><text x="${ix+4}" y="${iy+62}" font-size="11" fill="var(--tinta-3)">y</text>`;
+  if(!def)s+=`<line x1="${ix}" y1="${iy}" x2="${ix+u[0]*46}" y2="${iy+u[1]*46}" stroke="var(--acento)" stroke-width="2"/><text x="${ix+u[0]*52}" y="${iy+u[1]*52+4}" font-size="11" fill="var(--acento)" text-anchor="middle">u</text><path d="M${ix+26} ${iy}A26 26 0 ${bb>180?1:0} 0 ${ix+26*u[0]} ${iy+26*u[1]}" fill="none" stroke="var(--acento)"/><text x="${ix+30}" y="${iy-6}" font-size="11" fill="var(--acento)">β</text>`}
+ else if(!def){s+=`<line x1="${c0[0]}" y1="${c0[1]}" x2="${c0[0]+u[0]*S*(sm+40)}" y2="${c0[1]+u[1]*S*(sm+40)}" stroke="var(--acento)" stroke-width="2"/><path d="M${c0[0]+34} ${c0[1]}A34 34 0 ${bb>180?1:0} 0 ${c0[0]+34*u[0]} ${c0[1]+34*u[1]}" fill="none" stroke="var(--acento)"/><text x="${c0[0]+40}" y="${c0[1]-6}" font-size="11" fill="var(--acento)">β</text>`}
+ // plano de deformaciones perpendicular a la fibra neutra
+ const eTop=emax,eBot=emin,wTop=eTop*sE,wBot=eBot*sE;
+ const a0=PP(sm,0),a1=PP(-sm,0),a2=PP(-sm,wBot),a3=PP(sm,wTop);
+ s+=`<text x="${a0[0]}" y="${Math.min(a0[1],a1[1],a3[1],a2[1])-22}" font-size="12" font-weight="600" fill="var(--tinta-2)" text-anchor="middle">Plano de deformaciones</text>`;
+ s+=`<line x1="${a0[0]}" y1="${a0[1]}" x2="${a1[0]}" y2="${a1[1]}" stroke="var(--linea-fuerte)"/><polygon points="${P([a0,a3,a2,a1])}" fill="var(--compr)" fill-opacity=".3" stroke="var(--acento)" stroke-width="1.5"/>`;
+ // proyectantes (líneas finas desde la sección)
+ const lab=(pt,txt,anc)=>`<text x="${pt[0]+(anc=='s'?6:-6)}" y="${pt[1]+4}" font-size="12" text-anchor="${anc=='s'?'start':'end'}" fill="var(--tinta)">${txt}</text>`;
+ const toward=(wv)=>wv>=0;
+ s+=lab(a3,`ε<tspan font-size="9" dy="3">sup</tspan><tspan dy="-3"> ${fm(emax,2)} ‰</tspan>`,vista=='A'?(wTop>=0?'s':'e'):'s');
+ s+=lab(a2,`ε<tspan font-size="9" dy="3">inf</tspan><tspan dy="-3"> ${fm(emin,2)} ‰</tspan>`,vista=='A'?(wBot>=0?'s':'e'):'s');
+ if(!def&&xN!==null&&isFinite(xN)){const pa=PP(sm,0),pb=PP(sm-xN,0);s+=`<line x1="${pa[0]}" y1="${pa[1]}" x2="${pb[0]}" y2="${pb[1]}" stroke="var(--acento)" stroke-width="2"/><text x="${(pa[0]+pb[0])/2+8}" y="${(pa[1]+pb[1])/2}" font-size="12" fill="var(--acento)">x = ${fm(xN,0)} mm</text>`}
+ else if(!def)s+=`<text x="${a0[0]+10}" y="${(a0[1]+a1[1])/2}" font-size="12" fill="var(--acento)">x = ∞ (compresión uniforme)</text>`;
+ s+=`<text x="${W-10}" y="${Hh-8}" font-size="10" text-anchor="end" fill="var(--tinta-3)">${vista=='A'?'Sección girada: la fibra más comprimida arriba':'Sección con su orientación real'}</text>`;
+ document.getElementById('svg').innerHTML=s}
+function resultados(r){const k=(a,d,u)=>`${fm(a,d)} <span class="u">${u}</span>`;
+ const mx=r.bs.reduce((a,b)=>b.s>a.s?b:a),mn=r.bs.reduce((a,b)=>b.s<a.s?b:a);
+ const fila=b=>`<tr class="${b===mx||b===mn?'res':''}"><td>${b.i}</td><td>${fm(b.x,0)}</td><td>${fm(b.y,0)}</td><td>${fm(b.e,2)}</td><td>${fm(b.s,1)}</td></tr>`;
+ document.getElementById('res').innerHTML=`
+ <div class="pastilla"><div><div class="rot">Sección</div><div class="nom">P-1</div></div><div class="gr"><div class="rot" style="text-transform:none;font-size:12px">σ<sub>c</sub> máx. (compresión)</div><b>${fm(r.sMax,1)}</b> <span class="u">MPa</span></div></div>
+ <div><span class="chip ${r.fis?'fis':'nof'}">${r.fis?'Sección fisurada':'Sección sin fisurar'}</span> <span class="u">&nbsp;n = ${fm(Es/(EcT()),1)}</span></div>
+ <table class="tri"><tr><th></th><th>1</th><th>2</th><th>3</th></tr>
+  <tr class="${modo==1?'act':''}"><td>N, M<sub>x</sub>, M<sub>y</sub> [kN·m]</td><td>${fm(r.N,0)}</td><td>${fm(r.Mx,0)}</td><td>${fm(r.My,0)}</td></tr>
+  <tr class="${modo==2?'act':''}"><td>ε<sub>cdg</sub>, κ<sub>x</sub>, κ<sub>y</sub> [‰, ‰/m]</td><td>${fm(r.e0,2)}</td><td>${fm(r.kx,2)}</td><td>${fm(r.ky,2)}</td></tr>
+  <tr class="${modo==3?'act':''}"><td>ε<sub>sup</sub>, β, x [‰, °, mm]</td><td>${fm(r.emax,2)}</td><td>${r.b===null?'—':fm(r.b,1)}</td><td>${r.x===null?'—':(Math.abs(r.x)>1e5?'∞':fm(r.x,0))}</td></tr>
+  <tr><td>ε<sub>cdg</sub>, ε<sub>inf</sub> [‰]</td><td>${fm(r.e0,2)}</td><td>${fm(r.emin,2)}</td><td></td></tr></table>
+ <table><tr><th></th><th>ε [‰]</th><th>σ [MPa]</th></tr>
+  <tr><td>Fibra comprimida (ε<sub>sup</sub>)</td><td>${fm(r.emax,2)}</td><td>${fm(r.sMax,1)}</td></tr>
+  <tr><td>Fibra opuesta (ε<sub>inf</sub>)</td><td>${fm(r.emin,2)}</td><td>${fm(r.sMin,1)}</td></tr></table>
+ <div class="tabla"><table><tr><th>Barra</th><th>x [mm]</th><th>y [mm]</th><th>ε [‰]</th><th>σ<sub>s</sub> [MPa]</th></tr>${r.bs.map(fila).join('')}</table></div>
+ <button class="btn">Copiar tabla</button>`}
+function inicia(){act();campos();pinta()}
+document.getElementById('modos').onclick=e=>{const b=e.target.closest('button');if(!b)return;const m=+b.dataset.m;if(m!=modo){const r=ultimo;if(r){ // al cambiar de modo se conserva el estado
+   v[1]={N:r.N,Mx:r.Mx,My:r.My};v[2]={e0:r.e0,kx:r.kx,ky:r.ky};if(r.b!==null)v[3]={es:r.emax,b:r.b,xm:Math.abs(r.x)>1e5?Infinity:Math.abs(r.x)}}
+  modo=m;campos();pinta()}};
+document.addEventListener('input',e=>{const k=e.target.dataset.k;if(!k)return;const raw=String(e.target.value).replace(',','.').replace('−','-');
+ if(modo==3&&k=='x'){if(e.target.type=='range'){const q=parseFloat(raw);v[3].xm=q>=.999?Infinity:X0+XM*q/(1-q)}else{if(/inf|∞/i.test(raw))v[3].xm=Infinity;else{const n=Math.abs(parseFloat(raw));if(isNaN(n))return;v[3].xm=n}}}
+ else{const n=parseFloat(raw);if(isNaN(n))return;v[modo][k]=n}
+ document.querySelectorAll(`[data-v="${k}"]`).forEach(o=>o.textContent=disp(k));
+ document.querySelectorAll(`[data-k="${k}"]`).forEach(o=>{if(o!==e.target)o.value=o.type=='range'?rv(k):disp(k)});
+ if(modo==3&&k=='es')document.querySelectorAll('[data-k="x"]:not([type=range]),[data-v="x"]').forEach(o=>{if(o.tagName=='INPUT')o.value=disp('x');else o.textContent=disp('x')});
+ pinta()});
+const num=id=>document.getElementById(id);
+function act(){num('nn').value=fm(Es/EcT(),1);num('ecv').value=fm(EcT(),0)}
+for(const [id,fn] of [['gc',n=>{if(n>0)gc=n}],['acc',n=>{if(n>0)acc=n}],['phi',n=>{if(n>=0)phi=n}]])num(id).oninput=e=>{const n=parseFloat(String(e.target.value).replace(',','.'));if(isNaN(n))return;fn(n);act();pinta()};
+num('lineal').onclick=e=>{const el=e.currentTarget;lineal=!lineal;el.classList.toggle('on',lineal);el.firstChild.textContent=lineal?'✓':'';num('avlin').style.display=lineal?'block':'none';pinta()};
+document.querySelector('#datos select').onchange=e=>{num('avpr').style.display=/PR/.test(e.target.value)?'block':'none'};
+inicia();
+</script></body></html>
