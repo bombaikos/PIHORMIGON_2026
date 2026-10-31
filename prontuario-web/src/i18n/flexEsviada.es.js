@@ -22,7 +22,7 @@ export default {
   'fce.constante': 'Constante', 'fce.ejeN': 'N [kN]', 'fce.serieM': (m, v) => `${m} = ${v} kN·m`,
   'fce.calculando': 'Se está calculando…', 'fce.fiVarios': 'La sección tiene más de un diámetro: no se puede elegir uno solo.',
   'fce.fiDim': 'En Dimensionamiento se parte del ø de la sección; el programa propone el diámetro necesario.',
-  'fce.puntos': 'Esfuerzos', 'fce.tabla': 'Esfuerzos y coeficiente de seguridad',
+  'fce.fijoDiagrama': 'Esfuerzo fijo para el diagrama', 'fce.puntos': 'Esfuerzos solicitantes', 'fce.tabla': 'Esfuerzos y coeficiente de seguridad',
   'fce.contornos': (n) => `${n} puntos`,
   'fce.infoMx': 'Mx: momento respecto al eje horizontal que pasa por el c.d.g. del hormigón bruto. Positivo si comprime la cara superior.', 'fce.infoMy': 'My: momento respecto al eje vertical que pasa por el c.d.g. del hormigón bruto. Positivo si comprime la cara derecha.',
   'fce.infoMrdx': 'M_Rd,x: momento resistente respecto al eje horizontal por el c.d.g. del hormigón bruto (positivo si comprime la cara superior), en el punto donde la recta del origen a (My,Ed, Mx,Ed) corta el diagrama; mismo axil y misma relación Mx,Ed / My,Ed.', 'fce.infoMrdy': 'M_Rd,y: momento resistente respecto al eje vertical por el c.d.g. del hormigón bruto (positivo si comprime la cara derecha), en el punto donde la recta del origen a (My,Ed, Mx,Ed) corta el diagrama; mismo axil y misma relación Mx,Ed / My,Ed.', 'fce.infoBeta': 'β: ángulo de la recta neutra con la horizontal, positivo en sentido antihorario.', 'fce.infoX': 'x: profundidad de la fibra neutra, medida perpendicularmente a la recta neutra desde la fibra más comprimida.',

@@ -238,7 +238,7 @@ const SUPERFICIES = new WeakMap();
  * el contorno se reduce a un punto) y nT direcciones θ de la fibra más comprimida.
  * @returns {{Ns:number[], thetas:number[], Mx:number[][], My:number[][], Ntrac:number, Ncomp:number}}
  */
-export function superficieEsviada(m, { nN = 33, nT = 48 } = {}) {
+export function superficieEsviada(m, { nN = 48, nT = 48 } = {}) {
   const clave = `${nN}/${nT}`;
   const previa = SUPERFICIES.get(m);
   if (previa?.clave === clave) return previa.S;
@@ -248,9 +248,9 @@ export function superficieEsviada(m, { nN = 33, nT = 48 } = {}) {
   const Mx = [new Array(nT).fill(0)];
   const My = [new Array(nT).fill(0)];
   for (let i = 1; i <= nN; i++) {
-    // Niveles algo más densos hacia los extremos (donde el diagrama se cierra) que en el centro
+    // Niveles más densos hacia los extremos (donde el diagrama se cierra) que en el centro
     const tt = i / (nN + 1);
-    const N = Ntrac + (Ncomp - Ntrac) * (0.5 * tt + 0.25 * (1 - Math.cos(Math.PI * tt)));
+    const N = Ntrac + (Ncomp - Ntrac) * (0.35 * tt + 0.325 * (1 - Math.cos(Math.PI * tt)));
     const fx = [];
     const fy = [];
     for (const th of thetas) {
@@ -302,24 +302,75 @@ function crucesNivel(S, i, fijo, M0) {
 /**
  * Diagrama N–M a Mx (o My) constante: la rama superior (mayor valor del otro momento) y la inferior, por axiles.
  * @param {'Mx'|'My'} fijo  momento que se mantiene constante, con valor M0
- * @returns {{N:number[], A:number[], B:number[], curva:number[][]}}  curva = [[N, M]] cerrada, M es el otro momento
+ * @returns {{N:number[], A:number[], B:number[], thA:number[], thB:number[], curva:number[][]}}  curva = [[N, M]] cerrada, M es el otro momento; thA/thB = θ de cada nivel
  */
 export function corteNM(S, fijo, M0) {
   const N = [];
   const A = [];
   const B = [];
+  const thA = [];
+  const thB = [];
+  const dT = (2 * Math.PI) / S.thetas.length;
   for (let i = 1; i < S.Ns.length - 1; i++) {
     const c = crucesNivel(S, i, fijo, M0);
     if (c.length < 2) continue;
-    const vs = c.map((x) => x.v);
-    N.push(S.Ns[i]); A.push(Math.max(...vs)); B.push(Math.min(...vs));
+    const hi = c.reduce((p, q) => (q.v > p.v ? q : p));
+    const lo = c.reduce((p, q) => (q.v < p.v ? q : p));
+    N.push(S.Ns[i]); A.push(hi.v); B.push(lo.v);
+    thA.push(S.thetas[hi.j] + hi.t * dT); thB.push(S.thetas[lo.j] + lo.t * dT);
   }
   const curva = [];
   if (Math.abs(M0) < 1e-9) { curva.push([S.Ntrac, 0]); }
   N.forEach((n, k) => curva.push([n, A[k]]));
   if (Math.abs(M0) < 1e-9) { curva.push([S.Ncomp, 0]); }
   for (let k = N.length - 1; k >= 0; k--) curva.push([N[k], B[k]]);
-  return { N, A, B, curva };
+  return { N, A, B, thA, thB, curva };
+}
+
+/** Interpolación cúbica monótona (Fritsch–Carlson) de y(x) en k puntos por tramo. */
+function pchip(x, y, k) {
+  const n = x.length;
+  if (n < 3) return x.map((v, i) => [v, y[i]]);
+  const d = [];
+  for (let i = 0; i < n - 1; i++) d.push((y[i + 1] - y[i]) / (x[i + 1] - x[i]));
+  const m = new Array(n);
+  m[0] = d[0];
+  m[n - 1] = d[n - 2];
+  for (let i = 1; i < n - 1; i++) m[i] = d[i - 1] * d[i] <= 0 ? 0 : (d[i - 1] + d[i]) / 2;
+  for (let i = 0; i < n - 1; i++) {
+    if (d[i] === 0) { m[i] = 0; m[i + 1] = 0; continue; }
+    const a = m[i] / d[i];
+    const b = m[i + 1] / d[i];
+    const r = a * a + b * b;
+    if (r > 9) { const tau = 3 / Math.sqrt(r); m[i] = tau * a * d[i]; m[i + 1] = tau * b * d[i]; }
+  }
+  const out = [];
+  for (let i = 0; i < n - 1; i++) {
+    const h = x[i + 1] - x[i];
+    for (let j = 0; j < k; j++) {
+      const t = j / k;
+      const h00 = 2 * t ** 3 - 3 * t ** 2 + 1;
+      const h10 = t ** 3 - 2 * t ** 2 + t;
+      const h01 = -2 * t ** 3 + 3 * t ** 2;
+      const h11 = t ** 3 - t ** 2;
+      out.push([x[i] + t * h, h00 * y[i] + h10 * h * m[i] + h01 * y[i + 1] + h11 * h * m[i + 1]]);
+    }
+  }
+  out.push([x[n - 1], y[n - 1]]);
+  return out;
+}
+
+/** Trazo suave del diagrama N–M para dibujarlo: cada rama se interpola con una cúbica monótona (el polígono `curva`
+ *  se sigue usando para dentro/fuera y γ). */
+export function trazoNM(corte, S, M0, k = 5) {
+  if (!corte.N.length) return [];
+  const N = [...corte.N];
+  let A = [...corte.A];
+  let B = [...corte.B];
+  if (Math.abs(M0) < 1e-9) { N.unshift(S.Ntrac); A.unshift(0); B.unshift(0); N.push(S.Ncomp); A.push(0); B.push(0); }
+  const sup = pchip(N, A, k);
+  const inf = pchip(N, B, k).reverse();
+  return [...sup, ...inf];
 }
 
 /** ¿Está el punto (N, M) dentro del polígono cerrado `curva`? */

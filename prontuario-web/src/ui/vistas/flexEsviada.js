@@ -6,7 +6,7 @@
 // Compresión positiva. Mx > 0 comprime la cara superior; My > 0 comprime la cara derecha. Motor: src/core/esviada.js.
 
 import { cuantiaMinima } from '../../core/cuantiaMinima.js';
-import { modeloEsviada, contornoMxMy, razonMxMy, coeficienteMxMy, dimensionarEsviada, axilesEsviada, superficieEsviada, superficieCalculada, maximosSuperficie, corteNM, coeficienteNM, razonNM } from '../../core/esviada.js';
+import { modeloEsviada, contornoMxMy, razonMxMy, coeficienteMxMy, dimensionarEsviada, axilesEsviada, estadoUltimoEsviada, superficieEsviada, superficieCalculada, maximosSuperficie, trazoNM, corteNM, coeficienteNM, razonNM } from '../../core/esviada.js';
 import { leerNumero } from '../../core/armado.js';
 import { NORMAS } from '../../norma/normas.js';
 import { geometriaDe, materialesSeccion, sepCapas } from '../../io/proyecto.js';
@@ -22,14 +22,15 @@ import { veredicto } from './flexion.js';
 // Como el Prontuario 3.1: rectangulares definidas por redondo (pilares) y genéricas
 const FORMAS = ['pilar', 'generica'];
 const est = {
-  i: null, fi: null, modo: 'comprobar', NEd: 800, MxEd: 120, MyEd: 70, Ndiag: 500, fijo: 'N', Mdiag: { Mx: 0, My: 0 }, puntosNM: { My: [['500', '80'], ['1500', '120'], ['-200', '30'], ['', '']], Mx: [['500', '80'], ['1500', '120'], ['-200', '30'], ['', '']] }, dirEmin: 'y', puntos: [['120', '70'], ['-80', '110'], ['180', '-60'], ['40', '40'], ['', ''], ['', ''], ['', ''], ['', ''], ['', ''], ['', '']],
+  i: null, fi: null, modo: 'comprobar', NEd: 800, MxEd: 120, MyEd: 70, Ndiag: 500, fijo: 'N', Mdiag: { Mx: 0, My: 0 }, puntosNM: { My: Array.from({ length: 5 }, () => ['0', '0']), Mx: Array.from({ length: 5 }, () => ['0', '0']) }, dirEmin: 'y', puntos: Array.from({ length: 5 }, () => ['0', '0']),
   abiertos: new Set(),
 };
-for (const k of ['Mx', 'My']) while (est.puntosNM[k].length < 10) est.puntosNM[k].push(['', '']);
 export function reiniciar() { est.i = null; }
 
 const sub = (a, b) => `${a}<sub>${b}</sub>`;
 const nv = (txt) => leerNumero(txt);
+/** Alto máximo de la tabla de esfuerzos: cabecera + 10 puntos + la fila de añadir; solo con más de 10 puntos lleva scroll. */
+const ALTO_PTS = 32 + 11 * 27;
 /** Globo (i) dentro de una etiqueta de cifra. */
 const info = (tx) => `<span class="info-i izq" tabindex="0" role="img" aria-label="${tx}" data-tip="${tx}">i</span>`;
 const sigla = (g) => (g === Infinity ? '∞' : fmt(g, 2));
@@ -149,15 +150,17 @@ export function datos(ctx, form) {
       campoNum({ id: 'fe-my', etq: sub('M', 'y,Ed'), ref: t('fce.my'), valor: est.MyEd, mag: 'M', paso: 5, min: -1e6, max: 1e6, nombre: t('fce.nombreMy'), info: t('fce.infoMy'), onCambio: (v) => { est.MyEd = v; cambio(); } }),
       campoFi(),
       selector({ id: 'fe-emin', etq: `${sub('e', 'mín')} [mm]`, linea: true, info: t('fce.infoEmin'),
-        opciones: [['y', `${t('fce.dirY')} · ${c ? fmt(emin.y * 1000, 0) : ''}`], ['x', `${t('fce.dirX')} · ${c ? fmt(emin.x * 1000, 0) : ''}`]], valor: est.dirEmin, onCambio: (v) => { est.dirEmin = v; cambio(); } })) : grupo(t('fce.puntos'),
-      segmentado({ ancho: true, etiqueta: t('fce.constante'), opciones: [['N', sub('N', '')], ['Mx', sub('M', 'x')], ['My', sub('M', 'y')]], valor: est.fijo, onCambio: (v) => { est.fijo = v; ctx.pintar(); } }),
-      est.fijo === 'N' ? rejilla({ id: 'fe-pts', altoMax: 330,
+        opciones: [['y', `${t('fce.dirY')} · ${c ? fmt(emin.y * 1000, 0) : ''}`], ['x', `${t('fce.dirX')} · ${c ? fmt(emin.x * 1000, 0) : ''}`]], valor: est.dirEmin, onCambio: (v) => { est.dirEmin = v; cambio(); } })) : [
+      grupo(t('fce.fijoDiagrama'),
+        segmentado({ ancho: true, etiqueta: t('fce.fijoDiagrama'), opciones: [['N', sub('N', '')], ['Mx', sub('M', 'x')], ['My', sub('M', 'y')]], valor: est.fijo, onCambio: (v) => { est.fijo = v; ctx.pintar(); } })),
+      grupo(t('fce.puntos'),
+      est.fijo === 'N' ? rejilla({ id: 'fe-pts', altoMax: ALTO_PTS,
         columnas: [{ titulo: `${sub('M', 'x,Ed')} [kN·m]`, num: true }, { titulo: `${sub('M', 'y,Ed')} [kN·m]`, num: true }],
-        filas: est.puntos, onCambio: (f) => { est.puntos = Array.from({ length: Math.max(10, f.length) }, (_, i) => [f[i]?.[0] ?? '', f[i]?.[1] ?? '']); cambio(); } })
-        : rejilla({ id: 'fe-pts', altoMax: 330,
+        filas: est.puntos, onCambio: (f) => { est.puntos = f; cambio(); } })
+        : rejilla({ id: 'fe-pts', altoMax: ALTO_PTS,
           columnas: [{ titulo: `${sub('N', 'Ed')} [kN]`, num: true }, { titulo: `${sub('M', est.fijo === 'My' ? 'x,Ed' : 'y,Ed')} [kN·m]`, num: true }],
-          filas: est.puntosNM[est.fijo], onCambio: (f) => { est.puntosNM[est.fijo] = Array.from({ length: Math.max(10, f.length) }, (_, i) => [f[i]?.[0] ?? '', f[i]?.[1] ?? '']); cambio(); } }),
-      campoFi()));
+          filas: est.puntosNM[est.fijo], onCambio: (f) => { est.puntosNM[est.fijo] = f; cambio(); } })),
+      campoFi()]);
 }
 
 export function resultados(ctx, res) {
@@ -268,20 +271,12 @@ function tituloGraf(c, s, { N, Mx, My }) {
   return `${t('fce.contorno')} · ${partes.join(' · ')}`;
 }
 
-/** Tabla de puntos con el estado de rotura de cada uno y botón «Copiar tabla» (guía: más de 4 filas).
- *  Las filas fuera del diagrama van en rojo. */
+/** Tabla de puntos con su N, Mx, My y coeficiente de seguridad, y botón «Copiar tabla» (guía: más de 4 filas).
+ *  Las filas fuera del diagrama van en rojo. El estado de rotura (β, x, κ, ε) va en la tabla detallada del gráfico. */
 function tablaPuntos(ctx, pts) {
   const dec = decimalAlCopiar();
-  const cab = [['#', '#'], [sub('N', 'Ed') + ' [kN]', 'NEd [kN]'], [sub('M', 'x,Ed') + ' [kN·m]', 'Mx,Ed [kN·m]'], [sub('M', 'y,Ed') + ' [kN·m]', 'My,Ed [kN·m]'],
-    ['β [°]', 'β [°]'], ['x [mm]', 'x [mm]'], ['κ [‰/m]', 'κ [‰/m]'], [sub('ε', 'sup') + ' [‰]', 'εsup [‰]'], [sub('ε', 'inf') + ' [‰]', 'εinf [‰]']];
-  const fila = (x) => {
-    const e = x.e;
-    const ok = e && Number.isFinite(e.x);
-    return [String(x.i + 1), fmt(x.N, MAG.N.d), fmt(x.Mx, MAG.M.d), fmt(x.My, MAG.M.d),
-      ok ? fmt(alfa(e.theta), 1) : '—', ok ? fmt(e.x * 1000, 0) : '—', ok ? fmt(e.kappa * 1000, 2) : '—',
-      ok ? fmt(-e.epsSup * 1000, 2) : '—', ok && Number.isFinite(e.epsInf) ? fmt(-e.epsInf * 1000, 2) : '—'];
-  };
-  const filas = pts.map(fila);
+  const cab = [['#', '#'], [sub('N', 'Ed') + ' [kN]', 'NEd [kN]'], [sub('M', 'x,Ed') + ' [kN·m]', 'Mx,Ed [kN·m]'], [sub('M', 'y,Ed') + ' [kN·m]', 'My,Ed [kN·m]'], ['γ [-]', 'γ [-]']];
+  const filas = pts.map((x) => [String(x.i + 1), fmt(x.N, MAG.N.d), fmt(x.Mx, MAG.M.d), fmt(x.My, MAG.M.d), sigla(x.g)]);
   const copiar = async () => {
     try {
       const txt = [cab.map((k) => k[1]).join('\t'), ...filas.map((f) => f.map((v) => v.replace('−', '-').replace('.', dec)).join('\t'))].join('\r\n');
@@ -295,6 +290,11 @@ function tablaPuntos(ctx, pts) {
       return f.map((v) => (dentro ? v : `<span class="fuera">${v}</span>`));
     }), { cabecera: cab.map((k) => k[0]), clase: 'rejilla' }));
 }
+
+/** Columnas de estado de rotura de la tabla detallada del gráfico: β, x, κ, ε sup, ε inf de un estado último. */
+const DET_CAB = [`β [°]`, 'x [mm]', 'κ [‰/m]', `${sub('ε', 'sup')} [‰]`, `${sub('ε', 'inf')} [‰]`];
+const DET_PLANO = ['β [°]', 'x [mm]', 'κ [‰/m]', 'εsup [‰]', 'εinf [‰]'];
+const detEstado = (e) => (e && Number.isFinite(e.x) ? [fmt(alfa(e.theta), 1), (e.x > 0 ? fmt(e.x * 1000, 0) : '—'), fmt(e.kappa * 1000, 2), fmt(-e.epsSup * 1000, 2), Number.isFinite(e.epsInf) ? fmt(-e.epsInf * 1000, 2) : '—'] : ['—', '—', '—', '—', '—']);
 
 /** Momentos mayores de la superficie de rotura (muestreada una vez): los ejes de los diagramas no se mueven con la regleta. */
 function rangoFijo(c) {
@@ -340,6 +340,19 @@ function rangoNM(c) {
   return { x0: S.Ntrac - pad, x1: S.Ncomp + pad, y0: -a, y1: a };
 }
 
+/** Estados de rotura exactos de las filas de la tabla del diagrama N–M (niveles de la superficie, rama superior y luego inferior). */
+function filasDetalleNM(c, co, M0) {
+  const tips = Math.abs(M0) < 1e-9;
+  const fila = (N, th) => detEstado(estadoUltimoEsviada(c.m, N, th));
+  const vacia = ['—', '—', '—', '—', '—'];
+  const out = [];
+  if (tips) out.push(vacia);
+  co.N.forEach((N, k) => out.push(fila(N, co.thA[k])));
+  if (tips) out.push(vacia);
+  for (let k = co.N.length - 1; k >= 0; k--) out.push(fila(co.N[k], co.thB[k]));
+  return out;
+}
+
 /** Diagrama N–M a Mx o My constante, con el momento fijo en una regleta. */
 function panelNM(ctx, { s, c }) {
   const S = superficieEsviada(c.m);
@@ -354,9 +367,11 @@ function panelNM(ctx, { s, c }) {
   const titulo = h('h2', {});
   const dibujar = (M0, exacto) => {
     const { co, pts } = puntosNM(c, M0, exacto);
-    const xy = co.curva.length ? [...co.curva, co.curva[0]] : [];
+    const trazo = trazoNM(co, S, M0);
+    const xy = trazo.length ? [...trazo, trazo[0]] : [];
     const g = h('div', { class: 'lienzo' }, grafica({
-      series: [{ nombre: t('fce.serieM', f === 'My' ? 'My' : 'Mx', fmt(M0, MAG.M.d)), clase: 's1', xy }], lecturaXY: true, rango: rangoNM(c),
+      series: [{ nombre: t('fce.serieM', f === 'My' ? 'My' : 'Mx', fmt(M0, MAG.M.d)), clase: 's1', xy, tabla: co.curva }], lecturaXY: true, rango: rangoNM(c),
+      detalle: { cab: DET_CAB, plano: DET_PLANO, filas: () => filasDetalleNM(c, co, M0) },
       puntos: pts.map((x) => ({ x: x.N, y: f === 'My' ? x.Mx : x.My, etq: String(x.i + 1), marca: x.g >= 1 - 1e-6 ? 'ok' : 'no' })),
       ejeX: { titulo: t('fce.ejeN'), d: MAG.N.d, dt: MAG.N.d }, ejeY: { titulo: f === 'My' ? t('fce.ejeY') : t('fce.ejeX'), d: MAG.M.d, dt: MAG.M.d },
       archivo: `N-M ${s.nombre} ${f}=${fmt(M0, 0)}`, avisar: ctx.avisar,
@@ -405,6 +420,7 @@ function panelDiagrama(ctx, { s, c }) {
     const xy = cont.length ? [...cont, cont[0]].map((v) => [v.My, v.Mx]) : [];
     const g = h('div', { class: 'lienzo' }, grafica({
       series: [{ nombre: t('fce.serieN', fmt(N, MAG.N.d)), clase: `s1${trac ? ' trac' : ''}`, xy }], escalaIgual: true, lecturaXY: true, rango: rangoFijo(c),
+      detalle: { cab: [sub('N', '') + ' [kN]', ...DET_CAB], plano: ['N [kN]', ...DET_PLANO], filas: () => (cont.length ? [...cont, cont[0]] : []).map((e) => [fmt(N, MAG.N.d), ...detEstado(e)]) },
       puntos: pts.map((x) => ({ x: x.My, y: x.Mx, etq: String(x.i + 1), marca: x.g >= 1 - 1e-6 ? 'ok' : 'no' })),
       ejeX: { titulo: t('fce.ejeX'), d: MAG.M.d, dt: MAG.M.d }, ejeY: { titulo: t('fce.ejeY'), d: MAG.M.d, dt: MAG.M.d },
       archivo: `Mx-My ${s.nombre} N=${fmt(N, 0)}`, avisar: ctx.avisar,
