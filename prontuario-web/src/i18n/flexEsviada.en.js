@@ -19,7 +19,7 @@ export default {
   'fce.puntos': 'Actions', 'fce.tabla': 'Actions and safety factor',
   'fce.contornos': (n) => `${n} points`,
   'fce.infoMx': 'Mx: moment about the horizontal axis of the section. Positive when it compresses the top face.', 'fce.infoMy': 'My: moment about the vertical axis of the section. Positive when it compresses the right face.',
-  'fce.infoMrd': 'M_Rd,x and M_Rd,y are the resisting moments where the line from the origin to (My,Ed, Mx,Ed) meets the diagram. Same axial load N_Ed and same ratio Mx,Ed / My,Ed (constant eccentricity).', 'fce.infoBeta': 'β is the angle of the neutral line with the horizontal (positive when it descends to the right). x is the neutral axis depth, measured perpendicular to it from the most compressed fibre. Mx is the moment about the horizontal axis and My about the vertical one.',
+  'fce.infoMrdx': 'M_Rd,x: resisting moment about the horizontal axis (positive when it compresses the top face), at the point where the line from the origin to (My,Ed, Mx,Ed) meets the diagram; same axial load and same ratio Mx,Ed / My,Ed.', 'fce.infoMrdy': 'M_Rd,y: resisting moment about the vertical axis (positive when it compresses the right face), at the point where the line from the origin to (My,Ed, Mx,Ed) meets the diagram; same axial load and same ratio Mx,Ed / My,Ed.', 'fce.infoBeta': 'β: angle of the neutral line with the horizontal, positive counterclockwise.', 'fce.infoX': 'x: neutral axis depth, measured perpendicular to the neutral line from the most compressed fibre.',
   'fce.copiarTabla': 'Copy table',
   'fce.si': 'Yes', 'fce.no': 'No',
   'fce.sinEsfuerzos': 'Enter at least one pair of actions.',

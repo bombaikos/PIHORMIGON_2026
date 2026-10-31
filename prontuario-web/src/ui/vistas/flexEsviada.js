@@ -424,8 +424,8 @@ function resultadoUnico(ctx, res, { s, c, gam, gmin, dim }) {
   const e = gam.e;
   const mm = (x, d) => `${fmt(x, d)}<span class="u"> mm</span>`;
   const cif = [
-    ...(gam.Q ? [[sub('M', 'Rd,x') + info(t('fce.infoMrd')), qh(gam.Q[0], 'M')], [sub('M', 'Rd,y') + info(t('fce.infoMrd')), qh(gam.Q[1], 'M')]] : []),
-    ...(e ? [['x' + info(t('fce.infoBeta')), Number.isFinite(e.x) && e.x > 0 ? qh(e.x, 'long') : '—'], ['β' + info(t('fce.infoBeta')), `${fmt(alfa(e.theta), 1)}<span class="u">${ESP}°</span>`]] : []),
+    ...(gam.Q ? [[sub('M', 'Rd,x') + info(t('fce.infoMrdx')), qh(gam.Q[0], 'M')], [sub('M', 'Rd,y') + info(t('fce.infoMrdy')), qh(gam.Q[1], 'M')]] : []),
+    ...(e ? [['x' + info(t('fce.infoX')), Number.isFinite(e.x) && e.x > 0 ? qh(e.x, 'long') : '—'], ['β' + info(t('fce.infoBeta')), `${fmt(alfa(e.theta), 1)}<span class="u">${ESP}°</span>`]] : []),
     ...cifrasArmadura(c, dim, mm),
   ];
   // Como en Diagrama: contorno grande y, a un lado, la sección con el plano de rotura (tamaño acotado), las cifras y la traza

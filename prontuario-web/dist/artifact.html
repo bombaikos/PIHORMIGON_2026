@@ -5381,8 +5381,10 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     "fce.contornos": (n) => `${n} puntos`,
     "fce.infoMx": "Mx: momento respecto al eje horizontal de la secci\xF3n. Positivo si comprime la cara superior.",
     "fce.infoMy": "My: momento respecto al eje vertical de la secci\xF3n. Positivo si comprime la cara derecha.",
-    "fce.infoMrd": "M_Rd,x y M_Rd,y son los momentos resistentes en el punto donde la recta que une el origen con (My,Ed, Mx,Ed) corta el diagrama. Mismo axil N_Ed y misma relaci\xF3n Mx,Ed / My,Ed (excentricidad constante).",
-    "fce.infoBeta": "\u03B2 es el \xE1ngulo de la recta neutra con la horizontal (positivo en sentido antihorario). x es la profundidad de la fibra neutra, medida perpendicular a ella desde la fibra m\xE1s comprimida. Mx es el momento respecto al eje horizontal y My respecto al vertical.",
+    "fce.infoMrdx": "M_Rd,x: momento resistente respecto al eje horizontal (positivo si comprime la cara superior), en el punto donde la recta del origen a (My,Ed, Mx,Ed) corta el diagrama; mismo axil y misma relaci\xF3n Mx,Ed / My,Ed.",
+    "fce.infoMrdy": "M_Rd,y: momento resistente respecto al eje vertical (positivo si comprime la cara derecha), en el punto donde la recta del origen a (My,Ed, Mx,Ed) corta el diagrama; mismo axil y misma relaci\xF3n Mx,Ed / My,Ed.",
+    "fce.infoBeta": "\u03B2: \xE1ngulo de la recta neutra con la horizontal, positivo en sentido antihorario.",
+    "fce.infoX": "x: profundidad de la fibra neutra, medida perpendicularmente a la recta neutra desde la fibra m\xE1s comprimida.",
     "fce.copiarTabla": "Copiar tabla",
     "fce.si": "S\xED",
     "fce.no": "No",
@@ -5422,8 +5424,10 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     "fce.contornos": (n) => `${n} points`,
     "fce.infoMx": "Mx: moment about the horizontal axis of the section. Positive when it compresses the top face.",
     "fce.infoMy": "My: moment about the vertical axis of the section. Positive when it compresses the right face.",
-    "fce.infoMrd": "M_Rd,x and M_Rd,y are the resisting moments where the line from the origin to (My,Ed, Mx,Ed) meets the diagram. Same axial load N_Ed and same ratio Mx,Ed / My,Ed (constant eccentricity).",
-    "fce.infoBeta": "\u03B2 is the angle of the neutral line with the horizontal (positive when it descends to the right). x is the neutral axis depth, measured perpendicular to it from the most compressed fibre. Mx is the moment about the horizontal axis and My about the vertical one.",
+    "fce.infoMrdx": "M_Rd,x: resisting moment about the horizontal axis (positive when it compresses the top face), at the point where the line from the origin to (My,Ed, Mx,Ed) meets the diagram; same axial load and same ratio Mx,Ed / My,Ed.",
+    "fce.infoMrdy": "M_Rd,y: resisting moment about the vertical axis (positive when it compresses the right face), at the point where the line from the origin to (My,Ed, Mx,Ed) meets the diagram; same axial load and same ratio Mx,Ed / My,Ed.",
+    "fce.infoBeta": "\u03B2: angle of the neutral line with the horizontal, positive counterclockwise.",
+    "fce.infoX": "x: neutral axis depth, measured perpendicular to the neutral line from the most compressed fibre.",
     "fce.copiarTabla": "Copy table",
     "fce.si": "Yes",
     "fce.no": "No",
@@ -13135,8 +13139,8 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     const e2 = gam.e;
     const mm4 = (x, d) => `${fmt(x, d)}<span class="u"> mm</span>`;
     const cif = [
-      ...gam.Q ? [[sub20("M", "Rd,x") + info(t("fce.infoMrd")), qh(gam.Q[0], "M")], [sub20("M", "Rd,y") + info(t("fce.infoMrd")), qh(gam.Q[1], "M")]] : [],
-      ...e2 ? [["x" + info(t("fce.infoBeta")), Number.isFinite(e2.x) && e2.x > 0 ? qh(e2.x, "long") : "\u2014"], ["\u03B2" + info(t("fce.infoBeta")), `${fmt(alfa(e2.theta), 1)}<span class="u">${ESP}\xB0</span>`]] : [],
+      ...gam.Q ? [[sub20("M", "Rd,x") + info(t("fce.infoMrdx")), qh(gam.Q[0], "M")], [sub20("M", "Rd,y") + info(t("fce.infoMrdy")), qh(gam.Q[1], "M")]] : [],
+      ...e2 ? [["x" + info(t("fce.infoX")), Number.isFinite(e2.x) && e2.x > 0 ? qh(e2.x, "long") : "\u2014"], ["\u03B2" + info(t("fce.infoBeta")), `${fmt(alfa(e2.theta), 1)}<span class="u">${ESP}\xB0</span>`]] : [],
       ...cifrasArmadura2(c, dim, mm4)
     ];
     const lado = h("aside", { class: "fcr-lado" }, h("div", { class: "fcr-sec", html: e2 ? dibujoPlano(c, s, e2) : "" }), cifras(cif), h("p", { class: "sub", style: "margin:0" }, t("t.desplegar")), traza3(ctx2.p, c, gmin, e2));
