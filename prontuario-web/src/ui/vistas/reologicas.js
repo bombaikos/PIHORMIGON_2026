@@ -11,6 +11,7 @@ import { fmt, ESP } from '../formato.js';
 import { h, poner, campoNum, selector, grupo, aviso, pestanas, tabla, segmentado } from '../campos.js';
 import { rejilla } from '../rejilla.js';
 import { grafica } from '../grafica.js';
+import { botonCopiar } from '../designacion.js';
 
 const TIEMPOS = [3, 7, 14, 28, 60, 90, 180, 360, 1000, 3650];
 const filasPorDefecto = () => TIEMPOS.map((tt) => [String(tt), '60', '0']);
@@ -111,7 +112,8 @@ export function resultados(ctx, res) {
     /* ---- Coeficiente de fluencia: tabla φ(t, t0) y φ(t) para un t0 con deslizador ---- */
     const PHI = tablaFluencia(E.norma, { ...base, humedad: base.humedad }, tiempos, tiempos);
     const cab = [`${sub('t', '0')}${ESP}\\${ESP}t`, ...tiempos.map((x) => dias(x))];
-    const tarjetaPhi = h('article', { class: 'panel tarjeta' }, h('h2', {}, t('rg.resultados')),
+    const filasPhi = () => [cab.map((c) => String(c).replace(/\\/, '/')), ...PHI.map((f, i) => [dias(tiempos[i]), ...f.map((v) => (v === null ? '' : fmt(v, 2)))])];
+    const tarjetaPhi = h('article', { class: 'panel tarjeta' }, h('h2', {}, t('rg.resultados')), botonCopiar(filasPhi),
       h('p', { class: 'sub', html: `φ(t, ${sub('t', '0')}) · t ${t('rg.eje')} [${t('dias')}], ${sub('t', '0')} ${t('rg.eje2')} [${t('dias')}]` }),
       h('div', { class: 'edad' }, tabla(PHI.map((f, i) => [dias(tiempos[i]), ...f.map((v) => (v === null ? '–' : fmt(v, 2)))]), { cabecera: cab, clase: 'num excel' })));
     const phiMax = Math.max(...PHI.flat().filter((v) => v !== null));
@@ -161,14 +163,16 @@ export function resultados(ctx, res) {
   poner(centro, h('div', { class: 'fig-ley' }, lienzo, leyenda));
 
   const marco = h('div', { class: 'edad tabla-res' });
+  let copia = [];
   const pintaTabla = () => {
     const R = H(est.completa ? mallaTabla : tiempos);
     const e = (x) => fmt(x * 1e6, 0);
     const cab = [`t<br><span class="u u-cab">[${t('dias')}]</span>`, `${sub('σ', 'c')}<br><span class="u u-cab">[MPa]</span>`,
       ...['el', 'dif', 'cs', 'tot'].map((k) => `${sub('ε', k)}<br><span class="u u-cab">[·10⁻⁶]</span>`)];
+    copia = [['t [días]', 'σc [MPa]', 'εel [·10⁻⁶]', 'εdif [·10⁻⁶]', 'εcs [·10⁻⁶]', 'εtot [·10⁻⁶]'], ...R.map((g) => [dias(g.t), fmt(g.tension, 1), e(g.elastica), e(g.diferida), e(g.retraccion), e(g.total)])];
     marco.replaceChildren(tabla(R.map((g) => [dias(g.t), fmt(g.tension, 1), e(g.elastica), e(g.diferida), e(g.retraccion), e(g.total)]), { cabecera: cab, clase: 'num excel' }));
   };
-  const tarjeta = h('article', { class: 'panel tarjeta' }, h('h2', {}, t('rg.resultados')), h('p', { class: 'sub' }, t('rg.notaHistoria')),
+  const tarjeta = h('article', { class: 'panel tarjeta' }, h('h2', {}, t('rg.resultados')), h('p', { class: 'sub' }, t('rg.notaHistoria')), botonCopiar(() => copia),
     segmentado({ opciones: [[false, t('rg.resumida')], [true, t('rg.completa')]], valor: est.completa, etiqueta: t('rg.resultados'), ancho: true,
       onCambio: (v) => { est.completa = v; tarjeta.querySelectorAll('.seg button').forEach((b, i) => b.setAttribute('aria-checked', String((i === 1) === v))); pintaTabla(); } }),
     marco);
