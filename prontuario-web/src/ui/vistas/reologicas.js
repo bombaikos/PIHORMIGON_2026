@@ -111,25 +111,25 @@ export function resultados(ctx, res) {
     /* ---- Coeficiente de fluencia: tabla φ(t, t0) y φ(t) para un t0 con deslizador ---- */
     const PHI = tablaFluencia(E.norma, { ...base, humedad: base.humedad }, tiempos, tiempos);
     const cab = [`${sub('t', '0')}${ESP}\\${ESP}t`, ...tiempos.map((x) => dias(x))];
-    poner(centro,
-      h('div', { class: 'lienzo' }, h('div', { class: 'edad' }, tabla(PHI.map((f, i) => [dias(tiempos[i]), ...f.map((v) => (v === null ? '–' : fmt(v, 2)))]), { cabecera: cab, clase: 'num excel' })),
-        h('p', { class: 'sub', html: `φ(t, ${sub('t', '0')}) · t ${t('rg.eje')} [${t('dias')}], ${sub('t', '0')} ${t('rg.eje2')} [${t('dias')}]` })));
+    const tarjetaPhi = h('article', { class: 'panel tarjeta' }, h('h2', {}, t('rg.resultados')),
+      h('p', { class: 'sub', html: `φ(t, ${sub('t', '0')}) · t ${t('rg.eje')} [${t('dias')}], ${sub('t', '0')} ${t('rg.eje2')} [${t('dias')}]` }),
+      h('div', { class: 'edad' }, tabla(PHI.map((f, i) => [dias(tiempos[i]), ...f.map((v) => (v === null ? '–' : fmt(v, 2)))]), { cabecera: cab, clase: 'num excel' })));
+    const phiMax = Math.max(...PHI.flat().filter((v) => v !== null));
     est.t0 = Math.min(Math.max(est.t0, tMin), tMax);
-    const lienzo = h('div', { class: 'lienzo' });
+    const lienzo = h('div', { class: 'lienzo g32' });
     const etqT0 = h('output', { class: 'gauge-valor' });
     const dibuja = () => {
       const t0 = est.t0;
       const ts = est.logT ? logx(Math.min(t0 * 1.02, tMax), Math.max(tMax, t0 * 1.03), 60) : Array.from({ length: 61 }, (_, i) => t0 * 1.02 + ((Math.max(tMax, t0 * 1.03) - t0 * 1.02) * i) / 60);
       const xy = ts.map((tt) => [lg(tt), fluencia(E.norma, { fck: m.fck, HR: humedadEn(base.humedad, tt), h0: est.h0, t0, t: tt, cemento: E.cemento }).phi]);
       etqT0.textContent = `t₀ = ${fmt(t0, 0)} d`;
-      lienzo.replaceChildren(grafica({ series: [{ nombre: `t₀ = ${fmt(t0, 0)} d`, xy, clase: 's1' }], sinTabla: true, ejeX: ejeX(dibuja), ejeY: { titulo: 'φ(t, t₀)', d: 2 }, archivo: 'fluencia', avisar: ctx.avisar }));
+      lienzo.replaceChildren(grafica({ series: [{ nombre: `t₀ = ${fmt(t0, 0)} d`, xy, clase: 's1' }], sinTabla: true, ejeX: ejeX(dibuja), ejeY: { titulo: 'φ(t, t₀)', d: 2, max: phiMax }, archivo: 'fluencia', avisar: ctx.avisar }));
     };
     const gauge = h('input', { type: 'range', class: 'gauge', min: String(tMin), max: String(tMax), step: '1', value: String(est.t0), 'aria-label': t('rg.t0Gauge'),
       oninput: (e) => { est.t0 = Number(e.target.value); dibuja(); } });
     dibuja();
-    const dib = h('article', { class: 'panel tarjeta' }, h('h2', { html: `φ(t, ${sub('t', '0')})` }), h('p', { class: 'sub' }, t('rg.phiEvolucion')),
-      lienzo, h('div', { class: 'gauge-fila' }, h('span', { class: 'etq', html: t('rg.t0Gauge') }), gauge, etqT0));
-    return poner(res, h('div', { class: 'cuerpo' }, centro, dib));
+    poner(centro, h('h2', { html: `φ(t, ${sub('t', '0')})` }), lienzo, h('div', { class: 'gauge-fila' }, h('span', { class: 'etq', html: t('rg.t0Gauge') }), gauge, etqT0));
+    return poner(res, h('div', { class: 'cuerpo' }, centro, tarjetaPhi));
   }
 
   /* ---- Historia deformacional ---- */
@@ -138,7 +138,7 @@ export function resultados(ctx, res) {
   const mallaTabla = [...new Set([...logx(tMin, tMax, 40).map((x) => Math.round(x)), ...tiempos])].sort((a, b) => a - b);
   const H = (tt) => historia(E.norma, { ...base, tiempos: tt });
   const LINEAS = [['elastica', 'rg.elastica', 's2'], ['diferida', 'rg.diferida', 's3'], ['retraccion', 'rg.retraccion', 's4'], ['total', 'rg.total', 's1']];
-  const lienzo = h('div', { class: 'lienzo' });
+  const lienzo = h('div', { class: 'lienzo g32' });
   const dibuja = () => {
     const G = H(mallaFig).map((g) => ({ ...g, secado: g.retraccion - g.autogena }));
     const ser = (k, nombre, clase) => ({ nombre, xy: G.map((g) => [lg(g.t), g[k] * 1000]), clase });

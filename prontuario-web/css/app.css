@@ -1061,3 +1061,5 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
 #rg-historia td, #rg-historia tr.nueva td { background: var(--campo); } #rg-historia td.sel, #rg-historia tr.foco td { background: var(--acento-suave); }
 .tarjeta .seg.ancho{display:grid;grid-auto-flow:column;grid-auto-columns:1fr}.tarjeta .seg.ancho button{flex:none}
 #rg-historia td { height: 22px; } #rg-historia th { padding-block: 2px; }
+.tarjeta .lienzo.g32{flex:none;overflow:visible}.lienzo.g32 .grafica{display:flex;flex-direction:column}.lienzo.g32 .grafica svg.graf{flex:none;height:auto;aspect-ratio:3/2}
+.fig-ley .lienzo.g32{flex:none}

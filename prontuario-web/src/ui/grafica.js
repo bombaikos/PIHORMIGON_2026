@@ -46,7 +46,7 @@ function interpolar(xy, x) {
  * @param {{nombre:string, xy:number[][], clase?:string, cruz?:boolean}[]} o.series  clase: s1, s2, ref; cruz:false la deja fuera de la cruz
  * @param {{x:number, y:number, etq:string, clase?:string, abajo?:boolean}[]} [o.puntos]  puntos marcados con su rótulo (abajo: bajo el punto) (SVG: subíndices con <tspan class="ind">)
  * @param {{titulo:string, d?:number, dt?:number, alternar?:()=>void, ayuda?:string}} o.ejeX  d: decimales en la cruz; dt: decimales en la tabla (por defecto d + 1); alternar: se llama al pulsar el título del eje (por ejemplo, para pasar de escala logarítmica a lineal), con ayuda como texto emergente
- * @param {{titulo:string, d?:number}} o.ejeY
+ * @param {{titulo:string, d?:number, max?:number}} o.ejeY  max: fija el extremo superior de la vista completa
  * @param {boolean} [o.sinTabla]  sin el selector Gráfico/Tabla (la tabla numérica va aparte)
  * @param {{x?:number, y?:number}} [o.rejillaSec]  rejilla secundaria (sin números) cada x e y; solo si es más fina que la principal
  * @param {boolean} [o.invertirY]  el eje y crece hacia abajo (momentos flectores: positivos debajo)
@@ -137,7 +137,7 @@ export function grafica({ series, puntos = [], ejeX, ejeY, archivo = 'grafica', 
   const todos = [...series.flatMap((s) => s.xy), ...puntos.map((p) => [p.x, p.y])].filter(([x, y]) => Number.isFinite(x) && Number.isFinite(y));
   const ext = (i) => {
     const a = Math.min(0, ...todos.map((p) => p[i]));
-    const b = Math.max(0, ...todos.map((p) => p[i]));
+    const b = i === 1 && ejeY.max !== undefined ? ejeY.max : Math.max(0, ...todos.map((p) => p[i]));
     const r = b > a ? b - a : 1;
     return [a - 0.1 * r, a === b ? a + 1 : b + 0.1 * r];
   };
