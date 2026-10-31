@@ -672,10 +672,7 @@ span.bien { color: var(--ok); font-weight: 600; }
 .zona-dxf b { font-weight: 600; }
 .info-i { position: relative; flex: none; width: 16px; height: 16px; border: 1px solid var(--tinta-3); border-radius: 50%; font: italic 600 calc(11px + var(--mas))/14px Georgia, serif; text-align: center; color: var(--tinta-3); cursor: help; }
 .info-i:hover, .info-i:focus-visible { color: var(--acento); border-color: var(--acento); outline: none; }
-.info-i::after { content: attr(data-tip); position: absolute; z-index: 20; right: -8px; bottom: calc(100% + 8px); width: 230px; padding: 6px 9px; border: 1px solid var(--linea-fuerte); border-radius: var(--r-campo); background: var(--hoja); box-shadow: var(--sombra); color: var(--tinta); font: 400 var(--t-s)/1.4 var(--f); text-align: left; display: none; pointer-events: none; }
-.info-i:hover::after, .info-i:focus-visible::after { display: block; }
 .info-i.izq { margin: 0 0 0 4px; align-self: center; }
-.info-i.izq::after { right: auto; left: -8px; }
 /* En los pares de datos la (i) va sobre la celda de la etiqueta, sin quitar ancho a la caja (las cajas miden lo mismo) */
 .par2 .campo { position: relative; }
 :root:not([data-densidad="comoda"]) .par2 .campo > .info-i.izq { position: absolute; margin: 0; left: calc(25px + var(--mas) * 2); top: 50%; transform: translateY(-50%); }
@@ -1061,3 +1058,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
 #rg-historia td, #rg-historia tr.nueva td { background: var(--campo); } #rg-historia td.sel, #rg-historia tr.foco td { background: var(--acento-suave); }
 .tarjeta .seg.ancho{display:grid;grid-auto-flow:column;grid-auto-columns:1fr}.tarjeta .seg.ancho button{flex:none}
 #rg-historia td { height: 22px; } #rg-historia th { padding-block: 2px; }
+
+/* Globo de las (i): flotante, fuera de los paneles (src/ui/globo.js); nunca lo corta un panel con scroll */
+.globo-i { position: fixed; z-index: 1000; box-sizing: border-box; width: max-content; max-width: min(280px, calc(100vw - 16px)); padding: 6px 9px; border: 1px solid var(--linea-fuerte); border-radius: var(--r-campo); background: var(--hoja); box-shadow: var(--sombra); color: var(--tinta); font: 400 var(--t-s)/1.4 var(--f); text-align: left; pointer-events: none; }
+.globo-i[hidden] { display: none; }
