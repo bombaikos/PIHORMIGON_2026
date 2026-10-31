@@ -222,21 +222,25 @@ function tablaEsfuerzos(gam) {
 /** Columnas de la tabla del diagrama: estado de rotura (x, κ, ε sup, ε inf) de cada punto del contorno, en el orden de la curva. */
 function planoContorno(rama) {
   const pts = [...rama].reverse();
-  const col = (titulo, f, dd = 2) => ({ titulo, vals: pts.map((v) => { const r = f(v); return Number.isFinite(r) ? fmt(r, dd) : '—'; }) });
-  return [col('x [mm]', (v) => v.x * 1000, 0), col('κ [‰/m]', (v) => v.kappa * 1000), col(`ε<sub>sup</sub> [‰]`, (v) => -v.epsSup * 1000), col(`ε<sub>inf</sub> [‰]`, (v) => -v.epsInf * 1000)];
+  const f = (v, dd = 2) => (Number.isFinite(v) ? fmt(v, dd) : '—');
+  return {
+    cab: ['x [mm]', 'κ [‰/m]', 'ε<sub>sup</sub> [‰]', 'ε<sub>inf</sub> [‰]'],
+    plano: ['x [mm]', 'κ [‰/m]', 'εsup [‰]', 'εinf [‰]'],
+    filas: () => pts.map((v) => [f(v.x * 1000, 0), f(v.kappa * 1000), f(-v.epsSup * 1000), f(-v.epsInf * 1000)]),
+  };
 }
 
 function graficoNM(ctx, d, dH, gam, s) {
   const eMm = fmt(emin * 1000, 0);
   const xy = (rama) => [...rama].reverse().map((v) => [v.N, v.M]);
   const series = [
-    { nombre: ind('M', 'Rd'), clase: 's1', xy: xy(d.pos), extra: planoContorno(d.pos) },
+    { nombre: ind('M', 'Rd'), clase: 's1', xy: xy(d.pos) },
     { nombre: t('fcr.hormigon'), clase: 'ref', cruz: false, xy: xy(dH.pos) },
     { nombre: `e mín = ${eMm} mm`, clase: 'ref', cruz: false, xy: [[0, 0], [d.Ncomp, d.Ncomp * emin]] },
   ];
   const puntos = gam.map((x) => ({ x: x.N, y: x.M, etq: String(x.i + 1), marca: x.g >= 1 - 1e-6 ? 'ok' : 'no' }));
   return h('div', { class: 'lienzo' }, grafica({
-    series, puntos,
+    series, puntos, detalle: planoContorno(d.pos),
     ejeX: { titulo: `N [${MAG.N.ud}], ${t('fcr.compPos')}`, d: MAG.N.d, dt: MAG.N.d },
     ejeY: { titulo: `M [${MAG.M.ud}]`, d: MAG.M.d, dt: MAG.M.d },
     archivo: `N-M ${s.nombre}`,

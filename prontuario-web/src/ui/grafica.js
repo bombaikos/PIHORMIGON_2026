@@ -51,12 +51,13 @@ function interpolar(xy, x) {
  * @param {{x?:number, y?:number}} [o.rejillaSec]  rejilla secundaria (sin números) cada x e y; solo si es más fina que la principal
  * @param {{x0:number,x1:number,y0:number,y1:number}} [o.rango]  extensión fija de los ejes (vista completa), en lugar de la de los datos
  * @param {boolean} [o.escalaIgual]  la misma escala en x e y (contornos Mx–My): el eje que sobra se amplía en torno a su centro
+ * @param {{cab:string[], plano:string[], filas:()=>string[][]}} [o.detalle]  columnas extra en la tabla de la primera serie (se calculan al abrir la tabla); la serie puede traer `tabla` con las filas a listar si difieren de las dibujadas
  * @param {boolean} [o.invertirY]  el eje y crece hacia abajo (momentos flectores: positivos debajo)
  * @param {string} [o.archivo]  nombre base al guardar
  * @param {(texto:string)=>void} [o.avisar]
  * @returns {HTMLElement}
  */
-export function grafica({ series, puntos = [], ejeX, ejeY, archivo = 'grafica', rejillaSec = null, invertirY = false, sinTabla = false, escalaIgual = false, rango = null, lecturaXY = false, avisar = () => {} }) {
+export function grafica({ series, puntos = [], ejeX, ejeY, archivo = 'grafica', rejillaSec = null, invertirY = false, sinTabla = false, escalaIgual = false, rango = null, lecturaXY = false, detalle = null, avisar = () => {} }) {
   // Guía § 1: fuerzas [kN], momentos [kN·m] y áreas de armadura [mm²] sin decimales, también en la cruz y en la tabla, diga lo que diga el módulo
   const sinDec = (e) => (/\((kN|kN·m|mm²)\)/.test(plano(e.titulo)) ? { ...e, d: 0, dt: 0 } : e);
   ejeX = sinDec(ejeX);
@@ -93,14 +94,22 @@ export function grafica({ series, puntos = [], ejeX, ejeY, archivo = 'grafica', 
   const tabla = document.createElement('div');
   tabla.className = 'graf-tabla';
   tabla.hidden = true;
-  const filasT = Math.max(0, ...enCuadro.map((s) => s.xy.length));
-  const celda = (s, i, j, d) => (s.xy[i] ? fmt(s.xy[i][j], d) : '');
-  // s.extra: columnas añadidas tras X e Y en la tabla, [{titulo, vals: texto por punto}] (por ejemplo x, κ, ε del estado de cada punto)
-  const extras = (s) => s.extra ?? [];
-  tabla.innerHTML = `<table><thead>${enCuadro.length > 1 ? `<tr>${enCuadro.map((s) => `<th colspan="${2 + extras(s).length}" class="${s.clase ?? 's1'}">${s.nombre}</th>`).join('')}</tr>` : ''}`
-    + `<tr>${enCuadro.map((s) => `<th>${ejeX.titulo}</th><th>${ejeY.titulo}</th>${extras(s).map((c) => `<th>${c.titulo}</th>`).join('')}`).join('')}</tr></thead><tbody>`
-    + Array.from({ length: filasT }, (_, i) => `<tr>${enCuadro.map((s) => `<td>${celda(s, i, 0, ejeX.dt ?? (ejeX.d ?? 2) + 1)}</td><td>${celda(s, i, 1, ejeY.dt ?? (ejeY.d ?? 1) + 1)}</td>${extras(s).map((c) => `<td>${c.vals[i] ?? ''}</td>`).join('')}`).join('')}</tr>`).join('')
-    + '</tbody></table>';
+  const xyT = (s) => s.tabla ?? s.xy;
+  const filasT = Math.max(0, ...enCuadro.map((s) => xyT(s).length));
+  const celda = (s, i, j, d) => (xyT(s)[i] ? fmt(xyT(s)[i][j], d) : '');
+  let detFilas = null; // columnas extra, calculadas al abrir la tabla por primera vez
+  let armada = false;
+  function armarTabla() {
+    if (armada) return;
+    armada = true;
+    detFilas = detalle ? detalle.filas() : null;
+    const extraCab = detalle ? detalle.cab.map((c) => `<th>${c}</th>`).join('') : '';
+    const extraFila = (i) => (detalle ? detalle.cab.map((_, k) => `<td>${detFilas?.[i]?.[k] ?? ''}</td>`).join('') : '');
+    tabla.innerHTML = `<table><thead>${enCuadro.length > 1 ? `<tr>${enCuadro.map((s) => `<th colspan="2" class="${s.clase ?? 's1'}">${s.nombre}</th>`).join('')}</tr>` : ''}`
+      + `<tr>${enCuadro.map((_, k) => `<th>${ejeX.titulo}</th><th>${ejeY.titulo}</th>${k === 0 ? extraCab : ''}`).join('')}</tr></thead><tbody>`
+      + Array.from({ length: filasT }, (_, i) => `<tr>${enCuadro.map((s, k) => `<td>${celda(s, i, 0, ejeX.dt ?? (ejeX.d ?? 2) + 1)}</td><td>${celda(s, i, 1, ejeY.dt ?? (ejeY.d ?? 1) + 1)}</td>${k === 0 ? extraFila(i) : ''}`).join('')}</tr>`).join('')
+      + '</tbody></table>';
+  }
 
   // Selector Gráfico/Tabla debajo de la gráfica
   let enTabla = false;
@@ -128,6 +137,7 @@ export function grafica({ series, puntos = [], ejeX, ejeY, archivo = 'grafica', 
     bG.setAttribute('aria-checked', String(!tabular));
     bT.setAttribute('aria-checked', String(tabular));
     svg.style.display = tabular ? 'none' : '';
+    if (tabular) armarTabla();
     tabla.hidden = !tabular;
     tip.hidden = true;
     for (const b of soloGrafico) b.hidden = tabular;
@@ -344,10 +354,12 @@ export function grafica({ series, puntos = [], ejeX, ejeY, archivo = 'grafica', 
   async function copiarTabla() {
     // Restos numéricos del cálculo (9.5e-9 donde es 0) salen como 0
     const num = (v) => (Number.isFinite(v) ? String(Math.abs(v) < 1e-6 ? 0 : +v.toPrecision(6)).replace('.', decimalAlCopiar()) : '');
+    armarTabla();
     const lineas = [];
+    const extraT = (k, i) => (k === 0 && detalle ? `\t${detalle.cab.map((_, q) => (detFilas?.[i]?.[q] ?? '').replace('.', decimalAlCopiar())).join('\t')}` : '');
     if (enCuadro.length > 1) lineas.push(enCuadro.map((s) => `${plano(s.nombre)}\t`).join('\t'));
-    lineas.push(enCuadro.map(() => `${plano(ejeX.titulo)}\t${plano(ejeY.titulo)}`).join('\t'));
-    for (let i = 0; i < filasT; i++) lineas.push(enCuadro.map((s) => (s.xy[i] ? `${num(s.xy[i][0])}\t${num(s.xy[i][1])}` : '\t')).join('\t'));
+    lineas.push(enCuadro.map((_, k) => `${plano(ejeX.titulo)}\t${plano(ejeY.titulo)}${k === 0 && detalle ? `\t${detalle.plano.join('\t')}` : ''}`).join('\t'));
+    for (let i = 0; i < filasT; i++) lineas.push(enCuadro.map((s, k) => (xyT(s)[i] ? `${num(xyT(s)[i][0])}\t${num(xyT(s)[i][1])}${extraT(k, i)}` : '\t')).join('\t'));
     try {
       await navigator.clipboard.writeText(lineas.join('\n'));
       avisar(t('graf.tablaCopiada'));

@@ -40,3 +40,9 @@ Como el «esviada por β» del 3.1: para cada dirección θ de la fibra más com
 - Si la superficie de rotura aún no está calculada (primera vez con esa armadura, ~2 s), Diagrama muestra «Se está calculando…» en el centro del panel y se repinta al terminar.
 - El selector de ø está en los tres modos. En Rec pilar es editable; en genéricas (más de un diámetro) se queda en gris con el motivo, no se oculta.
 - En Dimensionamiento el selector va en gris con el ø que trae la sección (de él parte la propuesta); en genéricas, en gris con el motivo (Pepiño, 31/10).
+
+## Tablas y diagramas N–M, segunda vuelta (31/10)
+
+- Datos de Diagrama: primero «Esfuerzo fijo para el diagrama» (N | Mx | My) y luego «Esfuerzos solicitantes». La tabla de esfuerzos empieza con 5 puntos a cero, crece hasta 10 sin scroll y solo con más de 10 lleva scroll.
+- La tabla de la derecha lleva solo N, Mx, My y el coeficiente; las filas fuera del diagrama, en rojo. β, x, κ, ε sup y ε inf van en la tabla detallada del gráfico (pestaña «Tabla»); en N–M se calculan al abrirla (estados exactos por nivel, ~0,5 s).
+- El trazo N–M se dibuja con interpolación cúbica monótona entre los 48 niveles de la superficie (más densos hacia los extremos); el polígono sin suavizar sigue sirviendo para dentro/fuera y γ.

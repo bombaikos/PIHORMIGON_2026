@@ -153,6 +153,7 @@ export default {
   'pro.ajustes': 'Project settings', 'pro.sepCapas': 'Layer spacing', 'pro.sepCapasRef': 'axis to axis, in every section',
   'rej.falta': 'Missing value', 'rej.noNumero': 'Not a number', 'rej.errores': (n) => `${n} cell${n > 1 ? 's' : ''} with errors: nothing is applied until ${n > 1 ? 'they are' : 'it is'} fixed`,
   'geo.caraN': (i) => `Face ${i}`, 'geo.colArmado': 'Face bars',
+  'geo.ayudaArmado': 'Two formats are accepted:\n4D25 (4 bars of ø25)\nD20/0.15 (ø20 bars at about 0.15 m)',
   'geo.contornoCaras': 'Vertices and bars of the face starting at each (not counting the next vertex)',
   'geo.huecoN': (n, v) => `Void · ${v} vertices${n > 1 ? ` (${n} voids, only the first is editable)` : ''}`, 'geo.huecoOpc': 'Hole (optional)',
   'geo.pistaRejilla': 'x to the right, y downwards. Bars: 3D16, or D16/0.20 as diameter and spacing in m. Copy and paste with Excel. Insert adds a row; Ctrl+Del removes it.',
