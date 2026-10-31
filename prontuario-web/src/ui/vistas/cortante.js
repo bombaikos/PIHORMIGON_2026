@@ -10,7 +10,7 @@ import { datosCortante, geometriaDe } from '../../io/proyecto.js';
 import { t } from '../i18n.js';
 import { fmt, q, qh, ESP, serieDiametros, paraCampo } from '../formato.js';
 import { grupoSeccion, rotulaSeccion } from './secciones.js';
-import { h, poner, campoNum, selector, segmentado, grupo, par, aviso, cifras, tabla, boton } from '../campos.js';
+import { h, poner, campoNum, selector, segmentado, grupo, par, aviso, cifras, tabla, boton, regleta } from '../campos.js';
 import { veredicto } from './flexion.js';
 import { dibujoCortante } from '../dibujoCortante.js';
 
@@ -122,15 +122,14 @@ export function datos(ctx, form) {
   const ayudaCot = e23 ? t('cor.cotAyuda23', fmt(LT.min, 1), fmt(LT.max, 1), fmt(rg.min, 1), fmt(rg.max, 1)) : ec ? t('cor.cotAyudaEC') : t('cor.cotAyuda');
 
   // Ángulo de las bielas: campo en grados y deslizador (el cotg θ queda dentro del cálculo)
-  const gauge = h('input', { type: 'range', class: 'desliza-sec', min: LT.min, max: LT.max, step: 0.1, value: thetaDe(est.cot), 'aria-label': t('cor.theta') });
-  const refrescarGauge = () => { gauge.value = thetaDe(est.cot); };
-  gauge.addEventListener('input', () => {
-    const v = Number(gauge.value);
-    est.cot = 1 / Math.tan(v * RAD);
+  const refrescarGauge = () => { gauge.querySelector('input').value = thetaDe(est.cot); gauge.refrescar(); };
+  const gauge = regleta({ etq: t('cor.theta'), min: LT.min, max: LT.max, step: 0.1, valor: thetaDe(est.cot), texto: (v) => `${fmt(v, 1)}°`,
+    onInput: (v) => {
+      est.cot = 1 / Math.tan(v * RAD);
     const c = document.getElementById('c-theta');
     if (c) c.value = String(+v.toFixed(1));
     cambio();
-  });
+    } });
   const conEtq = (etq, c) => h('div', { class: 'fu-campo' }, h('span', { class: 'etq-grupo', html: etq }), c);
   poner(form,
     segmentado({ ancho: true, etiqueta: t('flex.modo'), opciones: [['comprobar', t('comprobar')], ['dimensionar', t('dimensionar')]], valor: est.modo, onCambio: (m) => { est.modo = m; ctx.pintar(); } }),

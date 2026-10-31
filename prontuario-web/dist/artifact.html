@@ -698,7 +698,6 @@ table.rejilla.numerada th:nth-child(2) { width: 22%; }
 table.rejilla.numerada th:nth-child(3) { width: 27%; }
 table.rejilla.numerada th:nth-child(4) { width: 24%; }
 table.rejilla.numerada tbody tr:not(.nueva) td:first-child { padding-left: 22px; }
-.desliza-sec { width: 100%; margin: 0; accent-color: var(--acento); height: 18px; }
 /* Datos de solo lectura (Diagramas): sin caja ni flecha, como texto */
 .fijo .caja { background: transparent; border-color: transparent; box-shadow: none; }
 .fijo input, .fijo select { appearance: none; -webkit-appearance: none; background: transparent; color: var(--tinta-2); opacity: 1; cursor: default; pointer-events: none; }
@@ -870,7 +869,6 @@ details.an-ce { margin-top: var(--e2); }
 .graf-tip i.s4, .marca-serie.s4 { background: repeating-linear-gradient(90deg, var(--tinta) 0 12px, transparent 12px 16px, var(--tinta) 16px 18px, transparent 18px 22px); }
 .graf-tip i.s5, .marca-serie.s5 { background: repeating-linear-gradient(90deg, var(--tinta) 0 5px, transparent 5px 8px); }
 .datos .campo:not(.apilado) select { text-align: right; text-align-last: right; }
-.datos .desliza-sec { margin: 2px 0 4px; }
 :root:not([data-densidad="comoda"]) .par2 .campo:not(.columna) > label { flex: 0 0 calc(44px + var(--mas) * 3); max-width: calc(44px + var(--mas) * 3); overflow: hidden; }
 
 /* Flexión compuesta recta: resultados plegados bajo el diagrama, que ocupa todo el ancho */
@@ -1038,9 +1036,6 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
 .seg.capsula { border-radius: 999px; padding: 2px; gap: 2px; background: var(--hoja); }
 .seg.capsula button { border-radius: 999px; min-height: 26px; font-size: var(--t-xs); padding-inline: 4px; }
 .seg.capsula button[aria-checked="true"] { background: var(--acento-suave); color: var(--acento); font-weight: 600; box-shadow: inset 0 0 0 1px var(--acento); }
-.desl-md { display: flex; align-items: center; gap: var(--e3); flex-shrink: 0; }
-.desl-md .desl-valor { font-size: var(--t-s); color: var(--tinta-2); white-space: nowrap; }
-.desl-md .desliza-sec { flex: 1; }
 .fcr-graf > .grafica { flex: 1; min-height: 0; }
 .seg button:disabled { opacity: .5; cursor: not-allowed; }
 
@@ -1050,9 +1045,6 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
 .leyenda-v{display:flex;flex-direction:row;flex-wrap:wrap;justify-content:center;gap:4px 18px;font-size:12px}
 .ley-item{display:flex;align-items:center;gap:6px;cursor:pointer;white-space:nowrap}
 .ley-muestra{width:34px;height:10px;flex:none}
-.gauge-fila{display:flex;align-items:center;gap:10px;font-size:12px}
-.gauge{flex:1}
-.gauge-valor{min-width:70px;text-align:right;font-weight:600}
 
 /* Tablas de resultados: fondo blanco, gris solo para los datos */
 .edad table.excel th, .edad table.excel td { background: var(--campo); }
@@ -1067,6 +1059,26 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
 /* Globo de las (i): flotante, fuera de los paneles (src/ui/globo.js); nunca lo corta un panel con scroll */
 .globo-i { position: fixed; z-index: 1000; box-sizing: border-box; width: max-content; max-width: min(280px, calc(100vw - 16px)); padding: 6px 9px; border: 1px solid var(--linea-fuerte); border-radius: var(--r-campo); background: var(--hoja); box-shadow: var(--sombra); color: var(--tinta); font: 400 var(--t-s)/1.4 var(--f); text-align: left; pointer-events: none; }
 .globo-i[hidden] { display: none; }
+
+/* Casillas (regla de diseño general): caja blanca con borde azul grisáceo; marcada, fondo azul suave, borde y tick en el azul de acento.
+   Nunca el azul por defecto del navegador (fuera de paleta). */
+input[type="checkbox"] { appearance: none; -webkit-appearance: none; width: 16px; height: 16px; margin: 0; flex: none; box-sizing: border-box; border: 1.5px solid var(--campo-borde); border-radius: 3px; background: var(--campo); display: inline-grid; place-content: center; cursor: pointer; }
+input[type="checkbox"]:checked { background: var(--acento-suave); border-color: var(--acento); }
+input[type="checkbox"]:checked::after { content: ''; width: 8px; height: 4px; border-left: 2px solid var(--acento); border-bottom: 2px solid var(--acento); transform: translateY(-1px) rotate(-45deg); }
+input[type="checkbox"]:disabled { background: var(--hundido); border-color: var(--linea-fuerte); cursor: default; }
+input[type="checkbox"]:disabled:checked::after { border-color: var(--tinta-3); }
+input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline-offset: 2px; }
+/* Regleta: deslizador común (guía §9.4). Ancho: 80 % del gráfico al que acompaña, centrada. */
+.regleta { display: grid; grid-template-columns: max-content minmax(0, 1fr) 9ch; align-items: center; gap: var(--e3); width: 80%; margin: 4px auto; flex-shrink: 0; font-size: var(--t-s); color: var(--tinta-2); }
+.regleta.sin-etq { grid-template-columns: minmax(0, 1fr) 9ch; }
+.regleta .rg-et { white-space: nowrap; }
+.regleta .rg-v { text-align: right; font-weight: 600; color: var(--tinta); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.regleta input[type=range] { width: 100%; margin: 0; height: 22px; background: transparent; -webkit-appearance: none; appearance: none; }
+.regleta input[type=range]::-webkit-slider-runnable-track { height: 8px; border-radius: 4px; border: 1px solid var(--campo-borde); box-sizing: border-box; background: linear-gradient(to right, var(--acento) var(--p, 50%), var(--acento-suave) var(--p, 50%)); }
+.regleta input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; margin-top: -5px; border-radius: 50%; background: var(--acento); border: 3px solid var(--hoja); box-shadow: 0 0 0 1px var(--acento); box-sizing: border-box; }
+.regleta input[type=range]::-moz-range-track { height: 8px; border-radius: 4px; border: 1px solid var(--campo-borde); box-sizing: border-box; background: linear-gradient(to right, var(--acento) var(--p, 50%), var(--acento-suave) var(--p, 50%)); }
+.regleta input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: var(--acento); border: 3px solid var(--hoja); box-shadow: 0 0 0 1px var(--acento); box-sizing: border-box; }
+.regleta input[type=range]:focus-visible { outline: 2px solid var(--acento); outline-offset: 2px; border-radius: 4px; }
 </style>
 
 <header class="barra">
@@ -5894,6 +5906,25 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
       )
     );
   }
+  function regleta({ etq, min, max, step = 1, valor, texto, etiqueta, onInput, onChange, clase = "" }) {
+    const input = h("input", { type: "range", min: String(min), max: String(max), step: String(step), value: String(valor), "aria-label": etiqueta ?? etq ?? "" });
+    const out = h("output", { class: "rg-v" });
+    const pinta = () => {
+      const v2 = Number(input.value);
+      input.style.setProperty("--p", `${(v2 - Number(input.min)) / (Number(input.max) - Number(input.min) || 1) * 100}%`);
+      out.innerHTML = texto ? texto(v2) : String(v2);
+    };
+    input.addEventListener("input", () => {
+      pinta();
+      onInput?.(Number(input.value));
+    });
+    if (onChange) input.addEventListener("change", () => onChange(Number(input.value)));
+    pinta();
+    const el = h("div", { class: `regleta ${clase}`.trim() }, etq ? h("span", { class: "rg-et", html: etq }) : null, input, out);
+    if (!etq) el.classList.add("sin-etq");
+    el.refrescar = () => pinta();
+    return el;
+  }
   var apilado = (c) => {
     c.classList.add("apilado");
     return c;
@@ -8135,29 +8166,25 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
       const phiMax = Math.max(...PHI.flat().filter((v2) => v2 !== null));
       est2.t0 = Math.min(Math.max(est2.t0, tMin), tMax);
       const lienzo2 = h("div", { class: "lienzo g32" });
-      const etqT0 = h("output", { class: "gauge-valor" });
       const dibuja2 = () => {
         const t0 = est2.t0;
         const ts = est2.logT ? logx(Math.min(t0 * 1.02, tMax), Math.max(tMax, t0 * 1.03), 60) : Array.from({ length: 61 }, (_2, i) => t0 * 1.02 + (Math.max(tMax, t0 * 1.03) - t0 * 1.02) * i / 60);
         const xy = ts.map((tt) => [lg(tt), fluencia(E.norma, { fck: m.fck, HR: humedadEn(base2.humedad, tt), h0: est2.h0, t0, t: tt, cemento: E.cemento }).phi]);
-        etqT0.textContent = `t\u2080 = ${fmt(t0, 0)} d`;
         lienzo2.replaceChildren(grafica({ series: [{ nombre: `t\u2080 = ${fmt(t0, 0)} d`, xy, clase: "s1" }], sinTabla: true, ejeX: ejeX(dibuja2), ejeY: { titulo: "\u03C6(t, t\u2080)", d: 2, max: phiMax }, archivo: "fluencia", avisar: ctx2.avisar }));
       };
-      const gauge = h("input", {
-        type: "range",
-        class: "gauge",
-        min: String(tMin),
-        max: String(tMax),
-        step: "1",
-        value: String(est2.t0),
-        "aria-label": t("rg.t0Gauge"),
-        oninput: (e2) => {
-          est2.t0 = Number(e2.target.value);
+      const gauge = regleta({
+        etq: t("rg.t0Gauge"),
+        min: tMin,
+        max: tMax,
+        valor: est2.t0,
+        texto: (v2) => `${fmt(v2, 0)} d`,
+        onInput: (v2) => {
+          est2.t0 = v2;
           dibuja2();
         }
       });
       dibuja2();
-      poner(centro, h("h2", { html: `\u03C6(t, ${sub12("t", "0")})` }), lienzo2, h("div", { class: "gauge-fila" }, h("span", { class: "etq", html: t("rg.t0Gauge") }), gauge, etqT0));
+      poner(centro, h("h2", { html: `\u03C6(t, ${sub12("t", "0")})` }), lienzo2, gauge);
       return poner(res, h("div", { class: "cuerpo" }, centro, tarjetaPhi));
     }
     const saltos = base2.cargas.flatMap(([t0]) => [t0, t0 - 1e-3]);
@@ -11474,19 +11501,18 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     if (est4.modo === "diagrama") return res.append(panelDiagrama(ctx2, { s, d, neg, xdMax }));
     const ancha = dibGeo.caja.xmax - dibGeo.caja.xmin > 2 * dibGeo.h;
     const lienzo = h("div", { class: "lienzo", html: dibujoFlexion(dibGeo, s, d, r, est4.desp) });
-    const deslizador = h("input", {
-      type: "range",
-      class: "desliza-sec",
+    const deslizador = regleta({
       min: 0,
       max: 1e3,
-      value: Math.round(est4.desp * 1e3),
-      "aria-label": t("dib.desliza"),
-      title: t("dib.desliza"),
-      oninput: (ev) => {
-        est4.desp = +ev.target.value / 1e3;
+      valor: Math.round(est4.desp * 1e3),
+      etiqueta: t("dib.desliza"),
+      texto: (v2) => `${Math.round(v2 / 10)} %`,
+      onInput: (v2) => {
+        est4.desp = v2 / 1e3;
         lienzo.innerHTML = dibujoFlexion(dibGeo, s, d, r, est4.desp);
       }
     });
+    deslizador.title = t("dib.desliza");
     const tarjetaDib = h(
       "article",
       { class: "panel tarjeta" },
@@ -11579,21 +11605,26 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     const Mlo = Math.ceil(c.Mmin);
     const Mhi = Math.floor(c.Mmax);
     const texto = (Md) => `${sub18("M", "Ed")} = <b>${fmt(Md, MAG.M.d)}</b> ${MAG.M.ud}`;
-    const valor = h("output", { class: "desl-valor", html: texto(est4.Md) });
-    const deslizador = h("input", { type: "range", class: "desliza-sec", min: Mlo, max: Mhi, step: 1, value: Math.min(Math.max(est4.Md, Mlo), Mhi), "aria-label": t("flex.deslizaMd") });
-    deslizador.addEventListener("input", () => {
-      const Md = +deslizador.value;
-      est4.Md = Md;
-      valor.innerHTML = texto(Md);
-      const campo = document.getElementById("f-md");
-      if (campo) campo.value = fmt(Md, MAG.M.d);
-      const nuevo2 = dibujar(Md);
-      graf.replaceWith(nuevo2);
-      graf = nuevo2;
-      pintarLado(Md);
+    const deslizador = regleta({
+      etq: sub18("M", "Ed"),
+      min: Mlo,
+      max: Mhi,
+      step: 1,
+      valor: Math.min(Math.max(est4.Md, Mlo), Mhi),
+      etiqueta: t("flex.deslizaMd"),
+      texto: (Md) => `${fmt(Md, MAG.M.d)} ${MAG.M.ud}`,
+      onInput: (Md) => {
+        est4.Md = Md;
+        const campo = document.getElementById("f-md");
+        if (campo) campo.value = fmt(Md, MAG.M.d);
+        const nuevo2 = dibujar(Md);
+        graf.replaceWith(nuevo2);
+        graf = nuevo2;
+        pintarLado(Md);
+      },
+      onChange: () => ctx2.cambio()
     });
-    deslizador.addEventListener("change", () => ctx2.cambio());
-    caja.append(h("div", { class: "desl-md" }, valor, deslizador));
+    caja.append(deslizador);
     return h(
       "article",
       { class: "panel tarjeta" },
@@ -14064,16 +14095,23 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     const rg = ajustaCot(p, s, sec, ef);
     const LT = limitesTheta(rg);
     const ayudaCot = e23 ? t("cor.cotAyuda23", fmt(LT.min, 1), fmt(LT.max, 1), fmt(rg.min, 1), fmt(rg.max, 1)) : ec ? t("cor.cotAyudaEC") : t("cor.cotAyuda");
-    const gauge = h("input", { type: "range", class: "desliza-sec", min: LT.min, max: LT.max, step: 0.1, value: thetaDe2(est6.cot), "aria-label": t("cor.theta") });
     const refrescarGauge = () => {
-      gauge.value = thetaDe2(est6.cot);
+      gauge.querySelector("input").value = thetaDe2(est6.cot);
+      gauge.refrescar();
     };
-    gauge.addEventListener("input", () => {
-      const v2 = Number(gauge.value);
-      est6.cot = 1 / Math.tan(v2 * RAD);
-      const c = document.getElementById("c-theta");
-      if (c) c.value = String(+v2.toFixed(1));
-      cambio();
+    const gauge = regleta({
+      etq: t("cor.theta"),
+      min: LT.min,
+      max: LT.max,
+      step: 0.1,
+      valor: thetaDe2(est6.cot),
+      texto: (v2) => `${fmt(v2, 1)}\xB0`,
+      onInput: (v2) => {
+        est6.cot = 1 / Math.tan(v2 * RAD);
+        const c = document.getElementById("c-theta");
+        if (c) c.value = String(+v2.toFixed(1));
+        cambio();
+      }
     });
     const conEtq = (etq, c) => h("div", { class: "fu-campo" }, h("span", { class: "etq-grupo", html: etq }), c);
     poner(

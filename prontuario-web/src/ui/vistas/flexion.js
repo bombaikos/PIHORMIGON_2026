@@ -8,7 +8,7 @@ import { NORMAS } from '../../norma/normas.js';
 import { datosViga, geometriaDe } from '../../io/proyecto.js';
 import { t } from '../i18n.js';
 import { eje, fmt, q, qh, ESP, MAG, serieDiametros } from '../formato.js';
-import { h, poner, campoNum, campoArmado, selector, segmentado, grupo, par, aviso, cifras, tabla, pestanas } from '../campos.js';
+import { h, poner, campoNum, campoArmado, selector, segmentado, grupo, par, aviso, cifras, tabla, pestanas, regleta } from '../campos.js';
 import { grafica } from '../grafica.js';
 import { grupoSeccion, rotulaSeccion } from './secciones.js';
 import { DEFS, encuadre, capasSeccion } from '../dibujoSeccion.js';
@@ -144,8 +144,9 @@ function resultadosFlexion(ctx, res) {
   // Sección muy ancha (más de 2 : 1): se ve un tramo de proporción 2 : 1 y un deslizador lo recorre
   const ancha = dibGeo.caja.xmax - dibGeo.caja.xmin > 2 * dibGeo.h;
   const lienzo = h('div', { class: 'lienzo', html: dibujoFlexion(dibGeo, s, d, r, est.desp) });
-  const deslizador = h('input', { type: 'range', class: 'desliza-sec', min: 0, max: 1000, value: Math.round(est.desp * 1000), 'aria-label': t('dib.desliza'),
-    title: t('dib.desliza'), oninput: (ev) => { est.desp = +ev.target.value / 1000; lienzo.innerHTML = dibujoFlexion(dibGeo, s, d, r, est.desp); } });
+  const deslizador = regleta({ min: 0, max: 1000, valor: Math.round(est.desp * 1000), etiqueta: t('dib.desliza'), texto: (v) => `${Math.round(v / 10)} %`,
+    onInput: (v) => { est.desp = v / 1000; lienzo.innerHTML = dibujoFlexion(dibGeo, s, d, r, est.desp); } });
+  deslizador.title = t('dib.desliza');
   const tarjetaDib = h('article', { class: 'panel tarjeta' },
     h('h2', {}, t('t.dibujo')), h('p', { class: 'sub' }, t('t.dibujoSub')),
     lienzo,
@@ -236,21 +237,19 @@ function panelDiagrama(ctx, { s, d, neg, xdMax }) {
   const Mlo = Math.ceil(c.Mmin);
   const Mhi = Math.floor(c.Mmax);
   const texto = (Md) => `${sub('M', 'Ed')} = <b>${fmt(Md, MAG.M.d)}</b> ${MAG.M.ud}`;
-  const valor = h('output', { class: 'desl-valor', html: texto(est.Md) });
-  const deslizador = h('input', { type: 'range', class: 'desliza-sec', min: Mlo, max: Mhi, step: 1, value: Math.min(Math.max(est.Md, Mlo), Mhi), 'aria-label': t('flex.deslizaMd') });
-  deslizador.addEventListener('input', () => {
-    const Md = +deslizador.value;
-    est.Md = Md;
-    valor.innerHTML = texto(Md);
-    const campo = document.getElementById('f-md');
-    if (campo) campo.value = fmt(Md, MAG.M.d);
-    const nuevo = dibujar(Md);
-    graf.replaceWith(nuevo);
-    graf = nuevo;
-    pintarLado(Md);
-  });
-  deslizador.addEventListener('change', () => ctx.cambio());
-  caja.append(h('div', { class: 'desl-md' }, valor, deslizador));
+  const deslizador = regleta({ etq: sub('M', 'Ed'), min: Mlo, max: Mhi, step: 1, valor: Math.min(Math.max(est.Md, Mlo), Mhi), etiqueta: t('flex.deslizaMd'),
+    texto: (Md) => `${fmt(Md, MAG.M.d)} ${MAG.M.ud}`,
+    onInput: (Md) => {
+      est.Md = Md;
+      const campo = document.getElementById('f-md');
+      if (campo) campo.value = fmt(Md, MAG.M.d);
+      const nuevo = dibujar(Md);
+      graf.replaceWith(nuevo);
+      graf = nuevo;
+      pintarLado(Md);
+    },
+    onChange: () => ctx.cambio() });
+  caja.append(deslizador);
   return h('article', { class: 'panel tarjeta' }, h('h2', {}, `${t('flex.diagrama')} · ${s.nombre}`),
     h('div', { class: 'fcr-diag' }, caja, lado));
 }
