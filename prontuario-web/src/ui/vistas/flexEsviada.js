@@ -11,7 +11,7 @@ import { leerNumero } from '../../core/armado.js';
 import { NORMAS } from '../../norma/normas.js';
 import { geometriaDe, materialesSeccion, sepCapas } from '../../io/proyecto.js';
 import { t } from '../i18n.js';
-import { fmt, q, qh, MAG, ESP, serieDiametros } from '../formato.js';
+import { fmt, q, qh, MAG, ESP, serieDiametros, decimalAlCopiar } from '../formato.js';
 import { grupoSeccion, rotulaSeccion } from './secciones.js';
 import { h, poner, campoNum, selector, segmentado, grupo, aviso, cifras, regleta } from '../campos.js';
 import { grafica } from '../grafica.js';
@@ -22,7 +22,7 @@ import { veredicto } from './flexion.js';
 // Como el Prontuario 3.1: rectangulares definidas por redondo (pilares) y genéricas
 const FORMAS = ['pilar', 'generica'];
 const est = {
-  i: null, fi: null, modo: 'comprobar', NEd: 800, MxEd: 120, MyEd: 70, Ndiag: 500, puntos: [['120', '70'], ['-80', '110'], ['180', '-60'], ['40', '40']],
+  i: null, fi: null, modo: 'comprobar', NEd: 800, MxEd: 120, MyEd: 70, Ndiag: 500, puntos: [['120', '70'], ['-80', '110'], ['180', '-60'], ['40', '40'], ['', ''], ['', ''], ['', ''], ['', ''], ['', ''], ['', '']],
   abiertos: new Set(),
 };
 export function reiniciar() { est.i = null; }
@@ -134,9 +134,9 @@ export function datos(ctx, form) {
       campoNum({ id: 'fe-mx', etq: sub('M', 'x,Ed'), ref: t('fce.mx'), valor: est.MxEd, mag: 'M', paso: 5, min: -1e6, max: 1e6, nombre: t('fce.nombreMx'), info: t('fce.infoMx'), onCambio: (v) => { est.MxEd = v; cambio(); } }),
       campoNum({ id: 'fe-my', etq: sub('M', 'y,Ed'), ref: t('fce.my'), valor: est.MyEd, mag: 'M', paso: 5, min: -1e6, max: 1e6, nombre: t('fce.nombreMy'), info: t('fce.infoMy'), onCambio: (v) => { est.MyEd = v; cambio(); } }),
       campoFi()) : grupo(t('fce.puntos'),
-      rejilla({ id: 'fe-pts', altoMax: 190,
+      rejilla({ id: 'fe-pts', altoMax: 330,
         columnas: [{ titulo: `${sub('M', 'x,Ed')} [kN·m]`, num: true }, { titulo: `${sub('M', 'y,Ed')} [kN·m]`, num: true }],
-        filas: est.puntos, onCambio: (f) => { est.puntos = f.map((r) => [r[0], r[1]]); cambio(); } }),
+        filas: est.puntos, onCambio: (f) => { est.puntos = Array.from({ length: Math.max(10, f.length) }, (_, i) => [f[i]?.[0] ?? '', f[i]?.[1] ?? '']); cambio(); } }),
       campoFi()));
 }
 
@@ -216,6 +216,20 @@ function tituloGraf(c, s, { N, Mx, My }) {
   return `${t('fce.contorno')} · ${partes.join(' · ')}`;
 }
 
+/** Tabla de puntos con su γ y botón «Copiar tabla» (guía: más de 4 filas). */
+function tablaPuntos(ctx, pts) {
+  const dec = decimalAlCopiar();
+  const cab = ['#', 'Mx,Ed [kN·m]', 'My,Ed [kN·m]', 'γ'];
+  const num = (x, d) => fmt(x, d).replace('−', '-').replace('.', dec);
+  const filas = pts.map((x) => [String(x.i + 1), num(x.Mx, MAG.M.d), num(x.My, MAG.M.d), x.g === Infinity ? '∞' : num(x.g, 2)]);
+  const copiar = async () => {
+    try { await navigator.clipboard.writeText([cab.join('\t'), ...filas.map((f) => f.join('\t'))].join('\r\n')); ctx.avisar(t('graf.tablaCopiada')); } catch { ctx.avisar(t('graf.error')); }
+  };
+  return h('div', { class: 'fce-tabla' },
+    h('button', { type: 'button', class: 'tecla', title: t('graf.copiarTablaTit'), onclick: copiar }, t('fce.copiarTabla')),
+    h('div', { class: 'tabla-scroll' }, h('table', { class: 'tabla', html: `<thead><tr>${['#', 'M<sub>x,Ed</sub> [kN·m]', 'M<sub>y,Ed</sub> [kN·m]', 'γ', ''].map((x) => `<th>${x}</th>`).join('')}</tr></thead><tbody>${pts.map((x) => `<tr><td>${x.i + 1}</td><td>${fmt(x.Mx, MAG.M.d)}</td><td>${fmt(x.My, MAG.M.d)}</td><td>${sigla(x.g)}</td><td><span class="${x.g >= 1 - 1e-6 ? 'ok' : 'no'}">${x.g >= 1 - 1e-6 ? t('fcr.dentroSello') : t('fcr.fueraSello')}</span></td></tr>`).join('')}</tbody>` })));
+}
+
 /** Momentos mayores del contorno entre todos los axiles (muestreo): los ejes del diagrama no se mueven con la regleta. */
 function rangoFijo(c) {
   if (!c.rango) {
@@ -260,7 +274,7 @@ function panelDiagrama(ctx, { s, c }) {
       cifras([[sub('M', 'x,Rd,máx'), qh(ext((v) => v.Mx, true), 'M')], [sub('M', 'x,Rd,mín'), qh(ext((v) => v.Mx, false), 'M')],
         [sub('M', 'y,Rd,máx'), qh(ext((v) => v.My, true), 'M')], [sub('M', 'y,Rd,mín'), qh(ext((v) => v.My, false), 'M')],
         [sub('N', 'Rd'), qh(lim.Ncomp, 'N')], [sub('N', 'Rd,t'), qh(lim.Ntrac, 'N')]]),
-      pts.length ? h('table', { class: 'tabla', html: `<thead><tr>${['#', 'M<sub>x,Ed</sub> [kN·m]', 'M<sub>y,Ed</sub> [kN·m]', 'γ', ''].map((x) => `<th>${x}</th>`).join('')}</tr></thead><tbody>${pts.map((x) => `<tr><td>${x.i + 1}</td><td>${fmt(x.Mx, MAG.M.d)}</td><td>${fmt(x.My, MAG.M.d)}</td><td>${sigla(x.g)}</td><td><span class="${x.g >= 1 - 1e-6 ? 'ok' : 'no'}">${x.g >= 1 - 1e-6 ? t('fcr.dentroSello') : t('fcr.fueraSello')}</span></td></tr>`).join('')}</tbody>` }) : null);
+      pts.length ? tablaPuntos(ctx, pts) : null);
     titulo.innerHTML = tituloGraf(c, s, { N });
     if (rg) rg.classList.toggle('trac', trac);
     return g;

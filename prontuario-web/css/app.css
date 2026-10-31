@@ -1096,3 +1096,6 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
 .regleta.escala .rg-num span { position: absolute; }
 
 .cifra .info-i { display: inline-block; vertical-align: middle; margin: 0 0 0 4px; }
+
+.fce-tabla { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
+.fce-tabla .tabla-scroll { width: 100%; }

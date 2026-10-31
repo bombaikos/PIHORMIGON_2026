@@ -1105,6 +1105,9 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
 .regleta.escala .rg-num span { position: absolute; }
 
 .cifra .info-i { display: inline-block; vertical-align: middle; margin: 0 0 0 4px; }
+
+.fce-tabla { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
+.fce-tabla .tabla-scroll { width: 100%; }
 </style>
 
 <header class="barra">
@@ -5372,6 +5375,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     "fce.infoMy": "My: momento respecto al eje vertical de la secci\xF3n. Positivo si comprime la cara derecha.",
     "fce.infoMrd": "M_Rd,x y M_Rd,y son los momentos resistentes en el punto Q del contorno: el corte de la recta que une el origen con (My,Ed, Mx,Ed). Mismo axil N_Ed y misma relaci\xF3n Mx,Ed / My,Ed (excentricidad constante).",
     "fce.infoBeta": "\u03B2 es el \xE1ngulo de la recta neutra con la horizontal (positivo si baja hacia la derecha). Mx es el momento respecto al eje horizontal y My respecto al vertical.",
+    "fce.copiarTabla": "Copiar tabla",
     "fce.sinEsfuerzos": "Escribe al menos un par de esfuerzos."
   };
 
@@ -5407,6 +5411,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     "fce.infoMy": "My: moment about the vertical axis of the section. Positive when it compresses the right face.",
     "fce.infoMrd": "M_Rd,x and M_Rd,y are the resisting moments at point Q of the contour: where the line from the origin to (My,Ed, Mx,Ed) meets it. Same axial load N_Ed and same ratio Mx,Ed / My,Ed (constant eccentricity).",
     "fce.infoBeta": "\u03B2 is the angle of the neutral line with the horizontal (positive when it descends to the right). Mx is the moment about the horizontal axis and My about the vertical one.",
+    "fce.copiarTabla": "Copy table",
     "fce.sinEsfuerzos": "Enter at least one pair of actions."
   };
 
@@ -12631,7 +12636,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     MxEd: 120,
     MyEd: 70,
     Ndiag: 500,
-    puntos: [["120", "70"], ["-80", "110"], ["180", "-60"], ["40", "40"]],
+    puntos: [["120", "70"], ["-80", "110"], ["180", "-60"], ["40", "40"], ["", ""], ["", ""], ["", ""], ["", ""], ["", ""], ["", ""]],
     abiertos: /* @__PURE__ */ new Set()
   };
   function reiniciar6() {
@@ -12759,11 +12764,11 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
         t("fce.puntos"),
         rejilla({
           id: "fe-pts",
-          altoMax: 190,
+          altoMax: 330,
           columnas: [{ titulo: `${sub20("M", "x,Ed")} [kN\xB7m]`, num: true }, { titulo: `${sub20("M", "y,Ed")} [kN\xB7m]`, num: true }],
           filas: est6.puntos,
           onCambio: (f) => {
-            est6.puntos = f.map((r) => [r[0], r[1]]);
+            est6.puntos = Array.from({ length: Math.max(10, f.length) }, (_2, i) => [f[i]?.[0] ?? "", f[i]?.[1] ?? ""]);
             cambio();
           }
         }),
@@ -12857,6 +12862,26 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     if (c.phi0) partes.push(`\xF8${fmt(c.phiProp ?? est6.fi ?? c.phi0, 0)} mm`);
     return `${t("fce.contorno")} \xB7 ${partes.join(" \xB7 ")}`;
   }
+  function tablaPuntos(ctx2, pts) {
+    const dec = decimalAlCopiar();
+    const cab = ["#", "Mx,Ed [kN\xB7m]", "My,Ed [kN\xB7m]", "\u03B3"];
+    const num4 = (x, d) => fmt(x, d).replace("\u2212", "-").replace(".", dec);
+    const filas = pts.map((x) => [String(x.i + 1), num4(x.Mx, MAG.M.d), num4(x.My, MAG.M.d), x.g === Infinity ? "\u221E" : num4(x.g, 2)]);
+    const copiar = async () => {
+      try {
+        await navigator.clipboard.writeText([cab.join("	"), ...filas.map((f) => f.join("	"))].join("\r\n"));
+        ctx2.avisar(t("graf.tablaCopiada"));
+      } catch {
+        ctx2.avisar(t("graf.error"));
+      }
+    };
+    return h(
+      "div",
+      { class: "fce-tabla" },
+      h("button", { type: "button", class: "tecla", title: t("graf.copiarTablaTit"), onclick: copiar }, t("fce.copiarTabla")),
+      h("div", { class: "tabla-scroll" }, h("table", { class: "tabla", html: `<thead><tr>${["#", "M<sub>x,Ed</sub> [kN\xB7m]", "M<sub>y,Ed</sub> [kN\xB7m]", "\u03B3", ""].map((x) => `<th>${x}</th>`).join("")}</tr></thead><tbody>${pts.map((x) => `<tr><td>${x.i + 1}</td><td>${fmt(x.Mx, MAG.M.d)}</td><td>${fmt(x.My, MAG.M.d)}</td><td>${sigla2(x.g)}</td><td><span class="${x.g >= 1 - 1e-6 ? "ok" : "no"}">${x.g >= 1 - 1e-6 ? t("fcr.dentroSello") : t("fcr.fueraSello")}</span></td></tr>`).join("")}</tbody>` }))
+    );
+  }
   function rangoFijo(c) {
     if (!c.rango) {
       const { Ntrac, Ncomp } = c.lim;
@@ -12908,7 +12933,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
           [sub20("N", "Rd"), qh(lim.Ncomp, "N")],
           [sub20("N", "Rd,t"), qh(lim.Ntrac, "N")]
         ]),
-        pts.length ? h("table", { class: "tabla", html: `<thead><tr>${["#", "M<sub>x,Ed</sub> [kN\xB7m]", "M<sub>y,Ed</sub> [kN\xB7m]", "\u03B3", ""].map((x) => `<th>${x}</th>`).join("")}</tr></thead><tbody>${pts.map((x) => `<tr><td>${x.i + 1}</td><td>${fmt(x.Mx, MAG.M.d)}</td><td>${fmt(x.My, MAG.M.d)}</td><td>${sigla2(x.g)}</td><td><span class="${x.g >= 1 - 1e-6 ? "ok" : "no"}">${x.g >= 1 - 1e-6 ? t("fcr.dentroSello") : t("fcr.fueraSello")}</span></td></tr>`).join("")}</tbody>` }) : null
+        pts.length ? tablaPuntos(ctx2, pts) : null
       );
       titulo.innerHTML = tituloGraf(c, s, { N });
       if (rg) rg.classList.toggle("trac", trac);

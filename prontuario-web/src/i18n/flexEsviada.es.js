@@ -20,5 +20,6 @@ export default {
   'fce.contornos': (n) => `${n} puntos`,
   'fce.infoMx': 'Mx: momento respecto al eje horizontal de la sección. Positivo si comprime la cara superior.', 'fce.infoMy': 'My: momento respecto al eje vertical de la sección. Positivo si comprime la cara derecha.',
   'fce.infoMrd': 'M_Rd,x y M_Rd,y son los momentos resistentes en el punto Q del contorno: el corte de la recta que une el origen con (My,Ed, Mx,Ed). Mismo axil N_Ed y misma relación Mx,Ed / My,Ed (excentricidad constante).', 'fce.infoBeta': 'β es el ángulo de la recta neutra con la horizontal (positivo si baja hacia la derecha). Mx es el momento respecto al eje horizontal y My respecto al vertical.',
+  'fce.copiarTabla': 'Copiar tabla',
   'fce.sinEsfuerzos': 'Escribe al menos un par de esfuerzos.',
 };
