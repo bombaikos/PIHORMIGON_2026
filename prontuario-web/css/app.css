@@ -433,7 +433,7 @@ table.rejilla th { position: sticky; top: 0; z-index: 1; background: var(--hundi
 table.rejilla th:not(:first-child), table.rejilla td:not(:first-child) { border-left: 1px solid var(--linea); }
 table.rejilla td { background: var(--campo); padding: 0 8px; height: calc(26px + var(--mas)); border-bottom: 1px solid color-mix(in oklch, var(--linea) 60%, transparent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: cell; user-select: none; }
 table.rejilla td.num { text-align: right; font-variant-numeric: tabular-nums; }
-table.rejilla tr.nueva td { background: color-mix(in oklch, var(--hundido) 50%, transparent); }
+table.rejilla tr.nueva td { background: var(--campo); }
 table.rejilla td.sel { background: var(--acento-suave); }
 table.rejilla:focus td.activa, table.rejilla td.editando { box-shadow: inset 0 0 0 2px var(--acento); }
 table.rejilla td.activa { box-shadow: inset 0 0 0 1px var(--acento); }
