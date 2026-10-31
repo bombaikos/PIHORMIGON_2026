@@ -22,7 +22,7 @@ import { veredicto } from './flexion.js';
 // Como el Prontuario 3.1: rectangulares definidas por redondo (pilares) y genéricas
 const FORMAS = ['pilar', 'generica'];
 const est = {
-  i: null, fi: null, modo: 'comprobar', NEd: 800, MxEd: 120, MyEd: 70, Ndiag: 500, puntos: [['120', '70'], ['-80', '110'], ['180', '-60'], ['40', '40'], ['', ''], ['', ''], ['', ''], ['', ''], ['', ''], ['', '']],
+  i: null, fi: null, modo: 'comprobar', NEd: 800, MxEd: 120, MyEd: 70, Ndiag: 500, dirEmin: 'y', puntos: [['120', '70'], ['-80', '110'], ['180', '-60'], ['40', '40'], ['', ''], ['', ''], ['', ''], ['', ''], ['', ''], ['', '']],
   abiertos: new Set(),
 };
 export function reiniciar() { est.i = null; }
@@ -60,8 +60,9 @@ function pares() {
   return crudos.filter((x) => Number.isFinite(x.N) && Number.isFinite(x.Mx) && Number.isFinite(x.My)).map((x) => {
     if (!(x.N > 0)) return x;
     const sube = (M, e) => (Math.abs(M) < x.N * e - 1e-9 ? (M < 0 ? -1 : 1) * x.N * e : M);
-    const Mx = sube(x.Mx, emin.y);
-    const My = sube(x.My, emin.x);
+    // Una sola dirección (EHE-08 42.2.1: «en la dirección más desfavorable de las principales y sólo en una de ellas»)
+    const Mx = est.dirEmin === 'y' ? sube(x.Mx, emin.y) : x.Mx;
+    const My = est.dirEmin === 'x' ? sube(x.My, emin.x) : x.My;
     return Mx !== x.Mx || My !== x.My ? { ...x, Mx, My, subeM: true } : x;
   });
 }
@@ -72,7 +73,7 @@ function calculo(p, s) {
   if (geo.errores?.length) throw new Error(geo.errores.join(' '));
   emin = eMinimas(p.norma, geo);
   const ps = pares();
-  const clave = JSON.stringify([p.norma, s.geo, s.armado, s.hormigon, s.acero, sepCapas(p), est.modo, est.fi, serieDiametros(), ps.map((x) => [x.N, x.Mx, x.My])]);
+  const clave = JSON.stringify([est.dirEmin, p.norma, s.geo, s.armado, s.hormigon, s.acero, sepCapas(p), est.modo, est.fi, serieDiametros(), ps.map((x) => [x.N, x.Mx, x.My])]);
   if (memo.clave === clave) return memo.c;
   const mats = materialesSeccion(p, s);
   const m0 = modeloEsviada(geo, mats.hormigon, mats.acero);
@@ -133,7 +134,9 @@ export function datos(ctx, form) {
       campoNum({ id: 'fe-n', etq: sub('N', 'Ed'), ref: t('fcr.compPos'), valor: est.NEd, mag: 'N', paso: 10, min: -1e6, max: 1e6, nombre: t('fcr.axil'), onCambio: (v) => { est.NEd = v; cambio(); } }),
       campoNum({ id: 'fe-mx', etq: sub('M', 'x,Ed'), ref: t('fce.mx'), valor: est.MxEd, mag: 'M', paso: 5, min: -1e6, max: 1e6, nombre: t('fce.nombreMx'), info: t('fce.infoMx'), onCambio: (v) => { est.MxEd = v; cambio(); } }),
       campoNum({ id: 'fe-my', etq: sub('M', 'y,Ed'), ref: t('fce.my'), valor: est.MyEd, mag: 'M', paso: 5, min: -1e6, max: 1e6, nombre: t('fce.nombreMy'), info: t('fce.infoMy'), onCambio: (v) => { est.MyEd = v; cambio(); } }),
-      campoFi()) : grupo(t('fce.puntos'),
+      campoFi(),
+      selector({ id: 'fe-emin', etq: `${sub('e', 'mín')} [mm]`, linea: true, info: t('fce.infoEmin'),
+        opciones: [['y', `${t('fce.dirY')} · ${c ? fmt(emin.y * 1000, 0) : ''}`], ['x', `${t('fce.dirX')} · ${c ? fmt(emin.x * 1000, 0) : ''}`]], valor: est.dirEmin, onCambio: (v) => { est.dirEmin = v; cambio(); } })) : grupo(t('fce.puntos'),
       rejilla({ id: 'fe-pts', altoMax: 330,
         columnas: [{ titulo: `${sub('M', 'x,Ed')} [kN·m]`, num: true }, { titulo: `${sub('M', 'y,Ed')} [kN·m]`, num: true }],
         filas: est.puntos, onCambio: (f) => { est.puntos = Array.from({ length: Math.max(10, f.length) }, (_, i) => [f[i]?.[0] ?? '', f[i]?.[1] ?? '']); cambio(); } }),
@@ -182,7 +185,7 @@ function resultadosEsviada(ctx, res) {
   const Asd = c.As0 * c.k;
   if (Asd + 1e-12 < c.Amin) res.append(aviso(t('fcr.bajoMin', q(Asd, 'As'), q(c.Amin, 'As'))));
   else if (dim && c.As0 * c.kEstricto + 1e-12 < c.Amin) res.append(aviso(t('fcr.mandaMin', q(c.Amin, 'As')), 'info'));
-  if (gam.some((x) => x.subeM)) res.append(aviso(t('fce.subeEmin', fmt(emin.x * 1000, 0), fmt(emin.y * 1000, 0)), 'info'));
+  if (gam.some((x) => x.subeM)) res.append(aviso(t('fce.subeEmin', est.dirEmin === 'y' ? t('fce.dirY') : t('fce.dirX'), fmt(emin[est.dirEmin] * 1000, 0)), 'info'));
   if (gam.some((x) => x.N > c.lim.Ncomp + 1e-9 || x.N < c.lim.Ntrac - 1e-9)) res.append(aviso(t('fce.fueraAxil', `${q(c.lim.Ntrac, 'N')} … ${q(c.lim.Ncomp, 'N')}`)));
   return resultadoUnico(ctx, res, { s, c, gam: gam[0], gmin, dim });
 }
@@ -200,9 +203,9 @@ function graficoMxMy(ctx, c, gam, s) {
   if (gam.length === 1 && gam[0].Q) series.push({ nombre: t('fce.rayo'), clase: 'ref', cruz: false, xy: [[0, 0], [gam[0].Q[1], gam[0].Q[0]]] });
   const puntos = gam.map((x) => ({ x: x.My, y: x.Mx, etq: String(x.i + 1), marca: x.g >= 1 - 1e-6 ? 'ok' : 'no' }));
   // Q: corte de la recta O–P con el contorno; sus coordenadas son M_Rd,y y M_Rd,x
-  if (gam.length === 1 && gam[0].Q) puntos.push({ x: gam[0].Q[1], y: gam[0].Q[0], etq: 'Q', marca: 'neutro' });
+  if (gam.length === 1 && gam[0].Q) puntos.push({ x: gam[0].Q[1], y: gam[0].Q[0], etq: '', marca: 'neutro' });
   return h('div', { class: 'lienzo' }, grafica({
-    series, puntos, escalaIgual: true,
+    series, puntos, escalaIgual: true, lecturaXY: true,
     ejeX: { titulo: t('fce.ejeX'), d: MAG.M.d, dt: MAG.M.d },
     ejeY: { titulo: t('fce.ejeY'), d: MAG.M.d, dt: MAG.M.d },
     archivo: `Mx-My ${s.nombre}`,
@@ -229,9 +232,11 @@ function tablaPuntos(ctx, pts) {
   };
   return h('div', { class: 'fce-tabla' },
     h('button', { type: 'button', class: 'tecla', title: t('graf.copiarTablaTit'), onclick: copiar }, t('fce.copiarTabla')),
-    tabla(pts.map((x) => [String(x.i + 1), fmt(x.Mx, MAG.M.d), fmt(x.My, MAG.M.d), sigla(x.g),
-      `<span class="${x.g >= 1 - 1e-6 ? 'ok' : 'no'}">${x.g >= 1 - 1e-6 ? t('fce.si') : t('fce.no')}</span>`]),
-    { cabecera: ['#', `${sub('M', 'x,Ed')} [kN·m]`, `${sub('M', 'y,Ed')} [kN·m]`, 'γ [-]', t('fcr.dentroSello')], clase: 'rejilla' }));
+    tabla(pts.map((x) => {
+      const r = (v) => (x.g >= 1 - 1e-6 ? v : `<span class="fuera">${v}</span>`); // fuera del diagrama: la fila va en rojo
+      return [r(String(x.i + 1)), r(fmt(x.Mx, MAG.M.d)), r(fmt(x.My, MAG.M.d)), r(sigla(x.g))];
+    }),
+    { cabecera: ['#', `${sub('M', 'x,Ed')} [kN·m]`, `${sub('M', 'y,Ed')} [kN·m]`, 'γ [-]'], clase: 'rejilla' }));
 }
 
 /** Momentos mayores del contorno entre todos los axiles (muestreo): los ejes del diagrama no se mueven con la regleta. */
@@ -267,7 +272,7 @@ function panelDiagrama(ctx, { s, c }) {
     const trac = N < 0;
     const xy = cont.length ? [...cont, cont[0]].map((v) => [v.My, v.Mx]) : [];
     const g = h('div', { class: 'lienzo' }, grafica({
-      series: [{ nombre: t('fce.serieN', fmt(N, MAG.N.d)), clase: `s1${trac ? ' trac' : ''}`, xy }], escalaIgual: true, rango: rangoFijo(c),
+      series: [{ nombre: t('fce.serieN', fmt(N, MAG.N.d)), clase: `s1${trac ? ' trac' : ''}`, xy }], escalaIgual: true, lecturaXY: true, rango: rangoFijo(c),
       puntos: pts.map((x) => ({ x: x.My, y: x.Mx, etq: String(x.i + 1), marca: x.g >= 1 - 1e-6 ? 'ok' : 'no' })),
       ejeX: { titulo: t('fce.ejeX'), d: MAG.M.d, dt: MAG.M.d }, ejeY: { titulo: t('fce.ejeY'), d: MAG.M.d, dt: MAG.M.d },
       archivo: `Mx-My ${s.nombre} N=${fmt(N, 0)}`, avisar: ctx.avisar,
@@ -353,7 +358,7 @@ function dibujoPlano(c, s, e) {
   }
   // β: ángulo de la recta neutra con la horizontal, acotado en la figura (positivo si baja hacia la derecha)
   if (e.x > 0 && Number.isFinite(e.x)) {
-    const b = alfa(e.theta);
+    const b = -alfa(e.theta); // en pantalla (y hacia abajo): positivo si la recta baja hacia la derecha
     const gx = (geo.caja.xmin + geo.caja.xmax) / 2;
     const gy = (geo.caja.ymin + geo.caja.ymax) / 2;
     const d0 = corte - (ux * gx + uy * gy);
@@ -399,12 +404,12 @@ function traza(p, c, gmin, e) {
   }));
 }
 
-/** Ángulo de la recta neutra con la horizontal, en (−90°, 90°]: la recta es perpendicular a u = (cos θ, sin θ). */
+/** Ángulo β de la recta neutra con la horizontal, en [−90°, 90°), positivo antihorario: la recta es perpendicular a u = (cos θ, sin θ). */
 function alfa(theta) {
   let a = ((theta * 180) / Math.PI + 90) % 180; // dirección de la recta
   if (a > 90) a -= 180;
   if (a <= -90) a += 180;
-  return a;
+  return -a; // positivo en sentido antihorario (y hacia arriba en pantalla)
 }
 
 export function comandos(ctx) {
@@ -420,7 +425,7 @@ function resultadoUnico(ctx, res, { s, c, gam, gmin, dim }) {
   const mm = (x, d) => `${fmt(x, d)}<span class="u"> mm</span>`;
   const cif = [
     ...(gam.Q ? [[sub('M', 'Rd,x') + info(t('fce.infoMrd')), qh(gam.Q[0], 'M')], [sub('M', 'Rd,y') + info(t('fce.infoMrd')), qh(gam.Q[1], 'M')]] : []),
-    ...(e ? [[t('c.x'), Number.isFinite(e.x) && e.x > 0 ? qh(e.x, 'long') : '—'], ['β' + info(t('fce.infoBeta')), `${fmt(alfa(e.theta), 1)}<span class="u">${ESP}°</span>`], [sub('ε', 'c'), qh(-e.epsSup, 'def')]] : []),
+    ...(e ? [['x' + info(t('fce.infoBeta')), Number.isFinite(e.x) && e.x > 0 ? qh(e.x, 'long') : '—'], ['β' + info(t('fce.infoBeta')), `${fmt(alfa(e.theta), 1)}<span class="u">${ESP}°</span>`]] : []),
     ...cifrasArmadura(c, dim, mm),
   ];
   // Como en Diagrama: contorno grande y, a un lado, la sección con el plano de rotura (tamaño acotado), las cifras y la traza
@@ -432,8 +437,8 @@ function resultadoUnico(ctx, res, { s, c, gam, gmin, dim }) {
 /** Cifras de la armadura: ø de cálculo, o en Dimensionar ø estricto y propuesto con sus áreas. */
 function cifrasArmadura(c, dim, mm) {
   if (dim && c.phiProp) {
-    return [[`ø ${t('fcr.estricto')}`, c.phiEstricto > 0 ? mm(c.phiEstricto, 1) : '—'], [`ø ${t('fcr.propuesto')}`, mm(c.phiProp, 0)],
-      [`${sub('A', 's')} ${t('fcr.estricto')}`, qh(c.As0 * c.kEstricto, 'As')], [`${sub('A', 's')} ${t('fcr.propuesto')}`, qh(c.As0 * c.k, 'As')]];
+    return [['ø estr.', c.phiEstricto > 0 ? mm(c.phiEstricto, 1) : '—'], ['ø prop.', mm(c.phiProp, 0)],
+      [`${sub('A', 's')} estr.`, qh(c.As0 * c.kEstricto, 'As')], [`${sub('A', 's')} prop.`, qh(c.As0 * c.k, 'As')]];
   }
   if (dim && Number.isFinite(c.k)) return [[sub('A', 's,req'), qh(c.As0 * c.k, 'As')], ['k', fmt(c.k, 2)]];
   return [[sub('A', 's'), qh(c.As0 * c.k, 'As')], [sub('A', 's,mín'), qh(c.Amin, 'As')]];

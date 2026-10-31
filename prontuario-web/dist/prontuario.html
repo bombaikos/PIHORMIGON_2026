@@ -435,12 +435,12 @@ thead th { white-space: normal; vertical-align: bottom; }
 .pie-sec .fila-botones { margin: 0; }
 /* Rejilla de datos (guía § 12) */
 .rejilla-campo { gap: 2px; }
-.marco-rejilla { overflow: auto; border: 1px solid var(--linea); border-radius: var(--r-campo); background: var(--hoja); }
+.marco-rejilla { overflow: auto; border: 1px solid var(--campo-borde); border-radius: var(--r-campo); background: var(--campo); }
 .marco-rejilla.mal { border-color: color-mix(in oklch, var(--no) 50%, var(--linea)); }
 table.rejilla { border-collapse: separate; border-spacing: 0; width: 100%; font-size: var(--t-s); outline: none; table-layout: fixed; }
 table.rejilla th { position: sticky; top: 0; z-index: 1; background: var(--hundido); color: var(--tinta-2); font-weight: 600; text-align: right; padding: 4px 8px; border-bottom: 1px solid var(--linea); white-space: nowrap; }
 table.rejilla th:not(:first-child), table.rejilla td:not(:first-child) { border-left: 1px solid var(--linea); }
-table.rejilla td { padding: 0 8px; height: calc(26px + var(--mas)); border-bottom: 1px solid color-mix(in oklch, var(--linea) 60%, transparent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: cell; user-select: none; }
+table.rejilla td { background: var(--campo); padding: 0 8px; height: calc(26px + var(--mas)); border-bottom: 1px solid color-mix(in oklch, var(--linea) 60%, transparent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: cell; user-select: none; }
 table.rejilla td.num { text-align: right; font-variant-numeric: tabular-nums; }
 table.rejilla tr.nueva td { background: color-mix(in oklch, var(--hundido) 50%, transparent); }
 table.rejilla td.sel { background: var(--acento-suave); }
@@ -1118,6 +1118,8 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
 .fce-tabla table.rejilla td { overflow: visible; text-overflow: clip; height: calc(22px + var(--mas)); }
 .fce-tabla table.rejilla th { white-space: nowrap; }
 .fce-tabla table.rejilla th, .fce-tabla table.rejilla td { padding-inline: 4px; }
+
+.fce-tabla .fuera { color: var(--no); font-weight: 600; }
 </style>
 
 <header class="barra">
@@ -5355,7 +5357,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
 
   // src/i18n/flexEsviada.es.js
   var flexEsviada_es_default = {
-    "fce.subtitulo": "Axil y flexi\xF3n en dos direcciones (N, Mx, My) en rotura: contorno de interacci\xF3n Mx\u2013My al axil dado",
+    "fce.subtitulo": "Axil y flexi\xF3n en dos direcciones (N, Mx, My) en rotura: diagrama de interacci\xF3n Mx\u2013My al axil dado",
     "fce.esfuerzos": "Esfuerzos",
     "fce.mx": "Mx comprime la cara superior si es +",
     "fce.my": "My comprime la cara derecha si es +",
@@ -5364,15 +5366,18 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     "fce.dibujo": "Plano de rotura",
     "fce.dibujoSub": "Secci\xF3n con la zona comprimida y el eje neutro en el estado \xFAltimo, en la direcci\xF3n del esfuerzo",
     "fce.dibujoAria": "Secci\xF3n con el eje neutro en rotura",
-    "fce.contorno": "Contorno de interacci\xF3n",
+    "fce.contorno": "Diagrama de interacci\xF3n",
     "fce.contornoSub": "Lugar de los momentos \xFAltimos (Mx, My) con el axil dado; cada punto es un plano de rotura distinto",
     "fce.ejeX": "My [kN\xB7m]",
     "fce.ejeY": "Mx [kN\xB7m]",
     "fce.serieN": (n) => `N = ${n} kN`,
-    "fce.rayo": "Origen\u2013contorno",
+    "fce.rayo": "Origen\u2013diagrama",
     "fce.alfa": "\xC1ngulo del eje neutro",
     "fce.limiteCompresion": "compresi\xF3n",
-    "fce.subeEmin": (ex, ey) => `* Momento elevado a N\xB7e<sub>m\xEDn</sub> (e<sub>m\xEDn</sub> = ${ey} mm en Mx y ${ex} mm en My; criterio del Prontuario, por verificar en cada norma).`,
+    "fce.subeEmin": (dir, e2) => `* Momento elevado a N\xB7e<sub>m\xEDn</sub> en la direcci\xF3n ${dir} (e<sub>m\xEDn</sub> = ${e2} mm).`,
+    "fce.dirX": "x (My)",
+    "fce.dirY": "y (Mx)",
+    "fce.infoEmin": "Excentricidad m\xEDnima de compresi\xF3n, aplicada en una sola direcci\xF3n principal: EHE-08 42.2.1 (m\xE1x{h/20; 2 cm}, en la direcci\xF3n m\xE1s desfavorable y solo en una de ellas); EC-2 6.1(4) y EC-2 2023 8.1.1(5) (m\xE1x{h/30; 20 mm}). Elige en cu\xE1l se aplica.",
     "fce.fueraAxil": (l) => `El axil supera la capacidad de la secci\xF3n (l\xEDmite ${l}).`,
     "fce.f.coef": "\u03B3 = |OQ| / |OP| a excentricidad constante: P = (My,Ed, Mx,Ed); Q = corte con el contorno de la recta que une el origen con P",
     "fce.f.contorno": "Se gira la direcci\xF3n de la fibra m\xE1s comprimida; para cada una, estado \xFAltimo (m\xE1xima curvatura con plano admisible que equilibra N<sub>Ed</sub>) y esfuerzos integrados en la secci\xF3n entera: M<sub>x</sub> = \u222B\u03C3\xB7(y<sub>G</sub> \u2212 y)\xB7dA, M<sub>y</sub> = \u222B\u03C3\xB7(x \u2212 x<sub>G</sub>)\xB7dA",
@@ -5383,8 +5388,8 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     "fce.contornos": (n) => `${n} puntos`,
     "fce.infoMx": "Mx: momento respecto al eje horizontal de la secci\xF3n. Positivo si comprime la cara superior.",
     "fce.infoMy": "My: momento respecto al eje vertical de la secci\xF3n. Positivo si comprime la cara derecha.",
-    "fce.infoMrd": "M_Rd,x y M_Rd,y son los momentos resistentes en el punto Q del contorno: el corte de la recta que une el origen con (My,Ed, Mx,Ed). Mismo axil N_Ed y misma relaci\xF3n Mx,Ed / My,Ed (excentricidad constante).",
-    "fce.infoBeta": "\u03B2 es el \xE1ngulo de la recta neutra con la horizontal (positivo si baja hacia la derecha). x es la profundidad de la fibra neutra, medida perpendicular a ella desde la fibra m\xE1s comprimida. Mx es el momento respecto al eje horizontal y My respecto al vertical.",
+    "fce.infoMrd": "M_Rd,x y M_Rd,y son los momentos resistentes en el punto donde la recta que une el origen con (My,Ed, Mx,Ed) corta el diagrama. Mismo axil N_Ed y misma relaci\xF3n Mx,Ed / My,Ed (excentricidad constante).",
+    "fce.infoBeta": "\u03B2 es el \xE1ngulo de la recta neutra con la horizontal (positivo en sentido antihorario). x es la profundidad de la fibra neutra, medida perpendicular a ella desde la fibra m\xE1s comprimida. Mx es el momento respecto al eje horizontal y My respecto al vertical.",
     "fce.copiarTabla": "Copiar tabla",
     "fce.si": "S\xED",
     "fce.no": "No",
@@ -5402,15 +5407,18 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     "fce.dibujo": "Failure plane",
     "fce.dibujoSub": "Section with the compressed zone and the neutral axis at the ultimate state, in the direction of the action",
     "fce.dibujoAria": "Section with the neutral axis at failure",
-    "fce.contorno": "Interaction contour",
+    "fce.contorno": "Interaction diagram",
     "fce.contornoSub": "Locus of ultimate moments (Mx, My) at the given axial load; each point is a different failure plane",
     "fce.ejeX": "My [kN\xB7m]",
     "fce.ejeY": "Mx [kN\xB7m]",
     "fce.serieN": (n) => `N = ${n} kN`,
-    "fce.rayo": "Origin\u2013contour",
+    "fce.rayo": "Origin\u2013diagram",
     "fce.alfa": "Neutral axis angle",
     "fce.limiteCompresion": "compression",
-    "fce.subeEmin": (ex, ey) => `* Moment raised to N\xB7e<sub>min</sub> (e<sub>min</sub> = ${ey} mm in Mx and ${ex} mm in My; Prontuario criterion, to be checked in each code).`,
+    "fce.subeEmin": (dir, e2) => `* Moment raised to N\xB7e<sub>min</sub> in direction ${dir} (e<sub>min</sub> = ${e2} mm).`,
+    "fce.dirX": "x (My)",
+    "fce.dirY": "y (Mx)",
+    "fce.infoEmin": "Minimum compression eccentricity, applied in one principal direction only: EHE-08 42.2.1 (max{h/20; 2 cm}, in the most unfavourable direction and only in one of them); EC-2 6.1(4) and EC-2 2023 8.1.1(5) (max{h/30; 20 mm}). Choose where it applies.",
     "fce.fueraAxil": (l) => `The axial load exceeds the section capacity (limit ${l}).`,
     "fce.f.coef": "\u03B3 = |OQ| / |OP| at constant eccentricity: P = (My,Ed, Mx,Ed); Q = intersection with the contour of the line from the origin through P",
     "fce.f.contorno": "The direction of the most compressed fibre is rotated; for each one, ultimate state (maximum curvature with an admissible plane balancing N<sub>Ed</sub>) and stresses integrated over the whole section: M<sub>x</sub> = \u222B\u03C3\xB7(y<sub>G</sub> \u2212 y)\xB7dA, M<sub>y</sub> = \u222B\u03C3\xB7(x \u2212 x<sub>G</sub>)\xB7dA",
@@ -5421,7 +5429,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     "fce.contornos": (n) => `${n} points`,
     "fce.infoMx": "Mx: moment about the horizontal axis of the section. Positive when it compresses the top face.",
     "fce.infoMy": "My: moment about the vertical axis of the section. Positive when it compresses the right face.",
-    "fce.infoMrd": "M_Rd,x and M_Rd,y are the resisting moments at point Q of the contour: where the line from the origin to (My,Ed, Mx,Ed) meets it. Same axial load N_Ed and same ratio Mx,Ed / My,Ed (constant eccentricity).",
+    "fce.infoMrd": "M_Rd,x and M_Rd,y are the resisting moments where the line from the origin to (My,Ed, Mx,Ed) meets the diagram. Same axial load N_Ed and same ratio Mx,Ed / My,Ed (constant eccentricity).",
     "fce.infoBeta": "\u03B2 is the angle of the neutral line with the horizontal (positive when it descends to the right). x is the neutral axis depth, measured perpendicular to it from the most compressed fibre. Mx is the moment about the horizontal axis and My about the vertical one.",
     "fce.copiarTabla": "Copy table",
     "fce.si": "Yes",
@@ -7157,7 +7165,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     const [x1, y1] = xy[i];
     return x1 === x0 ? y1 : y0 + (y1 - y0) * (x - x0) / (x1 - x0);
   }
-  function grafica({ series, puntos = [], ejeX, ejeY, archivo: archivo2 = "grafica", rejillaSec = null, invertirY = false, sinTabla = false, escalaIgual = false, rango = null, avisar: avisar2 = () => {
+  function grafica({ series, puntos = [], ejeX, ejeY, archivo: archivo2 = "grafica", rejillaSec = null, invertirY = false, sinTabla = false, escalaIgual = false, rango = null, lecturaXY = false, avisar: avisar2 = () => {
   } }) {
     const sinDec = (e2) => /\((kN|kN·m|mm²)\)/.test(plano(e2.titulo)) ? { ...e2, d: 0, dt: 0 } : e2;
     ejeX = sinDec(ejeX);
@@ -7339,7 +7347,8 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
         o.push(`<line class="cruz" x1="${cruz.x}" x2="${cruz.x}" y1="${M.arr}" y2="${H - M.aba}"/><line class="cruz" x1="${M.izq}" x2="${W - M.der}" y1="${cruz.y}" y2="${cruz.y}"/>`);
         const x = deX(cruz.x);
         const filas = [];
-        for (const s of series) {
+        if (lecturaXY) filas.push(`<span>${ejeY.titulo} = <b>${fmt(deY(cruz.y), ejeY.d ?? 1)}</b></span>`);
+        for (const s of lecturaXY ? [] : series) {
           if (s.cruz === false) continue;
           const y = interpolar(s.xy, x);
           if (y === null) continue;
@@ -12650,6 +12659,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     MxEd: 120,
     MyEd: 70,
     Ndiag: 500,
+    dirEmin: "y",
     puntos: [["120", "70"], ["-80", "110"], ["180", "-60"], ["40", "40"], ["", ""], ["", ""], ["", ""], ["", ""], ["", ""], ["", ""]],
     abiertos: /* @__PURE__ */ new Set()
   };
@@ -12681,8 +12691,8 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     return crudos.filter((x) => Number.isFinite(x.N) && Number.isFinite(x.Mx) && Number.isFinite(x.My)).map((x) => {
       if (!(x.N > 0)) return x;
       const sube = (M2, e2) => Math.abs(M2) < x.N * e2 - 1e-9 ? (M2 < 0 ? -1 : 1) * x.N * e2 : M2;
-      const Mx = sube(x.Mx, emin2.y);
-      const My = sube(x.My, emin2.x);
+      const Mx = est6.dirEmin === "y" ? sube(x.Mx, emin2.y) : x.Mx;
+      const My = est6.dirEmin === "x" ? sube(x.My, emin2.x) : x.My;
       return Mx !== x.Mx || My !== x.My ? { ...x, Mx, My, subeM: true } : x;
     });
   }
@@ -12692,7 +12702,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     if (geo.errores?.length) throw new Error(geo.errores.join(" "));
     emin2 = eMinimas(p.norma, geo);
     const ps = pares2();
-    const clave = JSON.stringify([p.norma, s.geo, s.armado, s.hormigon, s.acero, sepCapas(p), est6.modo, est6.fi, serieDiametros(), ps.map((x) => [x.N, x.Mx, x.My])]);
+    const clave = JSON.stringify([est6.dirEmin, p.norma, s.geo, s.armado, s.hormigon, s.acero, sepCapas(p), est6.modo, est6.fi, serieDiametros(), ps.map((x) => [x.N, x.Mx, x.My])]);
     if (memo2.clave === clave) return memo2.c;
     const mats = materialesSeccion(p, s);
     const m0 = modeloEsviada(geo, mats.hormigon, mats.acero);
@@ -12773,7 +12783,19 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
           est6.MyEd = v2;
           cambio();
         } }),
-        campoFi()
+        campoFi(),
+        selector({
+          id: "fe-emin",
+          etq: `${sub20("e", "m\xEDn")} [mm]`,
+          linea: true,
+          info: t("fce.infoEmin"),
+          opciones: [["y", `${t("fce.dirY")} \xB7 ${c ? fmt(emin2.y * 1e3, 0) : ""}`], ["x", `${t("fce.dirX")} \xB7 ${c ? fmt(emin2.x * 1e3, 0) : ""}`]],
+          valor: est6.dirEmin,
+          onCambio: (v2) => {
+            est6.dirEmin = v2;
+            cambio();
+          }
+        })
       ) : grupo(
         t("fce.puntos"),
         rejilla({
@@ -12846,7 +12868,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     const Asd = c.As0 * c.k;
     if (Asd + 1e-12 < c.Amin) res.append(aviso(t("fcr.bajoMin", q(Asd, "As"), q(c.Amin, "As"))));
     else if (dim && c.As0 * c.kEstricto + 1e-12 < c.Amin) res.append(aviso(t("fcr.mandaMin", q(c.Amin, "As")), "info"));
-    if (gam.some((x) => x.subeM)) res.append(aviso(t("fce.subeEmin", fmt(emin2.x * 1e3, 0), fmt(emin2.y * 1e3, 0)), "info"));
+    if (gam.some((x) => x.subeM)) res.append(aviso(t("fce.subeEmin", est6.dirEmin === "y" ? t("fce.dirY") : t("fce.dirX"), fmt(emin2[est6.dirEmin] * 1e3, 0)), "info"));
     if (gam.some((x) => x.N > c.lim.Ncomp + 1e-9 || x.N < c.lim.Ntrac - 1e-9)) res.append(aviso(t("fce.fueraAxil", `${q(c.lim.Ntrac, "N")} \u2026 ${q(c.lim.Ncomp, "N")}`)));
     return resultadoUnico2(ctx2, res, { s, c, gam: gam[0], gmin, dim });
   }
@@ -12860,11 +12882,12 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     });
     if (gam.length === 1 && gam[0].Q) series.push({ nombre: t("fce.rayo"), clase: "ref", cruz: false, xy: [[0, 0], [gam[0].Q[1], gam[0].Q[0]]] });
     const puntos = gam.map((x) => ({ x: x.My, y: x.Mx, etq: String(x.i + 1), marca: x.g >= 1 - 1e-6 ? "ok" : "no" }));
-    if (gam.length === 1 && gam[0].Q) puntos.push({ x: gam[0].Q[1], y: gam[0].Q[0], etq: "Q", marca: "neutro" });
+    if (gam.length === 1 && gam[0].Q) puntos.push({ x: gam[0].Q[1], y: gam[0].Q[0], etq: "", marca: "neutro" });
     return h("div", { class: "lienzo" }, grafica({
       series,
       puntos,
       escalaIgual: true,
+      lecturaXY: true,
       ejeX: { titulo: t("fce.ejeX"), d: MAG.M.d, dt: MAG.M.d },
       ejeY: { titulo: t("fce.ejeY"), d: MAG.M.d, dt: MAG.M.d },
       archivo: `Mx-My ${s.nombre}`,
@@ -12895,14 +12918,11 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       { class: "fce-tabla" },
       h("button", { type: "button", class: "tecla", title: t("graf.copiarTablaTit"), onclick: copiar }, t("fce.copiarTabla")),
       tabla(
-        pts.map((x) => [
-          String(x.i + 1),
-          fmt(x.Mx, MAG.M.d),
-          fmt(x.My, MAG.M.d),
-          sigla2(x.g),
-          `<span class="${x.g >= 1 - 1e-6 ? "ok" : "no"}">${x.g >= 1 - 1e-6 ? t("fce.si") : t("fce.no")}</span>`
-        ]),
-        { cabecera: ["#", `${sub20("M", "x,Ed")} [kN\xB7m]`, `${sub20("M", "y,Ed")} [kN\xB7m]`, "\u03B3 [-]", t("fcr.dentroSello")], clase: "rejilla" }
+        pts.map((x) => {
+          const r = (v2) => x.g >= 1 - 1e-6 ? v2 : `<span class="fuera">${v2}</span>`;
+          return [r(String(x.i + 1)), r(fmt(x.Mx, MAG.M.d)), r(fmt(x.My, MAG.M.d)), r(sigla2(x.g))];
+        }),
+        { cabecera: ["#", `${sub20("M", "x,Ed")} [kN\xB7m]`, `${sub20("M", "y,Ed")} [kN\xB7m]`, "\u03B3 [-]"], clase: "rejilla" }
       )
     );
   }
@@ -12939,6 +12959,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       const g = h("div", { class: "lienzo" }, grafica({
         series: [{ nombre: t("fce.serieN", fmt(N, MAG.N.d)), clase: `s1${trac ? " trac" : ""}`, xy }],
         escalaIgual: true,
+        lecturaXY: true,
         rango: rangoFijo(c),
         puntos: pts.map((x) => ({ x: x.My, y: x.Mx, etq: String(x.i + 1), marca: x.g >= 1 - 1e-6 ? "ok" : "no" })),
         ejeX: { titulo: t("fce.ejeX"), d: MAG.M.d, dt: MAG.M.d },
@@ -13054,7 +13075,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       out.push(`<line class="en" clip-path="url(#fe-vb)" x1="${X(px + uy * L)}" y1="${Y(py - ux * L)}" x2="${X(px - uy * L)}" y2="${Y(py + ux * L)}"/>`);
     }
     if (e2.x > 0 && Number.isFinite(e2.x)) {
-      const b = alfa(e2.theta);
+      const b = -alfa(e2.theta);
       const gx = (geo.caja.xmin + geo.caja.xmax) / 2;
       const gy = (geo.caja.ymin + geo.caja.ymax) / 2;
       const d0 = corte - (ux * gx + uy * gy);
@@ -13103,7 +13124,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     let a = (theta * 180 / Math.PI + 90) % 180;
     if (a > 90) a -= 180;
     if (a <= -90) a += 180;
-    return a;
+    return -a;
   }
   function comandos7(ctx2) {
     return [
@@ -13122,7 +13143,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     const mm4 = (x, d) => `${fmt(x, d)}<span class="u"> mm</span>`;
     const cif = [
       ...gam.Q ? [[sub20("M", "Rd,x") + info(t("fce.infoMrd")), qh(gam.Q[0], "M")], [sub20("M", "Rd,y") + info(t("fce.infoMrd")), qh(gam.Q[1], "M")]] : [],
-      ...e2 ? [[t("c.x"), Number.isFinite(e2.x) && e2.x > 0 ? qh(e2.x, "long") : "\u2014"], ["\u03B2" + info(t("fce.infoBeta")), `${fmt(alfa(e2.theta), 1)}<span class="u">${ESP}\xB0</span>`], [sub20("\u03B5", "c"), qh(-e2.epsSup, "def")]] : [],
+      ...e2 ? [["x" + info(t("fce.infoBeta")), Number.isFinite(e2.x) && e2.x > 0 ? qh(e2.x, "long") : "\u2014"], ["\u03B2" + info(t("fce.infoBeta")), `${fmt(alfa(e2.theta), 1)}<span class="u">${ESP}\xB0</span>`]] : [],
       ...cifrasArmadura2(c, dim, mm4)
     ];
     const lado = h("aside", { class: "fcr-lado" }, h("div", { class: "fcr-sec", html: e2 ? dibujoPlano(c, s, e2) : "" }), cifras(cif), h("p", { class: "sub", style: "margin:0" }, t("t.desplegar")), traza3(ctx2.p, c, gmin, e2));
@@ -13136,10 +13157,10 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
   function cifrasArmadura2(c, dim, mm4) {
     if (dim && c.phiProp) {
       return [
-        [`\xF8 ${t("fcr.estricto")}`, c.phiEstricto > 0 ? mm4(c.phiEstricto, 1) : "\u2014"],
-        [`\xF8 ${t("fcr.propuesto")}`, mm4(c.phiProp, 0)],
-        [`${sub20("A", "s")} ${t("fcr.estricto")}`, qh(c.As0 * c.kEstricto, "As")],
-        [`${sub20("A", "s")} ${t("fcr.propuesto")}`, qh(c.As0 * c.k, "As")]
+        ["\xF8 estr.", c.phiEstricto > 0 ? mm4(c.phiEstricto, 1) : "\u2014"],
+        ["\xF8 prop.", mm4(c.phiProp, 0)],
+        [`${sub20("A", "s")} estr.`, qh(c.As0 * c.kEstricto, "As")],
+        [`${sub20("A", "s")} prop.`, qh(c.As0 * c.k, "As")]
       ];
     }
     if (dim && Number.isFinite(c.k)) return [[sub20("A", "s,req"), qh(c.As0 * c.k, "As")], ["k", fmt(c.k, 2)]];

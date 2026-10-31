@@ -56,7 +56,7 @@ function interpolar(xy, x) {
  * @param {(texto:string)=>void} [o.avisar]
  * @returns {HTMLElement}
  */
-export function grafica({ series, puntos = [], ejeX, ejeY, archivo = 'grafica', rejillaSec = null, invertirY = false, sinTabla = false, escalaIgual = false, rango = null, avisar = () => {} }) {
+export function grafica({ series, puntos = [], ejeX, ejeY, archivo = 'grafica', rejillaSec = null, invertirY = false, sinTabla = false, escalaIgual = false, rango = null, lecturaXY = false, avisar = () => {} }) {
   // Guía § 1: fuerzas [kN], momentos [kN·m] y áreas de armadura [mm²] sin decimales, también en la cruz y en la tabla, diga lo que diga el módulo
   const sinDec = (e) => (/\((kN|kN·m|mm²)\)/.test(plano(e.titulo)) ? { ...e, d: 0, dt: 0 } : e);
   ejeX = sinDec(ejeX);
@@ -250,7 +250,9 @@ export function grafica({ series, puntos = [], ejeX, ejeY, archivo = 'grafica', 
       o.push(`<line class="cruz" x1="${cruz.x}" x2="${cruz.x}" y1="${M.arr}" y2="${H - M.aba}"/><line class="cruz" x1="${M.izq}" x2="${W - M.der}" y1="${cruz.y}" y2="${cruz.y}"/>`);
       const x = deX(cruz.x);
       const filas = [];
-      for (const s of series) {
+      // Curva cerrada (Mx–My): se lee el punto del cursor en los dos ejes, no una interpolación en x
+      if (lecturaXY) filas.push(`<span>${ejeY.titulo} = <b>${fmt(deY(cruz.y), ejeY.d ?? 1)}</b></span>`);
+      for (const s of (lecturaXY ? [] : series)) {
         if (s.cruz === false) continue;
         const y = interpolar(s.xy, x);
         if (y === null) continue;

@@ -15,7 +15,7 @@ Actualizado: 31/10/2026. **Actualiza este archivo al cerrar cada tarea.** El est
 - **PR 29** `claude/project-thread-nzo10p`: Flexión simple con cápsula Comprobación|Dimensionamiento|Diagrama, rotura admitida y cuantías por cara. CI verde. Pendiente de visto bueno.
 - Este PR de documentación (`claude/project-thread-na7g56`).
 
-- **Rama `flexion-esviada`** (sin PR aún; a la espera del visto bueno de José Luis): módulo Flexión compuesta esviada (Rec pilar y genéricas), diagrama Mx–My con regleta de axil (rosa en tracción). Ver `analisis/flexion-esviada-decisiones.md`.
+- **Flexión compuesta esviada** (fusionada 31/10; PR 39–41 y siguiente): Rec pilar y genéricas, diagrama de interacción Mx–My con regleta de axil (rosa en tracción), selector e_mín en una dirección. PENDIENTE: figura emergente (opción A, flechas de doble punta en gris; Mx>0 apunta a la izquierda y My>0 hacia arriba por la mano derecha; β antihorario en el corte de la recta neutra con la horizontal; x perpendicular desde la fibra más comprimida; maquetas en /mnt/project-files/flexion-esviada/figura-A-v3.png). Ver `analisis/flexion-esviada-decisiones.md`.
 
 ## A medias / pendiente conocido
 - **Cápsula de modo** (Comprobación | Dimensionamiento | Diagrama): José Luis la extenderá a todos los módulos.
