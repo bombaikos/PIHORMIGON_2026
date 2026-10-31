@@ -82,7 +82,7 @@ Esta guía recoge las decisiones de José Luis (8 de octubre de 2026) y las reco
 - **Deslizadores: `regleta()` de `src/ui/campos.js`** (decidido el 31/10). Etiqueta | pista | valor con unidad; **ancho = 80 % del gráfico al que acompaña**, centrada; pista suave de 8 px (borde `--campo-borde`, tramo recorrido `--acento`, resto `--acento-suave`), tirador de 16 px. Prohibido crear otro `<input type=range>` con aspecto propio o nativo. Usada en Flexión simple (M_Ed y tramo de sección), Reológicas (t₀) y Cortante (θ).
 - **Zoom**: con la rueda, con un rectángulo arrastrado y con dos dedos en móvil. El doble clic vuelve a la vista completa.
 - **Etiquetas emergentes**: una cruz que sigue al cursor con los valores del punto.
-- **Debajo de cada gráfica, un selector Gráfico/Tabla**, como en el Prontuario 3.1 (decidido el 11/10).
+- **Debajo de cada gráfica, un selector Gráfico/Tabla**, como en el Prontuario 3.1 (decidido el 11/10). **Separación mínima de 12 px (`--e3`) entre el rótulo del eje X y el selector** (el selector no debe pegarse a la gráfica; 8 px es el mínimo absoluto; fijado el 31/10).
 - **Copiar como imagen**: con un botón o con Ctrl+C sobre la gráfica, que pasa un PNG al portapapeles a doble resolución y con fondo blanco. Hay además "Guardar PNG o SVG".
 
 ## 10. Idiomas y teclado
