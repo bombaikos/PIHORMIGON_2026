@@ -137,17 +137,12 @@ function resumen(ctx, m) {
   } catch { return ''; }
 }
 
-const ICONOS = {
-  hormigones: '<rect x="2" y="2.5" width="12" height="11"/><path d="M4.2 5.4 6.4 4.4 7.6 6.2 6.2 7.8 4.3 7.2z"/><path d="M9 9.6 11.4 8.8 12.2 10.8 10.6 12 8.8 11.4z"/><circle cx="10.4" cy="5.2" r=".55"/><circle cx="4.8" cy="10.8" r=".55"/><circle cx="7.8" cy="9.6" r=".45"/>',
-  aceros: '<rect x="1.5" y="5.5" width="13" height="5" rx="1.4"/><path d="M6.4 5.5 5.4 10.5M10.6 5.5 9.6 10.5"/>',
-};
-const icono = (k) => `<svg class="ico" viewBox="0 0 16 16" aria-hidden="true">${ICONOS[k]}</svg>`;
 const etiquetaTipo = (k) => t(k === 'hormigones' ? 'mat.tipoH' : 'mat.tipoA');
 
 /** Tarjetón del material activo (guía § 14.8): tipo, nombre en grande y resumen. */
 function tarjeton(ctx, m) {
   return h('div', { class: 'tarjeton', 'aria-live': 'polite' },
-    h('div', { class: 't-tipo', html: `${icono(est.tipo)}${etiquetaTipo(est.tipo)}` }),
+    h('div', { class: 't-tipo', html: etiquetaTipo(est.tipo) }),
     h('div', { class: 't-nom' }, m.nombre),
     h('div', { class: 't-res', id: 'm-resumen', html: resumen(ctx, m) }));
 }
@@ -183,7 +178,7 @@ function listaMateriales(ctx, tipo, lista, activo) {
     const x = (q?.value ?? '').trim().toLowerCase();
     filas.replaceChildren(...lista.filter((s) => !x || s.nombre.toLowerCase().includes(x)).map((s) => h('button', {
       type: 'button', role: 'option', 'aria-current': s.nombre === activo ? 'true' : undefined,
-      html: `${icono(tipo)}${s.nombre}${tipo === 'hormigones' ? "" : `<span class="nombre-sec">${breve(tipo, s)}</span>`}`,
+      html: `${s.nombre}${tipo === 'hormigones' ? '' : `<span class="nombre-sec">${breve(tipo, s)}</span>`}`,
       onclick: () => elegir(ctx, tipo, s.nombre) })));
     if (!filas.children.length) filas.append(h('span', { class: 'vacio' }, lista.length ? t('sec.ningunaCoincide') : t('sec.ningunaTipo')));
   };
@@ -210,7 +205,7 @@ export function cabeza(ctx, el) {
     const caja = h('div', { class: `desp${act ? ' activo' : ''}` });
     const titulo = act ? `${etiquetaTipo(k)}<span class="sep">·</span><b>${actual.m.nombre}</b>` : etiquetaTipo(k);
     caja.append(h('button', { type: 'button', 'aria-haspopup': 'listbox', 'aria-expanded': String(est.abierto === k), title: etiquetaTipo(k),
-      html: `${icono(k)}<span class="nom">${titulo}</span><span class="cnt">${lista.length}</span><span class="car">▾</span>`,
+      html: `<span class="nom">${titulo}</span><span class="cnt">${lista.length}</span><span class="car">▾</span>`,
       onclick: (e) => { e.stopPropagation(); est.abierto = est.abierto === k ? null : k; ctx.pintar(); } }));
     if (est.abierto === k) caja.append(listaMateriales(ctx, k, lista, act ? actual.nombre : undefined));
     fila.append(caja);
@@ -366,9 +361,6 @@ function avisosMaterial(m, N) {
   const out = [];
   if (m.tipo === 'hormigon') {
     if (fckTipificado(m.nombre) && CAMBIOS_TIPIFICADO(m).length) out.push(['error', t('mat.avTipificado', m.nombre)]);
-    const esEC2 = (m.diag ?? 'PR') === 'EC2';
-    if (esEC2 && !/_EC2$/i.test(m.nombre)) out.push(['error', t('mat.avNombreEC2')]);
-    else if (!esEC2 && /_EC2$/i.test(m.nombre)) out.push(['error', t('mat.avNombreNoEC2')]);
     if (m.fck < (N.fckMin ?? 12) || m.fck > N.fckMax) out.push(['error', t('mat.avFckRango', N.fckMin ?? 12, N.fckMax)]);
     else if (N.id === 'EHE-08' && m.fck < N.fckMinArmado) out.push(['', t('mat.avFckArmado')]);
     if (N.alfaRango && (m.alfaCC ?? 1) < N.alfaRango[0] - 1e-9) out.push(['error', t('mat.avAlfa', N.alfaRango[0], N.alfaRango[1])]);
@@ -386,10 +378,14 @@ function graficaSigmaEps(ctx, mat) {
   const xy = (mt) => [...mt.comp.slice().reverse(), ...mt.tracc.slice(1)].map(([e, s]) => [-e * 1000, -s / 1000]);
   const sargin = mat.tipo === 'hormigon' && mat.diag === 'EC2';
   const car = caracteristico(mat);
-  const series = [{ nombre: t(sargin ? 'mat.sCaract' : 'mat.sCalculo'), xy: xy(mat), clase: 's1' }];
+  // El diagrama de cálculo es siempre la línea continua negra y el característico va a trazos
+  const series = [{ nombre: t('mat.sCalculo'), xy: xy(mat), clase: 's1' }];
+  let calc = null;
   if (sargin) {
-    // El de cálculo es el mismo diagrama con fcd como referencia y sin tracción (en ELU siempre fct = 0)
-    try { series.push({ nombre: t('mat.sCalculo'), xy: xy(materialDeFicha({ ...ctx.ficha, refDiag: 'fcd', diagrama: undefined }, ctx.p.norma)), clase: 'ref' }); } catch { /* sin curva de cálculo */ }
+    // El de cálculo es el Sargin con fcd = α·fck/γC como referencia y sin tracción (en ELU siempre fct = 0); el característico, el de la ficha
+    try { calc = materialDeFicha({ ...ctx.ficha, diagrama: undefined }, ctx.p.norma, { calculo: true }); } catch { /* sin curva de cálculo */ }
+    if (calc) { series[0].xy = xy(calc); series.push({ nombre: t('mat.sCaract'), xy: xy(mat), clase: 'ref' }); }
+    else series[0].nombre = t('mat.sCaract');
   } else if (car !== mat) series.push({ nombre: t('mat.sCaract'), xy: xy(car), clase: 'ref' });
   const tag = (a, b) => `${a}<tspan class="ind">${b}</tspan>`;
   const puntos = [];
@@ -401,6 +397,7 @@ function graficaSigmaEps(ctx, mat) {
       puntos.push({ x: -pico[0] * 1000, y: -pico[1] / 1000, etq: `${tag('f', 'cm')} = ${fmt(-pico[1] / 1000, 1)}` },
         { x: -pico[0] * 1000, y: 0, etq: tag('ε', 'c1'), abajo: true },
         { x: -ult[0] * 1000, y: -ult[1] / 1000, etq: tag('ε', 'cu1'), abajo: true });
+      if (calc) { const pc = calc.comp.reduce((a, b) => (Math.abs(b[1]) > Math.abs(a[1]) ? b : a)); puntos.push({ x: -pc[0] * 1000, y: -pc[1] / 1000, etq: `${tag('f', 'cd')} = ${fmt(-pc[1] / 1000, 1)}`, abajo: true }); }
     } else if (d === 'PR') {
       const fcd = -ult[1] / 1000;
       puntos.push({ x: -ult[0] * 1000, y: fcd, etq: tag('ε', 'cu'), abajo: true },

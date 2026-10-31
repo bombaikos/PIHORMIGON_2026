@@ -64,3 +64,16 @@ test('Sargin con tracción: elástica hasta fctm y luego cae; sin tracción por 
   const con = materialDeFicha(f, 'EC2-2004', { tracc: true });
   cerca(Math.max(...con.tracc.map((p) => p[1])), 2896, 1);
 });
+
+test('Sargin de cálculo (ELU): la meseta es fcd = α·fck/γC y lleva su γ; el característico sigue con fcm', () => {
+  const f = { nombre: 'HA-30_EC2', tipo: 'hormigon', fck: 30, diag: 'EC2' };
+  const pico = (m) => Math.max(...m.comp.map((p) => -p[1])) / 1000;
+  const car = materialDeFicha(f, 'EC2-2004');
+  const calc = materialDeFicha(f, 'EC2-2004', { calculo: true });
+  cerca(pico(car), 38, 0.01); // fcm = fck + 8
+  cerca(pico(calc), 20, 0.01); // fcd = 30/1,5
+  cerca(calc.fk / calc.gamma / 1000, 20, 0.01);
+  // El PR ya es de cálculo: no cambia
+  const pr = materialDeFicha({ nombre: 'HA-30', tipo: 'hormigon', fck: 30 }, 'EC2-2004');
+  assert.deepEqual(materialDeFicha({ nombre: 'HA-30', tipo: 'hormigon', fck: 30 }, 'EC2-2004', { calculo: true }).comp, pr.comp);
+});

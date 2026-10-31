@@ -63,8 +63,6 @@ export default {
   'mat.notaEC2': (n) => `EN 1992-1-1 curve for non-linear analysis, by default with f<sub>cm</sub> and no γ. At ULS concrete takes no tension. (${n})`,
   'mat.notaPuntos': "Compression positive, increasing ε. The origin (0, 0) is added automatically. No tensile strength.",
   'mat.avTipificado': (n) => `${n} only allows changing αcc. To change anything else, save it under another name.`,
-  'mat.avNombreEC2': "With the EC 2 (Sargin) diagram the name must end in _EC2.",
-  'mat.avNombreNoEC2': "A name ending in _EC2 is for the EC 2 (Sargin) diagram.",
   'mat.alfaCansancio': 'long-term loading',
   'mat.avInfoTipH': 'Standard material: only the α_cc / k_tc coefficient (1.00 or 0.85) can be changed. To change anything else, use another name.',
   'mat.avInfoTipA': 'Standard material: it cannot be changed. To change it, use another name.',

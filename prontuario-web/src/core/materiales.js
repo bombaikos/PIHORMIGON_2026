@@ -25,7 +25,7 @@ import { normaMat as getNorma } from '../norma/materiales/index.js';
  * @param {{nombre?:string, fck:number, norma?:string, gammaC?:number, alfa?:number, tramos?:number}} p  fck en MPa
  * @returns {Material}
  */
-export function hormigon({ nombre = '', fck, norma = 'EHE-98', gammaC, alfa, alfaCC, ktc, kE, coefArido, tramos = 10, diag = 'PR', refDiag = 'fcm', puntos, tracc = false }) {
+export function hormigon({ nombre = '', fck, norma = 'EHE-98', gammaC, alfa, alfaCC, ktc, kE, coefArido, tramos = 10, diag = 'PR', refDiag = 'fcm', puntos, tracc = false, calculo = false }) {
   const n = getNorma(norma);
   if (!(fck > 0)) throw new Error('fck debe ser positivo');
   if (fck > n.fckMax) throw new Error(`${n.nombre}: esta versión solo admite fck ≤ ${n.fckMax} MPa`);
@@ -34,9 +34,10 @@ export function hormigon({ nombre = '', fck, norma = 'EHE-98', gammaC, alfa, alf
   if (diag === 'EC2' || diag === 'puntos') {
     const E = n.Ec(fck, { kE, coefArido }) * 1000;
     const fcd = (a * fck) / g;
-    const comp = diag === 'EC2' ? compSargin(fck, norma, { kE, coefArido, refDiag, fcd }) : compPuntos(puntos);
+    // Sargin de cálculo (ELU): referencia fcd = α·fck/γC, con su γ y su α; el característico (M-κ) sigue con fcm por defecto
+    const comp = diag === 'EC2' ? compSargin(fck, norma, { kE, coefArido, refDiag: calculo ? 'fcd' : refDiag, fcd }) : compPuntos(puntos);
     return {
-      tipo: 'hormigon', nombre, norma: n.id, E, fk: fck * 1000, gamma: 1, alfa: 1,
+      tipo: 'hormigon', nombre, norma: n.id, E, fk: fck * 1000, gamma: calculo && diag === 'EC2' ? g : 1, alfa: calculo && diag === 'EC2' ? a : 1,
       ktc: n.id === 'EC2-2023' ? ktc ?? n.ktc : undefined,
       diag, comp, tracc: tracc && diag === 'EC2' ? traccionElastica(n, fck, E) : [[0, 0], [0.0005, 0]], roturaComp: true, roturaTracc: false,
     };
@@ -288,13 +289,13 @@ export function propiedadesAcero(fyk, normaId = 'EHE-98', { gammaS, Es, epsUd, d
   };
 }
 
-/** Rehace el objeto Material a partir de una ficha de proyecto. */
-export function materialDeFicha(ficha, normaId, { tracc = false } = {}) {
+/** Rehace el objeto Material a partir de una ficha de proyecto. calculo: diagrama de ELU (el Sargin con γC y α; el PR ya lo lleva). */
+export function materialDeFicha(ficha, normaId, { tracc = false, calculo = false } = {}) {
   if (ficha.diagrama) return { ...ficha.diagrama, nombre: ficha.nombre };
   if (ficha.tipo !== 'acero') ficha = { ...ficha, fck: fckTipificado(ficha.nombre) ?? ficha.fck };
   else if (aceroTipificado(ficha.nombre)) ficha = { ...ficha, ...aceroTipificado(ficha.nombre) };
   if (ficha.tipo === 'hormigon') {
-    return hormigon({ nombre: ficha.nombre, fck: ficha.fck, norma: normaId, gammaC: ficha.gammaC, alfa: ficha.alfa, alfaCC: ficha.alfaCC, ktc: ktcDe(ficha, normaId), kE: ficha.kE, coefArido: coefAridoDe(ficha, normaId), diag: ficha.diag, refDiag: ficha.refDiag, puntos: ficha.puntos, tracc });
+    return hormigon({ nombre: ficha.nombre, fck: ficha.fck, norma: normaId, gammaC: ficha.gammaC, alfa: ficha.alfa, alfaCC: ficha.alfaCC, ktc: ktcDe(ficha, normaId), kE: ficha.kE, coefArido: coefAridoDe(ficha, normaId), diag: ficha.diag, refDiag: ficha.refDiag, puntos: ficha.puntos, tracc, calculo });
   }
   return acero({ nombre: ficha.nombre, fyk: ficha.fyk, norma: normaId, gammaS: ficha.gammaS, Es: ficha.Es, epsUd: ficha.epsUd, ductilidad: ficha.ductilidad, rama: ficha.rama, epsUdModo: ficha.epsUdModo, k: ficha.k });
 }

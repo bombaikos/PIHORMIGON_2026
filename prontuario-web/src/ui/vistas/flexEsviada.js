@@ -78,7 +78,7 @@ function calculo(p, s) {
   const clave = JSON.stringify([est.dirEmin, p.norma, s.geo, s.armado, s.hormigon, s.acero, sepCapas(p), est.modo, est.fi, serieDiametros(), ps.map((x) => [x.N, x.Mx, x.My])]);
   if (memo.clave === clave) return memo.c;
   const mats = materialesSeccion(p, s);
-  const m0 = modeloEsviada(geo, mats.hormigon, mats.acero);
+  const m0 = modeloEsviada(geo, mats.hormigonCalc, mats.acero);
   const As0 = m0.As;
   const phi0 = fiComun(geo);
   // Cuantía mínima de pilar (EHE-08 42.3.3; EC-2 9.5.2(2)): máx{0,10·N/fyd; cuantía geométrica}, con el mayor N_Ed
@@ -92,7 +92,7 @@ function calculo(p, s) {
   if (est.modo === 'dimensionar') {
     if (!(As0 > 0)) throw new Error(t('fcr.sinArmadura'));
     const x = ps[0];
-    kEstricto = x ? dimensionarEsviada(geo, mats.hormigon, mats.acero, x.N, x.Mx, x.My) : 1;
+    kEstricto = x ? dimensionarEsviada(geo, mats.hormigonCalc, mats.acero, x.N, x.Mx, x.My) : 1;
     k = Number.isFinite(kEstricto) ? Math.max(kEstricto, kMin) : kEstricto;
     if (phi0 && Number.isFinite(k)) {
       phiEstricto = kEstricto > 0 ? phi0 * Math.sqrt(kEstricto) : 0;
@@ -100,7 +100,7 @@ function calculo(p, s) {
       if (phiProp) k = (phiProp / phi0) ** 2;
     }
   } else if (phi0 && est.fi > 0) k = (est.fi / phi0) ** 2;
-  const m = modeloEsviada(geo, mats.hormigon, mats.acero, Number.isFinite(k) ? k : 1);
+  const m = modeloEsviada(geo, mats.hormigonCalc, mats.acero, Number.isFinite(k) ? k : 1);
   const c = { geo, mats, m, ps, As0, Amin, cm, k, kEstricto, phi0, phiEstricto, phiProp, lim: axilesEsviada(m), cont: new Map() };
   memo = { clave, c };
   return c;

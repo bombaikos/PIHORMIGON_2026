@@ -822,8 +822,8 @@ details.an-ce { margin-top: var(--e2); }
 .t-nom.t-desig.t-larga { font-size: 17px; line-height: 1.2; }
 .tarjeton #d-desig2 { font-size: calc(11px + var(--mas)); overflow-wrap: anywhere; }
 /* selectores apilados más compactos para que quepan los módulos de muchos datos (a 1366×657) */
-:root .datos .campo.apilado { gap: 1px; }
-:root .datos .campo.apilado > label { line-height: 1.1; }
+:root .datos .campo.apilado { gap: 2px; }
+:root .datos .campo.apilado > label { line-height: 1.2; }
 :root .datos .campo.apilado .caja { height: var(--alto-campo); }
 :root .datos .campo.apilado select { height: var(--alto-campo); }
 
@@ -1132,3 +1132,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
 .fcr-tabla table { width: max-content; min-width: 100%; }
 .fcr-tabla td, .fcr-tabla th { white-space: nowrap; }
 .fcr-tabla tr.fuera td { color: var(--no); font-weight: 600; }
+
+/* Campos desactivados (p. ej. fck de un hormigón tipificado): fondo gris, texto gris y cursor de no permitido; el gris solo es para lo desactivado */
+.caja:has(input:disabled, select:disabled) { background: var(--hundido); border-color: var(--linea); }
+.caja input:disabled, .caja select:disabled, select:disabled { color: var(--tinta-3); -webkit-text-fill-color: var(--tinta-3); opacity: 1; cursor: not-allowed; }
