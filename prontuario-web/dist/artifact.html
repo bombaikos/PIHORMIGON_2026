@@ -1159,6 +1159,10 @@ tr.et-extremo td { background: var(--acento-suave); }
 .et-barras .tabla-scroll { flex: 1 1 0; min-height: 0; overflow: auto; }
 .et-barras th { position: sticky; top: 0; background: var(--hoja); }
 .et-der-card > :not(.et-barras) { flex-shrink: 0; }
+.dib .et-fr { stroke: var(--acero); stroke-width: 1.2; }
+.dib .et-fr.c { fill: var(--acento); }
+.dib .et-fr.t { fill: var(--traccion); }
+.dib .et-pt { fill: var(--acero); }
 </style>
 
 <header class="barra">
@@ -5561,6 +5565,8 @@ tr.et-extremo td { background: var(--acento-suave); }
     "est.r.sup": "\u03B5<sub>sup</sub>, \u03B2, x [\u2030, \xB0, mm]",
     "est.r.inf": "\u03B5<sub>cdg</sub>, \u03B5<sub>inf</sub> [\u2030]",
     "est.copiarTabla": "Copiar tabla",
+    "est.izq": "izq.",
+    "est.der": "der.",
     "est.rN": "N [kN]",
     "est.rMx": "Mx [kN\xB7m]",
     "est.rMy": "My [kN\xB7m]",
@@ -5620,6 +5626,8 @@ tr.et-extremo td { background: var(--acento-suave); }
     "est.sinTraccion": "no tension",
     "est.barra": "Bar",
     "est.copiarTabla": "Copy table",
+    "est.izq": "left",
+    "est.der": "right",
     "est.p.estado": "Section state in service",
     "est.p.estadoSub": "Computed with the uncracked section and, if tension exceeds f_ctm, with no tensile strength.",
     "p.estadoTensional": "SLS stress state"
@@ -13858,7 +13866,7 @@ tr.et-extremo td { background: var(--acento-suave); }
     const mI = modeloEsviada(geo, ley.integra, ac);
     const mF = modeloEsviada(geo, ley.fisurada, ac);
     const pts = geo.contornos.flatMap((c) => c.signo > 0 ? c.pts : []);
-    return { ley, acero: ac, mI, mF, xc: mI.xc, yc: mI.yc, vertices: pts, puntos: mI.puntos, Ac: mI.Ac };
+    return { ley, acero: ac, mI, mF, xc: mI.xc, yc: mI.yc, vertices: pts, puntos: mI.puntos, Ac: mI.Ac, armadura: { barras: geo.barras, franjas: geo.franjas ?? [] } };
   }
   function distanciaCdg(mod, bet) {
     const ux = Math.cos(bet);
@@ -13973,9 +13981,15 @@ tr.et-extremo td { background: var(--acento-suave); }
     const x = k < 1e-12 ? eSup >= 0 ? Infinity : -Infinity : eSup / g;
     const fz = esfuerzosDe(m, mod, pl);
     const ext = extremosHormigon(m.hormigon, eInf, eSup);
-    const barras = mod.puntos.map((p) => {
+    const sAc = (e2) => -sigma(mod.acero, -e2) / 1e3;
+    const barras = mod.armadura.barras.map((p) => {
       const e2 = eps(mod, pl, p.x, p.y);
-      return { x: p.x, y: p.y, A: p.A, eps: e2, sigma: -sigma(mod.acero, -e2) / 1e3 };
+      return { x: p.x, y: p.y, A: p.A, eps: e2, sigma: sAc(e2) };
+    });
+    const franjas = mod.armadura.franjas.map((f) => {
+      const e1 = eps(mod, pl, f.x1, f.y);
+      const e2 = eps(mod, pl, f.x2, f.y);
+      return { y: f.y, x1: f.x1, x2: f.x2, A: f.A, e1, e2, s1: sAc(e1), s2: sAc(e2) };
     });
     const avisos4 = [...mod.ley.avisos];
     if (eSup > 35e-4 * (1 + mod.ley.phi)) avisos4.push("eps-cu");
@@ -13996,6 +14010,7 @@ tr.et-extremo td { background: var(--acento-suave); }
       sigmaMax: ext.max,
       sigmaMin: ext.min,
       barras,
+      franjas,
       avisos: avisos4,
       n: mod.acero.E / mod.ley.pendiente
     };
@@ -14135,7 +14150,12 @@ tr.et-extremo td { background: var(--acento-suave); }
     if (c) resuelve(c, s);
     const cambio = () => ctx2.cambio();
     const vis = (k) => k === "x" && !Number.isFinite(est7.x) ? Math.sign(est7.x) * X_INF : est7[k];
-    const num4 = (id, etq, k, mag, o = {}) => campoNum({ id: `et-${id}`, etq, valor: vis(k), mag, paso: o.paso, min: o.min ?? -1e9, max: o.max ?? 1e9, nombre: o.nombre, ref: o.ref, info: o.info, onCambio: (v2) => {
+    const redondeo = (x, mag) => {
+      const m = MAG[mag];
+      const k = 10 ** (m.d ?? 0);
+      return Math.round(x * m.f * k) / k / m.f;
+    };
+    const num4 = (id, etq, k, mag, o = {}) => campoNum({ id: `et-${id}`, etq, valor: redondeo(vis(k), mag), mag, paso: o.paso, min: o.min ?? -1e9, max: o.max ?? 1e9, nombre: o.nombre, ref: o.ref, info: o.info, onCambio: (v2) => {
       est7[k] = k === "x" && Math.abs(v2) >= X_INF ? Math.sign(v2) * Infinity : v2;
       cambio();
     } });
@@ -14156,7 +14176,7 @@ tr.et-extremo td { background: var(--acento-suave); }
         num4("x", "x", "x", "long", { paso: 0.01, nombre: t("est.nombreX"), ref: t("est.refX") })
       ]
     };
-    const gamma = (id, etq, k, defecto) => campoNum({ id: `et-${id}`, etq, valor: est7[k] ?? defecto, mag: null, paso: 0.05, min: 0.01, max: 10, sinUd: true, nombre: etq.replace(/<[^>]+>/g, ""), info: id === "gc" ? t("est.infoGamma") : void 0, onCambio: (v2) => {
+    const gamma = (id, etq, k, defecto) => campoNum({ id: `et-${id}`, etq, valor: fmt(est7[k] ?? defecto, 2), mag: null, paso: 0.05, min: 0.01, max: 10, sinUd: true, nombre: etq.replace(/<[^>]+>/g, ""), info: id === "gc" ? t("est.infoGamma") : void 0, onCambio: (v2) => {
       est7[k] = v2;
       ctx2.pintar();
     } });
@@ -14171,7 +14191,7 @@ tr.et-extremo td { background: var(--acento-suave); }
         t("est.gHormigon"),
         c ? gamma("gc", t("est.gammaC"), "gammaC", c.gammaC) : null,
         c ? gamma("ac", t("est.alfaCC"), "alfaCC", c.alfaCC) : null,
-        campoNum({ id: "et-phi", etq: t("est.phi"), valor: est7.phi, mag: null, paso: 0.1, min: 0, max: 10, sinUd: true, info: t("est.infoPhi"), onCambio: (v2) => {
+        campoNum({ id: "et-phi", etq: t("est.phi"), valor: fmt(est7.phi, 2), mag: null, paso: 0.1, min: 0, max: 10, sinUd: true, info: t("est.infoPhi"), onCambio: (v2) => {
           est7.phi = v2;
           ctx2.pintar();
         } }),
@@ -14262,12 +14282,20 @@ tr.et-extremo td { background: var(--acento-suave); }
     } else if (r.beta === null || !Number.isFinite(r.x)) {
       out.push(`<text class="fuerte" x="${x0 + 40}" y="${(yTop + yBot) / 2}">x = \u221E</text>`);
     }
-    const smx = Math.max(...r.barras.map((b) => Math.abs(b.sigma)), 1e-9);
     for (const b of r.barras) {
       const q2 = T([b.x, b.y]);
       const rr = Math.max(3.5, S * Math.sqrt(b.A / Math.PI));
       out.push(`<circle class="et-ba ${b.sigma >= 0 ? "c" : "t"}" cx="${q2[0].toFixed(1)}" cy="${q2[1].toFixed(1)}" r="${rr.toFixed(1)}"/>`);
       if (r.barras.length <= 16) out.push(`<text x="${q2[0].toFixed(1)}" y="${(q2[1] + rr + 12).toFixed(1)}" text-anchor="middle">${fmt(b.sigma, 0)}</text>`);
+    }
+    for (const f of r.franjas) {
+      const th = Math.max(5, S * f.A / (f.x2 - f.x1) / 2) / S;
+      const quad = [[f.x1, f.y - th / 2], [f.x2, f.y - th / 2], [f.x2, f.y + th / 2], [f.x1, f.y + th / 2]].map(T);
+      out.push(`<polygon class="et-fr ${(f.s1 + f.s2) / 2 >= 0 ? "c" : "t"}" points="${pts2(quad)}"/>`);
+      for (const [xe, se, lado] of [[f.x1, f.s1, -1], [f.x2, f.s2, 1]]) {
+        const q2 = T([xe, f.y]);
+        out.push(`<circle class="et-pt" cx="${q2[0].toFixed(1)}" cy="${q2[1].toFixed(1)}" r="3"/><text x="${(q2[0] + lado * 8).toFixed(1)}" y="${(q2[1] + 4).toFixed(1)}" text-anchor="${lado > 0 ? "start" : "end"}">${fmt(se, 0)}</text>`);
+      }
     }
     const c0 = T([xc, yc]);
     out.push(`<path class="cota" d="M${c0[0] - 6} ${c0[1]}H${c0[0] + 6}M${c0[0]} ${c0[1] - 6}V${c0[1] + 6}"/>`);
@@ -14292,9 +14320,8 @@ tr.et-extremo td { background: var(--acento-suave); }
     return tabla([
       fila5("NM", t("est.r.NM"), fmt(r.N, MAG.N.d), fmt(r.Mx, MAG.M.d), fmt(r.My, MAG.M.d)),
       fila5("eK", t("est.r.eK"), fmt(r.e0 * 1e3, 2), fmt(r.kx * 1e3, 2), fmt(r.ky * 1e3, 2)),
-      fila5("sup", t("est.r.sup"), fmt(r.eSup * 1e3, 2), grados(r.beta), xTxt(r.x)),
-      fila5("", t("est.r.inf"), fmt(r.e0 * 1e3, 2), fmt(r.eInf * 1e3, 2), "")
-    ], { cabecera: ["", "1", "2", "3"], clase: "et-estado" });
+      fila5("sup", t("est.r.sup"), fmt(r.eSup * 1e3, 2), grados(r.beta), xTxt(r.x))
+    ], { clase: "et-estado" });
   }
   function tablaFibras(r) {
     const trac = r.sigmaMin >= -1e-9 && r.eInf < 0 ? ` <span class="u">(${t("est.sinTraccion")})</span>` : "";
@@ -14303,11 +14330,20 @@ tr.et-extremo td { background: var(--acento-suave); }
       [`${t("est.fOpuesta")} (\u03B5<sub>inf</sub>)`, fmt(r.eInf * 1e3, 2), fmt(r.sigmaMin, 1) + trac]
     ], { cabecera: ["", "\u03B5 [\u2030]", "\u03C3 [MPa]"] });
   }
+  function filasArmadura(r) {
+    const b = r.barras.map((q2, i) => ({ id: String(i + 1), x: q2.x, y: q2.y, e: q2.eps, s: q2.sigma }));
+    const f = r.franjas.flatMap((q2, i) => [
+      { id: `F${i + 1}\xB7${t("est.izq")}`, x: q2.x1, y: q2.y, e: q2.e1, s: q2.s1 },
+      { id: `F${i + 1}\xB7${t("est.der")}`, x: q2.x2, y: q2.y, e: q2.e2, s: q2.s2 }
+    ]);
+    return [...b, ...f];
+  }
   function tablaBarras(ctx2, r) {
     const cab = ["#", "x [mm]", "y [mm]", "\u03B5 [\u2030]", sub21("\u03C3", "s") + " [MPa]"];
-    const filas = r.barras.map((b, i) => [String(i + 1), mm2(b.x), mm2(b.y), fmt(b.eps * 1e3, 2), fmt(b.sigma, 1)]);
-    const smax = Math.max(...r.barras.map((b) => b.sigma));
-    const smin = Math.min(...r.barras.map((b) => b.sigma));
+    const todas = filasArmadura(r);
+    const filas = todas.map((q2) => [q2.id, mm2(q2.x), mm2(q2.y), fmt(q2.e * 1e3, 2), fmt(q2.s, 1)]);
+    const smax = Math.max(...todas.map((q2) => q2.s));
+    const smin = Math.min(...todas.map((q2) => q2.s));
     const copiar = async () => {
       const dec = decimalAlCopiar();
       try {
@@ -14318,11 +14354,11 @@ tr.et-extremo td { background: var(--acento-suave); }
         ctx2.avisar(t("graf.error"));
       }
     };
-    const marcadas = filas.map((f, i) => Object.assign(f, { clase: r.barras[i].sigma === smax || r.barras[i].sigma === smin ? "et-extremo" : "" }));
+    const marcadas = filas.map((f, i) => Object.assign(f, { clase: todas[i].s === smax || todas[i].s === smin ? "et-extremo" : "" }));
     return h(
       "div",
       { class: "et-barras" },
-      h("div", { class: "et-cab-barras" }, h("h3", {}, t("est.tBarras")), r.barras.length > 4 ? h("button", { type: "button", class: "tecla", title: t("graf.copiarTablaTit"), onclick: copiar }, t("est.copiarTabla")) : null),
+      h("div", { class: "et-cab-barras" }, h("h3", {}, t("est.tBarras")), filas.length > 4 ? h("button", { type: "button", class: "tecla", title: t("graf.copiarTablaTit"), onclick: copiar }, t("est.copiarTabla")) : null),
       tabla(marcadas, { cabecera: cab, clase: "rejilla" })
     );
   }
@@ -14362,7 +14398,7 @@ tr.et-extremo td { background: var(--acento-suave); }
     };
     const sincro = (id, mag, v2) => {
       const el = document.getElementById(`et-${id}`);
-      if (el) el.value = mag === "ang1" ? String(+v2.toFixed(1)) : String(+(v2 * MAG[mag].f).toFixed(Math.max(MAG[mag].d ?? 3, 3)));
+      if (el) el.value = mag === "ang1" ? String(+v2.toFixed(1)) : String(+(v2 * MAG[mag].f).toFixed(MAG[mag].d ?? 0));
     };
     const reg = (id, etq, k, mag, min, max, step, texto, aVar = (v2) => v2, deVar = (v2) => v2) => regleta({
       etq,

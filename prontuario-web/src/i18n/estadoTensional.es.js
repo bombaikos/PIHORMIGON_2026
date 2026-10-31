@@ -28,7 +28,7 @@ export default {
   'est.tEstado': 'Estado', 'est.tFibras': 'Fibras extremas del hormigón', 'est.tBarras': 'Armadura',
   'est.fComp': 'Fibra más comprimida', 'est.fOpuesta': 'Fibra opuesta', 'est.sinTraccion': 'sin tracción', 'est.barra': 'Barra',
   'est.r.NM': 'N, M<sub>x</sub>, M<sub>y</sub> [kN, kN·m]', 'est.r.eK': 'ε<sub>cdg</sub>, κ<sub>x</sub>, κ<sub>y</sub> [‰, ‰/m]', 'est.r.sup': 'ε<sub>sup</sub>, β, x [‰, °, mm]', 'est.r.inf': 'ε<sub>cdg</sub>, ε<sub>inf</sub> [‰]',
-  'est.copiarTabla': 'Copiar tabla',
+  'est.copiarTabla': 'Copiar tabla', 'est.izq': 'izq.', 'est.der': 'der.',
   'est.rN': 'N [kN]', 'est.rMx': 'Mx [kN·m]', 'est.rMy': 'My [kN·m]',
   'est.p.estado': 'Estado de la sección en servicio', 'est.p.estadoSub': 'Se calcula con la sección íntegra y, si la tracción supera f_ctm, sin resistencia a tracción.',
   'est.pFibras': 'Fibras', 'est.infinito': '∞',

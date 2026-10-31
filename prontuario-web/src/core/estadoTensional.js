@@ -85,7 +85,7 @@ export function modeloTensional(geo, hormigonMat, aceroMat, o) {
   const mI = modeloEsviada(geo, ley.integra, ac);
   const mF = modeloEsviada(geo, ley.fisurada, ac);
   const pts = geo.contornos.flatMap((c) => (c.signo > 0 ? c.pts : []));
-  return { ley, acero: ac, mI, mF, xc: mI.xc, yc: mI.yc, vertices: pts, puntos: mI.puntos, Ac: mI.Ac };
+  return { ley, acero: ac, mI, mF, xc: mI.xc, yc: mI.yc, vertices: pts, puntos: mI.puntos, Ac: mI.Ac, armadura: { barras: geo.barras, franjas: geo.franjas ?? [] } };
 }
 
 // ---------------------------------------------------------------- planos
@@ -233,15 +233,22 @@ function compone(mod, m, pl, fisurada) {
   const x = k < 1e-12 ? (eSup >= 0 ? Infinity : -Infinity) : eSup / g;
   const fz = esfuerzosDe(m, mod, pl);
   const ext = extremosHormigon(m.hormigon, eInf, eSup);
-  const barras = mod.puntos.map((p) => {
+  const sAc = (e) => -sigma(mod.acero, -e) / 1000;
+  // Barras con su deformación y tensión; las franjas (armadura dada por área) se dan en sus dos extremos
+  const barras = mod.armadura.barras.map((p) => {
     const e = eps(mod, pl, p.x, p.y);
-    return { x: p.x, y: p.y, A: p.A, eps: e, sigma: -sigma(mod.acero, -e) / 1000 };
+    return { x: p.x, y: p.y, A: p.A, eps: e, sigma: sAc(e) };
+  });
+  const franjas = mod.armadura.franjas.map((f) => {
+    const e1 = eps(mod, pl, f.x1, f.y);
+    const e2 = eps(mod, pl, f.x2, f.y);
+    return { y: f.y, x1: f.x1, x2: f.x2, A: f.A, e1, e2, s1: sAc(e1), s2: sAc(e2) };
   });
   const avisos = [...mod.ley.avisos];
   if (eSup > 0.0035 * (1 + mod.ley.phi)) avisos.push('eps-cu');
   return {
     ok: true, plano: pl, e0: pl.e0, kx: pl.kx, ky: pl.ky, N: fz.N, Mx: fz.Mx, My: fz.My,
-    eSup, eInf, beta, x, fisurada, sigmaMax: ext.max, sigmaMin: ext.min, barras, avisos,
+    eSup, eInf, beta, x, fisurada, sigmaMax: ext.max, sigmaMin: ext.min, barras, franjas, avisos,
     n: mod.acero.E / (mod.ley.pendiente),
   };
 }

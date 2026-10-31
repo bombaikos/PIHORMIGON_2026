@@ -122,7 +122,9 @@ export function datos(ctx, form) {
   if (c) resuelve(c, s); // fija el estado inicial antes de escribir los campos
   const cambio = () => ctx.cambio();
   const vis = (k) => (k === 'x' && !Number.isFinite(est.x) ? Math.sign(est.x) * X_INF : est[k]);
-  const num = (id, etq, k, mag, o = {}) => campoNum({ id: `et-${id}`, etq, valor: vis(k), mag, paso: o.paso, min: o.min ?? -1e9, max: o.max ?? 1e9, nombre: o.nombre, ref: o.ref, info: o.info, onCambio: (v) => { est[k] = k === 'x' && Math.abs(v) >= X_INF ? Math.sign(v) * Infinity : v; cambio(); } });
+  // En los campos, cada magnitud con sus decimales de la guía (§ 1): ε 2, β 1, x 0, κ 2, N y M 0
+  const redondeo = (x, mag) => { const m = MAG[mag]; const k = 10 ** (m.d ?? 0); return Math.round(x * m.f * k) / k / m.f; };
+  const num = (id, etq, k, mag, o = {}) => campoNum({ id: `et-${id}`, etq, valor: redondeo(vis(k), mag), mag, paso: o.paso, min: o.min ?? -1e9, max: o.max ?? 1e9, nombre: o.nombre, ref: o.ref, info: o.info, onCambio: (v) => { est[k] = k === 'x' && Math.abs(v) >= X_INF ? Math.sign(v) * Infinity : v; cambio(); } });
   const campos = {
     NM: [
       num('N', sub('N', ''), 'N', 'N', { paso: 10, nombre: t('est.nombreN'), ref: t('fcr.compPos') }),
@@ -140,14 +142,14 @@ export function datos(ctx, form) {
       num('x', 'x', 'x', 'long', { paso: 10e-3, nombre: t('est.nombreX'), ref: t('est.refX') }),
     ],
   };
-  const gamma = (id, etq, k, defecto) => campoNum({ id: `et-${id}`, etq, valor: est[k] ?? defecto, mag: null, paso: 0.05, min: 0.01, max: 10, sinUd: true, nombre: etq.replace(/<[^>]+>/g, ''), info: id === 'gc' ? t('est.infoGamma') : undefined, onCambio: (v) => { est[k] = v; ctx.pintar(); } });
+  const gamma = (id, etq, k, defecto) => campoNum({ id: `et-${id}`, etq, valor: fmt(est[k] ?? defecto, 2), mag: null, paso: 0.05, min: 0.01, max: 10, sinUd: true, nombre: etq.replace(/<[^>]+>/g, ''), info: id === 'gc' ? t('est.infoGamma') : undefined, onCambio: (v) => { est[k] = v; ctx.pintar(); } });
   poner(form,
     segmentado({ ancho: true, capsula: true, etiqueta: t('est.modo'), opciones: [['NM', t('est.m.NM')], ['eK', t('est.m.eK')], ['sup', t('est.m.sup')]], valor: est.modo, onCambio: (m) => { est.modo = m; ctx.pintar(); } }),
     grupo(est.modo === 'NM' ? t('est.gEsfuerzos') : t('est.gPlano'), ...campos[est.modo]),
     grupo(t('est.gHormigon'),
       c ? gamma('gc', t('est.gammaC'), 'gammaC', c.gammaC) : null,
       c ? gamma('ac', t('est.alfaCC'), 'alfaCC', c.alfaCC) : null,
-      campoNum({ id: 'et-phi', etq: t('est.phi'), valor: est.phi, mag: null, paso: 0.1, min: 0, max: 10, sinUd: true, info: t('est.infoPhi'), onCambio: (v) => { est.phi = v; ctx.pintar(); } }),
+      campoNum({ id: 'et-phi', etq: t('est.phi'), valor: fmt(est.phi, 2), mag: null, paso: 0.1, min: 0, max: 10, sinUd: true, info: t('est.infoPhi'), onCambio: (v) => { est.phi = v; ctx.pintar(); } }),
       h('label', { class: 'tick' }, h('input', { type: 'checkbox', id: 'et-lineal', checked: est.lineal, onchange: (e) => { est.lineal = e.target.checked; ctx.pintar(); } }), h('span', { html: t('est.lineal') })),
       c ? h('div', { class: 'et-der' },
         h('span', {}, 'E', h('sub', {}, 'c,eff'), ` ${fmt(c.mod.ley.pendiente / 1000, 0)} MPa`),
@@ -232,12 +234,21 @@ function dibujo(c, r) {
     out.push(`<text class="fuerte" x="${x0 + 40}" y="${(yTop + yBot) / 2}">x = ∞</text>`);
   }
   // Armadura con su tensión
-  const smx = Math.max(...r.barras.map((b) => Math.abs(b.sigma)), 1e-9);
-  for (const b of r.barras) {
+    for (const b of r.barras) {
     const q = T([b.x, b.y]);
     const rr = Math.max(3.5, S * Math.sqrt(b.A / Math.PI));
     out.push(`<circle class="et-ba ${b.sigma >= 0 ? 'c' : 't'}" cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="${rr.toFixed(1)}"/>`);
     if (r.barras.length <= 16) out.push(`<text x="${q[0].toFixed(1)}" y="${(q[1] + rr + 12).toFixed(1)}" text-anchor="middle">${fmt(b.sigma, 0)}</text>`);
+  }
+  // Franjas (armadura por área): rectángulo con su espesor equivalente y la tensión en sus dos extremos
+  for (const f of r.franjas) {
+    const th = Math.max(5, (S * f.A) / (f.x2 - f.x1) / 2) / S; // espesor equivalente [m], con un mínimo visible
+    const quad = [[f.x1, f.y - th / 2], [f.x2, f.y - th / 2], [f.x2, f.y + th / 2], [f.x1, f.y + th / 2]].map(T);
+    out.push(`<polygon class="et-fr ${(f.s1 + f.s2) / 2 >= 0 ? 'c' : 't'}" points="${pts2(quad)}"/>`);
+    for (const [xe, se, lado] of [[f.x1, f.s1, -1], [f.x2, f.s2, 1]]) {
+      const q = T([xe, f.y]);
+      out.push(`<circle class="et-pt" cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="3"/><text x="${(q[0] + lado * 8).toFixed(1)}" y="${(q[1] + 4).toFixed(1)}" text-anchor="${lado > 0 ? 'start' : 'end'}">${fmt(se, 0)}</text>`);
+    }
   }
   // c.d.g.
   const c0 = T([xc, yc]);
@@ -269,8 +280,7 @@ function tablaEstado(r) {
     fila('NM', t('est.r.NM'), fmt(r.N, MAG.N.d), fmt(r.Mx, MAG.M.d), fmt(r.My, MAG.M.d)),
     fila('eK', t('est.r.eK'), fmt(r.e0 * 1000, 2), fmt(r.kx * 1000, 2), fmt(r.ky * 1000, 2)),
     fila('sup', t('est.r.sup'), fmt(r.eSup * 1000, 2), grados(r.beta), xTxt(r.x)),
-    fila('', t('est.r.inf'), fmt(r.e0 * 1000, 2), fmt(r.eInf * 1000, 2), ''),
-  ], { cabecera: ['', '1', '2', '3'], clase: 'et-estado' });
+  ], { clase: 'et-estado' });
 }
 
 function tablaFibras(r) {
@@ -281,11 +291,22 @@ function tablaFibras(r) {
   ], { cabecera: ['', 'ε [‰]', 'σ [MPa]'] });
 }
 
+/** Filas de la armadura: cada barra y, de cada franja (armadura por área), sus dos extremos. */
+function filasArmadura(r) {
+  const b = r.barras.map((q, i) => ({ id: String(i + 1), x: q.x, y: q.y, e: q.eps, s: q.sigma }));
+  const f = r.franjas.flatMap((q, i) => [
+    { id: `F${i + 1}·${t('est.izq')}`, x: q.x1, y: q.y, e: q.e1, s: q.s1 },
+    { id: `F${i + 1}·${t('est.der')}`, x: q.x2, y: q.y, e: q.e2, s: q.s2 },
+  ]);
+  return [...b, ...f];
+}
+
 function tablaBarras(ctx, r) {
   const cab = ['#', 'x [mm]', 'y [mm]', 'ε [‰]', sub('σ', 's') + ' [MPa]'];
-  const filas = r.barras.map((b, i) => [String(i + 1), mm(b.x), mm(b.y), fmt(b.eps * 1000, 2), fmt(b.sigma, 1)]);
-  const smax = Math.max(...r.barras.map((b) => b.sigma));
-  const smin = Math.min(...r.barras.map((b) => b.sigma));
+  const todas = filasArmadura(r);
+  const filas = todas.map((q) => [q.id, mm(q.x), mm(q.y), fmt(q.e * 1000, 2), fmt(q.s, 1)]);
+  const smax = Math.max(...todas.map((q) => q.s));
+  const smin = Math.min(...todas.map((q) => q.s));
   const copiar = async () => {
     const dec = decimalAlCopiar();
     try {
@@ -294,9 +315,9 @@ function tablaBarras(ctx, r) {
       ctx.avisar(t('graf.tablaCopiada'));
     } catch { ctx.avisar(t('graf.error')); }
   };
-  const marcadas = filas.map((f, i) => Object.assign(f, { clase: r.barras[i].sigma === smax || r.barras[i].sigma === smin ? 'et-extremo' : '' }));
+  const marcadas = filas.map((f, i) => Object.assign(f, { clase: todas[i].s === smax || todas[i].s === smin ? 'et-extremo' : '' }));
   return h('div', { class: 'et-barras' },
-    h('div', { class: 'et-cab-barras' }, h('h3', {}, t('est.tBarras')), r.barras.length > 4 ? h('button', { type: 'button', class: 'tecla', title: t('graf.copiarTablaTit'), onclick: copiar }, t('est.copiarTabla')) : null),
+    h('div', { class: 'et-cab-barras' }, h('h3', {}, t('est.tBarras')), filas.length > 4 ? h('button', { type: 'button', class: 'tecla', title: t('graf.copiarTablaTit'), onclick: copiar }, t('est.copiarTabla')) : null),
     tabla(marcadas, { cabecera: cab, clase: 'rejilla' }));
 }
 
@@ -338,7 +359,7 @@ export function resultados(ctx, res) {
     res.querySelector(':scope > .veredicto').replaceWith(nuevo);
     rotulaSeccion(res, nombre);
   };
-  const sincro = (id, mag, v) => { const el = document.getElementById(`et-${id}`); if (el) el.value = mag === 'ang1' ? String(+v.toFixed(1)) : String(+(v * MAG[mag].f).toFixed(Math.max(MAG[mag].d ?? 3, 3))); };
+  const sincro = (id, mag, v) => { const el = document.getElementById(`et-${id}`); if (el) el.value = mag === 'ang1' ? String(+v.toFixed(1)) : String(+(v * MAG[mag].f).toFixed(MAG[mag].d ?? 0)); };
   const reg = (id, etq, k, mag, min, max, step, texto, aVar = (v) => v, deVar = (v) => v) => regleta({
     etq, min, max, step, valor: deVar(est[k]), etiqueta: etq.replace(/<[^>]+>/g, ''), texto,
     onInput: (v) => { est[k] = aVar(v); sincro(id, mag, est[k]); refresca(); },

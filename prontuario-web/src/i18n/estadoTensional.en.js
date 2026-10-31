@@ -25,7 +25,7 @@ export default {
   'est.orient': 'Real orientation', 'est.girada': 'Rotated section: most compressed fibre on top', 'est.fibraNeutra': 'neutral axis', 'est.planoDef': 'Strain plane',
   'est.tEstado': 'State', 'est.tFibras': 'Extreme concrete fibres', 'est.tBarras': 'Reinforcement',
   'est.fComp': 'Most compressed fibre', 'est.fOpuesta': 'Opposite fibre', 'est.sinTraccion': 'no tension', 'est.barra': 'Bar',
-  'est.copiarTabla': 'Copy table',
+  'est.copiarTabla': 'Copy table', 'est.izq': 'left', 'est.der': 'right',
   'est.p.estado': 'Section state in service', 'est.p.estadoSub': 'Computed with the uncracked section and, if tension exceeds f_ctm, with no tensile strength.',
   'p.estadoTensional': 'SLS stress state',
 };

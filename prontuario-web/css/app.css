@@ -1157,3 +1157,7 @@ tr.et-extremo td { background: var(--acento-suave); }
 .et-barras .tabla-scroll { flex: 1 1 0; min-height: 0; overflow: auto; }
 .et-barras th { position: sticky; top: 0; background: var(--hoja); }
 .et-der-card > :not(.et-barras) { flex-shrink: 0; }
+.dib .et-fr { stroke: var(--acero); stroke-width: 1.2; }
+.dib .et-fr.c { fill: var(--acento); }
+.dib .et-fr.t { fill: var(--traccion); }
+.dib .et-pt { fill: var(--acero); }
