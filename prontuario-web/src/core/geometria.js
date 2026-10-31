@@ -87,7 +87,7 @@ function cajaDe(cs) {
 }
 
 /** Tramos ocupados por un contorno a la altura y: [[x1,x2],...]. */
-function cortesEn(pts, y) {
+export function cortesEn(pts, y) {
   const xs = [];
   for (let i = 0; i < pts.length; i++) {
     const [x1, y1] = pts[i];

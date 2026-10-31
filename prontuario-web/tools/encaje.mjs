@@ -36,6 +36,10 @@ const PANTALLAS = [
   ['Flexión compuesta recta · dimensionar', 'flexRecta', [(p) => p.click('.datos .seg button:nth-child(2)')]],
   ['Flexión compuesta recta · diagrama', 'flexRecta', [(p) => p.click('.datos .seg button:nth-child(3)')]],
   ['Flexión compuesta recta · circular', 'flexRecta', [SEC('Circular')]],
+  ['Flexión compuesta esviada', 'flexEsviada', []],
+  ['Flexión compuesta esviada · dimensionar', 'flexEsviada', [(p) => p.click('.datos .seg button:nth-child(2)')]],
+  ['Flexión compuesta esviada · diagrama', 'flexEsviada', [(p) => p.click('.datos .seg button:nth-child(3)')]],
+  ['Flexión compuesta esviada · genérica', 'flexEsviada', [SEC('Genérica')]],
   ['Cortante · EC-2 comprobar', 'cortante', []],
   ['Cortante · EC-2 dimensionar', 'cortante', [(p) => p.click('.datos .seg >> nth=0 >> button >> nth=1')]],
   ['Cortante · EC-2 sin armadura', 'cortante', [(p) => p.click('.datos .seg >> nth=2 >> button >> nth=1')]],
@@ -83,7 +87,7 @@ const PANTALLAS = [
 const b = await chromium.launch(process.env.PW_CHROMIUM ? { executablePath: process.env.PW_CHROMIUM } : {});
 let fallos = 0;
 for (const [W, H] of TAMANOS) {
-  for (const [nombre, vista, pasos] of PANTALLAS) {
+  for (const [nombre, vista, pasos] of PANTALLAS.filter((x) => !process.env.SOLO || x[0].includes(process.env.SOLO))) {
     const p = await b.newPage({ viewport: { width: W, height: H } });
     await p.addInitScript((v) => { localStorage.clear(); localStorage.setItem('prontuario-web:vista', v); }, vista);
     await p.goto(url);

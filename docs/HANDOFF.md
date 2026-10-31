@@ -15,13 +15,15 @@ Actualizado: 31/10/2026. **Actualiza este archivo al cerrar cada tarea.** El est
 - **PR 29** `claude/project-thread-nzo10p`: Flexión simple con cápsula Comprobación|Dimensionamiento|Diagrama, rotura admitida y cuantías por cara. CI verde. Pendiente de visto bueno.
 - Este PR de documentación (`claude/project-thread-na7g56`).
 
+- **Rama `flexion-esviada`** (sin PR aún; a la espera del visto bueno de José Luis): módulo Flexión compuesta esviada (Rec pilar y genéricas), diagrama Mx–My con regleta de axil (rosa en tracción). Ver `analisis/flexion-esviada-decisiones.md`.
+
 ## A medias / pendiente conocido
 - **Cápsula de modo** (Comprobación | Dimensionamiento | Diagrama): José Luis la extenderá a todos los módulos.
 - **Durabilidad**: tablas propias de EHE-08 y EC-2 2004 (hoy cmin,dur manual en parte).
 - **Fuego**: revisar tablas contra el BOE y ampliar.
 - **Verificación contra el BOE** de fórmulas ilegibles (EHE-08 art. 46 punzonamiento; hipótesis de rasante EHE-08): ver `analisis/formulas-por-verificar.md`.
 - **Pendiente de diseño** (guía común): Bielas y Ejecución en gris con motivo (hoy ocultas), menú Ayuda con F1, comprobar rejillas >4 filas/columnas con copiar/pegar y detección de títulos.
-- **Módulos del menú sin construir**: Flexión compuesta esviada, Torsión, Inestabilidad de soportes, ELS (flechas y fisuración), Bielas y tirantes, Ejecución y control, Ayuda.
+- **Módulos del menú sin construir**: Torsión, Inestabilidad de soportes, ELS (flechas y fisuración), Bielas y tirantes, Ejecución y control, Ayuda.
 - **Secciones**: cerrar el módulo y pasar a otros; resto de cambios que José Luis pida respecto al 3.1. Contrastar con el Prontuario 3.1 (carpeta de fuentes en el equipo de José Luis).
 - **Rasante / Anclaje**: ayuda del módulo; CSV de casos EHE.exe; confinamiento (α3-α5), grupos de barras y mallas en anclaje.
 - **Ramas antiguas** ya fusionadas siguen en GitHub (diseno-*, punzonamiento-*, rasante-*…); se pueden borrar cuando José Luis lo diga.

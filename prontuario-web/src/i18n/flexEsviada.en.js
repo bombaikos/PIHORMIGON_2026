@@ -1,0 +1,21 @@
+// Texts of the biaxial bending module (added to en.js in ui/i18n.js).
+export default {
+  'fce.subtitulo': 'Axial load and bending in two directions (N, Mx, My) at failure: Mx–My interaction contour at the given axial load',
+  'fce.esfuerzos': 'Actions', 'fce.mx': 'Mx compresses the top face when +', 'fce.my': 'My compresses the right face when +',
+  'fce.nombreMx': 'Moment about the horizontal axis', 'fce.nombreMy': 'Moment about the vertical axis',
+  'fce.dibujo': 'Failure plane', 'fce.dibujoSub': 'Section with the compressed zone and the neutral axis at the ultimate state, in the direction of the action',
+  'fce.dibujoAria': 'Section with the neutral axis at failure',
+  'fce.contorno': 'Interaction contour', 'fce.contornoSub': 'Locus of ultimate moments (Mx, My) at the given axial load; each point is a different failure plane',
+  'fce.ejeX': 'My [kN·m]', 'fce.ejeY': 'Mx [kN·m]', 'fce.serieN': (n) => `N = ${n} kN`,
+  'fce.rayo': 'Origin–contour', 'fce.alfa': 'Neutral axis angle', 'fce.limiteCompresion': 'compression',
+  'fce.subeEmin': (ex, ey) => `* Moment raised to N·e<sub>min</sub> (e<sub>min</sub> = ${ey} mm in Mx and ${ex} mm in My; Prontuario criterion, to be checked in each code).`,
+  'fce.fueraAxil': (l) => `The axial load exceeds the section capacity (limit ${l}).`,
+  'fce.f.coef': 'γ = |OQ| / |OP| at constant eccentricity: P = (My,Ed, Mx,Ed); Q = intersection with the contour of the line from the origin through P',
+  'fce.f.contorno': 'The direction of the most compressed fibre is rotated; for each one, ultimate state (maximum curvature with an admissible plane balancing N<sub>Ed</sub>) and stresses integrated over the whole section: M<sub>x</sub> = ∫σ·(y<sub>G</sub> − y)·dA, M<sub>y</sub> = ∫σ·(x − x<sub>G</sub>)·dA',
+  'fce.f.ref': (x, y) => `Moments about the centroid of the gross concrete (x = ${x}, y = ${y} from the top-left corner).`,
+  'fce.f.alfa': 'Angle of the neutral line with the horizontal, between −90° and 90° (0° = horizontal neutral axis)',
+  'fce.puntos': 'Actions', 'fce.tabla': 'Actions and safety factor',
+  'fce.contornos': (n) => `${n} points`,
+  'fce.axilGauge': 'The axial load moves with the gauge under the diagram (blue in compression, pink in tension).',
+  'fce.sinEsfuerzos': 'Enter at least one pair of actions.',
+};

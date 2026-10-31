@@ -20,6 +20,7 @@
   --hormigon: oklch(90% 0.006 85);
   --hormigon-borde: oklch(60% 0.01 85);
   --compr: oklch(62% 0.09 252);
+  --rosa: oklch(64% 0.15 355); --rosa-suave: oklch(92% 0.04 355);
   --traccion: oklch(66% 0.008 250);
   --acero: oklch(30% 0.012 250);
   --armadura-resaltada: oklch(45% 0.15 258);
@@ -53,6 +54,7 @@
     --acento: oklch(74% 0.11 250); --acento-suave: oklch(30% 0.05 252);
   --serie-m: oklch(74% 0.11 250); --serie-v: oklch(76% 0.11 125); --serie-giro: oklch(76% 0.09 195); --serie-flecha: oklch(76% 0.10 60);
     --hormigon: oklch(33% 0.008 85); --hormigon-borde: oklch(58% 0.01 85);
+    --rosa: oklch(76% 0.12 355); --rosa-suave: oklch(32% 0.05 355);
     --compr: oklch(62% 0.1 252); --traccion: oklch(55% 0.01 250); --acero: oklch(88% 0.008 250); --armadura-resaltada: oklch(72% 0.13 255);
     --ok: oklch(76% 0.13 152); --ok-fondo: oklch(29% 0.05 152);
     --no: oklch(74% 0.14 27); --no-fondo: oklch(30% 0.06 27);
@@ -68,6 +70,7 @@
   --acento: oklch(74% 0.11 250); --acento-suave: oklch(30% 0.05 252);
   --serie-m: oklch(74% 0.11 250); --serie-v: oklch(76% 0.11 125); --serie-giro: oklch(76% 0.09 195); --serie-flecha: oklch(76% 0.10 60);
   --hormigon: oklch(33% 0.008 85); --hormigon-borde: oklch(58% 0.01 85);
+  --rosa: oklch(76% 0.12 355); --rosa-suave: oklch(32% 0.05 355);
   --compr: oklch(62% 0.1 252); --traccion: oklch(55% 0.01 250); --acero: oklch(88% 0.008 250); --armadura-resaltada: oklch(72% 0.13 255);
   --ok: oklch(76% 0.13 152); --ok-fondo: oklch(29% 0.05 152);
   --no: oklch(74% 0.14 27); --no-fondo: oklch(30% 0.06 27);
@@ -1079,6 +1082,13 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
 .regleta input[type=range]::-moz-range-track { height: 8px; border-radius: 4px; border: 1px solid var(--campo-borde); box-sizing: border-box; background: linear-gradient(to right, var(--acento) var(--p, 50%), var(--acento-suave) var(--p, 50%)); }
 .regleta input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: var(--acento); border: 3px solid var(--hoja); box-shadow: 0 0 0 1px var(--acento); box-sizing: border-box; }
 .regleta input[type=range]:focus-visible { outline: 2px solid var(--acento); outline-offset: 2px; border-radius: 4px; }
+
+/* Axil de tracción en rosa (no rojo, que es «No cumple»): contorno Mx–My y regleta del axil */
+.graf .serie.trac { stroke: var(--rosa); }
+.regleta.trac input[type=range]::-webkit-slider-runnable-track { background: linear-gradient(to right, var(--rosa) var(--p, 50%), var(--rosa-suave) var(--p, 50%)); }
+.regleta.trac input[type=range]::-moz-range-track { background: linear-gradient(to right, var(--rosa) var(--p, 50%), var(--rosa-suave) var(--p, 50%)); }
+.regleta.trac input[type=range]::-webkit-slider-thumb { background: var(--rosa); box-shadow: 0 0 0 1px var(--rosa); }
+.regleta.trac input[type=range]::-moz-range-thumb { background: var(--rosa); box-shadow: 0 0 0 1px var(--rosa); }
 </style>
 
 <header class="barra">
@@ -1378,12 +1388,12 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
   var IDS_NORMAS = Object.keys(EXTRAS);
 
   // src/core/materiales.js
-  function hormigon({ nombre = "", fck, norma: norma2 = "EHE-98", gammaC, alfa, alfaCC, ktc, kE, coefArido, tramos = 10, diag = "PR", refDiag = "fcm", puntos, tracc = false }) {
+  function hormigon({ nombre = "", fck, norma: norma2 = "EHE-98", gammaC, alfa: alfa2, alfaCC, ktc, kE, coefArido, tramos = 10, diag = "PR", refDiag = "fcm", puntos, tracc = false }) {
     const n = normaMat(norma2);
     if (!(fck > 0)) throw new Error("fck debe ser positivo");
     if (fck > n.fckMax) throw new Error(`${n.nombre}: esta versi\xF3n solo admite fck \u2264 ${n.fckMax} MPa`);
     const g = gammaC ?? n.gammaC;
-    const a = alfa ?? n.alfaCC(fck, { ktc, alfaCC });
+    const a = alfa2 ?? n.alfaCC(fck, { ktc, alfaCC });
     if (diag === "EC2" || diag === "puntos") {
       const E = n.Ec(fck, { kE, coefArido }) * 1e3;
       const fcd2 = a * fck / g;
@@ -1555,20 +1565,20 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
   }
   function propiedadesHormigon(fck, normaId = "EHE-98", { ktc, kE, h: h2, alfaCC, coefArido, gammaC } = {}) {
     const n = normaMat(normaId);
-    const alfa = n.alfaCC(fck, { ktc, alfaCC });
+    const alfa2 = n.alfaCC(fck, { ktc, alfaCC });
     const gc = gammaC ?? n.gammaC;
     const ktt = n.id === "EC2-2023" ? (ktc ?? n.ktc) === 1 ? 0.8 : 0.7 : 1;
     return {
       fck,
       fcm: n.fcm(fck),
-      alfa,
+      alfa: alfa2,
       etacc: n.etacc ? n.etacc(fck) : void 0,
       ktc: n.id === "EC2-2023" ? ktc ?? n.ktc : void 0,
       kE: n.id === "EC2-2023" ? kE ?? n.kE : void 0,
       coefArido: n.id === "EC2-2023" ? void 0 : coefArido ?? 1,
       gammaC: gc,
       gammaV: n.gammaV,
-      fcd: alfa * fck / gc,
+      fcd: alfa2 * fck / gc,
       fctm: n.fctm(fck),
       fctk05: n.fctk05(fck),
       fctk95: n.fctk95 ? n.fctk95(fck) : null,
@@ -5314,6 +5324,70 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     "pun.tt.manda": "Most demanding check (highest utilisation)"
   };
 
+  // src/i18n/flexEsviada.es.js
+  var flexEsviada_es_default = {
+    "fce.subtitulo": "Axil y flexi\xF3n en dos direcciones (N, Mx, My) en rotura: contorno de interacci\xF3n Mx\u2013My al axil dado",
+    "fce.esfuerzos": "Esfuerzos",
+    "fce.mx": "Mx comprime la cara superior si es +",
+    "fce.my": "My comprime la cara derecha si es +",
+    "fce.nombreMx": "Momento respecto al eje horizontal",
+    "fce.nombreMy": "Momento respecto al eje vertical",
+    "fce.dibujo": "Plano de rotura",
+    "fce.dibujoSub": "Secci\xF3n con la zona comprimida y el eje neutro en el estado \xFAltimo, en la direcci\xF3n del esfuerzo",
+    "fce.dibujoAria": "Secci\xF3n con el eje neutro en rotura",
+    "fce.contorno": "Contorno de interacci\xF3n",
+    "fce.contornoSub": "Lugar de los momentos \xFAltimos (Mx, My) con el axil dado; cada punto es un plano de rotura distinto",
+    "fce.ejeX": "My [kN\xB7m]",
+    "fce.ejeY": "Mx [kN\xB7m]",
+    "fce.serieN": (n) => `N = ${n} kN`,
+    "fce.rayo": "Origen\u2013contorno",
+    "fce.alfa": "\xC1ngulo del eje neutro",
+    "fce.limiteCompresion": "compresi\xF3n",
+    "fce.subeEmin": (ex, ey) => `* Momento elevado a N\xB7e<sub>m\xEDn</sub> (e<sub>m\xEDn</sub> = ${ey} mm en Mx y ${ex} mm en My; criterio del Prontuario, por verificar en cada norma).`,
+    "fce.fueraAxil": (l) => `El axil supera la capacidad de la secci\xF3n (l\xEDmite ${l}).`,
+    "fce.f.coef": "\u03B3 = |OQ| / |OP| a excentricidad constante: P = (My,Ed, Mx,Ed); Q = corte con el contorno de la recta que une el origen con P",
+    "fce.f.contorno": "Se gira la direcci\xF3n de la fibra m\xE1s comprimida; para cada una, estado \xFAltimo (m\xE1xima curvatura con plano admisible que equilibra N<sub>Ed</sub>) y esfuerzos integrados en la secci\xF3n entera: M<sub>x</sub> = \u222B\u03C3\xB7(y<sub>G</sub> \u2212 y)\xB7dA, M<sub>y</sub> = \u222B\u03C3\xB7(x \u2212 x<sub>G</sub>)\xB7dA",
+    "fce.f.ref": (x, y) => `Momentos respecto al c.d.g. del hormig\xF3n bruto (x = ${x}, y = ${y} desde la esquina superior izquierda).`,
+    "fce.f.alfa": "\xC1ngulo de la recta neutra con la horizontal, entre \u221290\xB0 y 90\xB0 (0\xB0 = eje neutro horizontal)",
+    "fce.puntos": "Esfuerzos",
+    "fce.tabla": "Esfuerzos y coeficiente de seguridad",
+    "fce.contornos": (n) => `${n} puntos`,
+    "fce.axilGauge": "El axil se mueve con la regleta bajo el diagrama (azul en compresi\xF3n, rosa en tracci\xF3n).",
+    "fce.sinEsfuerzos": "Escribe al menos un par de esfuerzos."
+  };
+
+  // src/i18n/flexEsviada.en.js
+  var flexEsviada_en_default = {
+    "fce.subtitulo": "Axial load and bending in two directions (N, Mx, My) at failure: Mx\u2013My interaction contour at the given axial load",
+    "fce.esfuerzos": "Actions",
+    "fce.mx": "Mx compresses the top face when +",
+    "fce.my": "My compresses the right face when +",
+    "fce.nombreMx": "Moment about the horizontal axis",
+    "fce.nombreMy": "Moment about the vertical axis",
+    "fce.dibujo": "Failure plane",
+    "fce.dibujoSub": "Section with the compressed zone and the neutral axis at the ultimate state, in the direction of the action",
+    "fce.dibujoAria": "Section with the neutral axis at failure",
+    "fce.contorno": "Interaction contour",
+    "fce.contornoSub": "Locus of ultimate moments (Mx, My) at the given axial load; each point is a different failure plane",
+    "fce.ejeX": "My [kN\xB7m]",
+    "fce.ejeY": "Mx [kN\xB7m]",
+    "fce.serieN": (n) => `N = ${n} kN`,
+    "fce.rayo": "Origin\u2013contour",
+    "fce.alfa": "Neutral axis angle",
+    "fce.limiteCompresion": "compression",
+    "fce.subeEmin": (ex, ey) => `* Moment raised to N\xB7e<sub>min</sub> (e<sub>min</sub> = ${ey} mm in Mx and ${ex} mm in My; Prontuario criterion, to be checked in each code).`,
+    "fce.fueraAxil": (l) => `The axial load exceeds the section capacity (limit ${l}).`,
+    "fce.f.coef": "\u03B3 = |OQ| / |OP| at constant eccentricity: P = (My,Ed, Mx,Ed); Q = intersection with the contour of the line from the origin through P",
+    "fce.f.contorno": "The direction of the most compressed fibre is rotated; for each one, ultimate state (maximum curvature with an admissible plane balancing N<sub>Ed</sub>) and stresses integrated over the whole section: M<sub>x</sub> = \u222B\u03C3\xB7(y<sub>G</sub> \u2212 y)\xB7dA, M<sub>y</sub> = \u222B\u03C3\xB7(x \u2212 x<sub>G</sub>)\xB7dA",
+    "fce.f.ref": (x, y) => `Moments about the centroid of the gross concrete (x = ${x}, y = ${y} from the top-left corner).`,
+    "fce.f.alfa": "Angle of the neutral line with the horizontal, between \u221290\xB0 and 90\xB0 (0\xB0 = horizontal neutral axis)",
+    "fce.puntos": "Actions",
+    "fce.tabla": "Actions and safety factor",
+    "fce.contornos": (n) => `${n} points`,
+    "fce.axilGauge": "The axial load moves with the gauge under the diagram (blue in compression, pink in tension).",
+    "fce.sinEsfuerzos": "Enter at least one pair of actions."
+  };
+
   // src/i18n/rasante.es.js
   var sub9 = (a, b) => `${a}<sub>${b}</sub>`;
   var rasante_es_default = {
@@ -5606,7 +5680,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
   };
 
   // src/ui/i18n.js
-  var DICC = { es: { ...es_default, ...anclaje_es_default, ...cortante_es_default, ...punzonamiento_es_default, ...rasante_es_default }, en: { ...en_default, ...anclaje_en_default, ...cortante_en_default, ...punzonamiento_en_default, ...rasante_en_default } };
+  var DICC = { es: { ...es_default, ...anclaje_es_default, ...cortante_es_default, ...punzonamiento_es_default, ...rasante_es_default, ...flexEsviada_es_default }, en: { ...en_default, ...anclaje_en_default, ...cortante_en_default, ...punzonamiento_en_default, ...rasante_en_default, ...flexEsviada_en_default } };
   var CLAVE2 = "prontuario-web:lengua";
   var lengua = "es";
   try {
@@ -5934,14 +6008,14 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
   var par = (...hijos) => h("div", { class: "par" }, ...hijos);
   var boton = (texto, onclick, clase = "secundario") => h("button", { type: "button", class: `boton ${clase}`, onclick, html: texto });
   var aviso = (texto, tipo = "") => h("p", { class: `aviso ${tipo}`, html: texto });
-  function pestanas({ lista, activa: activa3, onCambio }) {
+  function pestanas({ lista, activa: activa4, onCambio }) {
     return h(
       "div",
       { class: "pestanas", role: "tablist" },
       ...lista.map(([k, e2, o = {}]) => h("button", {
         type: "button",
         role: "tab",
-        "aria-selected": String(k === activa3),
+        "aria-selected": String(k === activa4),
         "aria-disabled": o.deshabilitada ? "true" : void 0,
         title: o.deshabilitada ? t("pendiente") : void 0,
         html: e2,
@@ -5996,7 +6070,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
   }
 
   // src/ui/paleta.js
-  function instalarPaleta(comandos13, avisar2) {
+  function instalarPaleta(comandos14, avisar2) {
     const pal = document.getElementById("paleta");
     const pq = document.getElementById("paleta-q");
     const pl = document.getElementById("paleta-lista");
@@ -6006,7 +6080,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     const texto = (c) => c.texto ?? t(c.k);
     function listar() {
       const x = pq.value.trim().toLowerCase();
-      vis = comandos13().filter((c) => !x || (plano3(texto(c)) + " " + (c.b ?? "")).toLowerCase().includes(x));
+      vis = comandos14().filter((c) => !x || (plano3(texto(c)) + " " + (c.b ?? "")).toLowerCase().includes(x));
       sel = Math.min(sel, Math.max(vis.length - 1, 0));
       pl.innerHTML = vis.map((c, i) => `<li role="option" aria-selected="${i === sel}" data-i="${i}">${texto(c)}</li>`).join("") || `<li aria-selected="false"><small>${t("p.nada")}</small></li>`;
       pl.querySelector('[aria-selected="true"]')?.scrollIntoView({ block: "nearest" });
@@ -6157,12 +6231,12 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       tracc.push([e2, s]);
     }
     const fk = L.numero();
-    const alfa = L.numero();
+    const alfa2 = L.numero();
     const gamma = L.numero();
     let tipo = "generico";
     if (E >= 1e8) tipo = "acero";
     else if (E > 1e6 && nt <= 2 && tracc.every((p) => p[1] === 0)) tipo = "hormigon";
-    return { tipo, nombre, E, fk, gamma, alfa, comp, tracc, roturaComp: codc === 0, roturaTracc: codt === 0 };
+    return { tipo, nombre, E, fk, gamma, alfa: alfa2, comp, tracc, roturaComp: codc === 0, roturaTracc: codt === 0 };
   }
   function leerSeccion(texto) {
     const L = new Lector(texto);
@@ -6560,7 +6634,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
   // src/ui/rejilla.js
   function rejilla({ id, columnas, filas, onCambio, refFila, altoMax = 260, calculada = null, numerar = false }) {
     const C = columnas.length;
-    let datos16 = filas.map((f) => columnas.map((_2, j) => String(f[j] ?? "")));
+    let datos17 = filas.map((f) => columnas.map((_2, j) => String(f[j] ?? "")));
     let act = { r: 0, c: 0 };
     let ancla = null;
     let editor = null;
@@ -6569,8 +6643,8 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     const pie = h("div", { class: "eco" });
     const vacia = (f) => f.every((x) => !x.trim());
     const errorDe = (r, c) => {
-      const v2 = datos16[r]?.[c] ?? "";
-      if (!v2.trim()) return vacia(datos16[r]) ? null : columnas[c].num ? t("rej.falta") : null;
+      const v2 = datos17[r]?.[c] ?? "";
+      if (!v2.trim()) return vacia(datos17[r]) ? null : columnas[c].num ? t("rej.falta") : null;
       if (columnas[c].num && !Number.isFinite(leerNumero(v2))) return t("rej.noNumero");
       return columnas[c].validar?.(v2) ?? null;
     };
@@ -6582,12 +6656,12 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       const R = rango();
       const cab = h("thead", {}, h("tr", {}, ...columnas.map((col2) => h("th", { scope: "col", html: col2.titulo })), ...calculada ? [h("th", { scope: "col", class: "calc", html: calculada.titulo })] : []));
       const cuerpo = h("tbody");
-      const todas = [...datos16, columnas.map(() => "")];
+      const todas = [...datos17, columnas.map(() => "")];
       let errores = 0;
       todas.forEach((f, r) => {
-        const tr = h("tr", refFila && r < datos16.length ? { "data-ref": refFila(r) } : { class: "nueva" });
+        const tr = h("tr", refFila && r < datos17.length ? { "data-ref": refFila(r) } : { class: "nueva" });
         f.forEach((v2, c) => {
-          const err2 = r < datos16.length ? errorDe(r, c) : null;
+          const err2 = r < datos17.length ? errorDe(r, c) : null;
           if (err2) errores++;
           const sel = r >= R.r1 && r <= R.r2 && c >= R.c1 && c <= R.c2;
           const td = h("td", {
@@ -6598,7 +6672,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
           }, v2);
           tr.append(td);
         });
-        if (calculada) tr.append(h("td", { class: "num calc" }, r < datos16.length && !vacia(f) ? calculada.f(datos16, r) : ""));
+        if (calculada) tr.append(h("td", { class: "num calc" }, r < datos17.length && !vacia(f) ? calculada.f(datos17, r) : ""));
         cuerpo.append(tr);
       });
       tabla3.replaceChildren(cab, cuerpo);
@@ -6612,31 +6686,31 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       celda(act.r, act.c)?.scrollIntoView({ block: "nearest", inline: "nearest" });
     }
     function confirmar() {
-      datos16 = datos16.map((f) => f.map((v2, c) => columnas[c].num ? v2.trim().replace(/,/g, ".") : v2.trim()));
-      const limpias = datos16.filter((f) => !vacia(f));
-      const hayError = datos16.some((f, r) => f.some((_2, c) => errorDe(r, c)));
+      datos17 = datos17.map((f) => f.map((v2, c) => columnas[c].num ? v2.trim().replace(/,/g, ".") : v2.trim()));
+      const limpias = datos17.filter((f) => !vacia(f));
+      const hayError = datos17.some((f, r) => f.some((_2, c) => errorDe(r, c)));
       if (!hayError) {
-        datos16 = limpias;
-        act.r = Math.min(act.r, datos16.length);
-        onCambio(datos16.map((f) => [...f]));
+        datos17 = limpias;
+        act.r = Math.min(act.r, datos17.length);
+        onCambio(datos17.map((f) => [...f]));
       }
       pintar2();
     }
     function poner3(r, c, v2) {
-      while (datos16.length <= r) datos16.push(columnas.map(() => ""));
-      datos16[r][c] = v2;
+      while (datos17.length <= r) datos17.push(columnas.map(() => ""));
+      datos17[r][c] = v2;
     }
     function mover(dr, dc, extender = false) {
       if (extender) ancla ?? (ancla = { ...act });
       else ancla = null;
-      act = { r: Math.max(0, Math.min(datos16.length, act.r + dr)), c: Math.max(0, Math.min(C - 1, act.c + dc)) };
+      act = { r: Math.max(0, Math.min(datos17.length, act.r + dr)), c: Math.max(0, Math.min(C - 1, act.c + dc)) };
       pintar2();
       verActiva();
     }
     function editar(inicial2) {
       const td = celda(act.r, act.c);
       if (!td) return;
-      const previo = datos16[act.r]?.[act.c] ?? "";
+      const previo = datos17[act.r]?.[act.c] ?? "";
       editor = h("input", { class: "editor-rejilla", value: inicial2 ?? previo, spellcheck: "false", autocomplete: "off" });
       td.replaceChildren(editor);
       td.classList.add("editando");
@@ -6674,7 +6748,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     function copiar(e2) {
       const R = rango();
       const bloque = [];
-      for (let r = R.r1; r <= Math.min(R.r2, datos16.length - 1); r++) bloque.push(datos16[r].slice(R.c1, R.c2 + 1).map((v2, k) => columnas[R.c1 + k].num ? v2.replace(".", decimalAlCopiar()) : v2));
+      for (let r = R.r1; r <= Math.min(R.r2, datos17.length - 1); r++) bloque.push(datos17[r].slice(R.c1, R.c2 + 1).map((v2, k) => columnas[R.c1 + k].num ? v2.replace(".", decimalAlCopiar()) : v2));
       const esc2 = (v2) => v2.replace(/&/g, "&amp;").replace(/</g, "&lt;");
       e2.clipboardData.setData("text/plain", bloque.map((f) => f.join("	")).join("\r\n"));
       e2.clipboardData.setData("text/html", `<table>${bloque.map((f) => `<tr>${f.map((v2) => `<td>${esc2(v2)}</td>`).join("")}</tr>`).join("")}</table>`);
@@ -6718,21 +6792,21 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       }
       if (k === "Insert") {
         e2.preventDefault();
-        datos16.splice(act.r, 0, columnas.map(() => ""));
+        datos17.splice(act.r, 0, columnas.map(() => ""));
         return pintar2();
       }
       if ((k === "Delete" || k === "Backspace") && (e2.ctrlKey || e2.metaKey)) {
         e2.preventDefault();
         const R = rango();
-        datos16.splice(R.r1, R.r2 - R.r1 + 1);
+        datos17.splice(R.r1, R.r2 - R.r1 + 1);
         ancla = null;
-        act.r = Math.min(R.r1, datos16.length);
+        act.r = Math.min(R.r1, datos17.length);
         return confirmar();
       }
       if (k === "Delete" || k === "Backspace") {
         e2.preventDefault();
         const R = rango();
-        for (let r = R.r1; r <= Math.min(R.r2, datos16.length - 1); r++) for (let c = R.c1; c <= R.c2; c++) datos16[r][c] = "";
+        for (let r = R.r1; r <= Math.min(R.r2, datos17.length - 1); r++) for (let c = R.c1; c <= R.c2; c++) datos17[r][c] = "";
         return confirmar();
       }
       if (k.length === 1 && !e2.ctrlKey && !e2.metaKey && !e2.altKey) {
@@ -6792,16 +6866,16 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     const x = Math.sqrt(28 / t2);
     const s = norma2 === "EC2-2023" ? sC2023(cemento, fck) : S_EDAD[cemento];
     const beta2 = Math.exp(s * (1 - x));
-    let alfa;
+    let alfa2;
     let Et;
     if (norma2 === "EC2-2023") {
-      alfa = 0.6;
+      alfa2 = 0.6;
       Et = Math.cbrt(beta2) * Ecm;
     } else {
-      alfa = t2 < 28 ? 1 : norma2 === "EHE-08" && fck >= 50 ? 0.5 : 2 / 3;
+      alfa2 = t2 < 28 ? 1 : norma2 === "EHE-08" && fck >= 50 ? 0.5 : 2 / 3;
       Et = Math.pow(beta2, 0.3) * Ecm;
     }
-    return { t: t2, beta: beta2, fcm: beta2 * fcm, fctm: Math.pow(beta2, alfa) * fctm, Ecm: Et, alfa };
+    return { t: t2, beta: beta2, fcm: beta2 * fcm, fctm: Math.pow(beta2, alfa2) * fctm, Ecm: Et, alfa: alfa2 };
   }
   var fckEdad = (fck, fcmT, t2) => t2 >= 28 ? fck : Math.min(fck, fcmT - 8);
   var ALFA_DS = { S: [3, 0.13], N: [4, 0.12], R: [6, 0.11] };
@@ -7042,7 +7116,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     const [x1, y1] = xy[i];
     return x1 === x0 ? y1 : y0 + (y1 - y0) * (x - x0) / (x1 - x0);
   }
-  function grafica({ series, puntos = [], ejeX, ejeY, archivo: archivo2 = "grafica", rejillaSec = null, invertirY = false, sinTabla = false, avisar: avisar2 = () => {
+  function grafica({ series, puntos = [], ejeX, ejeY, archivo: archivo2 = "grafica", rejillaSec = null, invertirY = false, sinTabla = false, escalaIgual = false, avisar: avisar2 = () => {
   } }) {
     const sinDec = (e2) => /\((kN|kN·m|mm²)\)/.test(plano(e2.titulo)) ? { ...e2, d: 0, dt: 0 } : e2;
     ejeX = sinDec(ejeX);
@@ -7124,6 +7198,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     const [xa, xb] = ext(0);
     const [ya, yb] = ext(1);
     const completa = { x0: xa, x1: xb, y0: ya, y1: yb };
+    const completaBase = { ...completa };
     let vista = { ...completa };
     let W = 0;
     let H = 0;
@@ -7135,10 +7210,22 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     const deX = (px) => vista.x0 + (px - M.izq) / (W - M.izq - M.der) * (vista.x1 - vista.x0);
     const deY = (py) => vista.y0 + (invertirY ? py - M.arr : H - M.aba - py) / (H - M.arr - M.aba) * (vista.y1 - vista.y0);
     function dibujar() {
-      bTodo.disabled = ["x0", "x1", "y0", "y1"].every((k) => vista[k] === completa[k]);
       W = caja.clientWidth;
       H = svg.clientHeight || caja.clientHeight;
       if (!(W > 0 && H > 0)) return;
+      if (escalaIgual) {
+        const pw0 = W - M.izq - M.der;
+        const ph0 = H - M.arr - M.aba;
+        const igualar = (v2) => {
+          const u = Math.max((v2.x1 - v2.x0) / pw0, (v2.y1 - v2.y0) / ph0);
+          const cx = (v2.x0 + v2.x1) / 2;
+          const cy = (v2.y0 + v2.y1) / 2;
+          return { x0: cx - u * pw0 / 2, x1: cx + u * pw0 / 2, y0: cy - u * ph0 / 2, y1: cy + u * ph0 / 2 };
+        };
+        Object.assign(completa, igualar(completaBase));
+        vista = igualar(vista);
+      }
+      bTodo.disabled = ["x0", "x1", "y0", "y1"].every((k) => Math.abs(vista[k] - completa[k]) <= 1e-9 * (Math.abs(completa.x1 - completa.x0) + Math.abs(completa.y1 - completa.y0)));
       svg.setAttribute("width", W);
       svg.setAttribute("height", H);
       svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
@@ -7984,9 +8071,9 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
   var esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
   function botonCopiar(filas) {
     const b = boton(t("dur.copiar"), async () => {
-      const datos16 = filas().map((f) => f.map((c) => typeof c === "number" || /^-?\d+(\.\d+)?$/.test(String(c)) ? String(c).replace(".", decimalAlCopiar()) : plano2(c)));
-      const txt = datos16.map((f) => f.join("	")).join("\r\n");
-      const htm = `<table>${datos16.map((f, i) => `<tr>${f.map((c) => `<${i ? "td" : "th"}>${esc(c)}</${i ? "td" : "th"}>`).join("")}</tr>`).join("")}</table>`;
+      const datos17 = filas().map((f) => f.map((c) => typeof c === "number" || /^-?\d+(\.\d+)?$/.test(String(c)) ? String(c).replace(".", decimalAlCopiar()) : plano2(c)));
+      const txt = datos17.map((f) => f.join("	")).join("\r\n");
+      const htm = `<table>${datos17.map((f, i) => `<tr>${f.map((c) => `<${i ? "td" : "th"}>${esc(c)}</${i ? "td" : "th"}>`).join("")}</tr>`).join("")}</table>`;
       try {
         if (navigator.clipboard?.write && typeof ClipboardItem !== "undefined") await navigator.clipboard.write([new ClipboardItem({ "text/plain": new Blob([txt], { type: "text/plain" }), "text/html": new Blob([htm], { type: "text/html" }) })]);
         else await navigator.clipboard.writeText(txt);
@@ -9556,7 +9643,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     fila5.append(h("button", { type: "button", class: "mas", title: t("sec.nuevaDe", t(`forma.${est3.forma}`)), onclick: () => elegir2(ctx2, est3.forma, null) }, `+ ${t("sec.nueva")}`));
     el.append(fila5);
   }
-  function grupoSeccion(ctx2, { formas, activa: activa3, alElegir }) {
+  function grupoSeccion(ctx2, { formas, activa: activa4, alElegir }) {
     const lista = ctx2.p.secciones.filter((x) => formas.includes(x.forma));
     const varios = new Set(lista.map((x) => x.forma)).size > 1;
     return grupo(
@@ -9564,7 +9651,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       selector({
         id: "sel-seccion",
         etq: t("seccion"),
-        valor: activa3?.nombre,
+        valor: activa4?.nombre,
         onCambio: alElegir,
         opciones: lista.map((x) => [x.nombre, x.nombre, varios ? t(`forma.${x.forma}`) : void 0])
       })
@@ -9579,7 +9666,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
   function modo(k) {
     est3.pestana = k;
   }
-  function listaSecciones(ctx2, f, delTipo, activa3, alElegir = (nombre) => elegir2(ctx2, f, nombre), conAlta = true) {
+  function listaSecciones(ctx2, f, delTipo, activa4, alElegir = (nombre) => elegir2(ctx2, f, nombre), conAlta = true) {
     const m = h("div", { class: "menu-sec", role: "listbox", onclick: (e2) => e2.stopPropagation() });
     const filas = h("div", { class: "filas" });
     const q2 = delTipo.length > 8 ? h("input", { class: "buscar", placeholder: t("sec.buscarEntre", delTipo.length), autocomplete: "off" }) : null;
@@ -9588,7 +9675,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       filas.replaceChildren(...delTipo.filter((s) => !x || s.nombre.toLowerCase().includes(x)).map((s) => h("button", {
         type: "button",
         role: "option",
-        "aria-current": s.nombre === activa3 ? "true" : void 0,
+        "aria-current": s.nombre === activa4 ? "true" : void 0,
         html: `${icono2(f)}${s.nombre}<span class="nombre-sec">${resumenForma(s)}</span>`,
         onclick: () => alElegir(s.nombre)
       })));
@@ -10387,9 +10474,9 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     const p = ctx2.p;
     const D = condiciones(p);
     const cambio = (estructura) => ctx2.cambio(estructura ? { estructura: true } : void 0);
-    const set = (k, est9) => (v2) => {
+    const set = (k, est10) => (v2) => {
       D[k] = v2;
-      cambio(est9);
+      cambio(est10);
     };
     const seg = (k, lista, etq) => h(
       "div",
@@ -10428,11 +10515,11 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
   }
   function chipsClases(D, grupoClases, no, onClick) {
     return h("div", { class: "chips", role: "group" }, ...grupoClases.map((c) => {
-      const activa3 = D.clasesEHE.includes(c);
+      const activa4 = D.clasesEHE.includes(c);
       return h("button", {
         type: "button",
         class: "chip-sel chip-clase",
-        "aria-pressed": String(activa3),
+        "aria-pressed": String(activa4),
         disabled: no.has(c) || void 0,
         title: no.has(c) ? t("eh.noCompatible") : t(`eh.desc.${c}`),
         html: `${c}<span class="ce">${EQUIV_CE[c]}</span>`,
@@ -10639,11 +10726,11 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
   }
   function chips(D, lista, no, onClick) {
     return h("div", { class: "chips", role: "group" }, ...lista.map((c) => {
-      const activa3 = D.clasesEC.includes(c);
+      const activa4 = D.clasesEC.includes(c);
       return h("button", {
         type: "button",
         class: "chip-sel chip-clase",
-        "aria-pressed": String(activa3),
+        "aria-pressed": String(activa4),
         disabled: no.has(c) || void 0,
         title: no.has(c) ? t("eh.noCompatible") : t(`ec.desc.${c}`),
         html: `${c}<span class="ce">${t(`ec.tag.${c}`)}</span>`,
@@ -11913,10 +12000,10 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
   }
   var escalarArmadura = (sec, k) => ({ ...sec, barras: sec.barras.map((b) => ({ ...b, A: b.A * k })) });
   var soloHormigon = (sec) => ({ ...sec, barras: [] });
-  function dimensionarNM(sec, pares2, { gamma = 1, kMax = 40, n = 60, simetrica = false } = {}) {
+  function dimensionarNM(sec, pares3, { gamma = 1, kMax = 40, n = 60, simetrica = false } = {}) {
     const ok = (k) => {
       const d = diagramaNM(escalarArmadura(sec, k), { n, simetrica });
-      return pares2.every(([N, M2]) => coeficienteNM(d, N, M2) >= gamma - 1e-9);
+      return pares3.every(([N, M2]) => coeficienteNM(d, N, M2) >= gamma - 1e-9);
     };
     if (ok(0)) return 0;
     if (!ok(kMax)) return Infinity;
@@ -12314,12 +12401,627 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     return c.phi0 ? [["\xF8", mm4(est5.fi ?? c.phi0, 0)], [sub19("A", "s"), qh(c.As0 * c.k, "As")], [sub19("A", "s,m\xEDn"), qh(c.Amin, "As")]] : [[sub19("A", "s,m\xEDn"), qh(c.Amin, "As")]];
   }
 
+  // src/ui/vistas/flexEsviada.js
+  var flexEsviada_exports = {};
+  __export(flexEsviada_exports, {
+    comandos: () => comandos7,
+    datos: () => datos10,
+    eMinimas: () => eMinimas,
+    reiniciar: () => reiniciar6,
+    resultados: () => resultados10
+  });
+
+  // src/core/esviada.js
+  var GL2 = [[-Math.sqrt(3 / 5), 5 / 9], [0, 8 / 9], [Math.sqrt(3 / 5), 5 / 9]];
+  var GRAD = Math.PI / 180;
+  function modeloEsviada(geo, hormigon2, acero2, k = 1) {
+    const puntos = geo.barras.map((b) => ({ x: b.x, y: b.y, A: b.A * k }));
+    for (const f of geo.franjas ?? []) {
+      const n = 11;
+      for (let i = 0; i < n; i++) puntos.push({ x: f.x1 + (i + 0.5) * (f.x2 - f.x1) / n, y: f.y, A: f.A * k / n });
+    }
+    let A = 0;
+    let Sx = 0;
+    let Sy = 0;
+    for (const c of geo.contornos) {
+      const p = c.pts;
+      for (let i = 0; i < p.length; i++) {
+        const [x1, y1] = p[i];
+        const [x2, y2] = p[(i + 1) % p.length];
+        const cr = x1 * y2 - x2 * y1;
+        A += c.signo * cr / 2;
+        Sx += c.signo * cr * (x1 + x2) / 6;
+        Sy += c.signo * cr * (y1 + y2) / 6;
+      }
+    }
+    const sg = Math.sign(A) || 1;
+    const xc = Sx / A;
+    const yc = Sy / A;
+    const epsC2 = -hormigon2.comp.find((p) => p[1] === Math.min(...hormigon2.comp.map((q2) => q2[1])))[0];
+    return { contornos: geo.contornos, puntos, hormigon: hormigon2, acero: acero2, xc, yc, epsC2, Ac: Math.abs(A), As: puntos.reduce((a, b) => a + b.A, 0), sg };
+  }
+  function giro(m, theta) {
+    const ux = Math.cos(theta);
+    const uy = Math.sin(theta);
+    const vx = -uy;
+    const vy = ux;
+    const verts = m.contornos[0].pts;
+    const s = verts.map((p) => ux * p[0] + uy * p[1]);
+    const smax = Math.max(...s);
+    const smin = Math.min(...s);
+    return { ux, uy, vx, vy, smax, h: smax - smin };
+  }
+  function seccionGirada(m, g) {
+    const cs = m.contornos.map((c) => ({ signo: c.signo, pts: c.pts.map(([x, y]) => [g.vx * x + g.vy * y, g.smax - (g.ux * x + g.uy * y)]) }));
+    return {
+      trapecios: trapecios(cs).map((t2) => ({ ...t2, mat: m.hormigon })),
+      barras: m.puntos.map((p) => ({ y: g.smax - (g.ux * p.x + g.uy * p.y), A: p.A, mat: m.acero })),
+      h: g.h,
+      epsC2: m.epsC2
+    };
+  }
+  function esfuerzosPlano(m, theta, eps0, kappa) {
+    const g = giro(m, theta);
+    const eps = (t2) => eps0 + kappa * t2;
+    let F2 = 0;
+    let Fy = 0;
+    let Fx = 0;
+    const tv = /* @__PURE__ */ new Set();
+    const tof = (p) => g.smax - (g.ux * p[0] + g.uy * p[1]);
+    for (const c of m.contornos) for (const p of c.pts) tv.add(tof(p));
+    const ts = [...tv];
+    const t0 = Math.min(...ts);
+    const t1 = Math.max(...ts);
+    const cortes = new Set(ts.map((v2) => +v2.toFixed(12)));
+    if (kappa !== 0) for (const e2 of quiebros(m.hormigon)) {
+      const t2 = (e2 - eps0) / kappa;
+      if (t2 > t0 && t2 < t1) cortes.add(+t2.toFixed(12));
+    }
+    const lista = [...cortes].sort((a, b) => a - b);
+    for (let i = 1; i < lista.length; i++) {
+      const a = lista[i - 1];
+      const b = lista[i];
+      if (b - a <= 1e-14) continue;
+      const mid = (a + b) / 2;
+      const half = (b - a) / 2;
+      for (const [xi, w] of GL2) {
+        const t2 = mid + half * xi;
+        const f = -sigma(m.hormigon, eps(t2));
+        if (f === 0) continue;
+        const p0 = g.smax - t2;
+        let ancho = 0;
+        let mom = 0;
+        for (const c of m.contornos) {
+          const rot = c.pts.map(([x, y]) => [g.vx * x + g.vy * y, g.smax - (g.ux * x + g.uy * y)]);
+          for (const [xa, xb] of cortesEn(rot, t2)) {
+            ancho += c.signo * (xb - xa);
+            mom += c.signo * (xb * xb - xa * xa) / 2;
+          }
+        }
+        const dt = w * half;
+        const dF = f * ancho * dt;
+        const dFx = f * (g.ux * p0 * ancho + g.vx * mom) * dt;
+        const dFy = f * (g.uy * p0 * ancho + g.vy * mom) * dt;
+        F2 += dF;
+        Fx += dFx;
+        Fy += dFy;
+      }
+    }
+    for (const p of m.puntos) {
+      const t2 = g.smax - (g.ux * p.x + g.uy * p.y);
+      const f = -sigma(m.acero, eps(t2));
+      F2 += f * p.A;
+      Fx += f * p.A * p.x;
+      Fy += f * p.A * p.y;
+    }
+    return { N: F2, Mx: m.yc * F2 - Fy, My: Fx - m.xc * F2 };
+  }
+  function estadoUltimoEsviada(m, N, theta) {
+    const g = giro(m, theta);
+    const e2 = estadoUltimo(seccionGirada(m, g), -N, { signo: 1 });
+    if (!e2.converge) return { converge: false, theta };
+    const r = esfuerzosPlano(m, theta, e2.epsSup, e2.kappa);
+    return { converge: true, theta, N: r.N, Mx: r.Mx, My: r.My, x: e2.x, epsSup: e2.epsSup, kappa: e2.kappa, epsInf: e2.epsInf, h: g.h };
+  }
+  function axilesEsviada(m) {
+    return axilesLimite(seccionGirada(m, giro(m, 0)));
+  }
+  function contornoMxMy(m, N, { n = 72 } = {}) {
+    const pts = [];
+    for (let i = 0; i < n; i++) {
+      const e2 = estadoUltimoEsviada(m, N, 2 * Math.PI * i / n);
+      if (!e2.converge) return [];
+      pts.push(e2);
+    }
+    return pts;
+  }
+  function razonMxMy(m, N, Mx, My) {
+    const r = Math.hypot(Mx, My);
+    const { Ncomp, Ntrac } = axilesEsviada(m);
+    if (N > Ncomp + 1e-9 || N < Ntrac - 1e-9) return { ratio: Infinity, Q: null, e: null };
+    if (r < 1e-9) return { ratio: 0, Q: [0, 0], e: null };
+    const cruz = (e2) => e2.Mx * My - e2.My * Mx;
+    const th0 = Math.atan2(-Mx, My);
+    const e0 = estadoUltimoEsviada(m, N, th0);
+    if (!e0.converge) return { ratio: Infinity, Q: null, e: null };
+    const paso2 = 15 * Math.PI / 180;
+    let lo = th0;
+    let hi = th0;
+    let elo = e0;
+    let ehi = e0;
+    if (cruz(e0) > 0) {
+      for (let i = 0; i < 12 && cruz(ehi) > 0; i++) {
+        lo = hi;
+        elo = ehi;
+        hi += paso2;
+        ehi = estadoUltimoEsviada(m, N, hi);
+        if (!ehi.converge) return { ratio: Infinity, Q: null, e: null };
+      }
+    } else {
+      for (let i = 0; i < 12 && cruz(elo) < 0; i++) {
+        hi = lo;
+        ehi = elo;
+        lo -= paso2;
+        elo = estadoUltimoEsviada(m, N, lo);
+        if (!elo.converge) return { ratio: Infinity, Q: null, e: null };
+      }
+    }
+    let mejor = cruz(elo) * cruz(ehi) <= 0 ? Math.abs(cruz(elo)) < Math.abs(cruz(ehi)) ? elo : ehi : e0;
+    for (let it = 0; it < 40 && hi - lo > 1e-6; it++) {
+      const th = (lo + hi) / 2;
+      const e2 = estadoUltimoEsviada(m, N, th);
+      if (!e2.converge) break;
+      mejor = e2;
+      if (cruz(e2) > 0) lo = th;
+      else hi = th;
+    }
+    const lam = Math.hypot(mejor.Mx, mejor.My);
+    return { ratio: r / Math.max(lam, 1e-12), Q: [mejor.Mx, mejor.My], e: mejor };
+  }
+  function coeficienteMxMy(m, N, Mx, My) {
+    if (Math.hypot(Mx, My) < 1e-9) return Number.isFinite(N) && N >= axilesEsviada(m).Ntrac && N <= axilesEsviada(m).Ncomp ? Infinity : 0;
+    const { ratio } = razonMxMy(m, N, Mx, My);
+    return ratio > 0 && Number.isFinite(ratio) ? 1 / ratio : 0;
+  }
+  function dimensionarEsviada(geo, hormigon2, acero2, N, Mx, My, { gamma = 1, kMax = 40, tol = 2e-3 } = {}) {
+    const ok = (k) => coeficienteMxMy(modeloEsviada(geo, hormigon2, acero2, k), N, Mx, My) >= gamma - 1e-9;
+    if (ok(0)) return 0;
+    if (!ok(kMax)) return Infinity;
+    let lo = 0;
+    let hi = kMax;
+    for (let i = 0; i < 30 && hi - lo > tol * hi; i++) {
+      const m = (lo + hi) / 2;
+      if (ok(m)) hi = m;
+      else lo = m;
+    }
+    return hi;
+  }
+
+  // src/ui/vistas/flexEsviada.js
+  var FORMAS3 = ["pilar", "generica"];
+  var est6 = {
+    i: null,
+    fi: null,
+    modo: "comprobar",
+    NEd: 800,
+    MxEd: 120,
+    MyEd: 70,
+    Ndiag: 500,
+    abiertos: /* @__PURE__ */ new Set()
+  };
+  function reiniciar6() {
+    est6.i = null;
+  }
+  var sub20 = (a, b) => `${a}<sub>${b}</sub>`;
+  var sigla2 = (g) => g === Infinity ? "\u221E" : fmt(g, 2);
+  var TOLCONT = 72;
+  function eMinimas(norma2, geo) {
+    const div = norma2 === "EHE-08" ? 20 : 30;
+    return { y: Math.max(geo.h / div, 0.02), x: Math.max((geo.caja.xmax - geo.caja.xmin) / div, 0.02) };
+  }
+  function activa2(p) {
+    if (!FORMAS3.includes(p.secciones[est6.i]?.forma)) est6.i = p.secciones.findIndex((x) => FORMAS3.includes(x.forma));
+    return est6.i >= 0 ? p.secciones[est6.i] : null;
+  }
+  function fiComun2(geo) {
+    if (!geo.barras.length || geo.franjas.length) return null;
+    const f = geo.barras.map((b) => b.fi);
+    return f.every((x) => Math.abs(x - f[0]) < 1e-9) ? f[0] : null;
+  }
+  var emin2 = { x: 0, y: 0 };
+  function pares2() {
+    if (est6.modo === "diagrama") return [];
+    const crudos = [{ i: 0, N: est6.NEd, Mx: est6.MxEd, My: est6.MyEd }];
+    return crudos.filter((x) => Number.isFinite(x.N) && Number.isFinite(x.Mx) && Number.isFinite(x.My)).map((x) => {
+      if (!(x.N > 0)) return x;
+      const sube = (M2, e2) => Math.abs(M2) < x.N * e2 - 1e-9 ? (M2 < 0 ? -1 : 1) * x.N * e2 : M2;
+      const Mx = sube(x.Mx, emin2.y);
+      const My = sube(x.My, emin2.x);
+      return Mx !== x.Mx || My !== x.My ? { ...x, Mx, My, subeM: true } : x;
+    });
+  }
+  var memo2 = { clave: "", c: null };
+  function calculo2(p, s) {
+    const geo = geometriaDe(p, s);
+    if (geo.errores?.length) throw new Error(geo.errores.join(" "));
+    emin2 = eMinimas(p.norma, geo);
+    const ps = pares2();
+    const clave = JSON.stringify([p.norma, s.geo, s.armado, s.hormigon, s.acero, sepCapas(p), est6.modo, est6.fi, serieDiametros(), ps.map((x) => [x.N, x.Mx, x.My])]);
+    if (memo2.clave === clave) return memo2.c;
+    const mats = materialesSeccion(p, s);
+    const m0 = modeloEsviada(geo, mats.hormigon, mats.acero);
+    const As0 = m0.As;
+    const phi0 = fiComun2(geo);
+    const cm = cuantiaMinima({ norma: p.norma, tipo: "pilar", h: 0, Ac: m0.Ac, yg: 0, Ix: 0, fctm: 0, fyk: mats.acero.fk, gammaS: mats.acero.gamma, N: Math.max(0, ...ps.map((x) => x.N)) });
+    const Amin = cm.A;
+    const kMin = As0 > 0 ? Amin / As0 : 0;
+    let k = 1;
+    let kEstricto = 1;
+    let phiEstricto = null;
+    let phiProp = null;
+    if (est6.modo === "dimensionar") {
+      if (!(As0 > 0)) throw new Error(t("fcr.sinArmadura"));
+      const x = ps[0];
+      kEstricto = x ? dimensionarEsviada(geo, mats.hormigon, mats.acero, x.N, x.Mx, x.My) : 1;
+      k = Number.isFinite(kEstricto) ? Math.max(kEstricto, kMin) : kEstricto;
+      if (phi0 && Number.isFinite(k)) {
+        phiEstricto = kEstricto > 0 ? phi0 * Math.sqrt(kEstricto) : 0;
+        phiProp = serieDiametros().find((v2) => v2 >= phi0 * Math.sqrt(k) - 1e-9) ?? null;
+        if (phiProp) k = (phiProp / phi0) ** 2;
+      }
+    } else if (phi0 && est6.fi > 0) k = (est6.fi / phi0) ** 2;
+    const m = modeloEsviada(geo, mats.hormigon, mats.acero, Number.isFinite(k) ? k : 1);
+    const c = { geo, mats, m, ps, As0, Amin, cm, k, kEstricto, phi0, phiEstricto, phiProp, lim: axilesEsviada(m), cont: /* @__PURE__ */ new Map() };
+    memo2 = { clave, c };
+    return c;
+  }
+  function contornoA(c, N) {
+    const clave = fmt(N, 6);
+    if (!c.cont.has(clave)) c.cont.set(clave, contornoMxMy(c.m, N, { n: TOLCONT }));
+    return c.cont.get(clave);
+  }
+  function datos10(ctx2, form) {
+    const p = ctx2.p;
+    const s = activa2(p);
+    poner(form, h("div", { class: "cab" }, h("h1", {}, t("menu.flexEsviada")), h("p", {}, t("fce.subtitulo"))));
+    if (!s) return poner(form, aviso(t("fcr.sinSec"), "info"));
+    poner(form, grupoSeccion(ctx2, { formas: FORMAS3, activa: s, alElegir: (nombre) => {
+      const i = p.secciones.findIndex((x) => x.nombre === nombre);
+      if (i >= 0) {
+        est6.i = i;
+        est6.fi = null;
+        ctx2.pintar();
+      }
+    } }));
+    const cambio = () => ctx2.cambio();
+    let c = null;
+    try {
+      c = calculo2(p, s);
+    } catch {
+    }
+    const campoFi = () => {
+      if (est6.modo === "dimensionar" || !c?.phi0) return null;
+      const serie = [.../* @__PURE__ */ new Set([...serieDiametros(), c.phi0])].sort((x, y) => x - y);
+      return selector({ id: "fe-fi", etq: "\xF8 [mm]", linea: true, opciones: serie.map((x) => [x, fmt(x, 0)]), valor: est6.fi ?? c.phi0, onCambio: (v2) => {
+        est6.fi = Number(v2);
+        cambio();
+      } });
+    };
+    poner(
+      form,
+      segmentado({ ancho: true, capsula: true, etiqueta: t("flex.modo"), opciones: [["comprobar", t("flex.v.comprobar")], ["dimensionar", t("flex.v.dimensionar")], ["diagrama", t("fcr.modoDiagrama")]], valor: est6.modo, onCambio: (m) => {
+        est6.modo = m;
+        ctx2.pintar();
+      } }),
+      est6.modo !== "diagrama" ? grupo(
+        t("g.esfuerzo"),
+        campoNum({ id: "fe-n", etq: sub20("N", "Ed"), ref: t("fcr.compPos"), valor: est6.NEd, mag: "N", paso: 10, min: -1e6, max: 1e6, nombre: t("fcr.axil"), onCambio: (v2) => {
+          est6.NEd = v2;
+          cambio();
+        } }),
+        campoNum({ id: "fe-mx", etq: sub20("M", "x,Ed"), ref: t("fce.mx"), valor: est6.MxEd, mag: "M", paso: 5, min: -1e6, max: 1e6, nombre: t("fce.nombreMx"), onCambio: (v2) => {
+          est6.MxEd = v2;
+          cambio();
+        } }),
+        campoNum({ id: "fe-my", etq: sub20("M", "y,Ed"), ref: t("fce.my"), valor: est6.MyEd, mag: "M", paso: 5, min: -1e6, max: 1e6, nombre: t("fce.nombreMy"), onCambio: (v2) => {
+          est6.MyEd = v2;
+          cambio();
+        } }),
+        campoFi()
+      ) : grupo(t("g.armadura"), campoFi(), h("p", { class: "calculada", html: t("fce.axilGauge") }))
+    );
+  }
+  function resultados10(ctx2, res) {
+    resultadosEsviada(ctx2, res);
+    rotulaSeccion(res, activa2(ctx2.p)?.nombre);
+  }
+  function resultadosEsviada(ctx2, res) {
+    var _a;
+    const p = ctx2.p;
+    const s = activa2(p);
+    if (!s) return;
+    const c = calculo2(p, s);
+    const { m, ps } = c;
+    if (est6.modo === "diagrama") return res.append(panelDiagrama2(ctx2, { s, c }));
+    if (!ps.length) throw new Error(t("fce.sinEsfuerzos"));
+    const gam = ps.map((x) => {
+      const r = razonMxMy(m, x.N, x.Mx, x.My);
+      return { ...x, g: Number.isFinite(r.ratio) ? r.ratio > 0 ? 1 / r.ratio : Infinity : 0, Q: r.Q, e: r.e };
+    });
+    const gmin = Math.min(...gam.map((x) => x.g));
+    const dim = est6.modo === "dimensionar";
+    (_a = p.calculos).flexionEsviada ?? (_a.flexionEsviada = {});
+    p.calculos.flexionEsviada[s.nombre] = { modo: est6.modo, esfuerzos: ps.map((x) => [x.N, x.Mx, x.My]), norma: p.norma, fecha: (/* @__PURE__ */ new Date()).toISOString().slice(0, 10), resultado: { gammaMin: gmin, k: c.k } };
+    if (dim && !Number.isFinite(c.k)) {
+      res.append(veredicto("nocumple", t("aumentar"), t("armaduraNec"), "\u2014", t("fcr.noBasta")));
+    } else if (dim) {
+      const As = c.As0 * c.k;
+      if (c.phiProp) {
+        res.append(veredicto(
+          "cumple",
+          t("valida"),
+          t("fcr.fiProp"),
+          `\xF8${fmt(c.phiProp, 0)}<span class="u"> mm</span>`,
+          t("fcr.fiArm", c.phiEstricto > 0 ? fmt(c.phiEstricto, 1) : "\u2014", q(As, "As"), q(c.As0 * c.kEstricto, "As"), "1,00")
+        ));
+      } else {
+        res.append(veredicto(
+          c.k === 0 ? "atencion" : "cumple",
+          c.k === 0 ? t("fcr.sinArm") : t("valida"),
+          t("armaduraNec"),
+          qh(As, "As"),
+          t("fcr.kArm", fmt(c.k, 2), q(c.As0, "As"), "1,00")
+        ));
+      }
+    } else {
+      const ok = gmin >= 1 - 1e-6;
+      res.append(veredicto(
+        ok ? "cumple" : "nocumple",
+        ok ? t("cumple") : t("noCumple"),
+        "\u03B3 = |OQ|/|OP|",
+        sigla2(gmin),
+        `${sub20("N", "Ed")} <b>${q(gam[0].N, "N")}</b> \xB7 ${sub20("M", "x,Ed")} <b>${q(gam[0].Mx, "M")}</b> \xB7 ${sub20("M", "y,Ed")} <b>${q(gam[0].My, "M")}</b>`,
+        Math.min(1 / Math.max(gmin, 1e-9) / 1.25, 1)
+      ));
+    }
+    const Asd = c.As0 * c.k;
+    if (Asd + 1e-12 < c.Amin) res.append(aviso(t("fcr.bajoMin", q(Asd, "As"), q(c.Amin, "As"))));
+    else if (dim && c.As0 * c.kEstricto + 1e-12 < c.Amin) res.append(aviso(t("fcr.mandaMin", q(c.Amin, "As")), "info"));
+    if (gam.some((x) => x.subeM)) res.append(aviso(t("fce.subeEmin", fmt(emin2.x * 1e3, 0), fmt(emin2.y * 1e3, 0)), "info"));
+    if (gam.some((x) => x.N > c.lim.Ncomp + 1e-9 || x.N < c.lim.Ntrac - 1e-9)) res.append(aviso(t("fce.fueraAxil", `${q(c.lim.Ntrac, "N")} \u2026 ${q(c.lim.Ncomp, "N")}`)));
+    return resultadoUnico2(ctx2, res, { s, c, gam: gam[0], gmin, dim });
+  }
+  function graficoMxMy(ctx2, c, gam, s) {
+    const axiles = [];
+    for (const x of gam) if (!axiles.some((a) => Math.abs(a - x.N) < 1e-9)) axiles.push(x.N);
+    const clases = ["s1", "s2", "s3", "s4"];
+    const series = axiles.slice(0, 4).map((N, i) => {
+      const cont = contornoA(c, N);
+      return { nombre: t("fce.serieN", fmt(N, MAG.N.d)), clase: clases[i], xy: cont.length ? [...cont, cont[0]].map((v2) => [v2.My, v2.Mx]) : [] };
+    });
+    if (gam.length === 1 && gam[0].Q) series.push({ nombre: t("fce.rayo"), clase: "ref", cruz: false, xy: [[0, 0], [gam[0].Q[1], gam[0].Q[0]]] });
+    const puntos = gam.map((x) => ({ x: x.My, y: x.Mx, etq: String(x.i + 1), marca: x.g >= 1 - 1e-6 ? "ok" : "no" }));
+    return h("div", { class: "lienzo" }, grafica({
+      series,
+      puntos,
+      escalaIgual: true,
+      ejeX: { titulo: t("fce.ejeX"), d: MAG.M.d, dt: MAG.M.d },
+      ejeY: { titulo: t("fce.ejeY"), d: MAG.M.d, dt: MAG.M.d },
+      archivo: `Mx-My ${s.nombre}`,
+      avisar: ctx2.avisar
+    }));
+  }
+  function tituloGraf(c, s, { N, Mx, My }) {
+    const partes = [`${sub20("N", "Ed")} = ${fmt(N, MAG.N.d)} ${MAG.N.ud}`];
+    if (Mx !== void 0) partes.push(`${sub20("M", "x,Ed")} = ${fmt(Mx, MAG.M.d)} ${MAG.M.ud}`, `${sub20("M", "y,Ed")} = ${fmt(My, MAG.M.d)} ${MAG.M.ud}`);
+    if (c.phi0) partes.push(`\xF8${fmt(c.phiProp ?? est6.fi ?? c.phi0, 0)} mm`);
+    return `${t("fce.contorno")} \xB7 ${partes.join(" \xB7 ")}`;
+  }
+  function panelDiagrama2(ctx2, { s, c }) {
+    const { lim } = c;
+    const lo = Math.ceil(lim.Ntrac);
+    const hi = Math.floor(lim.Ncomp) - 1;
+    est6.Ndiag = Math.min(Math.max(est6.Ndiag, lo), hi);
+    const caja = h("div", { class: "fcr-graf" });
+    const lado = h("aside", { class: "fcr-lado" });
+    const titulo = h("h2", {});
+    let rg = null;
+    const dibujar = (N, n) => {
+      const cont = contornoMxMy(c.m, N, { n });
+      const trac = N < 0;
+      const xy = cont.length ? [...cont, cont[0]].map((v2) => [v2.My, v2.Mx]) : [];
+      const g = h("div", { class: "lienzo" }, grafica({
+        series: [{ nombre: t("fce.serieN", fmt(N, MAG.N.d)), clase: `s1${trac ? " trac" : ""}`, xy }],
+        escalaIgual: true,
+        ejeX: { titulo: t("fce.ejeX"), d: MAG.M.d, dt: MAG.M.d },
+        ejeY: { titulo: t("fce.ejeY"), d: MAG.M.d, dt: MAG.M.d },
+        archivo: `Mx-My ${s.nombre} N=${fmt(N, 0)}`,
+        avisar: ctx2.avisar
+      }));
+      const ext = (f, mx) => cont.length ? (mx ? Math.max : Math.min)(...cont.map(f)) : NaN;
+      lado.replaceChildren(
+        h("div", { class: "fcr-sec", html: dibujoSeccionPeq2(c.geo, s) }),
+        cifras([
+          [sub20("N", ""), qh(N, "N")],
+          [sub20("M", "x,Rd,m\xE1x"), qh(ext((v2) => v2.Mx, true), "M")],
+          [sub20("M", "x,Rd,m\xEDn"), qh(ext((v2) => v2.Mx, false), "M")],
+          [sub20("M", "y,Rd,m\xE1x"), qh(ext((v2) => v2.My, true), "M")],
+          [sub20("M", "y,Rd,m\xEDn"), qh(ext((v2) => v2.My, false), "M")],
+          [sub20("N", "Rd"), qh(lim.Ncomp, "N")],
+          [sub20("N", "Rd,t"), qh(lim.Ntrac, "N")]
+        ])
+      );
+      titulo.innerHTML = tituloGraf(c, s, { N });
+      if (rg) rg.classList.toggle("trac", trac);
+      return g;
+    };
+    let graf = dibujar(est6.Ndiag, TOLCONT);
+    caja.append(graf);
+    rg = regleta({
+      etq: sub20("N", ""),
+      min: lo,
+      max: hi,
+      step: 1,
+      valor: est6.Ndiag,
+      etiqueta: t("fcr.axil"),
+      texto: (N) => `${fmt(N, MAG.N.d)} ${MAG.N.ud}`,
+      clase: est6.Ndiag < 0 ? "trac" : "",
+      onInput: (N) => {
+        est6.Ndiag = N;
+        const g = dibujar(N, 36);
+        graf.replaceWith(g);
+        graf = g;
+      },
+      onChange: (N) => {
+        est6.Ndiag = N;
+        const g = dibujar(N, TOLCONT);
+        graf.replaceWith(g);
+        graf = g;
+        ctx2.cambio();
+      }
+    });
+    caja.append(rg);
+    return h(
+      "article",
+      { class: "panel tarjeta" },
+      titulo,
+      h("div", { class: "fcr-diag" }, caja, lado)
+    );
+  }
+  function dibujoSeccionPeq2(geo, s) {
+    const e2 = encuadre(geo, 150, 150, { completa: true });
+    const x0 = 46;
+    const y0 = 10;
+    const { svg, hp, bp } = capasSeccion(geo, s, { e: e2, x0, y0, x: null, id: "fces", cotasCapas: false });
+    return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${x0 + bp + 30} ${y0 + hp + 46}" role="img" aria-label="${t("g.seccion")}">${DEFS}${svg}</svg>`;
+  }
+  function recortar(pts, ux, uy, cte) {
+    const out = [];
+    const f = (p) => ux * p[0] + uy * p[1] - cte;
+    for (let i = 0; i < pts.length; i++) {
+      const a = pts[i];
+      const b = pts[(i + 1) % pts.length];
+      const fa = f(a);
+      const fb = f(b);
+      if (fa >= 0) out.push(a);
+      if (fa >= 0 !== fb >= 0) {
+        const k = fa / (fa - fb);
+        out.push([a[0] + k * (b[0] - a[0]), a[1] + k * (b[1] - a[1])]);
+      }
+    }
+    return out;
+  }
+  function dibujoPlano(c, s, e2) {
+    const { geo, m } = c;
+    const em = encuadre(geo, 220, 220, { completa: true });
+    const x0 = 46;
+    const y0 = 14;
+    const { svg, hp, bp } = capasSeccion(geo, s, { e: em, x0, y0, x: null, id: "fe", cotasCapas: false });
+    const X = (xm) => x0 + (xm - em.x0m) * em.s;
+    const Y = (ym) => y0 + (ym - geo.caja.ymin) * em.s;
+    const ux = Math.cos(e2.theta);
+    const uy = Math.sin(e2.theta);
+    const smax = Math.max(...geo.contornos[0].pts.map((p) => ux * p[0] + uy * p[1]));
+    const out = [DEFS, svg];
+    const corte = smax - e2.x;
+    if (e2.x > 0 && Number.isFinite(e2.x)) {
+      const zona = geo.contornos.filter((k) => k.signo > 0).map((k) => recortar(k.pts, ux, uy, corte)).filter((r) => r.length > 2);
+      for (const r of zona) out.push(`<polygon class="zc" points="${r.map((p) => `${X(p[0]).toFixed(1)},${Y(p[1]).toFixed(1)}`).join(" ")}"/>`);
+      const gx = (geo.caja.xmin + geo.caja.xmax) / 2;
+      const gy = (geo.caja.ymin + geo.caja.ymax) / 2;
+      const d0 = corte - (ux * gx + uy * gy);
+      const px = gx + ux * d0;
+      const py = gy + uy * d0;
+      const L = Math.hypot(geo.caja.xmax - geo.caja.xmin, geo.caja.ymax - geo.caja.ymin);
+      out.push(`<clipPath id="fe-vb"><rect x="${x0 - 10}" y="${y0 - 10}" width="${bp + 20}" height="${hp + 20}"/></clipPath>`);
+      out.push(`<line class="en" clip-path="url(#fe-vb)" x1="${X(px + uy * L)}" y1="${Y(py - ux * L)}" x2="${X(px - uy * L)}" y2="${Y(py + ux * L)}"/>`);
+    }
+    const flecha = Math.min(hp, bp) * 0.28;
+    out.push(`<line class="flecha" x1="${X(m.xc)}" y1="${Y(m.yc)}" x2="${X(m.xc) + ux * flecha}" y2="${Y(m.yc) + uy * flecha}" marker-end="url(#pta)"/>`);
+    return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${x0 + bp + 30} ${y0 + hp + 46}" role="img" aria-label="${t("fce.dibujoAria")}">${out.join("")}</svg>`;
+  }
+  function traza3(p, c, gmin, e2) {
+    const fam = NORMAS[p.norma];
+    const art4 = (a, b, cc) => `<span class="art">${fam.ref} \xB7 ${p.norma === "EC2-2004" ? cc ?? b : fam.familia === "EHE" ? a : b}</span>`;
+    const filas = [
+      { id: "coef", nom: t("fcr.coefSeg"), val: sigla2(gmin), cuenta: `<span class="f">${t("fce.f.coef")}</span>` },
+      { id: "cont", nom: t("fce.contorno"), val: t("fce.contornos", fmt(TOLCONT, 0)), cuenta: `<span class="f">${t("fce.f.contorno")}</span>
+      <span class="n">${t("fce.f.ref", q(c.m.xc, "long"), q(c.m.yc, "long"))}</span>${art4("art. 42.1", "8.1.1", "6.1")}` },
+      { id: "nrd", nom: sub20("N", "Rd"), val: q(c.lim.Ncomp, "N"), cuenta: `<span class="f">${t("fcr.f.nrd")}</span>${art4("art. 42.1", "8.1.1", "6.1")}` },
+      ...e2 ? [{ id: "alfa", nom: t("fce.alfa"), val: `${fmt(alfa(e2.theta), 1)}\xB0`, cuenta: `<span class="f">${t("fce.f.alfa")}</span>` }] : []
+    ];
+    return h("div", { class: "traza" }, ...filas.map((f) => {
+      const det = h(
+        "details",
+        { "data-ref": f.id, open: est6.abiertos.has(f.id) },
+        h("summary", {}, h("span", { class: "nom", html: f.nom }), h("span", { class: "val", html: f.val })),
+        h("div", { class: "cuenta", html: f.cuenta })
+      );
+      det.addEventListener("toggle", () => det.open ? est6.abiertos.add(f.id) : est6.abiertos.delete(f.id));
+      return det;
+    }));
+  }
+  function alfa(theta) {
+    let a = (theta * 180 / Math.PI + 90) % 180;
+    if (a > 90) a -= 180;
+    if (a <= -90) a += 180;
+    return a;
+  }
+  function comandos7(ctx2) {
+    return [
+      { k: "p.fceComprobar", b: "flexion compuesta esviada comprobar biaxial interaccion", f: () => {
+        est6.modo = "comprobar";
+        ctx2.ir("flexEsviada");
+      } },
+      { k: "p.fceDimensionar", b: "flexion compuesta esviada dimensionar biaxial interaccion", f: () => {
+        est6.modo = "dimensionar";
+        ctx2.ir("flexEsviada");
+      } }
+    ];
+  }
+  function resultadoUnico2(ctx2, res, { s, c, gam, gmin, dim }) {
+    const e2 = gam.e;
+    const mm4 = (x, d) => `${fmt(x, d)}<span class="u"> mm</span>`;
+    const g = e2 ? { ux: Math.cos(e2.theta), uy: Math.sin(e2.theta) } : null;
+    const barras = e2 ? c.m.puntos.map((pt) => {
+      const t0 = Math.max(...c.geo.contornos[0].pts.map((v2) => g.ux * v2[0] + g.uy * v2[1])) - (g.ux * pt.x + g.uy * pt.y);
+      return { t: t0, eps: e2.epsSup + e2.kappa * t0 };
+    }) : [];
+    const peor = barras.length ? barras.reduce((a, b) => b.eps > a.eps ? b : a) : null;
+    const cif = [
+      ...gam.Q ? [[sub20("M", "Rd,x"), qh(gam.Q[0], "M")], [sub20("M", "Rd,y"), qh(gam.Q[1], "M")]] : [],
+      [sub20("N", "Rd"), qh(c.lim.Ncomp, "N")],
+      ...e2 ? [[t("c.x"), Number.isFinite(e2.x) && e2.x > 0 ? qh(e2.x, "long") : "\u2014"], [t("fce.alfa"), `${fmt(alfa(e2.theta), 1)}<span class="u">${ESP}\xB0</span>`], [sub20("\u03B5", "c"), qh(-e2.epsSup, "def")]] : [],
+      ...peor ? [[sub20("\u03B5", "s"), qh(peor.eps, "def")]] : [],
+      ...cifrasArmadura2(c, dim, mm4)
+    ];
+    const lado = h("aside", { class: "fcr-lado" }, h("div", { class: "fcr-sec", html: e2 ? dibujoPlano(c, s, e2) : "" }), cifras(cif), h("p", { class: "sub", style: "margin:0" }, t("t.desplegar")), traza3(ctx2.p, c, gmin, e2));
+    res.append(h(
+      "article",
+      { class: "panel tarjeta" },
+      h("h2", { html: tituloGraf(c, s, { N: gam.N, Mx: gam.Mx, My: gam.My }) }),
+      h("div", { class: "fcr-diag" }, h("div", { class: "fcr-graf" }, graficoMxMy(ctx2, c, [gam], s)), lado)
+    ));
+  }
+  function cifrasArmadura2(c, dim, mm4) {
+    if (dim && c.phiProp) {
+      return [
+        [`\xF8 ${t("fcr.estricto")}`, c.phiEstricto > 0 ? mm4(c.phiEstricto, 1) : "\u2014"],
+        [`\xF8 ${t("fcr.propuesto")}`, mm4(c.phiProp, 0)],
+        [`${sub20("A", "s")} ${t("fcr.estricto")}`, qh(c.As0 * c.kEstricto, "As")],
+        [`${sub20("A", "s")} ${t("fcr.propuesto")}`, qh(c.As0 * c.k, "As")]
+      ];
+    }
+    if (dim && Number.isFinite(c.k)) return [[sub20("A", "s,req"), qh(c.As0 * c.k, "As")], ["k", fmt(c.k, 2)]];
+    return c.phi0 ? [["\xF8", mm4(est6.fi ?? c.phi0, 0)], [sub20("A", "s"), qh(c.As0 * c.k, "As")], [sub20("A", "s,m\xEDn"), qh(c.Amin, "As")]] : [[sub20("A", "s,m\xEDn"), qh(c.Amin, "As")]];
+  }
+
   // src/ui/vistas/fuego.js
   var fuego_exports = {};
   __export(fuego_exports, {
-    comandos: () => comandos7,
-    datos: () => datos10,
-    resultados: () => resultados10
+    comandos: () => comandos8,
+    datos: () => datos11,
+    resultados: () => resultados11
   });
 
   // src/norma/fuego.js
@@ -12563,7 +13265,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
   }
 
   // src/ui/dibujoFuego.js
-  var sub20 = (b, s) => `${b}<tspan baseline-shift="sub" font-size="75%">${s}</tspan>`;
+  var sub21 = (b, s) => `${b}<tspan baseline-shift="sub" font-size="75%">${s}</tspan>`;
   var cotaH2 = (x1, x2, y, texto, der = false) => `<line class="cota" x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" marker-start="url(#tic)" marker-end="url(#tic)"/>` + (der ? `<text x="${x2 + 6}" y="${y + 4}" text-anchor="start" class="fuerte">${texto}</text>` : `<text x="${(x1 + x2) / 2}" y="${y - 5}" text-anchor="middle" class="fuerte">${texto}</text>`);
   var cotaV2 = (x, y1, y2, texto, lado = "izq") => `<line class="cota" x1="${x}" y1="${y1}" x2="${x}" y2="${y2}" marker-start="url(#tic)" marker-end="url(#tic)"/><text x="${lado === "izq" ? x - 6 : x + 6}" y="${(y1 + y2) / 2 + 4}" text-anchor="${lado === "izq" ? "end" : "start"}" class="fuerte">${texto}</text>`;
   var ref = (x1, y1, x2, y2) => `<line class="ref" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`;
@@ -12577,8 +13279,8 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
   }
   function dibujoFuego(e2, o) {
     const v2 = (x) => x == null ? "\u2014" : fmt(x, 0);
-    const dim = o ? `${sub20(e2.dimEtq, "min")} = ${v2(o.d)}` : sub20(e2.dimEtq, "min");
-    const aTxt = o && o.a != null ? `${sub20("a", "min")} = ${v2(o.a)}` : sub20("a", "min");
+    const dim = o ? `${sub21(e2.dimEtq, "min")} = ${v2(o.d)}` : sub21(e2.dimEtq, "min");
+    const aTxt = o && o.a != null ? `${sub21("a", "min")} = ${v2(o.a)}` : sub21("a", "min");
     let s = "";
     if (e2.elemento === "pilar") {
       const x = 130;
@@ -12636,7 +13338,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       s += fuego2(x - 56, y + 26, 40, 0);
       s += cotaH2(x, x + b, y + h2 + 20, dim) + ref(x, y + h2, x, y + h2 + 24) + ref(x + b, y + h2, x + b, y + h2 + 24);
       s += cotaV2(x + b + 14, y + h2 - a, y + h2, aTxt, "der") + ref(x + b - a, y + h2 - a, x + b + 18, y + h2 - a) + ref(x + b, y + h2, x + b + 18, y + h2);
-      const asd = o && o.a != null ? `${sub20("a", "sd")} = ${v2(o.a + 10)}` : sub20("a", "sd");
+      const asd = o && o.a != null ? `${sub21("a", "sd")} = ${v2(o.a + 10)}` : sub21("a", "sd");
       s += cotaH2(x, x + a, y + h2 - a - 16, asd).replace(/<text[^>]*>.*<\/text>/, `<text x="${x - 4}" y="${y + h2 - a - 12}" text-anchor="end" class="fuerte">${asd}</text>`) + ref(x + a, y + h2 - a - 20, x + a, y + h2 - a);
       s += `<text class="nota-d" x="${x + b / 2}" y="${y - (cuatro ? 14 : 32)}" text-anchor="middle">${cuatro ? t("fu.dib.cuatro") : t("fu.dib.losa")}</text>`;
     }
@@ -12644,7 +13346,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
   }
 
   // src/ui/vistas/fuego.js
-  var sub21 = (a, b) => `${a}<sub>${b}</sub>`;
+  var sub22 = (a, b) => `${a}<sub>${b}</sub>`;
   var INICIAL = () => ({ elemento: "viga", R: 90, arido: "siliceo", carasPilar: 4, carasMuro: 1, carasViga: 3, eta: 0.7, portante: true, continua: false, dir: "uni", metodo: "A", n: 0.5, omega: 0.5 });
   function estado(p) {
     var _a;
@@ -12678,18 +13380,18 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       omega: D.omega
     };
   }
-  function datos10(ctx2, form) {
+  function datos11(ctx2, form) {
     const p = ctx2.p;
     const D = estado(p);
     const ehe = p.norma === "EHE-08" || p.norma === "EHE-98";
     const cambio = (estructura) => ctx2.cambio(estructura ? { estructura: true } : void 0);
-    const seg = (k, opciones, etq, est9 = true) => h(
+    const seg = (k, opciones, etq, est10 = true) => h(
       "div",
       { class: "fu-campo" },
       h("span", { class: "etq-grupo" }, etq),
       segmentado({ opciones, valor: D[k], ancho: true, etiqueta: etq, onCambio: (v2) => {
         D[k] = v2;
-        cambio(est9);
+        cambio(est10);
       } })
     );
     poner(form, h("div", { class: "cab" }, h("h1", {}, t("m.fuego")), h("p", {}, t("fu.subtitulo"))));
@@ -12761,7 +13463,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     tb.classList.add("fu-info");
     return h("div", { class: "fu-campo" }, h("span", { class: "etq-grupo" }, t("fu.queSon")), filasPlegables(tb, filas.map((k) => `<span>${t(`fu.i.${k}.txt`)}</span>`)));
   }
-  function resultados10(ctx2, res) {
+  function resultados11(ctx2, res) {
     const p = ctx2.p;
     const D = estado(p);
     const r = fuego(entrada(p, D));
@@ -12769,12 +13471,12 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     const art4 = `${ref3} \xB7 ${r.articulo} \xB7 ${t("fu.tabla")} ${r.tabla}`;
     const sinValor = r.opciones.length === 0;
     const o = r.opciones[0];
-    const etqD = sub21(r.dimEtq, "min");
+    const etqD = sub22(r.dimEtq, "min");
     const valor = sinValor ? "\u2014" : o.a == null ? `${fmt(o.d, 0)}<span class="u">${ESP}mm</span>` : `${fmt(o.d, 0)} / ${fmt(o.a, 0)}<span class="u">${ESP}mm</span>`;
     res.append(h(
       "div",
       { class: `veredicto sin-barra${sinValor ? " atencion" : ""}` },
-      h("div", { class: "ratio" }, h("span", { class: "etq", html: o?.a == null ? `${t("fu.minimo")} ${etqD}` : `${etqD} / ${sub21("a", "min")}` }), h("span", { class: "v", html: valor })),
+      h("div", { class: "ratio" }, h("span", { class: "etq", html: o?.a == null ? `${t("fu.minimo")} ${etqD}` : `${etqD} / ${sub22("a", "min")}` }), h("span", { class: "v", html: valor })),
       h("div", { class: "medidor" }, h("div", { class: "ecu", html: sinValor ? t("fu.sinValor") : `${r.crit} ${D.R} \xB7 ${r.opciones.length > 1 ? t("fu.opciones", r.opciones.length) : ""}<span class="art">${art4}</span>` })),
       h("span", {}, "")
     ));
@@ -12798,7 +13500,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     const dcha = h("article", { class: "panel tarjeta" });
     const lista = r.opciones.map((x, i) => [
       r.opciones.length > 1 ? `${t("fu.combinacion")} ${i + 1}` : t("fu.minimos"),
-      `${sub21(r.dimEtq, "min")} = <b>${fmt(x.d, 0)}</b>${x.a == null ? "" : `, ${sub21("a", "min")} = <b>${fmt(x.a, 0)}</b>`}${ESP}mm${x.geom ? ` <span class="nota">(${t("fu.geom")})</span>` : ""}${x.barras8 ? ` <span class="nota">(${t("fu.barras8")})</span>` : ""}`
+      `${sub22(r.dimEtq, "min")} = <b>${fmt(x.d, 0)}</b>${x.a == null ? "" : `, ${sub22("a", "min")} = <b>${fmt(x.a, 0)}</b>`}${ESP}mm${x.geom ? ` <span class="nota">(${t("fu.geom")})</span>` : ""}${x.barras8 ? ` <span class="nota">(${t("fu.barras8")})</span>` : ""}`
     ]);
     const ex = r.extra.map(([k, v2, u = "mm"]) => [t(k), `${v2}${ESP}${u}`]);
     poner(centro, h("h2", {}, t("fu.requisitos", `${r.crit} ${D.R}`)), sinValor ? h("p", { class: "nota" }, t("fu.sinValor")) : tabla([...lista, ...ex]));
@@ -12811,16 +13513,16 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     );
     res.append(h("div", { class: "cuerpo" }, centro, dcha));
   }
-  function comandos7() {
+  function comandos8() {
     return [];
   }
 
   // src/ui/vistas/anclaje.js
   var anclaje_exports = {};
   __export(anclaje_exports, {
-    comandos: () => comandos8,
-    datos: () => datos11,
-    resultados: () => resultados11
+    comandos: () => comandos9,
+    datos: () => datos12,
+    resultados: () => resultados12
   });
 
   // src/norma/anclaje.js
@@ -12895,8 +13597,8 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     const comp = p.esfuerzo === "compresion";
     const pct = p.pct ?? 100;
     if (p.norma === "EHE-08") {
-      const alfa = comp ? 1 : alfaSolapoEHE(pct, !!p.lejos);
-      return { ...a, ls: alfa * a.lbd, alfa, ref: `${a.ref}; 69.5.2.2 Tabla 69.5.2.2` };
+      const alfa2 = comp ? 1 : alfaSolapoEHE(pct, !!p.lejos);
+      return { ...a, ls: alfa2 * a.lbd, alfa: alfa2, ref: `${a.ref}; 69.5.2.2 Tabla 69.5.2.2` };
     }
     if (p.norma === "EC2-2004") {
       const a6 = clamp(Math.sqrt(pct / 25), 1, 1.5);
@@ -12911,7 +13613,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
   }
 
   // src/ui/dibujoAnclaje.js
-  var sub22 = (b, s) => `${b}<tspan baseline-shift="sub" font-size="75%">${s}</tspan>`;
+  var sub23 = (b, s) => `${b}<tspan baseline-shift="sub" font-size="75%">${s}</tspan>`;
   var cotaH3 = (x1, x2, y, texto) => `<line class="cota" x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" marker-start="url(#tic)" marker-end="url(#tic)"/><text x="${(x1 + x2) / 2}" y="${y + 13}" text-anchor="middle" class="fuerte">${texto}</text>`;
   var ref2 = (x, y1, y2) => `<line class="ref" x1="${x}" y1="${y1}" x2="${x}" y2="${y2}"/>`;
   var tit = (x, y, s) => `<text class="tit" x="${x}" y="${y}">${s}</text>`;
@@ -12922,25 +13624,25 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     s += tit(12, 14, t("an.dib.anclaje"));
     s += `<rect class="hor" x="12" y="20" width="236" height="34"/>`;
     s += barra2("M12 37 H236") + `<circle class="barra-ac" cx="236" cy="37" r="0"/>`;
-    s += ref2(24, 54, 70) + ref2(236, 54, 70) + cotaH3(24, 236, 66, sub22("l", "bd"));
+    s += ref2(24, 54, 70) + ref2(236, 54, 70) + cotaH3(24, 236, 66, sub23("l", "bd"));
     if (!comp) {
       s += tit(12, 106, t("an.dib.gancho"));
       s += `<rect class="hor" x="12" y="112" width="236" height="52"/>`;
       s += barra2("M12 128 H200 Q216 128 216 144 V156");
-      s += ref2(24, 164, 178) + ref2(216, 164, 178) + cotaH3(24, 216, 174, sub22("l", "bd"));
+      s += ref2(24, 164, 178) + ref2(216, 164, 178) + cotaH3(24, 216, 174, sub23("l", "bd"));
     }
     const y0 = comp ? 112 : 208;
     s += tit(12, y0 - 6, t("an.dib.solapo"));
     s += `<rect class="hor" x="12" y="${y0}" width="236" height="46"/>`;
     s += barra2(`M12 ${y0 + 15} H176`) + barra2(`M84 ${y0 + 29} H248`);
     s += `<line class="cota" x1="28" y1="${y0 + 15}" x2="28" y2="${y0 + 29}" marker-start="url(#tic)" marker-end="url(#tic)"/><text x="34" y="${y0 + 26}" class="nota-d">${t("an.dib.sep")}</text>`;
-    s += ref2(84, y0 + 46, y0 + 60) + ref2(176, y0 + 46, y0 + 60) + cotaH3(84, 176, y0 + 56, sub22("l", "s"));
+    s += ref2(84, y0 + 46, y0 + 60) + ref2(176, y0 + 46, y0 + 60) + cotaH3(84, 176, y0 + 56, sub23("l", "s"));
     const alto = comp ? 190 : 288;
     return `<svg class="dib dib-anclaje" viewBox="0 0 260 ${alto}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${t("an.dib.aria")}"><defs><marker id="tic" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M2 8L8 2" class="tic"/></marker></defs>${s}</svg>`;
   }
 
   // src/ui/vistas/anclaje.js
-  var sub23 = (a, b) => `${a}<sub>${b}</sub>`;
+  var sub24 = (a, b) => `${a}<sub>${b}</sub>`;
   var INICIAL2 = () => ({ hormigon: null, acero: null, esfuerzo: "traccion", r: 100, cd: 25, pct: 100, lejos: false, via: "viga" });
   function estado2(p) {
     var _a;
@@ -12952,7 +13654,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
   }
   var normaEHE = (p) => p.norma === "EHE-08" || p.norma === "EHE-98";
   var idNorma = (p) => normaEHE(p) ? "EHE-08" : p.norma;
-  function datos11(ctx2, form) {
+  function datos12(ctx2, form) {
     const p = ctx2.p;
     const D = estado2(p);
     const ehe = normaEHE(p);
@@ -12961,13 +13663,13 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       D[k] = v2;
       cambio();
     };
-    const seg = (k, opciones, etq, est9 = true) => h(
+    const seg = (k, opciones, etq, est10 = true) => h(
       "div",
       { class: "fu-campo" },
       h("span", { class: "etq-grupo" }, etq),
       segmentado({ opciones, valor: D[k], ancho: true, etiqueta: etq, onCambio: (v2) => {
         D[k] = v2;
-        cambio(est9);
+        cambio(est10);
       } })
     );
     poner(form, h("div", { class: "cab" }, h("h1", {}, t("m.anclaje")), h("p", {}, t("an.subtitulo"))));
@@ -13066,7 +13768,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     if (c.est) return "est.";
     return `${fmt(c.v, 0)}${c.min ? "*" : ""}${c.g ? "\u2020" : ""}`;
   };
-  function resultados11(ctx2, res) {
+  function resultados12(ctx2, res) {
     const p = ctx2.p;
     const D = estado2(p);
     const comp = D.esfuerzo === "compresion";
@@ -13166,7 +13868,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     const tb = h("div", { class: "tabla-scroll" }, h(
       "table",
       { class: "tabla-dur tabla-an" },
-      h("thead", {}, h("tr", {}, h("th", { html: "\xF8" }), h("th", { html: `${sub23("l", "bd")} I` }), h("th", { html: `${sub23("l", "bd")} II` }), h("th", { html: `${sub23("l", "s")} I` }), h("th", { html: `${sub23("l", "s")} II` }))),
+      h("thead", {}, h("tr", {}, h("th", { html: "\xF8" }), h("th", { html: `${sub24("l", "bd")} I` }), h("th", { html: `${sub24("l", "bd")} II` }), h("th", { html: `${sub24("l", "s")} I` }), h("th", { html: `${sub24("l", "s")} II` }))),
       h("tbody", {}, ...ce.map((x) => h("tr", {}, h("th", { scope: "row" }, String(x.phi)), c(x.lI, x.maI), c(x.lII, x.maII), c(x.sI, x.msI), c(x.sII, x.msII))))
     ));
     return h(
@@ -13176,17 +13878,17 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       h("div", { class: "cuenta" }, h("p", { class: "nota", html: t("an.ce.txt") }), h("p", { class: `nota${mas ? " an-mas" : ""}`, html: mas ? t("an.ce.mas", mas) : t("an.ce.igual") }), tb)
     );
   }
-  function comandos8() {
+  function comandos9() {
     return [];
   }
 
   // src/ui/vistas/cortante.js
   var cortante_exports = {};
   __export(cortante_exports, {
-    comandos: () => comandos9,
-    datos: () => datos12,
-    reiniciar: () => reiniciar6,
-    resultados: () => resultados12
+    comandos: () => comandos10,
+    datos: () => datos13,
+    reiniciar: () => reiniciar7,
+    resultados: () => resultados13
   });
 
   // src/norma/cortante/ehe08.js
@@ -13284,23 +13986,23 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     const m = Math.max(min, 0) * f;
     return { Vcu: Math.max(c, m), conc: c, min: m, minManda: m > c };
   }
-  function sepMaxima(Vrd, Vu1, d, alfa = 90) {
-    const k = 1 + cot(alfa);
+  function sepMaxima(Vrd, Vu1, d, alfa2 = 90) {
+    const k = 1 + cot(alfa2);
     if (Vrd <= Vu1 / 5) return Math.min(0.75 * d * k, 600);
     if (Vrd <= 2 / 3 * Vu1) return Math.min(0.6 * d * k, 450);
     return Math.min(0.3 * d * k, 300);
   }
-  function AswSMinima(P, alfa = 90) {
-    return P.fctm / 7.5 * P.b0 * Math.sin(rad(alfa)) / P.fyd;
+  function AswSMinima(P, alfa2 = 90) {
+    return P.fctm / 7.5 * P.b0 * Math.sin(rad(alfa2)) / P.fyd;
   }
   var areaRama = (fi) => Math.PI * fi * fi / 4;
   var AswSDe = (fi, ramas, s) => ramas * areaRama(fi) / s;
   function comprobar2(x) {
     const P = parametros(x);
-    const alfa = x.alfa ?? 90;
+    const alfa2 = x.alfa ?? 90;
     const cotT = x.cotTheta ?? 1;
     if (!(cotT >= COT_MIN - 1e-9 && cotT <= COT_MAX + 1e-9)) throw new ErrorClave("cor.errCot", cotT);
-    if (!(alfa >= 45 && alfa <= 90)) throw new ErrorClave("cor.errAlfa");
+    if (!(alfa2 >= 45 && alfa2 <= 90)) throw new ErrorClave("cor.errAlfa");
     const avisos4 = [];
     const VEd = x.VEd ?? NaN;
     if (P.topada) avisos4.push({ clave: "cor.av.fyd400", args: [P.fydLibre.toFixed(1)] });
@@ -13310,10 +14012,10 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     if (P.sigCd > P.fcd) avisos4.push({ clave: "cor.av.axilGrande" });
     const sin = x.sinArmadura || !((x.AswS ?? 0) > 0);
     const K = coefK(P.sigCd, P.fcd);
-    const cotA = cot(alfa);
+    const cotA = cot(alfa2);
     const fi = (cotT + cotA) / (1 + cotT * cotT);
     const Vu1 = K * P.f1cd * P.b0 * P.d * fi / 1e3;
-    const r = { P, K, Vu1, alfa, cotTheta: cotT, theta: Math.atan(1 / cotT) * 180 / Math.PI, sinArmadura: sin, avisos: avisos4, VEd };
+    const r = { P, K, Vu1, alfa: alfa2, cotTheta: cotT, theta: Math.atan(1 / cotT) * 180 / Math.PI, sinArmadura: sin, avisos: avisos4, VEd };
     if (sin) {
       const s = Vu2SinArmadura(P);
       Object.assign(r, { Vu2: s.Vu2, VcuConc: s.VcuConc, VcuMin: s.VcuMin, minManda: s.minManda, Vsu: 0, Vcu: s.Vu2, beta: null, cotE: null, Vu: s.Vu2, mandaBiela: false });
@@ -13323,17 +14025,17 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       const beta2 = coefBeta(cotT, cotE);
       const c = Vcu(P, beta2);
       const reduc = x.circular ? REDUCCION_CIRCULAR : 1;
-      const Vsu = reduc * P.z * x.AswS * P.fyd * Math.sin(rad(alfa)) * (cotT + cotA) / 1e3;
+      const Vsu = reduc * P.z * x.AswS * P.fyd * Math.sin(rad(alfa2)) * (cotT + cotA) / 1e3;
       const Vu2 = c.Vcu + Vsu;
       Object.assign(r, { cotE, thetaE: Math.atan(1 / cotE) * 180 / Math.PI, beta: beta2, Vcu: c.Vcu, VcuConc: c.conc, VcuMin: c.min, minManda: c.minManda, Vsu, reduc, Vu2, Vu: Math.min(Vu1, Vu2), mandaBiela: Vu1 < Vu2 });
-      const mn = AswSMinima(P, alfa);
+      const mn = AswSMinima(P, alfa2);
       r.minima = { AswSMin: mn, ok: x.AswS >= mn - 1e-12 };
       if (!r.minima.ok) avisos4.push({ clave: "cor.av.minima", args: [(x.AswS * 1e3).toFixed(0), (mn * 1e3).toFixed(0)] });
-      if (alfa < 90) avisos4.push({ clave: "cor.av.tercio" });
+      if (alfa2 < 90) avisos4.push({ clave: "cor.av.tercio" });
     }
     if (Number.isFinite(VEd)) {
       r.aprov = VEd / r.Vu;
-      r.sep = sepMaxima(VEd, Vu1, P.d, alfa);
+      r.sep = sepMaxima(VEd, Vu1, P.d, alfa2);
       r.sepTrans = Math.min(P.d, 500);
       r.long = decalaje(VEd, r.Vsu, cotT, cotA, P.z);
     }
@@ -13346,18 +14048,18 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
   function AswSNecesaria(x, VEd) {
     const c = comprobar2({ ...x, VEd, AswS: 1e-6, sinArmadura: false });
     const P = c.P;
-    const alfa = x.alfa ?? 90;
+    const alfa2 = x.alfa ?? 90;
     const reduc = x.circular ? REDUCCION_CIRCULAR : 1;
-    const unidad = reduc * P.z * P.fyd * Math.sin(rad(alfa)) * (c.cotTheta + cot(alfa)) / 1e3;
+    const unidad = reduc * P.z * P.fyd * Math.sin(rad(alfa2)) * (c.cotTheta + cot(alfa2)) / 1e3;
     const nec = Math.max(0, (VEd - c.Vcu) / unidad);
-    const mn = AswSMinima(P, alfa);
+    const mn = AswSMinima(P, alfa2);
     return { c, nec, mn, usar: Math.max(nec, mn), manda: nec >= mn ? "calculo" : "minima", Vcu: c.Vcu, Vu1: c.Vu1 };
   }
   function dimensionar2(x, VEd, { diametros = [8, 10, 12, 16, 20], ramas } = {}) {
     if (!(VEd > 0)) throw new ErrorClave("cor.errVEd");
     const n = AswSNecesaria(x, VEd);
     const P = n.c.P;
-    const alfa = x.alfa ?? 90;
+    const alfa2 = x.alfa ?? 90;
     const sin = Vu2SinArmadura(P);
     const r = { P, VEd, Vu1: n.Vu1, Vcu: n.Vcu, AswSNec: n.nec, AswSMin: n.mn, AswS: n.usar, manda: n.manda, avisos: [...n.c.avisos.filter((a) => a.clave !== "cor.av.minima")] };
     r.cotTheta = n.c.cotTheta;
@@ -13365,7 +14067,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     r.beta = n.c.beta;
     r.cotE = n.c.cotE;
     r.K = n.c.K;
-    r.alfa = alfa;
+    r.alfa = alfa2;
     r.Vu2SinArm = sin.Vu2;
     if (VEd > n.Vu1) {
       r.caso = "biela";
@@ -13381,7 +14083,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       r.AswS = n.mn;
       r.avisos.push({ clave: "cor.av.bastaSinArm", args: [VEd.toFixed(0), sin.Vu2.toFixed(0)] });
     }
-    r.sMax = sepMaxima(VEd, n.Vu1, P.d, alfa);
+    r.sMax = sepMaxima(VEd, n.Vu1, P.d, alfa2);
     const sTope = Math.floor(Math.min(r.sMax, S_TABLA_MAX) / S_TABLA_PASO) * S_TABLA_PASO;
     const nr = ramas ?? (x.circular ? 2 : x.b0 < 500 ? 2 : 4);
     r.ramas = nr;
@@ -13393,7 +14095,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       const v2 = comprobar2({ ...x, VEd, AswS, sinArmadura: false });
       return { fi, ramas: nr, s: sOk, AswS, Vsu: v2.Vsu, Vu2: v2.Vu2, Vu: v2.Vu };
     });
-    r.long = decalaje(VEd, n.usar * P.z * P.fyd * Math.sin(rad(alfa)) * (n.c.cotTheta + cot(alfa)) * (x.circular ? REDUCCION_CIRCULAR : 1) / 1e3, n.c.cotTheta, cot(alfa), P.z);
+    r.long = decalaje(VEd, n.usar * P.z * P.fyd * Math.sin(rad(alfa2)) * (n.c.cotTheta + cot(alfa2)) * (x.circular ? REDUCCION_CIRCULAR : 1) / 1e3, n.c.cotTheta, cot(alfa2), P.z);
     return r;
   }
   function cotOptimo(x, { VEd, dim = false } = {}) {
@@ -13477,8 +14179,8 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
   function VRdMax(P, nu1, cotT, cotA) {
     return ALFA_CW * P.b0 * P.z * nu1 * P.fcd * (cotT + cotA) / (1 + cotT * cotT) / 1e3;
   }
-  function AswSMinima2(P, alfa = 90) {
-    return P.fctm / (7.5 * P.fyk) * P.b0 * Math.sin(rad2(alfa));
+  function AswSMinima2(P, alfa2 = 90) {
+    return P.fctm / (7.5 * P.fyk) * P.b0 * Math.sin(rad2(alfa2));
   }
   function decalaje2(VEd, cotT, cotA, z, d, sinArmadura = false) {
     if (sinArmadura) return { dT: null, sd: d };
@@ -13486,17 +14188,17 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
   }
   function comprobar3(x) {
     const P = parametros2(x);
-    const alfa = x.alfa ?? 90;
+    const alfa2 = x.alfa ?? 90;
     const cotT = x.cotTheta ?? 1;
     if (!(cotT >= COT_MIN - 1e-9 && cotT <= COT_MAX + 1e-9)) throw new ErrorClave("cor.errCot", cotT);
-    if (!(alfa >= 45 && alfa <= 90)) throw new ErrorClave("cor.errAlfa");
+    if (!(alfa2 >= 45 && alfa2 <= 90)) throw new ErrorClave("cor.errAlfa");
     const avisos4 = [];
     const VEd = x.VEd ?? NaN;
     if (P.rhoTopado) avisos4.push({ clave: "cor.av.rho", args: [(P.rhoBruta * 1e3).toFixed(1)] });
     if (P.sigCp > 0.2 * P.fcd + 1e-9) avisos4.push({ clave: "cor.av.sigCp", args: [P.sigCp.toFixed(2), (0.2 * P.fcd).toFixed(2)] });
     const sin = x.sinArmadura || !((x.AswS ?? 0) > 0);
-    const cotA = cot2(alfa);
-    const r = { P, norma: ID, alfa, cotTheta: cotT, theta: thetaDe(cotT), sinArmadura: sin, avisos: avisos4, VEd, K: null, beta: null, cotE: null, reduc: 1 };
+    const cotA = cot2(alfa2);
+    const r = { P, norma: ID, alfa: alfa2, cotTheta: cotT, theta: thetaDe(cotT), sinArmadura: sin, avisos: avisos4, VEd, K: null, beta: null, cotE: null, reduc: 1 };
     if (sin) {
       const s = VRdcSinArmadura(P);
       const VmaxRef = 0.5 * P.b0 * P.d * 0.6 * (1 - P.fck / 250) * P.fcd / 1e3;
@@ -13506,21 +14208,21 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
         else if (VEd <= s.VRdc && x.viga !== false) avisos4.push({ clave: "cor.av.minObligatoria", args: ["6.2.1(4)"] });
       }
     } else {
-      const unidad = P.z * P.fyd * Math.sin(rad2(alfa)) * (cotT + cotA) / 1e3;
+      const unidad = P.z * P.fyd * Math.sin(rad2(alfa2)) * (cotT + cotA) / 1e3;
       const VRds = x.AswS * unidad;
       const sigSw = Number.isFinite(VEd) ? Math.min(P.fyd, VEd / (x.AswS * unidad / P.fyd)) : P.fyd;
       const nu1 = nu1De(P.fck, sigSw, P.fyk);
       const Vmax = VRdMax(P, nu1, cotT, cotA);
       Object.assign(r, { VRds, VRdMax: Vmax, nu1, sigSw, alfaCw: ALFA_CW, Vu1: Vmax, Vu2: VRds, Vsu: VRds, Vcu: 0, Vu: Math.min(VRds, Vmax), mandaBiela: Vmax < VRds });
-      const mn = AswSMinima2(P, alfa);
-      r.minima = { AswSMin: mn, rhoW: x.AswS / (P.b0 * Math.sin(rad2(alfa))), rhoWMin: P.fctm / (7.5 * P.fyk), ok: x.AswS >= mn - 1e-12 };
+      const mn = AswSMinima2(P, alfa2);
+      r.minima = { AswSMin: mn, rhoW: x.AswS / (P.b0 * Math.sin(rad2(alfa2))), rhoWMin: P.fctm / (7.5 * P.fyk), ok: x.AswS >= mn - 1e-12 };
       if (!r.minima.ok) avisos4.push({ clave: "cor.av.minima", args: [(x.AswS * 1e3).toFixed(0), (mn * 1e3).toFixed(0), "9.2.2(5)"] });
-      if (alfa < 90) avisos4.push({ clave: "cor.av.tercioEC2" });
+      if (alfa2 < 90) avisos4.push({ clave: "cor.av.tercioEC2" });
     }
     if (Number.isFinite(VEd)) {
       r.aprov = VEd / r.Vu;
       const Vmax = sin ? VRdMaxReferencia(P, cotT, cotA) : r.VRdMax;
-      r.sep = sepMaxima(VEd, Vmax, P.d, alfa);
+      r.sep = sepMaxima(VEd, Vmax, P.d, alfa2);
       r.sepTrans = Math.min(P.d, 500);
       r.long = decalaje2(VEd, cotT, cotA, P.z, P.d, sin);
     }
@@ -13530,12 +14232,12 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
   function AswSNecesaria2(x, VEd) {
     const c = comprobar3({ ...x, VEd, AswS: 1e-6, sinArmadura: false });
     const P = c.P;
-    const alfa = x.alfa ?? 90;
-    const unidad = P.z * P.fyd * Math.sin(rad2(alfa)) * (c.cotTheta + cot2(alfa)) / 1e3;
+    const alfa2 = x.alfa ?? 90;
+    const unidad = P.z * P.fyd * Math.sin(rad2(alfa2)) * (c.cotTheta + cot2(alfa2)) / 1e3;
     const nec = VEd / unidad;
-    const mn = AswSMinima2(P, alfa);
+    const mn = AswSMinima2(P, alfa2);
     const nuAlto = nu1De(P.fck, 0, P.fyk);
-    const VmaxAlto = VRdMax(P, nuAlto, c.cotTheta, cot2(alfa));
+    const VmaxAlto = VRdMax(P, nuAlto, c.cotTheta, cot2(alfa2));
     let usar = Math.max(nec, mn);
     let extra = null;
     if (VEd <= VmaxAlto) {
@@ -13552,7 +14254,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     if (!(VEd > 0)) throw new ErrorClave("cor.errVEd");
     const n = AswSNecesaria2(x, VEd);
     const P = n.c.P;
-    const alfa = x.alfa ?? 90;
+    const alfa2 = x.alfa ?? 90;
     const sin = VRdcSinArmadura(P);
     const r = { P, norma: ID, VEd, Vu1: n.Vu1, Vcu: 0, AswSNec: n.nec, AswSMin: n.mn, AswS: n.usar, manda: n.manda, avisos: [...n.c.avisos.filter((a) => a.clave !== "cor.av.minima")] };
     r.cotTheta = n.c.cotTheta;
@@ -13560,7 +14262,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     r.beta = null;
     r.cotE = null;
     r.K = null;
-    r.alfa = alfa;
+    r.alfa = alfa2;
     r.Vu2SinArm = sin.VRdc;
     if (VEd > n.Vu1) {
       r.caso = "biela";
@@ -13578,7 +14280,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     }
     const cm = comprobar3({ ...x, VEd, AswS: n.usar, sinArmadura: false });
     r.nu1 = cm.nu1;
-    r.sMax = sepMaxima(VEd, cm.VRdMax, P.d, alfa);
+    r.sMax = sepMaxima(VEd, cm.VRdMax, P.d, alfa2);
     const sTope = Math.floor(Math.min(r.sMax, S_TABLA_MAX) / S_TABLA_PASO) * S_TABLA_PASO;
     const nr = ramas ?? (x.circular ? 2 : x.b0 < 500 ? 2 : 4);
     r.ramas = nr;
@@ -13590,7 +14292,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       const v2 = comprobar3({ ...x, VEd, AswS, sinArmadura: false });
       return { fi, ramas: nr, s: sOk, AswS, Vsu: v2.VRds, Vu2: v2.VRds, Vu: r.sinArmaduraBasta ? Math.max(v2.Vu, sin.VRdc) : v2.Vu };
     });
-    r.long = decalaje2(VEd, n.c.cotTheta, cot2(alfa), P.z, P.d);
+    r.long = decalaje2(VEd, n.c.cotTheta, cot2(alfa2), P.z, P.d);
     return r;
   }
   function cotOptimo2(x, { VEd, dim = false } = {}) {
@@ -13677,8 +14379,8 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     const trac = P.NEdN > 0 && Number.isFinite(VEd) && Math.abs(VEd) > 0;
     if (trac) max = Math.max(1, 2.5 - 0.1 * P.NEdN / Math.abs(VEd));
     if (P.ductilidad === "A") max *= 0.8;
-    const alfa = x.alfa ?? 90;
-    const min = alfa >= 90 ? 1 : Math.tan(rad3(alfa) / 2);
+    const alfa2 = x.alfa ?? 90;
+    const min = alfa2 >= 90 ? 1 : Math.tan(rad3(alfa2) / 2);
     return { min, max: Math.max(min, max) };
   }
   function dEfectivo(P, VEd) {
@@ -13703,9 +14405,9 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     const k = P.ductilidad === "C" ? 0.8 : P.ductilidad === "B" ? 0.9 : 1;
     return 0.08 * Math.sqrt(P.fck) * k / P.fyk;
   }
-  var AswSMinima3 = (P, alfa = 90) => rhoWMin(P) * P.b0 * Math.sin(rad3(alfa));
-  function separaciones(d, alfa = 90) {
-    return { sep: 0.75 * d * (1 + (alfa >= 90 ? 0 : cot3(alfa))), sepTrans: Math.min(0.75 * d, 600) };
+  var AswSMinima3 = (P, alfa2 = 90) => rhoWMin(P) * P.b0 * Math.sin(rad3(alfa2));
+  function separaciones(d, alfa2 = 90) {
+    return { sep: 0.75 * d * (1 + (alfa2 >= 90 ? 0 : cot3(alfa2))), sepTrans: Math.min(0.75 * d, 600) };
   }
   function longitudinal(P, VEd, cotT, cotA, sinArmadura = false) {
     if (sinArmadura) return { NVd: null, dT: null, Ftd: null, sd: P.d };
@@ -13715,16 +14417,16 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
   }
   function comprobar4(x) {
     const P = parametros3(x);
-    const alfa = x.alfa ?? 90;
+    const alfa2 = x.alfa ?? 90;
     const cotT = x.cotTheta ?? 1;
     const VEd = x.VEd ?? NaN;
     const rg = rangoCot(x, VEd);
     if (!(cotT >= rg.min - 1e-9 && cotT <= rg.max + 1e-9)) throw new ErrorClave("cor.errCotRango", fmt2(cotT), fmt2(rg.min), fmt2(rg.max));
-    if (!(alfa >= 45 && alfa <= 90)) throw new ErrorClave("cor.errAlfa");
+    if (!(alfa2 >= 45 && alfa2 <= 90)) throw new ErrorClave("cor.errAlfa");
     const avisos4 = [];
     const sin = x.sinArmadura || !((x.AswS ?? 0) > 0);
-    const cotA = cot3(alfa);
-    const r = { P, norma: ID2, alfa, cotTheta: cotT, theta: thetaDe(cotT), rango: rg, sinArmadura: sin, avisos: avisos4, VEd, K: null, beta: null, cotE: null, reduc: 1 };
+    const cotA = cot3(alfa2);
+    const r = { P, norma: ID2, alfa: alfa2, cotTheta: cotT, theta: thetaDe(cotT), rango: rg, sinArmadura: sin, avisos: avisos4, VEd, K: null, beta: null, cotE: null, reduc: 1 };
     if (sin && !P.MEd) avisos4.push({ clave: "cor.av.sinMEd" });
     if (sin) {
       const s = VRdcSinArmadura2(P, VEd);
@@ -13759,19 +14461,19 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     } else {
       const fc = factorCercos(x);
       const AswEf = x.AswS * fc;
-      const unidad = P.z * P.fyd * Math.sin(rad3(alfa)) * (cotT + cotA) / 1e3;
+      const unidad = P.z * P.fyd * Math.sin(rad3(alfa2)) * (cotT + cotA) / 1e3;
       const VRds = AswEf * unidad;
       const Vmax = VRdMax2(P, cotT, cotA);
       Object.assign(r, { VRds, VRdMax: Vmax, nu: NU, factorCirc: fc, AswEf, Vu1: Vmax, Vu2: VRds, Vsu: VRds, Vcu: 0, Vu: Math.min(VRds, Vmax), mandaBiela: Vmax < VRds });
-      const mn = AswSMinima3(P, alfa);
-      r.minima = { AswSMin: mn, rhoW: AswEf / (P.b0 * Math.sin(rad3(alfa))), rhoWMin: rhoWMin(P), ok: AswEf >= mn - 1e-12 };
+      const mn = AswSMinima3(P, alfa2);
+      r.minima = { AswSMin: mn, rhoW: AswEf / (P.b0 * Math.sin(rad3(alfa2))), rhoWMin: rhoWMin(P), ok: AswEf >= mn - 1e-12 };
       if (!r.minima.ok) avisos4.push({ clave: "cor.av.minima", args: [(AswEf * 1e3).toFixed(0), (mn * 1e3).toFixed(0), "12.2(4)"] });
-      if (alfa < 90) avisos4.push({ clave: "cor.av.tercioEC2" });
+      if (alfa2 < 90) avisos4.push({ clave: "cor.av.tercioEC2" });
       if (fc < 1) avisos4.push({ clave: "cor.av.circ2023", args: [fc.toFixed(2)] });
     }
     if (Number.isFinite(VEd)) {
       r.aprov = VEd / r.Vu;
-      const sp = separaciones(P.d, alfa);
+      const sp = separaciones(P.d, alfa2);
       r.sep = sp.sep;
       r.sepTrans = sp.sepTrans;
       r.long = longitudinal(P, VEd, cotT, cotA, sin);
@@ -13782,18 +14484,18 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
   function AswSNecesaria3(x, VEd) {
     const c = comprobar4({ ...x, VEd, AswS: 1e-6, sinArmadura: false });
     const P = c.P;
-    const alfa = x.alfa ?? 90;
-    const unidad = P.z * P.fyd * Math.sin(rad3(alfa)) * (c.cotTheta + cot3(alfa)) / 1e3;
+    const alfa2 = x.alfa ?? 90;
+    const unidad = P.z * P.fyd * Math.sin(rad3(alfa2)) * (c.cotTheta + cot3(alfa2)) / 1e3;
     const nec = VEd / unidad / factorCercos(x);
-    const mn = AswSMinima3(P, alfa) / factorCercos(x);
-    const Vmax = VRdMax2(P, c.cotTheta, cot3(alfa));
+    const mn = AswSMinima3(P, alfa2) / factorCercos(x);
+    const Vmax = VRdMax2(P, c.cotTheta, cot3(alfa2));
     return { c, nec, mn, usar: Math.max(nec, mn), manda: nec >= mn ? "calculo" : "minima", Vcu: 0, Vu1: Vmax };
   }
   function dimensionar4(x, VEd, { diametros = [8, 10, 12, 16, 20], ramas } = {}) {
     if (!(VEd > 0)) throw new ErrorClave("cor.errVEd");
     const n = AswSNecesaria3(x, VEd);
     const P = n.c.P;
-    const alfa = x.alfa ?? 90;
+    const alfa2 = x.alfa ?? 90;
     const sin = VRdcSinArmadura2(P, VEd);
     const r = { P, norma: ID2, VEd, Vu1: n.Vu1, Vcu: 0, AswSNec: n.nec, AswSMin: n.mn, AswS: n.usar, manda: n.manda, avisos: [...n.c.avisos.filter((a) => a.clave !== "cor.av.minima")] };
     r.cotTheta = n.c.cotTheta;
@@ -13802,7 +14504,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     r.beta = null;
     r.cotE = null;
     r.K = null;
-    r.alfa = alfa;
+    r.alfa = alfa2;
     r.Vu2SinArm = sin.VRdc;
     r.sinArm = sin;
     if (VEd > n.Vu1) {
@@ -13819,7 +14521,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       r.AswS = n.mn;
       r.avisos.push({ clave: "cor.av.bastaSinArm", args: [VEd.toFixed(0), sin.VRdc.toFixed(0)] });
     }
-    const sp = separaciones(P.d, alfa);
+    const sp = separaciones(P.d, alfa2);
     r.sMax = sp.sep;
     const sTope = Math.floor(Math.min(r.sMax, S_TABLA_MAX) / S_TABLA_PASO) * S_TABLA_PASO;
     const nr = ramas ?? (x.circular ? 2 : x.b0 < 500 ? 2 : 4);
@@ -13832,7 +14534,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       const v2 = comprobar4({ ...x, VEd, AswS, sinArmadura: false });
       return { fi, ramas: nr, s: sOk, AswS, Vsu: v2.VRds, Vu2: v2.VRds, Vu: r.sinArmaduraBasta ? Math.max(v2.Vu, sin.VRdc) : v2.Vu };
     });
-    r.long = longitudinal(P, VEd, n.c.cotTheta, cot3(alfa));
+    r.long = longitudinal(P, VEd, n.c.cotTheta, cot3(alfa2));
     return r;
   }
   function cotOptimo3(x, { VEd, dim = false } = {}) {
@@ -13957,7 +14659,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
   }
 
   // src/ui/vistas/cortante.js
-  var est6 = {
+  var est7 = {
     i: null,
     modo: "comprobar",
     signo: 1,
@@ -13979,11 +14681,11 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     ov: { b0: null, d: null, z: null, Asl: null, Asc: null },
     abiertos: /* @__PURE__ */ new Set()
   };
-  function reiniciar6() {
-    est6.i = null;
-    est6.ov = { b0: null, d: null, z: null, Asl: null, Asc: null };
-    est6.aceroCercos = null;
-    est6.ktc = null;
+  function reiniciar7() {
+    est7.i = null;
+    est7.ov = { b0: null, d: null, z: null, Asl: null, Asc: null };
+    est7.aceroCercos = null;
+    est7.ktc = null;
   }
   var RAD = Math.PI / 180;
   var thetaDe2 = (cot4) => Math.atan(1 / cot4) / RAD;
@@ -13991,8 +14693,8 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     min: Math.ceil(+(Math.atan(1 / rg.max) / RAD).toFixed(6) * 10) / 10,
     max: Math.floor(+(Math.atan(1 / rg.min) / RAD).toFixed(6) * 10) / 10
   });
-  var FORMAS3 = ["rectangular", "T", "pilar", "circular"];
-  var secciones = (p) => p.secciones.map((s, i) => [s, i]).filter(([s]) => FORMAS3.includes(s.forma));
+  var FORMAS4 = ["rectangular", "T", "pilar", "circular"];
+  var secciones = (p) => p.secciones.map((s, i) => [s, i]).filter(([s]) => FORMAS4.includes(s.forma));
   var esViga2 = (s) => s.forma === "rectangular" || s.forma === "T";
   var diametrosEntrada = () => serieDiametros().filter((x) => x >= 6 && x <= 25);
   var diametrosTabla = () => serieDiametros().filter((x) => x >= 8 && x <= 20);
@@ -14001,21 +14703,21 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
   var mmEnt = (x) => Math.round(x * 1e3) / 1e3;
   var es23 = (p) => nuc(p)?.id === "EC2-2023";
   function efectivos(p, s) {
-    const sec = datosCortante(p, s, { signo: est6.signo, dir: est6.dir });
+    const sec = datosCortante(p, s, { signo: est7.signo, dir: est7.dir });
     const ef = {
-      b0: est6.ov.b0 ?? sec.b0,
-      d: est6.ov.d ?? sec.d,
-      z: est6.ov.z,
-      Asl: est6.ov.Asl ?? sec.Asl,
-      Asc: est6.ov.Asc ?? sec.Asc
+      b0: est7.ov.b0 ?? sec.b0,
+      d: est7.ov.d ?? sec.d,
+      z: est7.ov.z,
+      Asl: est7.ov.Asl ?? sec.Asl,
+      Asc: est7.ov.Asc ?? sec.Asc
     };
     ef.z ?? (ef.z = 0.9 * ef.d);
     return { sec, ef };
   }
   function cambiaSeccion(ctx2) {
-    est6.ov = { b0: null, d: null, z: null, Asl: null, Asc: null };
-    est6.aceroCercos = null;
-    est6.ktc = null;
+    est7.ov = { b0: null, d: null, z: null, Asl: null, Asc: null };
+    est7.aceroCercos = null;
+    est7.ktc = null;
     ctx2.pintar();
   }
   function calculado(c) {
@@ -14025,16 +14727,16 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     c.classList.add("calculado");
     return c;
   }
-  function activa2(p) {
+  function activa3(p) {
     const R = secciones(p);
     if (!R.length) return null;
-    if (!R.some(([, i]) => i === est6.i)) {
-      est6.i = R[0][1];
-      est6.ov = { b0: null, d: null, z: null, Asl: null, Asc: null };
+    if (!R.some(([, i]) => i === est7.i)) {
+      est7.i = R[0][1];
+      est7.ov = { b0: null, d: null, z: null, Asl: null, Asc: null };
     }
-    return p.secciones[est6.i];
+    return p.secciones[est7.i];
   }
-  function datos12(ctx2, form) {
+  function datos13(ctx2, form) {
     const p = ctx2.p;
     poner(form, h("div", { class: "cab" }, h("h1", {}, t("m.cortante"))));
     if (!nuc(p)) {
@@ -14053,11 +14755,11 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     }
     const R = secciones(p);
     if (!R.length) return poner(form, aviso(t("cor.sinSec"), "info"));
-    const s = activa2(p);
-    poner(form, grupoSeccion(ctx2, { formas: FORMAS3, activa: s, alElegir: (nombre) => {
+    const s = activa3(p);
+    poner(form, grupoSeccion(ctx2, { formas: FORMAS4, activa: s, alElegir: (nombre) => {
       const i = p.secciones.findIndex((x) => x.nombre === nombre);
       if (i >= 0) {
-        est6.i = i;
+        est7.i = i;
         cambiaSeccion(ctx2);
       }
     } }));
@@ -14068,7 +14770,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     } catch (e2) {
       return poner(form, aviso(String(e2.message ?? e2), "error"));
     }
-    const comp = est6.modo === "comprobar";
+    const comp = est7.modo === "comprobar";
     const cambio = () => ctx2.cambio();
     const refrescar = () => {
       const rho = ef.Asl / (ef.b0 * ef.d);
@@ -14082,9 +14784,9 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     const ec = esEC2(p);
     const e23 = es23(p);
     const nuevo2 = (k) => (v2) => {
-      est6.ov[k] = v2;
+      est7.ov[k] = v2;
       ef[k] = v2;
-      if (k === "d" && est6.ov.z == null) ef.z = 0.9 * v2;
+      if (k === "d" && est7.ov.z == null) ef.z = 0.9 * v2;
       refrescar();
       cambio();
     };
@@ -14096,7 +14798,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     const LT = limitesTheta(rg);
     const ayudaCot = e23 ? t("cor.cotAyuda23", fmt(LT.min, 1), fmt(LT.max, 1), fmt(rg.min, 1), fmt(rg.max, 1)) : ec ? t("cor.cotAyudaEC") : t("cor.cotAyuda");
     const refrescarGauge = () => {
-      gauge.querySelector("input").value = thetaDe2(est6.cot);
+      gauge.querySelector("input").value = thetaDe2(est7.cot);
       gauge.refrescar();
     };
     const gauge = regleta({
@@ -14104,10 +14806,10 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       min: LT.min,
       max: LT.max,
       step: 0.1,
-      valor: thetaDe2(est6.cot),
+      valor: thetaDe2(est7.cot),
       texto: (v2) => `${fmt(v2, 1)}\xB0`,
       onInput: (v2) => {
-        est6.cot = 1 / Math.tan(v2 * RAD);
+        est7.cot = 1 / Math.tan(v2 * RAD);
         const c = document.getElementById("c-theta");
         if (c) c.value = String(+v2.toFixed(1));
         cambio();
@@ -14116,37 +14818,37 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     const conEtq = (etq, c) => h("div", { class: "fu-campo" }, h("span", { class: "etq-grupo", html: etq }), c);
     poner(
       form,
-      segmentado({ ancho: true, etiqueta: t("flex.modo"), opciones: [["comprobar", t("comprobar")], ["dimensionar", t("dimensionar")]], valor: est6.modo, onCambio: (m) => {
-        est6.modo = m;
+      segmentado({ ancho: true, etiqueta: t("flex.modo"), opciones: [["comprobar", t("comprobar")], ["dimensionar", t("dimensionar")]], valor: est7.modo, onCambio: (m) => {
+        est7.modo = m;
         ctx2.pintar();
       } }),
-      esViga2(s) ? conEtq(t("cor.signo"), segmentado({ ancho: true, etiqueta: t("cor.signo"), opciones: [["1", t("flex.positivo")], ["-1", t("flex.negativo")]], valor: String(est6.signo), onCambio: (v2) => {
-        est6.signo = Number(v2);
+      esViga2(s) ? conEtq(t("cor.signo"), segmentado({ ancho: true, etiqueta: t("cor.signo"), opciones: [["1", t("flex.positivo")], ["-1", t("flex.negativo")]], valor: String(est7.signo), onCambio: (v2) => {
+        est7.signo = Number(v2);
         cambiaSeccion(ctx2);
       } })) : null,
-      s.forma === "pilar" ? conEtq(t("cor.dir"), segmentado({ ancho: true, etiqueta: t("cor.dir"), opciones: [["h", t("cor.dirH")], ["b", t("cor.dirB")]], valor: est6.dir, onCambio: (v2) => {
-        est6.dir = v2;
+      s.forma === "pilar" ? conEtq(t("cor.dir"), segmentado({ ancho: true, etiqueta: t("cor.dir"), opciones: [["h", t("cor.dirH")], ["b", t("cor.dirB")]], valor: est7.dir, onCambio: (v2) => {
+        est7.dir = v2;
         cambiaSeccion(ctx2);
       } })) : null,
       grupo(
         t("g.esfuerzo"),
         ...parejas([
-          campoNum({ id: "c-ved", etq: t("cor.VEd"), valor: est6.VEd, mag: "N", paso: 10, min: 0.01, max: 1e6, nombre: t("cor.VEdNombre"), onCambio: (v2) => {
-            est6.VEd = v2;
+          campoNum({ id: "c-ved", etq: t("cor.VEd"), valor: est7.VEd, mag: "N", paso: 10, min: 0.01, max: 1e6, nombre: t("cor.VEdNombre"), onCambio: (v2) => {
+            est7.VEd = v2;
             cambio();
           } }),
-          campoNum({ id: "c-ned", etq: t("cor.NEd"), ref: t("cor.NEdRef"), valor: est6.NEd, mag: "N", paso: 10, min: -1e6, max: 1e6, ayuda: t("cor.NEdNota"), onCambio: (v2) => {
-            est6.NEd = v2;
+          campoNum({ id: "c-ned", etq: t("cor.NEd"), ref: t("cor.NEdRef"), valor: est7.NEd, mag: "N", paso: 10, min: -1e6, max: 1e6, ayuda: t("cor.NEdNota"), onCambio: (v2) => {
+            est7.NEd = v2;
             cambio();
           } })
         ]),
         h("p", { class: "nota-ned", html: t(e23 ? "cor.NEdNota23" : "cor.NEdNota") }),
         e23 ? h(
           "details",
-          { class: "pleg", open: est6.MEd > 0 ? true : null },
+          { class: "pleg", open: est7.MEd > 0 ? true : null },
           h("summary", {}, t("cor.MEdOpc")),
-          ...parejas([campoNum({ id: "c-med", etq: t("cor.MEd"), valor: est6.MEd, mag: "M", paso: 10, min: 0, max: 1e7, ayuda: t("cor.MEdAyuda"), onCambio: (v2) => {
-            est6.MEd = v2;
+          ...parejas([campoNum({ id: "c-med", etq: t("cor.MEd"), valor: est7.MEd, mag: "M", paso: 10, min: 0, max: 1e7, ayuda: t("cor.MEdAyuda"), onCambio: (v2) => {
+            est7.MEd = v2;
             cambio();
           } })])
         ) : null
@@ -14160,54 +14862,54 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
           mostrar(campoNum({ id: "c-asl", etq: t("cor.Asl"), valor: ef.Asl, mag: "As", paso: 50, min: 0, max: 1, ayuda: ayuda("Asl"), info: s.forma === "pilar" ? t("cor.AslInfoPilar") : s.forma === "circular" ? t("cor.AslInfoCirc") : void 0, onCambio: nuevo2("Asl") }), ef.Asl * 1e6, 0),
           calculado(mostrar(campoNum({ id: "c-rho", etq: t("cor.rho"), valor: rho0, mag: "cuantia", paso: 1, min: 0, max: 1, ayuda: ayuda("rho"), onCambio: () => {
           } }), rho0 * 1e3, 2)),
-          e23 ? selector({ id: "c-ktc", etq: t("cor.ktc"), linea: true, opciones: [["0.85", "0.85"], ["1", "1.00"]], valor: String(est6.ktc ?? sec.ktc ?? 0.85), onCambio: (v2) => {
-            est6.ktc = Number(v2);
+          e23 ? selector({ id: "c-ktc", etq: t("cor.ktc"), linea: true, opciones: [["0.85", "0.85"], ["1", "1.00"]], valor: String(est7.ktc ?? sec.ktc ?? 0.85), onCambio: (v2) => {
+            est7.ktc = Number(v2);
             cambio();
           } }) : null,
-          e23 && (!comp || est6.sin) ? campoNum({ id: "c-dlow", etq: t("cor.Dlower"), valor: est6.Dlower, mag: "diam", paso: 2, min: 4, max: 63, ayuda: t("cor.DlowerAyuda"), onCambio: (v2) => {
-            est6.Dlower = v2;
+          e23 && (!comp || est7.sin) ? campoNum({ id: "c-dlow", etq: t("cor.Dlower"), valor: est7.Dlower, mag: "diam", paso: 2, min: 4, max: 63, ayuda: t("cor.DlowerAyuda"), onCambio: (v2) => {
+            est7.Dlower = v2;
             cambio();
           } }) : null,
-          ec ? null : campoNum({ id: "c-sigy", etq: t("cor.sigY"), ref: t("cor.sigYRef"), valor: est6.sigY, mag: "tension", paso: 0.5, min: -50, max: 50, ayuda: t("cor.sigYAyuda"), onCambio: (v2) => {
-            est6.sigY = v2;
+          ec ? null : campoNum({ id: "c-sigy", etq: t("cor.sigY"), ref: t("cor.sigYRef"), valor: est7.sigY, mag: "tension", paso: 0.5, min: -50, max: 50, ayuda: t("cor.sigYAyuda"), onCambio: (v2) => {
+            est7.sigY = v2;
             cambio();
           } }),
           pilarOCirc && !ec ? mostrar(campoNum({ id: "c-asc", etq: t("cor.Asc"), valor: ef.Asc, mag: "As", paso: 50, min: 0, max: 1, ayuda: t("cor.AscAyuda"), onCambio: nuevo2("Asc") }), ef.Asc * 1e6, 0) : null
         ]),
-        sec.circular && (!ec || e23) ? conEtq(t(e23 ? "cor.circ23" : "cor.circ"), segmentado({ opciones: [["si", e23 ? "b<sub>w</sub>/D<sub>h</sub>" : "\xD7 0,85"], ["no", t("cor.sinReduccion")]], valor: est6.circ ? "si" : "no", ancho: true, etiqueta: t("cor.circ"), onCambio: (v2) => {
-          est6.circ = v2 === "si";
+        sec.circular && (!ec || e23) ? conEtq(t(e23 ? "cor.circ23" : "cor.circ"), segmentado({ opciones: [["si", e23 ? "b<sub>w</sub>/D<sub>h</sub>" : "\xD7 0,85"], ["no", t("cor.sinReduccion")]], valor: est7.circ ? "si" : "no", ancho: true, etiqueta: t("cor.circ"), onCambio: (v2) => {
+          est7.circ = v2 === "si";
           ctx2.pintar();
         } })) : null
       ),
       grupo(
         t("cor.cercos"),
-        comp ? segmentado({ ancho: true, etiqueta: t("cor.cercos"), opciones: [["con", t("cor.conArm")], ["sin", t("cor.sinArm")]], valor: est6.sin ? "sin" : "con", onCambio: (v2) => {
-          est6.sin = v2 === "sin";
+        comp ? segmentado({ ancho: true, etiqueta: t("cor.cercos"), opciones: [["con", t("cor.conArm")], ["sin", t("cor.sinArm")]], valor: est7.sin ? "sin" : "con", onCambio: (v2) => {
+          est7.sin = v2 === "sin";
           ctx2.pintar();
         } }) : null,
         ...parejas([
-          selector({ id: "c-acero", etq: t("cor.cercosAcero"), linea: true, opciones: p.aceros.map((m) => [m.nombre, m.nombre]), valor: est6.aceroCercos ?? s.acero, onCambio: (v2) => {
-            est6.aceroCercos = v2;
+          selector({ id: "c-acero", etq: t("cor.cercosAcero"), linea: true, opciones: p.aceros.map((m) => [m.nombre, m.nombre]), valor: est7.aceroCercos ?? s.acero, onCambio: (v2) => {
+            est7.aceroCercos = v2;
             cambio();
           } }),
-          comp && !est6.sin ? selector({ id: "c-fi", etq: t("cor.fi"), linea: true, opciones: diametrosEntrada().map((x) => [String(x), `\xF8${x}`]), valor: String(est6.fi), onCambio: (v2) => {
-            est6.fi = Number(v2);
+          comp && !est7.sin ? selector({ id: "c-fi", etq: t("cor.fi"), linea: true, opciones: diametrosEntrada().map((x) => [String(x), `\xF8${x}`]), valor: String(est7.fi), onCambio: (v2) => {
+            est7.fi = Number(v2);
             cambio();
           } }) : null,
-          comp && !est6.sin ? selector({ id: "c-ramas", etq: t("cor.ramas"), linea: true, opciones: [2, 3, 4, 6].map((x) => [String(x), String(x)]), valor: String(est6.ramas), onCambio: (v2) => {
-            est6.ramas = Number(v2);
+          comp && !est7.sin ? selector({ id: "c-ramas", etq: t("cor.ramas"), linea: true, opciones: [2, 3, 4, 6].map((x) => [String(x), String(x)]), valor: String(est7.ramas), onCambio: (v2) => {
+            est7.ramas = Number(v2);
             cambio();
           } }) : null,
-          comp && !est6.sin ? campoNum({ id: "c-s", etq: t("cor.s"), valor: est6.s, mag: "diam", paso: 25, min: 25, max: 1e3, onCambio: (v2) => {
-            est6.s = v2;
+          comp && !est7.sin ? campoNum({ id: "c-s", etq: t("cor.s"), valor: est7.s, mag: "diam", paso: 25, min: 25, max: 1e3, onCambio: (v2) => {
+            est7.s = v2;
             cambio();
           } }) : null,
-          !est6.sin ? campoNum({ id: "c-alfa", etq: t("cor.alfa"), ref: t("cor.alfaRef"), valor: est6.alfa, mag: "ang", paso: 5, min: 45, max: 90, onCambio: (v2) => {
-            est6.alfa = v2;
+          !est7.sin ? campoNum({ id: "c-alfa", etq: t("cor.alfa"), ref: t("cor.alfaRef"), valor: est7.alfa, mag: "ang", paso: 5, min: 45, max: 90, onCambio: (v2) => {
+            est7.alfa = v2;
             cambio();
           } }) : null,
-          campoNum({ id: "c-theta", etq: t("cor.theta"), valor: thetaDe2(est6.cot), mag: "ang1", paso: 1, min: LT.min, max: LT.max, ayuda: ayudaCot, onCambio: (v2) => {
-            est6.cot = 1 / Math.tan(v2 * RAD);
+          campoNum({ id: "c-theta", etq: t("cor.theta"), valor: thetaDe2(est7.cot), mag: "ang1", paso: 1, min: LT.min, max: LT.max, ayuda: ayudaCot, onCambio: (v2) => {
+            est7.cot = 1 / Math.tan(v2 * RAD);
             cambio();
             refrescarGauge();
           } })
@@ -14217,9 +14919,9 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
           try {
             const { sec: s2, ef: e2 } = efectivos(p, s);
             const base2 = entrada2(p, s, s2, e2);
-            est6.cot = nuc(p).cotOptimo(base2, { VEd: est6.VEd, dim: !comp });
+            est7.cot = nuc(p).cotOptimo(base2, { VEd: est7.VEd, dim: !comp });
             ctx2.pintar();
-            ctx2.avisar(t("cor.optimoPuesto", fmt(thetaDe2(est6.cot), 1)));
+            ctx2.avisar(t("cor.optimoPuesto", fmt(thetaDe2(est7.cot), 1)));
           } catch (e2) {
             ctx2.avisar(String(e2.message ?? e2));
           }
@@ -14228,10 +14930,10 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     );
   }
   function entrada2(p, s, sec, ef) {
-    const acero2 = p.aceros.find((m) => m.nombre === (est6.aceroCercos ?? s.acero)) ?? p.aceros[0];
+    const acero2 = p.aceros.find((m) => m.nombre === (est7.aceroCercos ?? s.acero)) ?? p.aceros[0];
     return {
       fck: sec.fck,
-      ktc: est6.ktc ?? sec.ktc,
+      ktc: est7.ktc ?? sec.ktc,
       fykCercos: acero2.fyk,
       fykLong: sec.fyk,
       b0: ef.b0 * 1e3,
@@ -14240,22 +14942,22 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       Ac: sec.Ac * 1e6,
       Asl: ef.Asl * 1e6,
       Asc: ef.Asc * 1e6,
-      NEd: est6.NEd,
-      sigY: est6.sigY,
-      cotTheta: est6.cot,
-      alfa: est6.alfa,
-      circular: sec.circular && est6.circ,
+      NEd: est7.NEd,
+      sigY: est7.sigY,
+      cotTheta: est7.cot,
+      alfa: est7.alfa,
+      circular: sec.circular && est7.circ,
       viga: esViga2(s),
-      MEd: est6.MEd,
-      Dlower: est6.Dlower,
+      MEd: est7.MEd,
+      Dlower: est7.Dlower,
       ductilidad: acero2.ductilidad ?? aceroTipificado(acero2.nombre)?.ductilidad ?? "B",
       Dh: sec.circular ? (sec.h - 2 * (sec.r ?? 0)) * 1e3 : null
     };
   }
   function ajustaCot(p, s, sec, ef) {
-    const rg = nuc(p).rangoCot(entrada2(p, s, sec, ef), est6.VEd);
-    if (est6.cot < rg.min) est6.cot = rg.min;
-    if (est6.cot > rg.max) est6.cot = rg.max;
+    const rg = nuc(p).rangoCot(entrada2(p, s, sec, ef), est7.VEd);
+    if (est7.cot < rg.min) est7.cot = rg.min;
+    if (est7.cot > rg.max) est7.cot = rg.max;
     return rg;
   }
   var mostrar = (c, v2, d) => {
@@ -14272,9 +14974,9 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
   var fila2 = (id, nom, val, cuenta) => ({ id, nom, val, cuenta });
   var refNorma = "EHE-08";
   var art2 = (a) => `<span class="art">${refNorma} \xB7 ${a}</span>`;
-  function resultados12(ctx2, res) {
+  function resultados13(ctx2, res) {
     resultadosCortante(ctx2, res);
-    rotulaSeccion(res, nuc(ctx2.p) ? ctx2.p.secciones[est6.i]?.nombre : null);
+    rotulaSeccion(res, nuc(ctx2.p) ? ctx2.p.secciones[est7.i]?.nombre : null);
   }
   function resultadosCortante(ctx2, res) {
     var _a;
@@ -14285,8 +14987,8 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       res.append(h("div", { class: "cuerpo" }, centro, dcha));
       return;
     }
-    const s = p.secciones[est6.i];
-    if (!s || !FORMAS3.includes(s.forma)) return;
+    const s = p.secciones[est7.i];
+    if (!s || !FORMAS4.includes(s.forma)) return;
     const N = nuc(p);
     const ec = esEC2(p);
     const e23 = es23(p);
@@ -14294,28 +14996,28 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     const { sec, ef } = efectivos(p, s);
     ajustaCot(p, s, sec, ef);
     const x = entrada2(p, s, sec, ef);
-    const comp = est6.modo === "comprobar";
-    const AswS = comp && !est6.sin ? AswSDe(est6.fi, est6.ramas, est6.s) : 0;
-    const r = comp ? N.comprobar({ ...x, AswS, sinArmadura: est6.sin, VEd: est6.VEd }) : N.dimensionar(x, est6.VEd, { diametros: diametrosTabla() });
+    const comp = est7.modo === "comprobar";
+    const AswS = comp && !est7.sin ? AswSDe(est7.fi, est7.ramas, est7.s) : 0;
+    const r = comp ? N.comprobar({ ...x, AswS, sinArmadura: est7.sin, VEd: est7.VEd }) : N.dimensionar(x, est7.VEd, { diametros: diametrosTabla() });
     const P = r.P;
     const avisos4 = r.avisos.filter((a) => a.clave !== "cor.av.fyd400").map((a) => aviso(t(a.clave, ...a.args ?? [])));
     (_a = p.calculos).cortante ?? (_a.cortante = {});
     p.calculos.cortante[s.nombre] = {
-      modo: est6.modo,
+      modo: est7.modo,
       norma: p.norma,
       fecha: (/* @__PURE__ */ new Date()).toISOString().slice(0, 10),
-      VEd: est6.VEd,
-      NEd: est6.NEd,
-      cotTheta: est6.cot,
-      alfa: est6.alfa,
+      VEd: est7.VEd,
+      NEd: est7.NEd,
+      cotTheta: est7.cot,
+      alfa: est7.alfa,
       resultado: comp ? { Vu1: r.Vu1, Vu2: r.Vu2, Vcu: r.Vcu, Vsu: r.Vsu, Vu: r.Vu } : { caso: r.caso, AswS: r.AswS, Vu1: r.Vu1 }
     };
     if (comp) {
-      const ok = est6.VEd <= r.Vu + 1e-9;
-      const sepOk = r.sinArmadura || est6.s <= r.sep + 1e-9;
+      const ok = est7.VEd <= r.Vu + 1e-9;
+      const sepOk = r.sinArmadura || est7.s <= r.sep + 1e-9;
       const minOk = r.sinArmadura || r.minima.ok;
       const detalles = ok && (!sepOk || !minOk);
-      if (!r.sinArmadura && !sepOk) avisos4.push(aviso(t("cor.avs.sep", fmt(est6.s, 0), fmt(r.sep, 0), e23 ? "Tabla 12.1" : ec ? "9.2.2(6)" : "44.2.3.4.1")));
+      if (!r.sinArmadura && !sepOk) avisos4.push(aviso(t("cor.avs.sep", fmt(est7.s, 0), fmt(r.sep, 0), e23 ? "Tabla 12.1" : ec ? "9.2.2(6)" : "44.2.3.4.1")));
       const P0 = ec ? "cor.ec.manda." : "cor.manda.";
       const manda = r.sinArmadura ? t(`${P0}sin`) : r.mandaBiela ? t(`${P0}biela`) : t(`${P0}arm`);
       res.append(veredicto(
@@ -14323,23 +15025,23 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
         !ok ? t("cor.ver.no") : detalles ? t("cor.ver.revisar") : t("cor.ver.cumple"),
         t("aprovechamiento"),
         fmt(r.aprov, 2),
-        t(ec ? "cor.ec.ver.ecu" : "cor.ver.ecu", q(est6.VEd, "N"), q(r.Vu, "N"), ok, manda),
+        t(ec ? "cor.ec.ver.ecu" : "cor.ver.ecu", q(est7.VEd, "N"), q(r.Vu, "N"), ok, manda),
         Math.min(r.aprov / 1.25, 1)
       ));
     } else if (r.caso === "biela") {
-      res.append(veredicto("nocumple", t("cor.ver.aum"), t("cor.armNec"), "\u2014", t(ec ? "cor.ec.ver.necAum" : "cor.ver.necAum", q(est6.VEd, "N"), q(r.Vu1, "N"))));
+      res.append(veredicto("nocumple", t("cor.ver.aum"), t("cor.armNec"), "\u2014", t(ec ? "cor.ec.ver.necAum" : "cor.ver.necAum", q(est7.VEd, "N"), q(r.Vu1, "N"))));
     } else {
       res.append(veredicto(
         r.caso === "minima" ? "atencion" : "cumple",
         r.caso === "minima" ? t("cor.ver.min") : t("cor.ver.valida"),
         t("cor.armNec"),
         qh(r.AswS, "AswS"),
-        t(ec ? "cor.ec.ver.nec" : "cor.ver.nec", q(est6.VEd, "N"), q(r.Vu1, "N"))
+        t(ec ? "cor.ec.ver.nec" : "cor.ver.nec", q(est7.VEd, "N"), q(r.Vu1, "N"))
       ));
     }
     if (avisos4.length) res.append(h("div", { class: "avisos" }, ...avisos4));
     const geo = geometriaDe(p, s);
-    const lienzo = h("div", { class: "lienzo", html: dibujoCortante(geo, s, { b0: ef.b0, d: ef.d, z: P.z / 1e3, cotTheta: est6.cot, alfa: est6.alfa, neg: esViga2(s) && est6.signo < 0, sinArmadura: comp && est6.sin, s: comp ? est6.s / 1e3 : void 0 }) });
+    const lienzo = h("div", { class: "lienzo", html: dibujoCortante(geo, s, { b0: ef.b0, d: ef.d, z: P.z / 1e3, cotTheta: est7.cot, alfa: est7.alfa, neg: esViga2(s) && est7.signo < 0, sinArmadura: comp && est7.sin, s: comp ? est7.s / 1e3 : void 0 }) });
     poner(centro, h("h2", {}, t("cor.t.dibujo")), lienzo, notas(sec.circular, P, e23 ? "e23" : ec));
     const cif = ec ? cifrasEC2(r, comp, P) : comp ? r.sinArmadura ? [[t("cor.c.Vu2"), qh(r.Vu2, "N")], [t("cor.rho"), `${fmt(P.rho * 1e3, 1)}<span class="u">${ESP}\u2030</span>`]] : [[t("cor.c.Vu1"), qh(r.Vu1, "N")], [t("cor.c.Vu2"), qh(r.Vu2, "N")], [`${t("cor.c.Vcu")} + ${t("cor.c.Vsu")}`, `${fmt(r.Vcu, 0)} + ${fmt(r.Vsu, 0)}<span class="u">${ESP}kN</span>`], [`\u03B8 \xB7 \u03B2`, `${fmt(r.theta, 1)}\xB0 \xB7 ${fmt(r.beta, 2)}`]] : [[t("cor.c.Vu1"), qh(r.Vu1, "N")], [t("cor.c.Vcu"), qh(r.Vcu, "N")], [t("cor.armNec"), qh(r.AswSNec, "AswS")], [t("cor.c.Asw") + " m\xEDn.", qh(r.AswSMin, "AswS")]];
     poner(dcha, h("h2", {}, t("cor.t.res")), cifras(cif));
@@ -14354,11 +15056,11 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     poner(dcha, h("div", { class: "traza" }, ...trazas(p, r, { ...x, AswS }, comp, ef).map((f) => {
       const det = h(
         "details",
-        { "data-ref": f.id, open: est6.abiertos.has(f.id) },
+        { "data-ref": f.id, open: est7.abiertos.has(f.id) },
         h("summary", {}, h("span", { class: "nom", html: f.nom }), h("span", { class: "val", html: f.val })),
         h("div", { class: "cuenta", html: f.cuenta })
       );
-      det.addEventListener("toggle", () => det.open ? est6.abiertos.add(f.id) : est6.abiertos.delete(f.id));
+      det.addEventListener("toggle", () => det.open ? est7.abiertos.add(f.id) : est7.abiertos.delete(f.id));
       return det;
     })));
     res.append(h("div", { class: "cuerpo" }, centro, dcha));
@@ -14371,7 +15073,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       h("div", { class: "pista-barra", "aria-hidden": "true" }, h("i", { style: `width:${Math.min(v2 / 1.25, 1) * 100}%` }), h("span", { class: "uno" })),
       h("span", { class: "v" }, fmt(v2, 2))
     );
-    return h("div", { class: "aprov2" }, fila5(t("cor.ap.biela"), est6.VEd / r.Vu1), fila5(t(ec ? "cor.ap.cercos" : "cor.ap.traccion"), est6.VEd / r.Vu2));
+    return h("div", { class: "aprov2" }, fila5(t("cor.ap.biela"), est7.VEd / r.Vu1), fila5(t(ec ? "cor.ap.cercos" : "cor.ap.traccion"), est7.VEd / r.Vu2));
   }
   function cifrasEC2(r, comp, P) {
     const kN = (v2) => qh(v2, "N");
@@ -14428,8 +15130,8 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       f.push(fila2(
         "sep",
         t("cor.r.sep"),
-        r.sinArmadura ? "\u2014" : `${fmt(est6.s, 0)} \u2264 ${fmt(r.sep, 0)} mm`,
-        `<span class="f">${t("cor.ec.f.sep")}</span><span class="n">V<sub>Ed</sub> = ${n13(est6.VEd, 0)} kN \u2192 s<sub>l,m\xE1x</sub> \u2264 ${n13(r.sep, 0)} mm \xB7 ${t("cor.avs.trans", n13(r.sepTrans, 0))}</span>${art2("AN 9.2.2(6), (8)")}`
+        r.sinArmadura ? "\u2014" : `${fmt(est7.s, 0)} \u2264 ${fmt(r.sep, 0)} mm`,
+        `<span class="f">${t("cor.ec.f.sep")}</span><span class="n">V<sub>Ed</sub> = ${n13(est7.VEd, 0)} kN \u2192 s<sub>l,m\xE1x</sub> \u2264 ${n13(r.sep, 0)} mm \xB7 ${t("cor.avs.trans", n13(r.sepTrans, 0))}</span>${art2("AN 9.2.2(6), (8)")}`
       ));
       f.push(fila2(
         "long",
@@ -14487,7 +15189,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       f.push(fila2(
         "sep",
         t("cor.r.sep"),
-        r.sinArmadura ? "\u2014" : `${fmt(est6.s, 0)} \u2264 ${fmt(r.sep, 0)} mm`,
+        r.sinArmadura ? "\u2014" : `${fmt(est7.s, 0)} \u2264 ${fmt(r.sep, 0)} mm`,
         `<span class="f">${t("cor.e3.f.sep")}</span><span class="n">s<sub>l,m\xE1x</sub> \u2264 ${n13(r.sep, 0)} mm \xB7 ${t("cor.avs.trans", n13(r.sepTrans, 0))}</span>${art2("Tabla 12.1")}`
       ));
       f.push(longitudinal23(r));
@@ -14542,8 +15244,8 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       f.push(fila2(
         "sep",
         t("cor.r.sep"),
-        r.sinArmadura ? "\u2014" : `${fmt(est6.s, 0)} \u2264 ${fmt(r.sep, 0)} mm`,
-        `<span class="f">${t("cor.f.sep")}</span><span class="n">V<sub>Ed</sub> = ${n13(est6.VEd, 0)} kN \xB7 V<sub>u1</sub> = ${n13(r.Vu1, 0)} kN \u2192 s<sub>t</sub> \u2264 ${n13(r.sep, 0)} mm \xB7 ${t("cor.avs.trans", n13(r.sepTrans, 0))}</span>${art2("44.2.3.4.1")}`
+        r.sinArmadura ? "\u2014" : `${fmt(est7.s, 0)} \u2264 ${fmt(r.sep, 0)} mm`,
+        `<span class="f">${t("cor.f.sep")}</span><span class="n">V<sub>Ed</sub> = ${n13(est7.VEd, 0)} kN \xB7 V<sub>u1</sub> = ${n13(r.Vu1, 0)} kN \u2192 s<sub>t</sub> \u2264 ${n13(r.sep, 0)} mm \xB7 ${t("cor.avs.trans", n13(r.sepTrans, 0))}</span>${art2("44.2.3.4.1")}`
       ));
       f.push(fila2(
         "long",
@@ -14573,14 +15275,14 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       ...claves.map(([k, v2]) => h("details", { class: "pleg" }, h("summary", {}, h("span", { html: t(k) })), h("div", { class: "cuenta" }, h("p", { class: "nota", html: t(v2, fmt(P.fydLibre, 1)) }))))
     );
   }
-  function comandos9(ctx2) {
+  function comandos10(ctx2) {
     return [
       { k: "cor.cmdComprobar", b: "cortante comprobar shear check", f: () => {
-        est6.modo = "comprobar";
+        est7.modo = "comprobar";
         ctx2.ir("cortante");
       } },
       { k: "cor.cmdDimensionar", b: "cortante dimensionar shear design", f: () => {
-        est6.modo = "dimensionar";
+        est7.modo = "dimensionar";
         ctx2.ir("cortante");
       } }
     ];
@@ -14589,10 +15291,10 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
   // src/ui/vistas/punzonamiento.js
   var punzonamiento_exports = {};
   __export(punzonamiento_exports, {
-    comandos: () => comandos10,
-    datos: () => datos13,
-    reiniciar: () => reiniciar7,
-    resultados: () => resultados13
+    comandos: () => comandos11,
+    datos: () => datos14,
+    reiniciar: () => reiniciar8,
+    resultados: () => resultados14
   });
 
   // src/norma/punzonamiento/ehe08.js
@@ -14724,7 +15426,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       tramo2(X02 - delta, Y1, X02 - delta, Y0);
       arco(X02, Y0, Math.PI, 1.5 * Math.PI);
       tramo2(X02, Y0 - delta, cx2, Y0 - delta);
-      return recortar(pts, x.pos, cerrado);
+      return recortar2(pts, x.pos, cerrado);
     }
     const a = x.D / 2;
     const R = a + delta;
@@ -14736,9 +15438,9 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       const t2 = ini + 2 * Math.PI * i / n;
       pts.push([cx + R * Math.cos(t2), cy + R * Math.sin(t2)]);
     }
-    return recortar(pts, x.pos, cerrado);
+    return recortar2(pts, x.pos, cerrado);
   }
-  function recortar(pts, pos, cerrado) {
+  function recortar2(pts, pos, cerrado) {
     if (cerrado) return pts;
     const dentro2 = ([px, py]) => py >= -1e-9 && (pos !== "esquina" || px >= -1e-9);
     const res = pts.filter(dentro2);
@@ -15573,13 +16275,13 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
   }
 
   // src/ui/vistas/punzonamiento.js
-  var sub24 = (a, b) => `${a}<sub>${b}</sub>`;
+  var sub25 = (a, b) => `${a}<sub>${b}</sub>`;
   var nuc2 = (p) => nucleo2(p.norma);
   var es232 = (p) => nuc2(p)?.id === "EC2-2023";
   var esEC22 = (p) => nuc2(p)?.id === "EC2-2004";
-  var est7 = { modo: "comprobar", abiertos: /* @__PURE__ */ new Set() };
-  function reiniciar7() {
-    est7.abiertos = /* @__PURE__ */ new Set();
+  var est8 = { modo: "comprobar", abiertos: /* @__PURE__ */ new Set() };
+  function reiniciar8() {
+    est8.abiertos = /* @__PURE__ */ new Set();
   }
   var INICIAL3 = () => ({
     tipo: "rect",
@@ -15664,7 +16366,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
   var refNorma2 = "EHE-08";
   var art3 = (a) => `<span class="art">${refNorma2} \xB7 ${a}</span>`;
   var n1 = (v2, d = 2) => fmt(v2, d);
-  function datos13(ctx2, form) {
+  function datos14(ctx2, form) {
     const p = ctx2.p;
     form.classList.add("est-guia");
     poner(form, h("div", { class: "cab" }, h("h1", {}, t("m.punzonamiento")), h("p", {}, t("pun.subtitulo"))));
@@ -15673,7 +16375,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       return poner(form, aviso(t("pun.pendiente", p.norma), "info"));
     }
     const D = datosDe(p);
-    const comp = est7.modo === "comprobar";
+    const comp = est8.modo === "comprobar";
     const e23 = es232(p);
     const cambio = () => ctx2.cambio();
     const set = (k) => (v2) => {
@@ -15685,8 +16387,8 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     const arm = true;
     poner(
       form,
-      segmentado({ ancho: true, etiqueta: t("flex.modo"), opciones: [["comprobar", t("comprobar")], ["dimensionar", t("dimensionar")]], valor: est7.modo, onCambio: (m) => {
-        est7.modo = m;
+      segmentado({ ancho: true, etiqueta: t("flex.modo"), opciones: [["comprobar", t("comprobar")], ["dimensionar", t("dimensionar")]], valor: est8.modo, onCambio: (m) => {
+        est8.modo = m;
         ctx2.pintar();
       } }),
       grupo(
@@ -15701,8 +16403,8 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
           ctx2.cambio({ estructura: true });
         } }),
         ...rect2 ? parejas2([
-          campoNum2({ id: "p-c1", etq: sub24("c", "1"), ref: D.pos === "interior" ? "" : t("pun.c1Ref"), valor: D.c1, mag: "diam", paso: 25, min: 1, max: 5e3, ayuda: t("pun.c1Ayuda"), onCambio: set("c1") }),
-          campoNum2({ id: "p-c2", etq: sub24("c", "2"), ref: D.pos === "interior" ? "" : t("pun.c2Ref"), valor: D.c2, mag: "diam", paso: 25, min: 1, max: 5e3, ayuda: t("pun.c2Ayuda"), onCambio: set("c2") })
+          campoNum2({ id: "p-c1", etq: sub25("c", "1"), ref: D.pos === "interior" ? "" : t("pun.c1Ref"), valor: D.c1, mag: "diam", paso: 25, min: 1, max: 5e3, ayuda: t("pun.c1Ayuda"), onCambio: set("c1") }),
+          campoNum2({ id: "p-c2", etq: sub25("c", "2"), ref: D.pos === "interior" ? "" : t("pun.c2Ref"), valor: D.c2, mag: "diam", paso: 25, min: 1, max: 5e3, ayuda: t("pun.c2Ayuda"), onCambio: set("c2") })
         ]) : parejas2([campoNum2({ id: "p-D", etq: "D", valor: D.D, mag: "diam", paso: 25, min: 1, max: 5e3, ayuda: t("pun.DAyuda"), onCambio: set("D") })])
       ),
       grupo(
@@ -15713,14 +16415,14 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
             cambio();
           } }),
           campoNum2({ id: "p-h", etq: "h", valor: D.h, mag: "diam", paso: 10, min: 50, max: 3e3, ayuda: t("pun.hAyuda"), onCambio: set("h") }),
-          campoNum2({ id: "p-d", etq: e23 ? sub24("d", "v") : "d", valor: D.d, mag: "diam", paso: 10, min: 20, max: 3e3, ayuda: t("pun.dAyuda"), onCambio: set("d") }),
-          e23 ? campoNum2({ id: "p-dlow", etq: t("pun.Dlower"), valor: D.Dlower, mag: "diam", paso: 2, min: 4, max: 63, ayuda: t("pun.DlowerAyuda"), onCambio: set("Dlower") }) : campoNum2({ id: "p-sig", etq: sub24("\u03C3", "cd"), ref: t("pun.sigRef"), valor: D.sigCd, mag: "tension", paso: 0.5, min: -20, max: 40, ayuda: t("pun.sigAyuda"), onCambio: set("sigCd") }),
-          campoNum2({ id: "p-rx", etq: sub24("\u03C1", "x"), valor: D.rhoX, mag: "cuantia", paso: 0.5, min: 0, max: 0.1, ayuda: t("pun.rhoAyuda"), onCambio: set("rhoX") }),
-          campoNum2({ id: "p-ry", etq: sub24("\u03C1", "y"), valor: D.rhoY, mag: "cuantia", paso: 0.5, min: 0, max: 0.1, ayuda: t("pun.rhoAyuda"), onCambio: set("rhoY") })
+          campoNum2({ id: "p-d", etq: e23 ? sub25("d", "v") : "d", valor: D.d, mag: "diam", paso: 10, min: 20, max: 3e3, ayuda: t("pun.dAyuda"), onCambio: set("d") }),
+          e23 ? campoNum2({ id: "p-dlow", etq: t("pun.Dlower"), valor: D.Dlower, mag: "diam", paso: 2, min: 4, max: 63, ayuda: t("pun.DlowerAyuda"), onCambio: set("Dlower") }) : campoNum2({ id: "p-sig", etq: sub25("\u03C3", "cd"), ref: t("pun.sigRef"), valor: D.sigCd, mag: "tension", paso: 0.5, min: -20, max: 40, ayuda: t("pun.sigAyuda"), onCambio: set("sigCd") }),
+          campoNum2({ id: "p-rx", etq: sub25("\u03C1", "x"), valor: D.rhoX, mag: "cuantia", paso: 0.5, min: 0, max: 0.1, ayuda: t("pun.rhoAyuda"), onCambio: set("rhoX") }),
+          campoNum2({ id: "p-ry", etq: sub25("\u03C1", "y"), valor: D.rhoY, mag: "cuantia", paso: 0.5, min: 0, max: 0.1, ayuda: t("pun.rhoAyuda"), onCambio: set("rhoY") })
         ]),
         ...parejas2([
-          campoNum2({ id: "p-ved", etq: sub24("V", "Ed"), valor: D.VEd, mag: "N", paso: 10, min: 0.01, max: 1e6, nombre: t("pun.VEdNombre"), ayuda: t("pun.VEdAyuda"), onCambio: set("VEd") }),
-          campoNum2({ id: "p-beta", etq: e23 ? sub24("\u03B2", "e") : "\u03B2", valor: beta2, mag: "ratio", paso: 0.05, min: 1, max: 3, ayuda: t("pun.betaAyuda"), onCambio: (v2) => {
+          campoNum2({ id: "p-ved", etq: sub25("V", "Ed"), valor: D.VEd, mag: "N", paso: 10, min: 0.01, max: 1e6, nombre: t("pun.VEdNombre"), ayuda: t("pun.VEdAyuda"), onCambio: set("VEd") }),
+          campoNum2({ id: "p-beta", etq: e23 ? sub25("\u03B2", "e") : "\u03B2", valor: beta2, mag: "ratio", paso: 0.05, min: 1, max: 3, ayuda: t("pun.betaAyuda"), onCambio: (v2) => {
             D.betaOtro = v2;
             D.exc = "otro";
             cambio();
@@ -15759,15 +16461,15 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
           return comp && cruz ? c : apaga(c, comp ? t("pun.motivoRet") : motivoDim);
         })(),
         (() => {
-          const c = campoNum2({ id: "p-nx", etq: sub24("n", "x"), valor: D.nx, mag: "n", paso: 1, min: 2, max: 40, ayuda: t("pun.nxAyuda"), onCambio: set("nx") });
+          const c = campoNum2({ id: "p-nx", etq: sub25("n", "x"), valor: D.nx, mag: "n", paso: 1, min: 2, max: 40, ayuda: t("pun.nxAyuda"), onCambio: set("nx") });
           return comp && !cruz ? c : apaga(c, comp ? t("pun.motivoCruz") : motivoDim);
         })(),
         (() => {
-          const c = campoNum2({ id: "p-ny", etq: sub24("n", "y"), valor: D.ny, mag: "n", paso: 1, min: 2, max: 40, ayuda: t("pun.nyAyuda"), onCambio: set("ny") });
+          const c = campoNum2({ id: "p-ny", etq: sub25("n", "y"), valor: D.ny, mag: "n", paso: 1, min: 2, max: 40, ayuda: t("pun.nyAyuda"), onCambio: set("ny") });
           return comp && !cruz ? c : apaga(c, comp ? t("pun.motivoCruz") : motivoDim);
         })(),
-        campoNum2({ id: "p-a1", etq: sub24("a", "1"), valor: D.a1, mag: "diam", paso: 5, min: 0, max: 2e3, ayuda: t("pun.a1Ayuda"), onCambio: set("a1") }),
-        campoNum2({ id: "p-sr", etq: sub24("s", "r"), valor: D.sr, mag: "diam", paso: 5, min: 20, max: 2e3, ayuda: t("pun.srAyuda"), onCambio: set("sr") })
+        campoNum2({ id: "p-a1", etq: sub25("a", "1"), valor: D.a1, mag: "diam", paso: 5, min: 0, max: 2e3, ayuda: t("pun.a1Ayuda"), onCambio: set("a1") }),
+        campoNum2({ id: "p-sr", etq: sub25("s", "r"), valor: D.sr, mag: "diam", paso: 5, min: 20, max: 2e3, ayuda: t("pun.srAyuda"), onCambio: set("sr") })
       ]);
       const cuerpo = h(
         "div",
@@ -15797,7 +16499,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       return h("fieldset", { class: "grupo" }, leyenda3, cuerpo);
     }
   }
-  function resultados13(ctx2, res) {
+  function resultados14(ctx2, res) {
     const p = ctx2.p;
     const centro = h("article", { class: "panel tarjeta" });
     const dcha = h("article", { class: "panel tarjeta" });
@@ -15807,7 +16509,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       return;
     }
     const D = datosDe(p);
-    const comp = est7.modo === "comprobar";
+    const comp = est8.modo === "comprobar";
     const e23 = es232(p);
     const ec = esEC22(p);
     refNorma2 = e23 ? "EC-2 2023" : ec ? "EC-2 + AN" : "EHE-08";
@@ -15832,7 +16534,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     if (e23 && !comp && r.tabla && r.tabla.some((f) => f.fiOk === false)) avisos4.push(aviso(t("pun.av.fiTabla")));
     const kN = (v2) => q(v2, "N");
     p.calculos.punzonamientoRes = {
-      modo: est7.modo,
+      modo: est8.modo,
       norma: p.norma,
       fecha: (/* @__PURE__ */ new Date()).toISOString().slice(0, 10),
       VEd: D.VEd,
@@ -15894,11 +16596,11 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     poner(dcha, h("div", { class: "traza" }, ...trazas2(r, x, comp, D, N.id).map((f) => {
       const det = h(
         "details",
-        { "data-ref": f.id, open: est7.abiertos.has(f.id) },
+        { "data-ref": f.id, open: est8.abiertos.has(f.id) },
         h("summary", {}, h("span", { class: "nom", html: f.nom }), h("span", { class: "val", html: f.val })),
         h("div", { class: "cuenta", html: f.cuenta })
       );
-      det.addEventListener("toggle", () => det.open ? est7.abiertos.add(f.id) : est7.abiertos.delete(f.id));
+      det.addEventListener("toggle", () => det.open ? est8.abiertos.add(f.id) : est8.abiertos.delete(f.id));
       return det;
     })));
     res.append(h("div", { class: "cuerpo" }, centro, dcha));
@@ -15950,7 +16652,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     const capCtrl = e23 ? r.VRdcs / r.beta : r.Vcs;
     const uProv = e23 ? r.bExt : r.uOutEf ?? r.unEf;
     const uReq = e23 ? r.b05out : r.uOutReq ?? r.unReq;
-    const nombre = (a, b) => `${sub24(a, b)}`;
+    const nombre = (a, b) => `${sub25(a, b)}`;
     const filas = [
       [t("pun.crit.cara"), "0", fmt(uCara, 0), `${kN(V)} \u2264 ${kN(r.Vmax)} kN ${ok(V <= r.Vmax + 1e-9)}`],
       [t("pun.crit.ctrl", e23 ? nombre("b", "0,5") : nombre("u", "1")), fmt(ctrl, 0), fmt(uCtrl, 0), `${kN(V)} \u2264 ${kN(capCtrl)} kN ${ok(V <= capCtrl + 1e-9)}`],
@@ -15970,8 +16672,8 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
   function cifrasDe(r, comp, e23) {
     const kN = (v2) => qh(v2, "N");
     const mmL = (v2) => `${fmt(v2, 0)}<span class="u">${ESP}mm</span>`;
-    const per = e23 ? [[`${sub24("b", "0,5")} \xB7 ${sub24("b", "0")}`, `${fmt(r.u.b05, 0)} \xB7 ${fmt(r.u.b0, 0)}<span class="u">${ESP}mm</span>`]] : [[`${sub24("u", "1")} \xB7 ${sub24("u", "0")}`, `${fmt(r.u.u1, 0)} \xB7 ${fmt(r.u.u0, 0)}<span class="u">${ESP}mm</span>`]];
-    const b = [[e23 ? sub24("\u03B2", "e") : "\u03B2", fmt(r.beta, 2)]];
+    const per = e23 ? [[`${sub25("b", "0,5")} \xB7 ${sub25("b", "0")}`, `${fmt(r.u.b05, 0)} \xB7 ${fmt(r.u.b0, 0)}<span class="u">${ESP}mm</span>`]] : [[`${sub25("u", "1")} \xB7 ${sub25("u", "0")}`, `${fmt(r.u.u1, 0)} \xB7 ${fmt(r.u.u0, 0)}<span class="u">${ESP}mm</span>`]];
+    const b = [[e23 ? sub25("\u03B2", "e") : "\u03B2", fmt(r.beta, 2)]];
     void mmL;
     if (!comp) return [[t("pun.c.vc"), kN(r.Vc)], [t("pun.c.vmax"), kN(r.Vmax)], ...per, ...b];
     if (r.sinArmadura) return [[t("pun.c.vc"), kN(r.Vc)], [t("pun.c.vmax"), kN(r.Vmax)], ...per, ...b];
@@ -15987,7 +16689,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     "per",
     t("pun.r.per"),
     e23 ? q(r.u.b05, "diam") : q(r.u.u1, "diam"),
-    `<span class="f">${t(e23 ? "pun.f.per23" : "pun.f.per")}</span><span class="n">${e23 ? `${sub24("b", "0,5")} = ${n1(r.u.b05, 0)} mm \xB7 ${sub24("b", "0")} = ${n1(r.u.b0, 0)} mm \xB7 d<sub>v</sub> = ${n1(x.d, 0)} mm` : `${sub24("u", "1")} = ${n1(r.u.u1, 0)} mm (2d = ${n1(2 * x.d, 0)} mm) \xB7 ${sub24("u", "0")} = ${n1(r.u.u0, 0)} mm`}</span>${art3(e23 ? "8.4.2(2)-(3)" : refNorma2 === "EHE-08" ? "46.2, 46.4.3" : "6.4.2, 6.4.5(3)")}`
+    `<span class="f">${t(e23 ? "pun.f.per23" : "pun.f.per")}</span><span class="n">${e23 ? `${sub25("b", "0,5")} = ${n1(r.u.b05, 0)} mm \xB7 ${sub25("b", "0")} = ${n1(r.u.b0, 0)} mm \xB7 d<sub>v</sub> = ${n1(x.d, 0)} mm` : `${sub25("u", "1")} = ${n1(r.u.u1, 0)} mm (2d = ${n1(2 * x.d, 0)} mm) \xB7 ${sub25("u", "0")} = ${n1(r.u.u0, 0)} mm`}</span>${art3(e23 ? "8.4.2(2)-(3)" : refNorma2 === "EHE-08" ? "46.2, 46.4.3" : "6.4.2, 6.4.5(3)")}`
   );
   function trazasEHE(r, x, comp) {
     const P = r.P;
@@ -16008,20 +16710,20 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       "vmax",
       t("pun.r.vmax"),
       q(r.Vmax, "N"),
-      `<span class="f">${t("pun.f.vmaxEHE")}</span><span class="n">${t("cor.f.f1cd", P.fck)} \u2192 ${n1(P.f1cd)} MPa \xB7 ${sub24("u", "0")} = ${n1(r.u.u0, 0)} mm</span>${art3("46.4.3")}`
+      `<span class="f">${t("pun.f.vmaxEHE")}</span><span class="n">${t("cor.f.f1cd", P.fck)} \u2192 ${n1(P.f1cd)} MPa \xB7 ${sub25("u", "0")} = ${n1(r.u.u0, 0)} mm</span>${art3("46.4.3")}`
     ));
     if (comp && !r.sinArmadura) {
       f.push(fila3(
         "vcs",
         t("pun.r.vcs"),
         q(r.Vcs, "N"),
-        `<span class="f">${t("pun.f.vcsEHE")}</span><span class="n">${sub24("A", "sw")} = ${n1(r.Asw, 0)} mm\xB2 \xB7 s = ${n1(x.arm.sr, 0)} mm \xB7 f<sub>y\u03B1,d</sub> = ${n1(P.fyd, 0)} MPa${P.topada ? ` (${t("pun.tope400")})` : ""}</span><span class="n">0,75 \xD7 ${n1(r.F0, 0)} + ${n1(r.Fs, 0)} = ${n1(r.Fcs, 0)} kN \u2192 ${q(r.Vcs, "N")} (\xF7 \u03B2)</span>${art3("46.4.1")}`
+        `<span class="f">${t("pun.f.vcsEHE")}</span><span class="n">${sub25("A", "sw")} = ${n1(r.Asw, 0)} mm\xB2 \xB7 s = ${n1(x.arm.sr, 0)} mm \xB7 f<sub>y\u03B1,d</sub> = ${n1(P.fyd, 0)} MPa${P.topada ? ` (${t("pun.tope400")})` : ""}</span><span class="n">0,75 \xD7 ${n1(r.F0, 0)} + ${n1(r.Fs, 0)} = ${n1(r.Fcs, 0)} kN \u2192 ${q(r.Vcs, "N")} (\xF7 \u03B2)</span>${art3("46.4.1")}`
       ));
       f.push(fila3(
         "ext",
         t("pun.r.ext"),
         q(r.Vext, "N"),
-        `<span class="f">${t("pun.f.extEHE")}</span><span class="n">${sub24("u", "n,ef")} = ${n1(r.unEf, 0)} mm (a 2d = ${n1(2 * x.d, 0)} mm del \xFAltimo per\xEDmetro, que est\xE1 a ${n1(r.deltaUltimo, 0)} mm del pilar)</span>${art3("46.4.2")}`
+        `<span class="f">${t("pun.f.extEHE")}</span><span class="n">${sub25("u", "n,ef")} = ${n1(r.unEf, 0)} mm (a 2d = ${n1(2 * x.d, 0)} mm del \xFAltimo per\xEDmetro, que est\xE1 a ${n1(r.deltaUltimo, 0)} mm del pilar)</span>${art3("46.4.2")}`
       ));
       f.push(...filasDisp(r, x));
     } else if (!comp && r.caso === "calculo") {
@@ -16035,7 +16737,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
         "nper",
         t("pun.r.nper"),
         String(r.nPer),
-        `<span class="f">${t("pun.f.nperEHE")}</span><span class="n">${sub24("u", "n,ef")} \u2265 ${n1(r.unReq, 0)} mm \u2192 \u03B4 = ${n1(r.deltaExt, 0)} mm; a<sub>1</sub> = ${n1(r.a1, 0)} mm, s = ${n1(r.sr, 0)} mm</span>${art3("46.4.2")}`
+        `<span class="f">${t("pun.f.nperEHE")}</span><span class="n">${sub25("u", "n,ef")} \u2265 ${n1(r.unReq, 0)} mm \u2192 \u03B4 = ${n1(r.deltaExt, 0)} mm; a<sub>1</sub> = ${n1(r.a1, 0)} mm, s = ${n1(r.sr, 0)} mm</span>${art3("46.4.2")}`
       ));
     }
     return f;
@@ -16059,20 +16761,20 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       "vmax",
       t("pun.r.vmax"),
       q(r.Vmax, "N"),
-      `<span class="f">${t("pun.f.vmaxEC")}</span><span class="n">\u03BD = ${n1(P.nu, 2)} \xB7 f<sub>cd</sub> = ${n1(P.fcd)} MPa \u2192 v<sub>Rd,m\xE1x</sub> = ${n1(P.vRdMax)} MPa \xB7 ${sub24("u", "0")} = ${n1(r.u.u0, 0)} mm</span>${art3("6.4.5(3), AN")}`
+      `<span class="f">${t("pun.f.vmaxEC")}</span><span class="n">\u03BD = ${n1(P.nu, 2)} \xB7 f<sub>cd</sub> = ${n1(P.fcd)} MPa \u2192 v<sub>Rd,m\xE1x</sub> = ${n1(P.vRdMax)} MPa \xB7 ${sub25("u", "0")} = ${n1(r.u.u0, 0)} mm</span>${art3("6.4.5(3), AN")}`
     ));
     if (comp && !r.sinArmadura) {
       f.push(fila3(
         "vcs",
         t("pun.r.vcs"),
         q(r.Vcs, "N"),
-        `<span class="f">${t("pun.f.vcsEC")}</span><span class="n">${sub24("A", "sw")} = ${n1(r.Asw, 0)} mm\xB2 \xB7 s<sub>r</sub> = ${n1(x.arm.sr, 0)} mm \xB7 f<sub>ywd,ef</sub> = ${n1(P.fywdEf, 0)} MPa (f<sub>ywd</sub> = ${n1(P.fywd, 0)})</span><span class="n">0,75 \xD7 ${n1(r.F0, 0)} + ${n1(r.Fs, 0)} = ${n1(r.Fcs, 0)} kN \u2192 ${q(r.Vcs, "N")} (\xF7 \u03B2)</span>${art3("6.4.5(1)")}`
+        `<span class="f">${t("pun.f.vcsEC")}</span><span class="n">${sub25("A", "sw")} = ${n1(r.Asw, 0)} mm\xB2 \xB7 s<sub>r</sub> = ${n1(x.arm.sr, 0)} mm \xB7 f<sub>ywd,ef</sub> = ${n1(P.fywdEf, 0)} MPa (f<sub>ywd</sub> = ${n1(P.fywd, 0)})</span><span class="n">0,75 \xD7 ${n1(r.F0, 0)} + ${n1(r.Fs, 0)} = ${n1(r.Fcs, 0)} kN \u2192 ${q(r.Vcs, "N")} (\xF7 \u03B2)</span>${art3("6.4.5(1)")}`
       ));
       f.push(fila3(
         "ext",
         t("pun.r.ext"),
         q(r.Vext, "N"),
-        `<span class="f">${t("pun.f.extEC")}</span><span class="n">${sub24("u", "out,ef")} \u2264 ${n1(r.uOutEf, 0)} mm (k\xB7d = ${n1(2 * x.d, 0)} mm del \xFAltimo per\xEDmetro, a ${n1(r.deltaUltimo, 0)} mm del pilar)</span>${art3("6.4.5(4), AN")}`
+        `<span class="f">${t("pun.f.extEC")}</span><span class="n">${sub25("u", "out,ef")} \u2264 ${n1(r.uOutEf, 0)} mm (k\xB7d = ${n1(2 * x.d, 0)} mm del \xFAltimo per\xEDmetro, a ${n1(r.deltaUltimo, 0)} mm del pilar)</span>${art3("6.4.5(4), AN")}`
       ));
       f.push(fila3(
         "min",
@@ -16092,7 +16794,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
         "nper",
         t("pun.r.nper"),
         String(r.nPer),
-        `<span class="f">${t("pun.f.nperEC")}</span><span class="n">${sub24("u", "out,ef")} = ${n1(r.uOutReq, 0)} mm \u2192 \u03B4 = ${n1(r.deltaOut, 0)} mm; m\xEDnimo 2 per\xEDmetros</span>${art3("6.4.5(4), 9.4.3(1)")}`
+        `<span class="f">${t("pun.f.nperEC")}</span><span class="n">${sub25("u", "out,ef")} = ${n1(r.uOutReq, 0)} mm \u2192 \u03B4 = ${n1(r.deltaOut, 0)} mm; m\xEDnimo 2 per\xEDmetros</span>${art3("6.4.5(4), 9.4.3(1)")}`
       ));
     }
     return f;
@@ -16105,7 +16807,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       "kpb",
       t("pun.r.kpb"),
       n1(s.kpb, 2),
-      `<span class="f">${t("pun.f.kpb")}</span><span class="n">${sub24("b", "0")} = ${n1(r.u.b0, 0)} mm \xB7 ${sub24("b", "0,5")} = ${n1(r.u.b05, 0)} mm \u2192 3,6\xB7(1 \u2212 ${n1(r.u.b0 / r.u.b05, 2)}) = ${n1(s.kpbBruto, 2)}</span>${art3("8.4.3(1), (8.96)")}`
+      `<span class="f">${t("pun.f.kpb")}</span><span class="n">${sub25("b", "0")} = ${n1(r.u.b0, 0)} mm \xB7 ${sub25("b", "0,5")} = ${n1(r.u.b05, 0)} mm \u2192 3,6\xB7(1 \u2212 ${n1(r.u.b0 / r.u.b05, 2)}) = ${n1(s.kpbBruto, 2)}</span>${art3("8.4.3(1), (8.96)")}`
     ));
     f.push(fila3(
       "tau",
@@ -16136,13 +16838,13 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
         "vcs",
         t("pun.r.vcs"),
         q(r.VuEf / r.beta, "N"),
-        `<span class="f">${t("pun.f.vcs23")}</span><span class="n">${sub24("A", "sw,per")} = ${n1(r.Asw, 0)} mm\xB2 \xB7 s<sub>r</sub> = ${n1(r.srEf, 0)} mm \xB7 f<sub>ywd</sub> = ${n1(P.fywd, 0)} MPa \u2192 V<sub>w</sub> = ${q(r.Vw, "N")}</span><span class="n">${t("pun.v.vcs23", n1(r.VRdcs, 0), q(r.VuEf, "N"))}</span>${art3("8.4.4(1), (8.104), (8.107)")}`
+        `<span class="f">${t("pun.f.vcs23")}</span><span class="n">${sub25("A", "sw,per")} = ${n1(r.Asw, 0)} mm\xB2 \xB7 s<sub>r</sub> = ${n1(r.srEf, 0)} mm \xB7 f<sub>ywd</sub> = ${n1(P.fywd, 0)} MPa \u2192 V<sub>w</sub> = ${q(r.Vw, "N")}</span><span class="n">${t("pun.v.vcs23", n1(r.VRdcs, 0), q(r.VuEf, "N"))}</span>${art3("8.4.4(1), (8.104), (8.107)")}`
       ));
       f.push(fila3(
         "ext",
         t("pun.r.ext"),
         n1(r.b05out, 0) + `${ESP}mm`,
-        `<span class="f">${t("pun.f.ext23")}</span><span class="n">d<sub>v,out</sub> = ${n1(r.dvOut, 0)} mm \xB7 ${sub24("b", "0,5,out")} = ${n1(r.b05out, 0)} mm \u2192 \u03B4 = ${n1(r.deltaOut, 0)} mm; el \xFAltimo per\xEDmetro est\xE1 a ${n1(r.deltaUltimo, 0)} mm${r.extOk ? "" : " (" + t("pun.noLlega") + ")"}</span>${art3("8.4.4(7), (8.112)")}`
+        `<span class="f">${t("pun.f.ext23")}</span><span class="n">d<sub>v,out</sub> = ${n1(r.dvOut, 0)} mm \xB7 ${sub25("b", "0,5,out")} = ${n1(r.b05out, 0)} mm \u2192 \u03B4 = ${n1(r.deltaOut, 0)} mm; el \xFAltimo per\xEDmetro est\xE1 a ${n1(r.deltaUltimo, 0)} mm${r.extOk ? "" : " (" + t("pun.noLlega") + ")"}</span>${art3("8.4.4(7), (8.112)")}`
       ));
       f.push(...filasDisp(r, x));
     } else if (!comp && r.caso === "calculo") {
@@ -16156,7 +16858,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
         "nper",
         t("pun.r.nper"),
         String(r.nPer),
-        `<span class="f">${t("pun.f.nper23")}</span><span class="n">${sub24("b", "0,5,out")} \u2192 \u03B4 = ${n1(r.deltaOut, 0)} mm; a<sub>1</sub> = ${n1(r.a1, 0)} mm, s<sub>1</sub> = ${n1(r.sr, 0)} mm; m\xEDnimo 2 per\xEDmetros</span>${art3("8.4.4(7), 12.5.1(2)")}`
+        `<span class="f">${t("pun.f.nper23")}</span><span class="n">${sub25("b", "0,5,out")} \u2192 \u03B4 = ${n1(r.deltaOut, 0)} mm; a<sub>1</sub> = ${n1(r.a1, 0)} mm, s<sub>1</sub> = ${n1(r.sr, 0)} mm; m\xEDnimo 2 per\xEDmetros</span>${art3("8.4.4(7), 12.5.1(2)")}`
       ));
     }
     return f;
@@ -16201,14 +16903,14 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     }, "i");
     return [btn, pop];
   }
-  function comandos10(ctx2) {
+  function comandos11(ctx2) {
     return [
       { k: "pun.cmdComprobar", b: "punzonamiento comprobar punching check", f: () => {
-        est7.modo = "comprobar";
+        est8.modo = "comprobar";
         ctx2.ir("punzonamiento");
       } },
       { k: "pun.cmdDimensionar", b: "punzonamiento dimensionar punching design", f: () => {
-        est7.modo = "dimensionar";
+        est8.modo = "dimensionar";
         ctx2.ir("punzonamiento");
       } }
     ];
@@ -16217,10 +16919,10 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
   // src/ui/vistas/rasante.js
   var rasante_exports = {};
   __export(rasante_exports, {
-    comandos: () => comandos11,
-    datos: () => datos14,
-    reiniciar: () => reiniciar8,
-    resultados: () => resultados14
+    comandos: () => comandos12,
+    datos: () => datos15,
+    reiniciar: () => reiniciar9,
+    resultados: () => resultados15
   });
 
   // src/norma/rasante/ehe08.js
@@ -16253,7 +16955,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     if (!arm || !(arm.s > 0) || !(arm.ramas > 0) || !(arm.fi > 0)) return 0;
     return arm.ramas * areaRama(arm.fi) / (arm.s * b);
   }
-  var factorAlfa = (mu, alfa) => mu * Math.sin(rad4(alfa)) + Math.cos(rad4(alfa));
+  var factorAlfa = (mu, alfa2) => mu * Math.sin(rad4(alfa2)) + Math.cos(rad4(alfa2));
   function validar(x) {
     if (!(x.fck > 0) || !(x.fykCosido > 0)) throw new ErrorClave("ras.errDatos");
     if (!(x.b > 0) || !(x.L > 0)) throw new ErrorClave("ras.errGeom");
@@ -16268,8 +16970,8 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       return { fi, ramas: x.ramas, Asw, sReq, s, rho: s ? Asw / (s * x.b) : null, AswS: s ? Asw / s * 1e3 : null };
     });
   }
-  function comprobarAlfa(alfa, min, max) {
-    if (!(alfa >= min - 1e-9 && alfa <= max + 1e-9)) throw new ErrorClave("ras.errAlfa", min, max);
+  function comprobarAlfa(alfa2, min, max) {
+    if (!(alfa2 >= min - 1e-9 && alfa2 <= max + 1e-9)) throw new ErrorClave("ras.errAlfa", min, max);
   }
   function rhoLineal(tau, fijo, pend) {
     if (tau <= fijo + 1e-12) return 0;
@@ -16295,8 +16997,8 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     const R = RUGOSIDADES[x.rug];
     if (!R) throw new ErrorClave("ras.errRug");
     if (x.fck > EHE08.fckMax) throw new ErrorClave("ras.errFck", EHE08.fckMax);
-    const alfa = x.alfa ?? 90;
-    comprobarAlfa(alfa, ALFA_MIN, ALFA_MAX);
+    const alfa2 = x.alfa ?? 90;
+    comprobarAlfa(alfa2, ALFA_MIN, ALFA_MAX);
     const gc = EHE08.gammaC;
     const fcd = EHE08.alfaCC() * x.fck / gc;
     const fctd = EHE08.fctk05(x.fck) / gc;
@@ -16306,7 +17008,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     const factor = Math.max(0.7, 1.3 - 0.3 * x.fck / 25);
     const tracc = sigN < 0;
     const coh = tracc ? 0 : R.beta * factor * fctd * (x.fatiga ? 0.5 : 1);
-    return { fck: x.fck, fcd, fctd, fyd, fydLibre, topada: fydLibre > FYD_TOPE3, sigN, tracc, R, factor, coh, alfa, lim: 0.25 * fcd, gc };
+    return { fck: x.fck, fcd, fctd, fyd, fydLibre, topada: fydLibre > FYD_TOPE3, sigN, tracc, R, factor, coh, alfa: alfa2, lim: 0.25 * fcd, gc };
   }
   function resistencia(P, rho, tauEd) {
     if (!(rho >= RHO_MIN)) return { estado: 0, tauRd: P.coh, coh: P.coh, fric: 0, cosido: 0, mu: null, lim: P.lim, limita: false, contabiliza: false };
@@ -16388,8 +17090,8 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     const R = RUGOSIDADES2[x.rug];
     if (!R) throw new ErrorClave("ras.errRug");
     if (x.fck > EC2_2004.fckMax) throw new ErrorClave("ras.errFck", EC2_2004.fckMax);
-    const alfa = x.alfa ?? 90;
-    comprobarAlfa(alfa, ALFA_MIN2, ALFA_MAX2);
+    const alfa2 = x.alfa ?? 90;
+    comprobarAlfa(alfa2, ALFA_MIN2, ALFA_MAX2);
     const gc = EC2_2004.gammaC;
     const fcd = EC2_2004.alfaCC() * x.fck / gc;
     const fctd = EC2_2004.fctk05(x.fck) / gc;
@@ -16400,7 +17102,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     const sigN = Math.min(sigBruta, sigTope);
     const tracc = sigN < 0;
     const coh = tracc ? 0 : R.c * fctd * (x.fatiga ? 0.5 : 1);
-    return { fck: x.fck, fcd, fctd, fyd, nu, R, sigN, sigBruta, sigTopada: sigBruta > sigTope, tracc, coh, alfa, lim: 0.5 * nu * fcd, gc };
+    return { fck: x.fck, fcd, fctd, fyd, nu, R, sigN, sigBruta, sigTopada: sigBruta > sigTope, tracc, coh, alfa: alfa2, lim: 0.5 * nu * fcd, gc };
   }
   function resistencia2(P, rho) {
     const cosido = rho * P.fyd * factorAlfa(P.R.mu, P.alfa);
@@ -16464,8 +17166,8 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     const R = RUGOSIDADES3[x.rug];
     if (!R) throw new ErrorClave("ras.errRug");
     if (x.fck > EC2_2023.fckMax) throw new ErrorClave("ras.errFck", EC2_2023.fckMax);
-    const alfa = x.alfa ?? 90;
-    comprobarAlfa(alfa, ALFA_MIN3, x.rug === "muyLisa" ? 90 : ALFA_MAX3);
+    const alfa2 = x.alfa ?? 90;
+    comprobarAlfa(alfa2, ALFA_MIN3, x.rug === "muyLisa" ? 90 : ALFA_MAX3);
     const anclado = x.anclado !== false;
     if (!anclado && R.cv2 === null) throw new ErrorClave("ras.errDentada");
     const gc = EC2_2023.gammaC;
@@ -16494,7 +17196,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       cv,
       topping,
       kdowel,
-      alfa,
+      alfa: alfa2,
       gc,
       mu: R.mu,
       lim: anclado ? 0.3 * fcd : 0.25 * fcd
@@ -16644,7 +17346,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
   }
 
   // src/ui/vistas/rasanteTraza.js
-  var sub25 = (a, b) => `${a}<sub>${b}</sub>`;
+  var sub26 = (a, b) => `${a}<sub>${b}</sub>`;
   var n12 = (v2, d = 2) => fmt(v2, d);
   var MPa = (v2, d = 3) => `${fmt(v2, d)}<span class="u">${ESP}MPa</span>`;
   var fila4 = (id, nom, val, cuenta) => ({ id, nom, val, cuenta });
@@ -16658,7 +17360,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       "tau",
       t("ras.r.tau"),
       MPa(r.tauEd),
-      `<span class="f">${t(N.id === "EHE-08" ? "ras.f.tauEHE" : N.id === "EC2-2004" ? "ras.f.tauEC" : "ras.f.tau23")}</span><span class="n">${sub25("R", "Ed")} = ${q(D.REd, "N")} \xB7 b = ${n12(D.b, 0)} mm \xB7 L = ${n12(D.L, 0)} mm \u2192 ${MPa(r.tauEd)}</span>` + art4(N.id === "EHE-08" ? "47.1" : N.id === "EC2-2004" ? "6.2.5 (6.24)" : "8.2.6(4) (8.74)")
+      `<span class="f">${t(N.id === "EHE-08" ? "ras.f.tauEHE" : N.id === "EC2-2004" ? "ras.f.tauEC" : "ras.f.tau23")}</span><span class="n">${sub26("R", "Ed")} = ${q(D.REd, "N")} \xB7 b = ${n12(D.b, 0)} mm \xB7 L = ${n12(D.L, 0)} mm \u2192 ${MPa(r.tauEd)}</span>` + art4(N.id === "EHE-08" ? "47.1" : N.id === "EC2-2004" ? "6.2.5 (6.24)" : "8.2.6(4) (8.74)")
     ));
     const res = comp ? r.res : r.caso === "calculo" ? N.resistencia(P, r.rhoNec, r.tauEd) : N.resistencia(P, 0, r.tauEd);
     const rho = comp ? r.rho : r.rhoNec ?? 0;
@@ -16787,11 +17489,11 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
   }
 
   // src/ui/vistas/rasante.js
-  var sub26 = (a, b) => `${a}<sub>${b}</sub>`;
+  var sub27 = (a, b) => `${a}<sub>${b}</sub>`;
   var nuc3 = (p) => nucleo3(p.norma);
-  var est8 = { modo: "comprobar", abiertos: /* @__PURE__ */ new Set() };
-  function reiniciar8() {
-    est8.abiertos = /* @__PURE__ */ new Set();
+  var est9 = { modo: "comprobar", abiertos: /* @__PURE__ */ new Set() };
+  function reiniciar9() {
+    est9.abiertos = /* @__PURE__ */ new Set();
   }
   var INICIAL4 = () => ({
     hormigon1: null,
@@ -16859,13 +17561,13 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     for (let i = 0; i < c.length; i += 2) filas.push(h("div", { class: "par2" }, ...c.slice(i, i + 2)));
     return filas;
   };
-  function datos14(ctx2, form) {
+  function datos15(ctx2, form) {
     const p = ctx2.p;
     poner(form, h("div", { class: "cab" }, h("h1", {}, t("m.rasante")), h("p", {}, t("ras.subtitulo"))));
     const N = nuc3(p);
     if (!N) return poner(form, aviso(t("ras.pendiente", p.norma), "info"));
     const D = datosDe2(p, N);
-    const comp = est8.modo === "comprobar";
+    const comp = est9.modo === "comprobar";
     const cambio = () => ctx2.cambio();
     const set = (k) => (v2) => {
       D[k] = v2;
@@ -16880,8 +17582,8 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     if (e23 && D.anclaje === "parcial") opciones.push(["topping", t("ras.topping")], ["bordeCerca", t("ras.bordeCerca")]);
     poner(
       form,
-      segmentado({ ancho: true, etiqueta: t("flex.modo"), opciones: [["comprobar", t("comprobar")], ["dimensionar", t("dimensionar")]], valor: est8.modo, onCambio: (m) => {
-        est8.modo = m;
+      segmentado({ ancho: true, etiqueta: t("flex.modo"), opciones: [["comprobar", t("comprobar")], ["dimensionar", t("dimensionar")]], valor: est9.modo, onCambio: (m) => {
+        est9.modo = m;
         ctx2.pintar();
       } }),
       grupo(
@@ -16901,14 +17603,14 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
         ...parejas3([
           campoNum({ id: "r-b", etq: "b", valor: D.b, mag: "diam", paso: 25, min: 10, max: 5e3, ayuda: t("ras.bAyuda"), onCambio: set("b") }),
           campoNum({ id: "r-L", etq: "L", valor: D.L, mag: "diam", paso: 100, min: 10, max: 1e5, ayuda: t("ras.LAyuda"), onCambio: set("L") }),
-          campoNum({ id: "r-red", etq: sub26("R", "Ed"), valor: D.REd, mag: "N", paso: 10, min: 0.01, max: 1e7, nombre: t("ras.REdNombre"), ayuda: t("ras.REdAyuda"), onCambio: set("REd") }),
-          campoNum({ id: "r-sig", etq: sub26("\u03C3", "n"), ref: t("ras.sigRef"), valor: D.sigN, mag: "tension", paso: 0.5, min: -20, max: 40, ayuda: t("ras.sigAyuda"), onCambio: set("sigN") })
+          campoNum({ id: "r-red", etq: sub27("R", "Ed"), valor: D.REd, mag: "N", paso: 10, min: 0.01, max: 1e7, nombre: t("ras.REdNombre"), ayuda: t("ras.REdAyuda"), onCambio: set("REd") }),
+          campoNum({ id: "r-sig", etq: sub27("\u03C3", "n"), ref: t("ras.sigRef"), valor: D.sigN, mag: "tension", paso: 0.5, min: -20, max: 40, ayuda: t("ras.sigAyuda"), onCambio: set("sigN") })
         ]),
         ehe ? h(
           "div",
           { class: "par2" },
           campoNum({ id: "r-hc", etq: "h", valor: D.h, mag: "diam", paso: 25, min: 0, max: 5e3, ayuda: t("ras.hAyuda"), onCambio: set("h") }),
-          campoNum({ id: "r-emin", etq: sub26("e", "m\xEDn"), valor: D.emin, mag: "diam", paso: 10, min: 0, max: 2e3, ayuda: t("ras.eminAyuda"), onCambio: set("emin") })
+          campoNum({ id: "r-emin", etq: sub27("e", "m\xEDn"), valor: D.emin, mag: "diam", paso: 10, min: 0, max: 2e3, ayuda: t("ras.eminAyuda"), onCambio: set("emin") })
         ) : null,
         ...opciones.map(([k, etq]) => h("label", { class: "tick" }, h("input", { type: "checkbox", id: `r-${k}`, checked: D[k], onchange: (e2) => {
           D[k] = e2.target.checked;
@@ -16954,7 +17656,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       })()
     );
   }
-  function resultados14(ctx2, res) {
+  function resultados15(ctx2, res) {
     const p = ctx2.p;
     const centro = h("article", { class: "panel tarjeta" });
     const dcha = h("article", { class: "panel tarjeta" });
@@ -16964,7 +17666,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       return;
     }
     const D = datosDe2(p, N);
-    const comp = est8.modo === "comprobar";
+    const comp = est9.modo === "comprobar";
     const x = entrada4(p, D, { dimensionando: !comp });
     if (!x) {
       poner(centro, aviso(t("ras.sinMat"), "info"));
@@ -16982,7 +17684,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     const avisos4 = (r.avisos ?? []).map((a) => aviso(t(a.clave, ...(a.args ?? []).map((v2) => typeof v2 === "number" ? fmt(v2, Math.abs(v2) < 10 ? 2 : 0) : v2))));
     const kN = (v2) => q(v2, "N");
     p.calculos.rasanteRes = {
-      modo: est8.modo,
+      modo: est9.modo,
       norma: p.norma,
       fecha: (/* @__PURE__ */ new Date()).toISOString().slice(0, 10),
       REd: D.REd,
@@ -17027,11 +17729,11 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     poner(dcha, h("div", { class: "traza" }, ...filaTraza(r, x, comp, D, N).map((f) => {
       const det = h(
         "details",
-        { "data-ref": f.id, open: est8.abiertos.has(f.id) },
+        { "data-ref": f.id, open: est9.abiertos.has(f.id) },
         h("summary", {}, h("span", { class: "nom", html: f.nom }), h("span", { class: "val", html: f.val })),
         h("div", { class: "cuenta", html: f.cuenta })
       );
-      det.addEventListener("toggle", () => det.open ? est8.abiertos.add(f.id) : est8.abiertos.delete(f.id));
+      det.addEventListener("toggle", () => det.open ? est9.abiertos.add(f.id) : est9.abiertos.delete(f.id));
       return det;
     })));
     res.append(h("div", { class: "cuerpo" }, centro, dcha));
@@ -17039,14 +17741,14 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
   function cifrasDe2(r, comp, N) {
     const tau = (v2, d = 2) => `${fmt(v2, d)}<span class="u">${ESP}MPa</span>`;
     const kN = (v2) => qh(v2, "N");
-    const fyd = [sub26("f", N.id === "EHE-08" ? "y\u03B1,d" : "yd"), tau(r.P.fyd, 0)];
+    const fyd = [sub27("f", N.id === "EHE-08" ? "y\u03B1,d" : "yd"), tau(r.P.fyd, 0)];
     if (comp) {
       const mu = r.res.mu == null ? "\u2014" : fmt(r.res.mu, 1);
       const etqMu = N.id === "EHE-08" && r.res.estado ? t("ras.c.muEstado", r.res.estado) : "\u03BC";
       return [
-        [sub26("\u03C4", "Ed"), tau(r.tauEd)],
-        [sub26("\u03C4", "Rd"), tau(r.tauRd)],
-        [sub26("R", "u"), kN(r.Ru)],
+        [sub27("\u03C4", "Ed"), tau(r.tauEd)],
+        [sub27("\u03C4", "Rd"), tau(r.tauRd)],
+        [sub27("R", "u"), kN(r.Ru)],
         [t("ras.c.rmax"), kN(r.Rmax)],
         [t("ras.c.coh"), tau(r.res.coh)],
         [t("ras.c.fric"), tau(r.res.fric)],
@@ -17056,7 +17758,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
         [etqMu, mu]
       ];
     }
-    const f = [[sub26("\u03C4", "Ed"), tau(r.tauEd)], [t("ras.c.rmax"), kN(r.Rmax)], [t("ras.c.coh"), tau(r.P.coh)], fyd];
+    const f = [[sub27("\u03C4", "Ed"), tau(r.tauEd)], [t("ras.c.rmax"), kN(r.Rmax)], [t("ras.c.coh"), tau(r.P.coh)], fyd];
     if (r.caso === "calculo") f.push(["\u03C1", `${fmt(r.rhoNec * 1e3, 2)}<span class="u">${ESP}\u2030</span>`], [t("ras.armNec"), qh(r.AswSNec / 1e3, "AswS")]);
     return f;
   }
@@ -17071,14 +17773,14 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       ...claves.map(([k, v2]) => h("details", { class: "pleg" }, h("summary", {}, h("span", { html: t(k) })), h("div", { class: "cuenta" }, h("p", { class: "nota", html: t(v2) }))))
     );
   }
-  function comandos11(ctx2) {
+  function comandos12(ctx2) {
     return [
       { k: "ras.cmdComprobar", b: "rasante comprobar junta interfaz shear interface check", f: () => {
-        est8.modo = "comprobar";
+        est9.modo = "comprobar";
         ctx2.ir("rasante");
       } },
       { k: "ras.cmdDimensionar", b: "rasante dimensionar junta interfaz shear interface design", f: () => {
-        est8.modo = "dimensionar";
+        est9.modo = "dimensionar";
         ctx2.ir("rasante");
       } }
     ];
@@ -17087,8 +17789,8 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
   // src/ui/vistas/vigas.js
   var vigas_exports = {};
   __export(vigas_exports, {
-    datos: () => datos15,
-    resultados: () => resultados15
+    datos: () => datos16,
+    resultados: () => resultados16
   });
 
   // src/core/vigas.js
@@ -17474,7 +18176,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     return Math.round(hormigon2.E * bruta(geometriaDe(p, s)).Ix);
   }
   var APOYOS = ["apoyo", "empotramiento", "libre"];
-  function datos15(ctx2, form) {
+  function datos16(ctx2, form) {
     const p = ctx2.p;
     const D = datosVigas(p);
     const cambio = () => ctx2.cambio();
@@ -17572,7 +18274,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     ));
   }
   var COLS = [["x", "x [m]", 3, 1], ["M", "M [kN\xB7m]", MAG.M.d, 1], ["V", "V [kN]", MAG.N.d, 1], ["flecha", "\u03B4 [mm]", 1, 1e3], ["giro", "\u03B8 [mrad]", 1, 1e3]];
-  function resultados15(ctx2, res) {
+  function resultados16(ctx2, res) {
     const p = ctx2.p;
     const D = datosVigas(p);
     const r = analizarViga({ L: D.L, EI: D.EI, izq: D.izq, der: D.der, cargas: D.cargas });
@@ -17686,7 +18388,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     const v2 = { cabeza: fijar(cabeza2), datos: fijar(datos4), resultados: fijar(resultados4) };
     return propia ? { ...secciones_exports, ...v2 } : v2;
   }
-  var VISTAS = { proyecto: proyecto_exports, materiales: materiales_exports, reologicas: reologicas_exports, secciones: vistaSecciones("seccion", true), durabilidad: durabilidad_exports5, diagramas: vistaSecciones("mk", false), vigas1vano: vigas_exports, flexion: flexion_exports, flexRecta: flexRecta_exports, fuego: fuego_exports, anclaje: anclaje_exports, cortante: cortante_exports, punzonamiento: punzonamiento_exports, rasante: rasante_exports };
+  var VISTAS = { proyecto: proyecto_exports, materiales: materiales_exports, reologicas: reologicas_exports, secciones: vistaSecciones("seccion", true), durabilidad: durabilidad_exports5, diagramas: vistaSecciones("mk", false), vigas1vano: vigas_exports, flexion: flexion_exports, flexRecta: flexRecta_exports, flexEsviada: flexEsviada_exports, fuego: fuego_exports, anclaje: anclaje_exports, cortante: cortante_exports, punzonamiento: punzonamiento_exports, rasante: rasante_exports };
   var MENU = [
     { grupo: "materiales", vistas: ["materiales", "reologicas"] },
     { grupo: "secciones", vistas: ["secciones", "durabilidad", "diagramas"] },
@@ -17935,8 +18637,8 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
   function pintar() {
     document.documentElement.lang = lenguaActual();
     pintarCabecera();
-    const datos16 = $("datos");
-    datos16.replaceChildren();
+    const datos17 = $("datos");
+    datos17.replaceChildren();
     const cab = $("cabeza");
     cab.replaceChildren();
     const vista = VISTAS[estado3.vista];
@@ -17950,10 +18652,10 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       }
     }
     try {
-      VISTAS[estado3.vista].datos(ctx, datos16);
+      VISTAS[estado3.vista].datos(ctx, datos17);
     } catch (e2) {
       console.error(e2);
-      datos16.append(aviso(tx(e2), "error"));
+      datos17.append(aviso(tx(e2), "error"));
     }
     pintarResultados();
   }
@@ -17969,7 +18671,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       if (x) foco(x.dataset.ref, false);
     });
   }
-  function comandos12() {
+  function comandos13() {
     const lista = [
       { k: "p.idioma", b: "idioma language english espa\xF1ol ingl\xE9s", f: () => {
         ponerLengua(lenguaActual() === "es" ? "en" : "es");
@@ -18052,7 +18754,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     document.addEventListener("fullscreenchange", pintar);
     comportamientoFormulario($("datos"));
     instalarFoco();
-    instalarPaleta(comandos12, avisar);
+    instalarPaleta(comandos13, avisar);
     document.addEventListener("keydown", (e2) => {
       if ((e2.ctrlKey || e2.metaKey) && !e2.shiftKey && e2.key.toLowerCase() === "z" && !e2.target.closest("input, textarea")) {
         e2.preventDefault();
