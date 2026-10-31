@@ -151,6 +151,25 @@ export function casillas({ id, etq, opciones, marcadas, onCambio }) {
 }
 
 /** Título en una línea y el selector en otra (norma de diseño): para desplegables y botones segmentados. */
+/** Regleta (guía §9.4): deslizador común. Etiqueta | pista | valor; mide el 80 % del gráfico al que acompaña.
+ *  Devuelve { el, input, valor(html) }. La pista se rellena con --p (se actualiza sola). */
+export function regleta({ etq, min, max, step = 1, valor, texto, etiqueta, onInput, onChange, clase = '' }) {
+  const input = h('input', { type: 'range', min: String(min), max: String(max), step: String(step), value: String(valor), 'aria-label': etiqueta ?? etq ?? '' });
+  const out = h('output', { class: 'rg-v' });
+  const pinta = () => {
+    const v = Number(input.value);
+    input.style.setProperty('--p', `${((v - Number(input.min)) / (Number(input.max) - Number(input.min) || 1)) * 100}%`);
+    out.innerHTML = texto ? texto(v) : String(v);
+  };
+  input.addEventListener('input', () => { pinta(); onInput?.(Number(input.value)); });
+  if (onChange) input.addEventListener('change', () => onChange(Number(input.value)));
+  pinta();
+  const el = h('div', { class: `regleta ${clase}`.trim() }, etq ? h('span', { class: 'rg-et', html: etq }) : null, input, out);
+  if (!etq) el.classList.add('sin-etq');
+  el.refrescar = () => pinta();
+  return el;
+}
+
 export const apilado = (c) => { c.classList.add('apilado'); return c; };
 
 /** Varios campos apilados en una fila (por ejemplo, tres diámetros). */

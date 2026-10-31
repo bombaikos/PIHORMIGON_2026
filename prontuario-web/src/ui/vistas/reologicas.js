@@ -8,7 +8,7 @@ import { fluencia, historia, tablaFluencia, humedadEn } from '../../core/reologi
 import { normaMat } from '../../norma/materiales/index.js';
 import { t } from '../i18n.js';
 import { fmt, ESP } from '../formato.js';
-import { h, poner, campoNum, selector, grupo, aviso, pestanas, tabla, segmentado } from '../campos.js';
+import { h, poner, campoNum, selector, grupo, aviso, pestanas, tabla, segmentado, regleta } from '../campos.js';
 import { rejilla } from '../rejilla.js';
 import { grafica } from '../grafica.js';
 
@@ -116,19 +116,17 @@ export function resultados(ctx, res) {
         h('p', { class: 'sub', html: `φ(t, ${sub('t', '0')}) · t ${t('rg.eje')} [${t('dias')}], ${sub('t', '0')} ${t('rg.eje2')} [${t('dias')}]` })));
     est.t0 = Math.min(Math.max(est.t0, tMin), tMax);
     const lienzo = h('div', { class: 'lienzo' });
-    const etqT0 = h('output', { class: 'gauge-valor' });
     const dibuja = () => {
       const t0 = est.t0;
       const ts = est.logT ? logx(Math.min(t0 * 1.02, tMax), Math.max(tMax, t0 * 1.03), 60) : Array.from({ length: 61 }, (_, i) => t0 * 1.02 + ((Math.max(tMax, t0 * 1.03) - t0 * 1.02) * i) / 60);
       const xy = ts.map((tt) => [lg(tt), fluencia(E.norma, { fck: m.fck, HR: humedadEn(base.humedad, tt), h0: est.h0, t0, t: tt, cemento: E.cemento }).phi]);
-      etqT0.textContent = `t₀ = ${fmt(t0, 0)} d`;
       lienzo.replaceChildren(grafica({ series: [{ nombre: `t₀ = ${fmt(t0, 0)} d`, xy, clase: 's1' }], sinTabla: true, ejeX: ejeX(dibuja), ejeY: { titulo: 'φ(t, t₀)', d: 2 }, archivo: 'fluencia', avisar: ctx.avisar }));
     };
-    const gauge = h('input', { type: 'range', class: 'gauge', min: String(tMin), max: String(tMax), step: '1', value: String(est.t0), 'aria-label': t('rg.t0Gauge'),
-      oninput: (e) => { est.t0 = Number(e.target.value); dibuja(); } });
+    const gauge = regleta({ etq: t('rg.t0Gauge'), min: tMin, max: tMax, valor: est.t0, texto: (v) => `${fmt(v, 0)} d`,
+      onInput: (v) => { est.t0 = v; dibuja(); } });
     dibuja();
     const dib = h('article', { class: 'panel tarjeta' }, h('h2', { html: `φ(t, ${sub('t', '0')})` }), h('p', { class: 'sub' }, t('rg.phiEvolucion')),
-      lienzo, h('div', { class: 'gauge-fila' }, h('span', { class: 'etq', html: t('rg.t0Gauge') }), gauge, etqT0));
+      lienzo, gauge);
     return poner(res, h('div', { class: 'cuerpo' }, centro, dib));
   }
 

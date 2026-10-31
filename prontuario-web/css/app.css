@@ -696,7 +696,6 @@ table.rejilla.numerada th:nth-child(2) { width: 22%; }
 table.rejilla.numerada th:nth-child(3) { width: 27%; }
 table.rejilla.numerada th:nth-child(4) { width: 24%; }
 table.rejilla.numerada tbody tr:not(.nueva) td:first-child { padding-left: 22px; }
-.desliza-sec { width: 100%; margin: 0; accent-color: var(--acento); height: 18px; }
 /* Datos de solo lectura (Diagramas): sin caja ni flecha, como texto */
 .fijo .caja { background: transparent; border-color: transparent; box-shadow: none; }
 .fijo input, .fijo select { appearance: none; -webkit-appearance: none; background: transparent; color: var(--tinta-2); opacity: 1; cursor: default; pointer-events: none; }
@@ -868,7 +867,6 @@ details.an-ce { margin-top: var(--e2); }
 .graf-tip i.s4, .marca-serie.s4 { background: repeating-linear-gradient(90deg, var(--tinta) 0 12px, transparent 12px 16px, var(--tinta) 16px 18px, transparent 18px 22px); }
 .graf-tip i.s5, .marca-serie.s5 { background: repeating-linear-gradient(90deg, var(--tinta) 0 5px, transparent 5px 8px); }
 .datos .campo:not(.apilado) select { text-align: right; text-align-last: right; }
-.datos .desliza-sec { margin: 2px 0 4px; }
 :root:not([data-densidad="comoda"]) .par2 .campo:not(.columna) > label { flex: 0 0 calc(44px + var(--mas) * 3); max-width: calc(44px + var(--mas) * 3); overflow: hidden; }
 
 /* Flexión compuesta recta: resultados plegados bajo el diagrama, que ocupa todo el ancho */
@@ -1036,9 +1034,6 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
 .seg.capsula { border-radius: 999px; padding: 2px; gap: 2px; background: var(--hoja); }
 .seg.capsula button { border-radius: 999px; min-height: 26px; font-size: var(--t-xs); padding-inline: 4px; }
 .seg.capsula button[aria-checked="true"] { background: var(--acento-suave); color: var(--acento); font-weight: 600; box-shadow: inset 0 0 0 1px var(--acento); }
-.desl-md { display: flex; align-items: center; gap: var(--e3); flex-shrink: 0; }
-.desl-md .desl-valor { font-size: var(--t-s); color: var(--tinta-2); white-space: nowrap; }
-.desl-md .desliza-sec { flex: 1; }
 .fcr-graf > .grafica { flex: 1; min-height: 0; }
 .seg button:disabled { opacity: .5; cursor: not-allowed; }
 
@@ -1048,9 +1043,6 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
 .leyenda-v{display:flex;flex-direction:row;flex-wrap:wrap;justify-content:center;gap:4px 18px;font-size:12px}
 .ley-item{display:flex;align-items:center;gap:6px;cursor:pointer;white-space:nowrap}
 .ley-muestra{width:34px;height:10px;flex:none}
-.gauge-fila{display:flex;align-items:center;gap:10px;font-size:12px}
-.gauge{flex:1}
-.gauge-valor{min-width:70px;text-align:right;font-weight:600}
 
 /* Tablas de resultados: fondo blanco, gris solo para los datos */
 .edad table.excel th, .edad table.excel td { background: var(--campo); }
@@ -1062,3 +1054,15 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
 /* Globo de las (i): flotante, fuera de los paneles (src/ui/globo.js); nunca lo corta un panel con scroll */
 .globo-i { position: fixed; z-index: 1000; box-sizing: border-box; width: max-content; max-width: min(280px, calc(100vw - 16px)); padding: 6px 9px; border: 1px solid var(--linea-fuerte); border-radius: var(--r-campo); background: var(--hoja); box-shadow: var(--sombra); color: var(--tinta); font: 400 var(--t-s)/1.4 var(--f); text-align: left; pointer-events: none; }
 .globo-i[hidden] { display: none; }
+
+/* Regleta: deslizador común (guía §9.4). Ancho: 80 % del gráfico al que acompaña, centrada. */
+.regleta { display: grid; grid-template-columns: max-content minmax(0, 1fr) 9ch; align-items: center; gap: var(--e3); width: 80%; margin: 4px auto; flex-shrink: 0; font-size: var(--t-s); color: var(--tinta-2); }
+.regleta.sin-etq { grid-template-columns: minmax(0, 1fr) 9ch; }
+.regleta .rg-et { white-space: nowrap; }
+.regleta .rg-v { text-align: right; font-weight: 600; color: var(--tinta); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.regleta input[type=range] { width: 100%; margin: 0; height: 22px; background: transparent; -webkit-appearance: none; appearance: none; }
+.regleta input[type=range]::-webkit-slider-runnable-track { height: 8px; border-radius: 4px; border: 1px solid var(--campo-borde); box-sizing: border-box; background: linear-gradient(to right, var(--acento) var(--p, 50%), var(--acento-suave) var(--p, 50%)); }
+.regleta input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; margin-top: -5px; border-radius: 50%; background: var(--acento); border: 3px solid var(--hoja); box-shadow: 0 0 0 1px var(--acento); box-sizing: border-box; }
+.regleta input[type=range]::-moz-range-track { height: 8px; border-radius: 4px; border: 1px solid var(--campo-borde); box-sizing: border-box; background: linear-gradient(to right, var(--acento) var(--p, 50%), var(--acento-suave) var(--p, 50%)); }
+.regleta input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: var(--acento); border: 3px solid var(--hoja); box-shadow: 0 0 0 1px var(--acento); box-sizing: border-box; }
+.regleta input[type=range]:focus-visible { outline: 2px solid var(--acento); outline-offset: 2px; border-radius: 4px; }
