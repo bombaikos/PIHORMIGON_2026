@@ -40,6 +40,9 @@ Resumen de lo decidido por José Luis (fechas de 2026). Cada módulo tiene su de
 - Rasante: dos hormigones, se usa el más débil; R_Ed directo en kN sobre longitud L. Hipótesis EHE-08 pendientes de verificar contra el BOE.
 - Punzonamiento: el 3.1 usa Vcu completo; EHE-08 y EC-2 2004 usan 0,75·τrd; EC-2 2023 mueve el perímetro a d/2.
 
+## Torsión (Pepiño, 31/10)
+- Solo rectangulares, torsión de equilibrio, sin axil; θ libre con su rango; **el programa no hace la interacción**: desplegable que recuerda usar el mismo θ que Cortante y sumar Al a la flexión. Detalle en `analisis/torsion-decisiones.md`.
+
 ## Análisis (vigas de un vano)
 - Solo un vano, apoyo/empotramiento/libre, cargas puntuales/distribuidas/momentos, EI = Ec·I editable; sin combinaciones. M se dibuja del lado traccionado. Reacciones y esfuerzos sin decimales (manda la guía §1 sobre el 1 decimal antiguo).
 
