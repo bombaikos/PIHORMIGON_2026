@@ -3,7 +3,7 @@
 Actualizado: 31/10/2026. **Actualiza este archivo al cerrar cada tarea.** El estado vivo está en GitHub: `bombaikos/pihormigon_2026`, pestañas Pull requests y Branches.
 
 ## Fusionado en `main` (hasta el PR 30)
-- Proyecto, Materiales (Crear y editar; Propiedades reológicas con dos pestañas: Historia deformacional y Coeficiente de fluencia) — PR 25, 28, 30.
+- Proyecto, Materiales (Crear y editar; Propiedades reológicas con dos pestañas: Historia deformacional y Coeficiente de fluencia) — PR 25, 28, 30 y reologicas-disposicion (gráficos 3:2 en la columna central, tablas con «Copiar tabla» a la derecha, eje de φ fijo).
 - Secciones (Rec viga, Rec pilar, T, circular, genérica; Durabilidad por norma; Diagramas M-κ; importación DXF) y selector de sección unificado — PR 27.
 - Análisis: Vigas de un vano — PR 18.
 - ELU: Flexión simple, Flexión compuesta recta (N-M) — PR 7, 8. Cortante (EHE-08, EC-2 2004+AN, EC-2 2023) — PR 22, 26. Punzonamiento — PR 19, 21. Anclaje y solapo. Rasante en juntas — PR 9, 20.
