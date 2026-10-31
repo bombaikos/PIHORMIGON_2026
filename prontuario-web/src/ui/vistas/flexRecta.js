@@ -133,7 +133,7 @@ export function datos(ctx, form) {
     return Number.isFinite(N) && Number.isFinite(M) ? sigla(coeficienteNM(c.d, N, M)) : '';
   };
   poner(form,
-    segmentado({ ancho: true, etiqueta: t('flex.modo'), opciones: [['comprobar', t('comprobar')], ['dimensionar', t('dimensionar')], ['diagrama', t('fcr.modoDiagrama')]], valor: est.modo, onCambio: (m) => { est.modo = m; ctx.pintar(); } }),
+    segmentado({ ancho: true, capsula: true, etiqueta: t('flex.modo'), opciones: [['comprobar', t('flex.v.comprobar')], ['dimensionar', t('flex.v.dimensionar')], ['diagrama', t('fcr.modoDiagrama')]], valor: est.modo, onCambio: (m) => { est.modo = m; ctx.pintar(); } }),
     est.modo !== 'diagrama' ? grupo(t('g.esfuerzo'),
       campoNum({ id: 'fr-n', etq: sub('N', 'Ed'), ref: t('fcr.compPos'), valor: est.NEd, mag: 'N', paso: 10, min: -1e6, max: 1e6, nombre: t('fcr.axil'), onCambio: (v) => { est.NEd = v; cambio(); } }),
       campoNum({ id: 'fr-m', etq: sub('M', 'Ed'), valor: est.MEd, mag: 'M', paso: 5, min: -1e6, max: 1e6, nombre: t('flex.momento'), onCambio: (v) => { est.MEd = v; cambio(); } }),
