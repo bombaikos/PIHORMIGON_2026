@@ -16,6 +16,11 @@ Como el «esviada por β» del 3.1: para cada dirección θ de la fibra más com
 - Dimensionar: factor k de la armadura de Secciones (misma disposición) para γ ≥ 1, ø propuesto de la serie, cuantía mínima de pilar como en la recta.
 - Verificado con tests: coincide con el motor recto en θ = 90° y 270°, simetrías, y una integral de fibras independiente en una sección en L.
 
+## Excentricidad mínima (verificado 31/10)
+- **EHE-08 42.2.1**: máx{h/20; 2 cm}, «contada desde el c.d.g. de la sección bruta y en la dirección más desfavorable de las direcciones principales y sólo en una de ellas».
+- **EC-2 2004 6.1(4)**: e0 = h/30, no menor que 20 mm (h = canto); **EC-2 2023 8.1.1(5)**: M_Ed,min = ±N_Ed·e_d,min con e_d,min = máx{h/30; 20 mm}. Ninguno dice nada de la esviada: se aplica como la EHE-08, en una sola dirección.
+- Decisión (Pepiño): selector en datos «e_mín» con la dirección (y → Mx, o x → My); por defecto y. No se aplica en las dos a la vez.
+- Todos los puntos del modo Diagrama usan el axil de la regleta.
+
 ## Por verificar
-- Excentricidad mínima en esviada: se aplica N·e_mín **por separado en cada dirección** (h/20 o h/30 en Mx; b/20 o b/30 en My; mín. 20 mm). No está comprobado que cada norma lo pida así.
 - Pendiente (en la lista de Pepiño): puntos (N, Mx, My) sobre el diagrama, otros modos del 3.1 (N–My a Mx constante), pretensado.

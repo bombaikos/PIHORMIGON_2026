@@ -5372,7 +5372,10 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     "fce.rayo": "Origen\u2013contorno",
     "fce.alfa": "\xC1ngulo del eje neutro",
     "fce.limiteCompresion": "compresi\xF3n",
-    "fce.subeEmin": (ex, ey) => `* Momento elevado a N\xB7e<sub>m\xEDn</sub> (e<sub>m\xEDn</sub> = ${ey} mm en Mx y ${ex} mm en My; criterio del Prontuario, por verificar en cada norma).`,
+    "fce.subeEmin": (dir, e2) => `* Momento elevado a N\xB7e<sub>m\xEDn</sub> en la direcci\xF3n ${dir} (e<sub>m\xEDn</sub> = ${e2} mm).`,
+    "fce.dirX": "x (My)",
+    "fce.dirY": "y (Mx)",
+    "fce.infoEmin": "Excentricidad m\xEDnima de compresi\xF3n, aplicada en una sola direcci\xF3n principal: EHE-08 42.2.1 (m\xE1x{h/20; 2 cm}, en la direcci\xF3n m\xE1s desfavorable y solo en una de ellas); EC-2 6.1(4) y EC-2 2023 8.1.1(5) (m\xE1x{h/30; 20 mm}). Elige en cu\xE1l se aplica.",
     "fce.fueraAxil": (l) => `El axil supera la capacidad de la secci\xF3n (l\xEDmite ${l}).`,
     "fce.f.coef": "\u03B3 = |OQ| / |OP| a excentricidad constante: P = (My,Ed, Mx,Ed); Q = corte con el contorno de la recta que une el origen con P",
     "fce.f.contorno": "Se gira la direcci\xF3n de la fibra m\xE1s comprimida; para cada una, estado \xFAltimo (m\xE1xima curvatura con plano admisible que equilibra N<sub>Ed</sub>) y esfuerzos integrados en la secci\xF3n entera: M<sub>x</sub> = \u222B\u03C3\xB7(y<sub>G</sub> \u2212 y)\xB7dA, M<sub>y</sub> = \u222B\u03C3\xB7(x \u2212 x<sub>G</sub>)\xB7dA",
@@ -5410,7 +5413,10 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     "fce.rayo": "Origin\u2013contour",
     "fce.alfa": "Neutral axis angle",
     "fce.limiteCompresion": "compression",
-    "fce.subeEmin": (ex, ey) => `* Moment raised to N\xB7e<sub>min</sub> (e<sub>min</sub> = ${ey} mm in Mx and ${ex} mm in My; Prontuario criterion, to be checked in each code).`,
+    "fce.subeEmin": (dir, e2) => `* Moment raised to N\xB7e<sub>min</sub> in direction ${dir} (e<sub>min</sub> = ${e2} mm).`,
+    "fce.dirX": "x (My)",
+    "fce.dirY": "y (Mx)",
+    "fce.infoEmin": "Minimum compression eccentricity, applied in one principal direction only: EHE-08 42.2.1 (max{h/20; 2 cm}, in the most unfavourable direction and only in one of them); EC-2 6.1(4) and EC-2 2023 8.1.1(5) (max{h/30; 20 mm}). Choose where it applies.",
     "fce.fueraAxil": (l) => `The axial load exceeds the section capacity (limit ${l}).`,
     "fce.f.coef": "\u03B3 = |OQ| / |OP| at constant eccentricity: P = (My,Ed, Mx,Ed); Q = intersection with the contour of the line from the origin through P",
     "fce.f.contorno": "The direction of the most compressed fibre is rotated; for each one, ultimate state (maximum curvature with an admissible plane balancing N<sub>Ed</sub>) and stresses integrated over the whole section: M<sub>x</sub> = \u222B\u03C3\xB7(y<sub>G</sub> \u2212 y)\xB7dA, M<sub>y</sub> = \u222B\u03C3\xB7(x \u2212 x<sub>G</sub>)\xB7dA",
@@ -12650,6 +12656,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     MxEd: 120,
     MyEd: 70,
     Ndiag: 500,
+    dirEmin: "y",
     puntos: [["120", "70"], ["-80", "110"], ["180", "-60"], ["40", "40"], ["", ""], ["", ""], ["", ""], ["", ""], ["", ""], ["", ""]],
     abiertos: /* @__PURE__ */ new Set()
   };
@@ -12681,8 +12688,8 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     return crudos.filter((x) => Number.isFinite(x.N) && Number.isFinite(x.Mx) && Number.isFinite(x.My)).map((x) => {
       if (!(x.N > 0)) return x;
       const sube = (M2, e2) => Math.abs(M2) < x.N * e2 - 1e-9 ? (M2 < 0 ? -1 : 1) * x.N * e2 : M2;
-      const Mx = sube(x.Mx, emin2.y);
-      const My = sube(x.My, emin2.x);
+      const Mx = est6.dirEmin === "y" ? sube(x.Mx, emin2.y) : x.Mx;
+      const My = est6.dirEmin === "x" ? sube(x.My, emin2.x) : x.My;
       return Mx !== x.Mx || My !== x.My ? { ...x, Mx, My, subeM: true } : x;
     });
   }
@@ -12692,7 +12699,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     if (geo.errores?.length) throw new Error(geo.errores.join(" "));
     emin2 = eMinimas(p.norma, geo);
     const ps = pares2();
-    const clave = JSON.stringify([p.norma, s.geo, s.armado, s.hormigon, s.acero, sepCapas(p), est6.modo, est6.fi, serieDiametros(), ps.map((x) => [x.N, x.Mx, x.My])]);
+    const clave = JSON.stringify([est6.dirEmin, p.norma, s.geo, s.armado, s.hormigon, s.acero, sepCapas(p), est6.modo, est6.fi, serieDiametros(), ps.map((x) => [x.N, x.Mx, x.My])]);
     if (memo2.clave === clave) return memo2.c;
     const mats = materialesSeccion(p, s);
     const m0 = modeloEsviada(geo, mats.hormigon, mats.acero);
@@ -12773,7 +12780,19 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
           est6.MyEd = v2;
           cambio();
         } }),
-        campoFi()
+        campoFi(),
+        selector({
+          id: "fe-emin",
+          etq: `${sub20("e", "m\xEDn")} [mm]`,
+          linea: true,
+          info: t("fce.infoEmin"),
+          opciones: [["y", `${t("fce.dirY")} \xB7 ${c ? fmt(emin2.y * 1e3, 0) : ""}`], ["x", `${t("fce.dirX")} \xB7 ${c ? fmt(emin2.x * 1e3, 0) : ""}`]],
+          valor: est6.dirEmin,
+          onCambio: (v2) => {
+            est6.dirEmin = v2;
+            cambio();
+          }
+        })
       ) : grupo(
         t("fce.puntos"),
         rejilla({
@@ -12846,7 +12865,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     const Asd = c.As0 * c.k;
     if (Asd + 1e-12 < c.Amin) res.append(aviso(t("fcr.bajoMin", q(Asd, "As"), q(c.Amin, "As"))));
     else if (dim && c.As0 * c.kEstricto + 1e-12 < c.Amin) res.append(aviso(t("fcr.mandaMin", q(c.Amin, "As")), "info"));
-    if (gam.some((x) => x.subeM)) res.append(aviso(t("fce.subeEmin", fmt(emin2.x * 1e3, 0), fmt(emin2.y * 1e3, 0)), "info"));
+    if (gam.some((x) => x.subeM)) res.append(aviso(t("fce.subeEmin", est6.dirEmin === "y" ? t("fce.dirY") : t("fce.dirX"), fmt(emin2[est6.dirEmin] * 1e3, 0)), "info"));
     if (gam.some((x) => x.N > c.lim.Ncomp + 1e-9 || x.N < c.lim.Ntrac - 1e-9)) res.append(aviso(t("fce.fueraAxil", `${q(c.lim.Ntrac, "N")} \u2026 ${q(c.lim.Ncomp, "N")}`)));
     return resultadoUnico2(ctx2, res, { s, c, gam: gam[0], gmin, dim });
   }
