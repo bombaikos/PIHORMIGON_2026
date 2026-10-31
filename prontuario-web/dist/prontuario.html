@@ -681,10 +681,7 @@ span.bien { color: var(--ok); font-weight: 600; }
 .zona-dxf b { font-weight: 600; }
 .info-i { position: relative; flex: none; width: 16px; height: 16px; border: 1px solid var(--tinta-3); border-radius: 50%; font: italic 600 calc(11px + var(--mas))/14px Georgia, serif; text-align: center; color: var(--tinta-3); cursor: help; }
 .info-i:hover, .info-i:focus-visible { color: var(--acento); border-color: var(--acento); outline: none; }
-.info-i::after { content: attr(data-tip); position: absolute; z-index: 20; right: -8px; bottom: calc(100% + 8px); width: 230px; padding: 6px 9px; border: 1px solid var(--linea-fuerte); border-radius: var(--r-campo); background: var(--hoja); box-shadow: var(--sombra); color: var(--tinta); font: 400 var(--t-s)/1.4 var(--f); text-align: left; display: none; pointer-events: none; }
-.info-i:hover::after, .info-i:focus-visible::after { display: block; }
 .info-i.izq { margin: 0 0 0 4px; align-self: center; }
-.info-i.izq::after { right: auto; left: -8px; }
 /* En los pares de datos la (i) va sobre la celda de la etiqueta, sin quitar ancho a la caja (las cajas miden lo mismo) */
 .par2 .campo { position: relative; }
 :root:not([data-densidad="comoda"]) .par2 .campo > .info-i.izq { position: absolute; margin: 0; left: calc(25px + var(--mas) * 2); top: 50%; transform: translateY(-50%); }
@@ -897,6 +894,7 @@ details.an-ce { margin-top: var(--e2); }
 .nota-diag { margin: 0; font-size: var(--t-s); color: var(--tinta-2); line-height: 1.5; flex-shrink: 0; }
 .fcr-lado { display: flex; flex-direction: column; gap: var(--e3); min-width: 0; min-height: 0; overflow: auto; }
 .fcr-sec svg { width: 100%; height: auto; max-height: 190px; }
+.fcr-lado .fcr-sec svg { max-height: min(300px, 42vh); }
 .fcr-lado table { width: 100%; }
 
 /* Punzonamiento · planta con perímetros de control, perímetro exterior y ramas de cercos */
@@ -1043,6 +1041,16 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
 .veredicto .nom-sec b { font-size: calc(24px + var(--mas)); line-height: 1.1; color: var(--tinta); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (max-width: 520px) { .veredicto.con-sec { grid-template-columns: auto auto; } .veredicto .nom-sec { grid-column: 1 / -1; border-right: 0; padding-right: 0; max-width: none; } }
 
+/* Cápsula: opción excluyente de modo de cálculo (propuesta en Flexión simple, pendiente de visto bueno) */
+.seg.capsula { border-radius: 999px; padding: 2px; gap: 2px; background: var(--hoja); }
+.seg.capsula button { border-radius: 999px; min-height: 26px; font-size: var(--t-xs); padding-inline: 4px; }
+.seg.capsula button[aria-checked="true"] { background: var(--acento-suave); color: var(--acento); font-weight: 600; box-shadow: inset 0 0 0 1px var(--acento); }
+.desl-md { display: flex; align-items: center; gap: var(--e3); flex-shrink: 0; }
+.desl-md .desl-valor { font-size: var(--t-s); color: var(--tinta-2); white-space: nowrap; }
+.desl-md .desliza-sec { flex: 1; }
+.fcr-graf > .grafica { flex: 1; min-height: 0; }
+.seg button:disabled { opacity: .5; cursor: not-allowed; }
+
 /* Propiedades reológicas: figura con leyenda vertical y deslizador de t0 */
 .fig-ley{display:flex;flex-direction:column;gap:6px;flex:1;min-height:0}
 .fig-ley .lienzo{flex:1;min-width:0}
@@ -1059,6 +1067,13 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
 #rg-historia td, #rg-historia tr.nueva td { background: var(--campo); } #rg-historia td.sel, #rg-historia tr.foco td { background: var(--acento-suave); }
 .tarjeta .seg.ancho{display:grid;grid-auto-flow:column;grid-auto-columns:1fr}.tarjeta .seg.ancho button{flex:none}
 #rg-historia td { height: 22px; } #rg-historia th { padding-block: 2px; }
+.tarjeta .lienzo.g32{flex:none;overflow:visible}.lienzo.g32 .grafica{display:flex;flex-direction:column}.lienzo.g32 .grafica svg.graf{flex:none;height:auto;aspect-ratio:3/2}
+.fig-ley .lienzo.g32{flex:none}
+.tarjeta > .boton.pequeno{align-self:flex-start}
+
+/* Globo de las (i): flotante, fuera de los paneles (src/ui/globo.js); nunca lo corta un panel con scroll */
+.globo-i { position: fixed; z-index: 1000; box-sizing: border-box; width: max-content; max-width: min(280px, calc(100vw - 16px)); padding: 6px 9px; border: 1px solid var(--linea-fuerte); border-radius: var(--r-campo); background: var(--hoja); box-shadow: var(--sombra); color: var(--tinta); font: 400 var(--t-s)/1.4 var(--f); text-align: left; pointer-events: none; }
+.globo-i[hidden] { display: none; }
 </style>
 
 <header class="barra">
@@ -2967,9 +2982,22 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     "flex.modo": "Tipo de c\xE1lculo",
     "flex.momento": "El momento",
     "flex.sinRect": "No hay vigas (Rec viga o T) en el proyecto. Cr\xE9alas en Secciones.",
-    "flex.signo": "Momento",
-    "flex.positivo": "Positivo (inf.)",
-    "flex.negativo": "Negativo (sup.)",
+    "flex.signo": "Signo del momento",
+    "flex.positivo": "+ Positivo",
+    "flex.negativo": "\u2212 Negativo",
+    "flex.infoAs2": (x, c) => `Se dispone A_s2 cuando M_Ed supera lo que resiste la secci\xF3n con solo A_s1 sin pasar de x/d = ${x} (rotura ${c} admitida, selector \xABRotura admitida\xBB). Cada cara tiene como m\xE1ximo 0,04\xB7A_c (EC-2 AN 9.2.1.1(3)).`,
+    "flex.rotAdm": "Rotura admitida",
+    "flex.rotAdmNoAplica": "Solo al dimensionar y en el Diagrama: al comprobar se usa la armadura dada.",
+    "flex.infoRotAdm": "L\xEDmite de x/d antes de poner armadura de compresi\xF3n: d\xFActil (redistribuci\xF3n \u2265 20 %), media (hasta x/d 0,448 en EC-2 5.5(4)) o fr\xE1gil (hasta que plastifica el acero). M\xE1s ductilidad pide m\xE1s A_s2.",
+    "a.max1": (m, a) => `A<sub>s1</sub> supera la m\xE1xima 0,04\xB7A<sub>c</sub> = <b>${m}</b> (hay ${a}); EC-2 AN 9.2.1.1(3).`,
+    "a.max2": (m, a, r) => `A<sub>s2</sub> supera la m\xE1xima 0,04\xB7A<sub>c</sub> = <b>${m}</b> (hay ${a}); ${r}.`,
+    "flex.v.comprobar": "Comprobaci\xF3n",
+    "flex.v.dimensionar": "Dimensionamiento",
+    "flex.diagrama": "Diagrama de dimensionamiento",
+    "g.principal": "(principal)",
+    "g.opuesta": "(cara opuesta)",
+    "flex.armDiagrama": "En el Diagrama la armadura sale del dimensionamiento: mueve M<sub>Ed</sub> con el deslizador.",
+    "flex.deslizaMd": "Momento de c\xE1lculo M_Ed",
     "flex.deSecciones": "La secci\xF3n viene de Secciones; aqu\xED solo se cambia la armadura.",
     "caraSup": "cara superior",
     "t.grafico": "Gr\xE1fico",
@@ -3985,9 +4013,22 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     "flex.modo": "Calculation",
     "flex.momento": "The moment",
     "flex.sinRect": "The project has no beams (rectangular beam or T). Create them in Sections.",
-    "flex.signo": "Moment",
-    "flex.positivo": "Positive (bottom)",
-    "flex.negativo": "Negative (top)",
+    "flex.signo": "Moment sign",
+    "flex.positivo": "+ Positive",
+    "flex.negativo": "\u2212 Negative",
+    "flex.infoAs2": (x, c) => `A_s2 is provided when M_Ed exceeds what the section resists with only A_s1 without going past x/d = ${x} (${c} failure allowed, \xABFailure allowed\xBB selector). Each face is limited to 0.04\xB7A_c (EC-2 NA 9.2.1.1(3)).`,
+    "flex.rotAdm": "Failure allowed",
+    "flex.rotAdmNoAplica": "Only when designing and in the Diagram: when checking, the given reinforcement is used.",
+    "flex.infoRotAdm": "x/d limit before adding compression reinforcement: ductile (redistribution \u2265 20 %), medium (up to x/d 0.448, EC-2 5.5(4)) or brittle (until the steel yields). More ductility needs more A_s2.",
+    "a.max1": (m, a) => `A<sub>s1</sub> exceeds the maximum 0.04\xB7A<sub>c</sub> = <b>${m}</b> (there is ${a}); EC-2 NA 9.2.1.1(3).`,
+    "a.max2": (m, a, r) => `A<sub>s2</sub> exceeds the maximum 0.04\xB7A<sub>c</sub> = <b>${m}</b> (there is ${a}); ${r}.`,
+    "flex.v.comprobar": "Check",
+    "flex.v.dimensionar": "Design",
+    "flex.diagrama": "Design diagram",
+    "g.principal": "(main)",
+    "g.opuesta": "(opposite face)",
+    "flex.armDiagrama": "In the Diagram the reinforcement comes from the design: move M<sub>Ed</sub> with the slider.",
+    "flex.deslizaMd": "Design moment M_Ed",
     "flex.deSecciones": "The section comes from Sections; only the reinforcement can be changed here.",
     "caraSup": "top face",
     "t.grafico": "Chart",
@@ -5830,10 +5871,10 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     if (!linea) c.classList.add("apilado");
     return c;
   }
-  function segmentado({ opciones, valor, onCambio, ancho = false, etiqueta }) {
+  function segmentado({ opciones, valor, onCambio, ancho = false, capsula = false, etiqueta }) {
     return h(
       "div",
-      { class: `seg${ancho ? " ancho" : ""}`, role: "radiogroup", "aria-label": etiqueta },
+      { class: `seg${ancho ? " ancho" : ""}${capsula ? " capsula" : ""}`, role: "radiogroup", "aria-label": etiqueta },
       ...opciones.map(([v2, e2, extra = {}]) => h("button", { type: "button", role: "radio", "aria-checked": String(v2 === valor), html: e2, ...extra, onclick: () => onCambio(v2) }))
     );
   }
@@ -6062,16 +6103,16 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
       ["**FIN DEL ARCHIVO", null]
     ];
     const out = { nombre, datosObra, hormigones: [], aceros: [], rec1: [], rec2: [], t: [], cir: [], gen: [], impresiones: [] };
-    let actual = null;
+    let actual2 = null;
     for (const raw of L.lineas.slice(L.i)) {
       const l = raw.trim();
       const b = bloques.find(([c]) => l.startsWith(c));
       if (b) {
-        actual = b[1];
+        actual2 = b[1];
         if (b[0] === "**FIN DEL ARCHIVO") break;
         continue;
       }
-      if (actual && l !== "") out[actual].push(l);
+      if (actual2 && l !== "") out[actual2].push(l);
     }
     return out;
   }
@@ -6557,7 +6598,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
       }
       pintar2();
     }
-    function poner2(r, c, v2) {
+    function poner3(r, c, v2) {
       while (datos16.length <= r) datos16.push(columnas.map(() => ""));
       datos16[r][c] = v2;
     }
@@ -6602,7 +6643,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
       const v2 = editor.value;
       editor = null;
       if (guardar4) {
-        poner2(act.r, act.c, v2);
+        poner3(act.r, act.c, v2);
         confirmar();
       } else pintar2();
     }
@@ -6625,7 +6666,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
       const esTitulo = (f) => f.some((v2, k) => columnas[act.c + k]?.num && v2.trim() && !Number.isFinite(leerNumero(v2)));
       if (bloque.length > 1 && esTitulo(bloque[0])) bloque = bloque.slice(1);
       bloque.forEach((f, i) => f.forEach((v2, k) => {
-        if (act.c + k < C) poner2(act.r + i, act.c + k, v2);
+        if (act.c + k < C) poner3(act.r + i, act.c + k, v2);
       }));
       ancla = { r: act.r + bloque.length - 1, c: Math.min(C - 1, act.c + (bloque[0]?.length ?? 1) - 1) };
       confirmar();
@@ -7052,7 +7093,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     const todos = [...series.flatMap((s) => s.xy), ...puntos.map((p) => [p.x, p.y])].filter(([x, y]) => Number.isFinite(x) && Number.isFinite(y));
     const ext = (i) => {
       const a = Math.min(0, ...todos.map((p) => p[i]));
-      const b = Math.max(0, ...todos.map((p) => p[i]));
+      const b = i === 1 && ejeY.max !== void 0 ? ejeY.max : Math.max(0, ...todos.map((p) => p[i]));
       const r = b > a ? b - a : 1;
       return [a - 0.1 * r, a === b ? a + 1 : b + 0.1 * r];
     };
@@ -7460,13 +7501,13 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
   }
   function cabeza(ctx2, el) {
     ctxCab = ctx2;
-    const actual = borrador(ctx2);
+    const actual2 = borrador(ctx2);
     const fila5 = h("div", { class: "selsec", role: "group", "aria-label": t("m.materiales") });
     for (const k of TIPOS) {
       const lista = ctx2.p[k];
       const act = k === est.tipo;
       const caja = h("div", { class: `desp${act ? " activo" : ""}` });
-      const titulo = act ? `${etiquetaTipo(k)}<span class="sep">\xB7</span><b>${actual.m.nombre}</b>` : etiquetaTipo(k);
+      const titulo = act ? `${etiquetaTipo(k)}<span class="sep">\xB7</span><b>${actual2.m.nombre}</b>` : etiquetaTipo(k);
       caja.append(h("button", {
         type: "button",
         "aria-haspopup": "listbox",
@@ -7479,7 +7520,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
           ctx2.pintar();
         }
       }));
-      if (est.abierto === k) caja.append(listaMateriales(ctx2, k, lista, act ? actual.nombre : void 0));
+      if (est.abierto === k) caja.append(listaMateriales(ctx2, k, lista, act ? actual2.nombre : void 0));
       fila5.append(caja);
     }
     fila5.append(h("button", { type: "button", class: "mas", title: t("mat.nuevoDe", etiquetaTipo(est.tipo)), onclick: () => elegir(ctx2, est.tipo, null) }, `+ ${t("mat.nuevo")}`));
@@ -7891,6 +7932,53 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     reiniciar: () => reiniciar2,
     resultados: () => resultados3
   });
+
+  // src/ui/designacion.js
+  function tarjetonDesignacion() {
+    return h(
+      "div",
+      { class: "tarjeton", "aria-live": "polite" },
+      h("div", { class: "t-tipo" }, t("dur.designacion")),
+      h("div", { class: "t-nom t-desig", id: "d-desig" }, ""),
+      h("div", { class: "t-res", id: "d-desig2" }, "")
+    );
+  }
+  function actualizarDesignacion(principal, secundaria) {
+    const a = document.getElementById("d-desig");
+    const b = document.getElementById("d-desig2");
+    if (a) {
+      a.textContent = principal;
+      a.classList.toggle("t-larga", principal.length > 22);
+    }
+    if (b) b.textContent = secundaria ?? "";
+  }
+  var plano2 = (s) => {
+    const d = document.createElement("div");
+    d.innerHTML = String(s);
+    return d.textContent;
+  };
+  var esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+  function botonCopiar(filas) {
+    const b = boton(t("dur.copiar"), async () => {
+      const datos16 = filas().map((f) => f.map((c) => typeof c === "number" || /^-?\d+(\.\d+)?$/.test(String(c)) ? String(c).replace(".", decimalAlCopiar()) : plano2(c)));
+      const txt = datos16.map((f) => f.join("	")).join("\r\n");
+      const htm = `<table>${datos16.map((f, i) => `<tr>${f.map((c) => `<${i ? "td" : "th"}>${esc(c)}</${i ? "td" : "th"}>`).join("")}</tr>`).join("")}</table>`;
+      try {
+        if (navigator.clipboard?.write && typeof ClipboardItem !== "undefined") await navigator.clipboard.write([new ClipboardItem({ "text/plain": new Blob([txt], { type: "text/plain" }), "text/html": new Blob([htm], { type: "text/html" }) })]);
+        else await navigator.clipboard.writeText(txt);
+        b.textContent = t("dur.copiado");
+      } catch {
+        b.textContent = t("dur.noCopiado");
+      }
+      setTimeout(() => {
+        b.textContent = t("dur.copiar");
+      }, 1600);
+    }, "secundario pequeno");
+    b.title = t("dur.copiarAyuda");
+    return b;
+  }
+
+  // src/ui/vistas/reologicas.js
   var TIEMPOS = [3, 7, 14, 28, 60, 90, 180, 360, 1e3, 3650];
   var filasPorDefecto = () => TIEMPOS.map((tt) => [String(tt), "60", "0"]);
   var inicial = () => ({
@@ -8042,24 +8130,25 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     if (est2.pestana === "fluencia") {
       const PHI = tablaFluencia(E.norma, { ...base2, humedad: base2.humedad }, tiempos, tiempos);
       const cab = [`${sub12("t", "0")}${ESP}\\${ESP}t`, ...tiempos.map((x) => dias(x))];
-      poner(
-        centro,
-        h(
-          "div",
-          { class: "lienzo" },
-          h("div", { class: "edad" }, tabla(PHI.map((f, i) => [dias(tiempos[i]), ...f.map((v2) => v2 === null ? "\u2013" : fmt(v2, 2))]), { cabecera: cab, clase: "num excel" })),
-          h("p", { class: "sub", html: `\u03C6(t, ${sub12("t", "0")}) \xB7 t ${t("rg.eje")} [${t("dias")}], ${sub12("t", "0")} ${t("rg.eje2")} [${t("dias")}]` })
-        )
+      const filasPhi = () => [cab.map((c) => String(c).replace(/\\/, "/")), ...PHI.map((f, i) => [dias(tiempos[i]), ...f.map((v2) => v2 === null ? "" : fmt(v2, 2))])];
+      const tarjetaPhi = h(
+        "article",
+        { class: "panel tarjeta" },
+        h("h2", {}, t("rg.resultados")),
+        botonCopiar(filasPhi),
+        h("p", { class: "sub", html: `\u03C6(t, ${sub12("t", "0")}) \xB7 t ${t("rg.eje")} [${t("dias")}], ${sub12("t", "0")} ${t("rg.eje2")} [${t("dias")}]` }),
+        h("div", { class: "edad" }, tabla(PHI.map((f, i) => [dias(tiempos[i]), ...f.map((v2) => v2 === null ? "\u2013" : fmt(v2, 2))]), { cabecera: cab, clase: "num excel" }))
       );
+      const phiMax = Math.max(...PHI.flat().filter((v2) => v2 !== null));
       est2.t0 = Math.min(Math.max(est2.t0, tMin), tMax);
-      const lienzo2 = h("div", { class: "lienzo" });
+      const lienzo2 = h("div", { class: "lienzo g32" });
       const etqT0 = h("output", { class: "gauge-valor" });
       const dibuja2 = () => {
         const t0 = est2.t0;
         const ts = est2.logT ? logx(Math.min(t0 * 1.02, tMax), Math.max(tMax, t0 * 1.03), 60) : Array.from({ length: 61 }, (_2, i) => t0 * 1.02 + (Math.max(tMax, t0 * 1.03) - t0 * 1.02) * i / 60);
         const xy = ts.map((tt) => [lg(tt), fluencia(E.norma, { fck: m.fck, HR: humedadEn(base2.humedad, tt), h0: est2.h0, t0, t: tt, cemento: E.cemento }).phi]);
         etqT0.textContent = `t\u2080 = ${fmt(t0, 0)} d`;
-        lienzo2.replaceChildren(grafica({ series: [{ nombre: `t\u2080 = ${fmt(t0, 0)} d`, xy, clase: "s1" }], sinTabla: true, ejeX: ejeX(dibuja2), ejeY: { titulo: "\u03C6(t, t\u2080)", d: 2 }, archivo: "fluencia", avisar: ctx2.avisar }));
+        lienzo2.replaceChildren(grafica({ series: [{ nombre: `t\u2080 = ${fmt(t0, 0)} d`, xy, clase: "s1" }], sinTabla: true, ejeX: ejeX(dibuja2), ejeY: { titulo: "\u03C6(t, t\u2080)", d: 2, max: phiMax }, archivo: "fluencia", avisar: ctx2.avisar }));
       };
       const gauge = h("input", {
         type: "range",
@@ -8075,22 +8164,15 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
         }
       });
       dibuja2();
-      const dib = h(
-        "article",
-        { class: "panel tarjeta" },
-        h("h2", { html: `\u03C6(t, ${sub12("t", "0")})` }),
-        h("p", { class: "sub" }, t("rg.phiEvolucion")),
-        lienzo2,
-        h("div", { class: "gauge-fila" }, h("span", { class: "etq", html: t("rg.t0Gauge") }), gauge, etqT0)
-      );
-      return poner(res, h("div", { class: "cuerpo" }, centro, dib));
+      poner(centro, h("h2", { html: `\u03C6(t, ${sub12("t", "0")})` }), lienzo2, h("div", { class: "gauge-fila" }, h("span", { class: "etq", html: t("rg.t0Gauge") }), gauge, etqT0));
+      return poner(res, h("div", { class: "cuerpo" }, centro, tarjetaPhi));
     }
     const saltos = base2.cargas.flatMap(([t0]) => [t0, t0 - 1e-3]);
     const mallaFig = [...logx(tMin, tMax, 90), ...tiempos, ...saltos].filter((x) => x >= tMin * 0.999).sort((a, b) => a - b);
     const mallaTabla = [.../* @__PURE__ */ new Set([...logx(tMin, tMax, 40).map((x) => Math.round(x)), ...tiempos])].sort((a, b) => a - b);
     const H = (tt) => historia(E.norma, { ...base2, tiempos: tt });
     const LINEAS = [["elastica", "rg.elastica", "s2"], ["diferida", "rg.diferida", "s3"], ["retraccion", "rg.retraccion", "s4"], ["total", "rg.total", "s1"]];
-    const lienzo = h("div", { class: "lienzo" });
+    const lienzo = h("div", { class: "lienzo g32" });
     const dibuja = () => {
       const G = H(mallaFig).map((g) => ({ ...g, secado: g.retraccion - g.autogena }));
       const ser = (k, nombre, clase) => ({ nombre, xy: G.map((g) => [lg(g.t), g[k] * 1e3]), clase });
@@ -8130,6 +8212,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     dibuja();
     poner(centro, h("div", { class: "fig-ley" }, lienzo, leyenda3));
     const marco2 = h("div", { class: "edad tabla-res" });
+    let copia3 = [];
     const pintaTabla = () => {
       const R = H(est2.completa ? mallaTabla : tiempos);
       const e2 = (x) => fmt(x * 1e6, 0);
@@ -8138,6 +8221,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
         `${sub12("\u03C3", "c")}<br><span class="u u-cab">[MPa]</span>`,
         ...["el", "dif", "cs", "tot"].map((k) => `${sub12("\u03B5", k)}<br><span class="u u-cab">[\xB710\u207B\u2076]</span>`)
       ];
+      copia3 = [["t [d\xEDas]", "\u03C3c [MPa]", "\u03B5el [\xB710\u207B\u2076]", "\u03B5dif [\xB710\u207B\u2076]", "\u03B5cs [\xB710\u207B\u2076]", "\u03B5tot [\xB710\u207B\u2076]"], ...R.map((g) => [dias(g.t), fmt(g.tension, 1), e2(g.elastica), e2(g.diferida), e2(g.retraccion), e2(g.total)])];
       marco2.replaceChildren(tabla(R.map((g) => [dias(g.t), fmt(g.tension, 1), e2(g.elastica), e2(g.diferida), e2(g.retraccion), e2(g.total)]), { cabecera: cab, clase: "num excel" }));
     };
     const tarjeta = h(
@@ -8145,6 +8229,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
       { class: "panel tarjeta" },
       h("h2", {}, t("rg.resultados")),
       h("p", { class: "sub" }, t("rg.notaHistoria")),
+      botonCopiar(() => copia3),
       segmentado({
         opciones: [[false, t("rg.resumida")], [true, t("rg.completa")]],
         valor: est2.completa,
@@ -8442,19 +8527,19 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
       const ciclos = [];
       for (let semilla = 0; semilla < aristas.length; semilla++) {
         if (visitadas.has(semilla)) continue;
-        let actual = aristas[semilla].a;
-        const origen = actual;
+        let actual2 = aristas[semilla].a;
+        const origen = actual2;
         let id = semilla;
         const poligono = [];
         for (; ; ) {
           const arista = aristas[id];
-          const directo = arista.a === actual;
+          const directo = arista.a === actual2;
           const pts = directo ? arista.puntos : [...arista.puntos].reverse();
           poligono.push(...pts.slice(0, -1));
           visitadas.add(id);
-          actual = directo ? arista.b : arista.a;
-          if (actual === origen) break;
-          const restantes = nodos[actual].aristas.filter((j) => !visitadas.has(j));
+          actual2 = directo ? arista.b : arista.a;
+          if (actual2 === origen) break;
+          const restantes = nodos[actual2].aristas.filter((j) => !visitadas.has(j));
           if (restantes.length !== 1) throw new ErrorClave("dxf.abierto", capa2);
           id = restantes[0];
         }
@@ -9425,13 +9510,13 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
   function cabeza2(ctx2, el) {
     ctxCab2 = ctx2;
     const S = ctx2.p.secciones;
-    const actual = borrador2(ctx2);
+    const actual2 = borrador2(ctx2);
     const fila5 = h("div", { class: "selsec", role: "group", "aria-label": t("seccion") });
     for (const f of FORMAS) {
       const delTipo = S.filter((x) => x.forma === f);
       const act = f === est3.forma;
       const caja = h("div", { class: `desp${act ? " activo" : ""}` });
-      const titulo = act ? `${t(`forma.${f}`)}<span class="sep">\xB7</span><b>${actual.s.nombre}</b>` : t(`forma.${f}`);
+      const titulo = act ? `${t(`forma.${f}`)}<span class="sep">\xB7</span><b>${actual2.s.nombre}</b>` : t(`forma.${f}`);
       const bt = h("button", {
         type: "button",
         "aria-haspopup": "listbox",
@@ -9445,7 +9530,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
         }
       });
       caja.append(bt);
-      if (abierto === f) caja.append(listaSecciones(ctx2, f, delTipo, act ? actual.nombre : void 0));
+      if (abierto === f) caja.append(listaSecciones(ctx2, f, delTipo, act ? actual2.nombre : void 0));
       fila5.append(caja);
     }
     fila5.append(h("button", { type: "button", class: "mas", title: t("sec.nuevaDe", t(`forma.${est3.forma}`)), onclick: () => elegir2(ctx2, est3.forma, null) }, `+ ${t("sec.nueva")}`));
@@ -10248,51 +10333,6 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     return `${clase} ${clases.length ? clases.join(", ") : "\u2026"} D${arido} ${CONSISTENCIA_EN[consistencia] ?? "S2"}${cl3}`;
   }
 
-  // src/ui/designacion.js
-  function tarjetonDesignacion() {
-    return h(
-      "div",
-      { class: "tarjeton", "aria-live": "polite" },
-      h("div", { class: "t-tipo" }, t("dur.designacion")),
-      h("div", { class: "t-nom t-desig", id: "d-desig" }, ""),
-      h("div", { class: "t-res", id: "d-desig2" }, "")
-    );
-  }
-  function actualizarDesignacion(principal, secundaria) {
-    const a = document.getElementById("d-desig");
-    const b = document.getElementById("d-desig2");
-    if (a) {
-      a.textContent = principal;
-      a.classList.toggle("t-larga", principal.length > 22);
-    }
-    if (b) b.textContent = secundaria ?? "";
-  }
-  var plano2 = (s) => {
-    const d = document.createElement("div");
-    d.innerHTML = String(s);
-    return d.textContent;
-  };
-  var esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
-  function botonCopiar(filas) {
-    const b = boton(t("dur.copiar"), async () => {
-      const datos16 = filas().map((f) => f.map((c) => typeof c === "number" ? String(c).replace(".", decimalAlCopiar()) : plano2(c)));
-      const txt = datos16.map((f) => f.join("	")).join("\r\n");
-      const htm = `<table>${datos16.map((f, i) => `<tr>${f.map((c) => `<${i ? "td" : "th"}>${esc(c)}</${i ? "td" : "th"}>`).join("")}</tr>`).join("")}</table>`;
-      try {
-        if (navigator.clipboard?.write && typeof ClipboardItem !== "undefined") await navigator.clipboard.write([new ClipboardItem({ "text/plain": new Blob([txt], { type: "text/plain" }), "text/html": new Blob([htm], { type: "text/html" }) })]);
-        else await navigator.clipboard.writeText(txt);
-        b.textContent = t("dur.copiado");
-      } catch {
-        b.textContent = t("dur.noCopiado");
-      }
-      setTimeout(() => {
-        b.textContent = t("dur.copiar");
-      }, 1600);
-    }, "secundario pequeno");
-    b.title = t("dur.copiarAyuda");
-    return b;
-  }
-
   // src/ui/vistas/durabilidadEHE08.js
   var sub15 = (a, b) => `${a}<sub>${b}</sub>`;
   var U4 = (ud) => ` <span class="u u-cab">[${ud}]</span>`;
@@ -10931,6 +10971,12 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     };
   }
   function cuantiasMinMax(d, elemento = "viga", { Nd = 0 } = {}) {
+    const c = cuantiasBase(d, elemento, { Nd });
+    const Ac = d.Ac ?? d.b * d.h;
+    return { ...c, Amax2: 0.04 * Ac, refMax2: c.norma === "EHE-08" || c.norma === "EHE-98" ? "EC-2 AN 9.2.1.1(3) (criterio del Prontuario)" : "EC-2 AN 9.2.1.1(3)" };
+  }
+  function cuantiasBase(d, elemento, Nd) {
+    Nd = Nd?.Nd ?? 0;
     if (d.hormigon.norma === "EC2-2023") return cuantiasEC2(d, elemento, Nd);
     if (d.hormigon.norma === "EC2-2004") return cuantiasEC2004(d, elemento, Nd);
     if (d.hormigon.norma === "EHE-08") return cuantiasEHE08(d, elemento, Nd);
@@ -11014,7 +11060,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     const Amax = Ac * fcd / fyd;
     const kh2 = Math.min(0.8, Math.max(0.5, 0.8 - 0.6 * (Math.min(d.b, d.h) - 0.3)));
     const AminFis = 0.2 * kh2 * fctm * (Ac / 2) / fyk;
-    const base2 = { Amax, criterioAmax: true, AminFis, kh: kh2, norma: "EC2-2023" };
+    const base2 = { Amax: 0.04 * Ac, AminFis, kh: kh2, norma: "EC2-2023" };
     if (!["viga", "losa", "muro", "pilar"].includes(elemento)) throw new Error(`Elemento desconocido: ${elemento}`);
     if (elemento === "pilar") {
       const Ageo = 2e-3 * Ac;
@@ -11028,12 +11074,12 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     const A = regulaFalsi((a) => MR(a) - Mcr, 1e-7, Amax, 1e-3);
     return { ...base2, Amin: A, Amec: A, Ageo: 0, Mcr, regla: "12.2(2), f\xF3rmula 12.1: MR,min (acero a fyk) \u2265 Mcr (fctm)" };
   }
-  function momentoLimite(d) {
+  function momentoLimite(d, xdMax) {
     const ecu = d.hormigon.comp[d.hormigon.comp.length - 1][0];
     const ey = epsPlastificacion(d.acero);
     const dd = d.h - d.rinf;
-    const kappa = (Math.abs(ecu) + ey) / dd;
-    const xlim = Math.abs(ecu) / kappa;
+    const xlim = xdMax > 0 ? Math.min(xdMax * dd, Math.abs(ecu) / (Math.abs(ecu) + ey) * dd) : Math.abs(ecu) / (Math.abs(ecu) + ey) * dd;
+    const kappa = Math.abs(ecu) / xlim;
     const sec = seccionRectangular({ ...d, barrasExtra: [] }, 0, 0);
     const { N, M: M2 } = esfuerzos(sec, ecu, kappa, dd);
     return { Mlim: M2, Nlim: N, xlim, kappa };
@@ -11095,15 +11141,15 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     const avisos4 = [];
     const c = cuantiasMinMax(d, elemento, { Nd });
     if (d.Ainf < c.Amin) avisos4.push("La cuant\xEDa de armadura es inferior a la m\xEDnima");
-    if (d.Ainf > c.Amax) avisos4.push("La cuant\xEDa supera el criterio de cuant\xEDa m\xE1xima del programa (capacidad mec\xE1nica del acero = hormig\xF3n)");
+    if (d.Ainf > c.Amax) avisos4.push("La cuant\xEDa supera la m\xE1xima (0,04\xB7Ac)");
     const r = Mu(d, d.Ainf, d.Asup, -Nd);
     return { ...detalle(d, r, d.Ainf, d.Asup), cuantias: c, avisos: avisos4 };
   }
-  function dimensionar(d, Md, { Nd = 0, elemento = "viga" } = {}) {
+  function dimensionar(d, Md, { Nd = 0, elemento = "viga", xdMax } = {}) {
     if (!(Md > 0)) throw new Error("El momento solicitante debe ser un n\xFAmero positivo");
     const N = -Nd;
     const c = cuantiasMinMax(d, elemento, { Nd });
-    const lim = momentoLimite(d);
+    const lim = momentoLimite(d, xdMax);
     const base2 = { Md, cuantias: c, Mlim: lim.Mlim, xlim: lim.xlim };
     const rMin = Mu(d, c.Amin, 0, N);
     if (rMin.M > Md) {
@@ -11111,7 +11157,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     }
     const fyd = resistenciaCalculo(d.acero);
     const Alim = -lim.Nlim / fyd;
-    const AsupMax = (c.Amax - Alim) / 2;
+    const AsupMax = xdMax ? Math.max(0, Math.min(c.Amax2, c.Amax - Alim)) : (c.Amax - Alim) / 2;
     const rMax = Mu(d, Alim + AsupMax, AsupMax, N);
     if (rMax.M < Md) {
       return { ...base2, caso: "escuadria", mensaje: "Hay que aumentar la escuadr\xEDa", MuMax: rMax.M };
@@ -11235,29 +11281,30 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     const umbralDuctil = (0.8 - k1) / k2;
     const umbralMedia = (1 - k1) / k2;
     const redMax = Math.max(0, 1 - (k1 + k2 * xd));
-    const clase = xd > xdLim || xd > umbralMedia ? "fragil" : xd > umbralDuctil ? "media" : "ductil";
+    const tol = 1e-3;
+    const clase = xd > xdLim + tol || xd > umbralMedia + tol ? "fragil" : xd > umbralDuctil + tol ? "media" : "ductil";
     return { xd, clase, umbralDuctil, umbralMedia, xdLim, redMax, k1, k2, ecu, norma: "EC2-2004", ref: "UNE-EN 1992-1-1, 5.5(4) y AN (k1 = 0,44; k3 = 0,54)" };
   }
-  function curvaMRd(d, { Nd = 0, elemento = "viga", n = 40 } = {}) {
+  function curvaDiseno(d, { Nd = 0, elemento = "viga", n = 60, xdMax } = {}) {
     const c = cuantiasMinMax(d, elemento, { Nd });
-    const lim = momentoLimite(d);
+    const lim = momentoLimite(d, xdMax);
     const Alim = -lim.Nlim / resistenciaCalculo(d.acero);
-    const Atope = Math.min(Alim + Math.max(0, (c.Amax - Alim) / 2), 1.3 * Alim);
+    const AlimF = -momentoLimite(d).Nlim / resistenciaCalculo(d.acero);
+    const Atope = Math.max(Math.min(Alim + c.Amax2, c.Amax, 1.3 * AlimF), 1.5 * c.Amin);
     const N = -Nd;
-    const simple = [];
-    const doble = [];
-    for (let i = 1; i <= n; i++) {
-      const A = Atope * i / n;
+    const as1 = [];
+    const as2 = [];
+    for (let i = 0; i <= n; i++) {
+      const A = c.Amin + (Atope - c.Amin) * (i / n);
+      const A2 = Math.max(0, A - Alim);
       try {
-        simple.push([A, Mu(d, A, 0, N).M]);
-      } catch {
-      }
-      try {
-        doble.push([A, Mu(d, A, Math.max(0, A - Alim), N).M]);
+        const M2 = Mu(d, A, A2, N).M;
+        as1.push([A, M2]);
+        as2.push([A2, M2]);
       } catch {
       }
     }
-    return { simple, doble, Alim, Amin: c.Amin, Amax: c.Amax, Mlim: lim.Mlim };
+    return { as1, as2, Alim, Amin: c.Amin, Amax: c.Amax, Amax2: c.Amax2, Mlim: lim.Mlim, Mmin: as1[0]?.[1], Mmax: as1.at(-1)?.[1] };
   }
 
   // src/ui/vistas/flexion.js
@@ -11277,6 +11324,25 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     }
     return c;
   }
+  var XD2 = (U7) => ({ ductil: U7.umbralDuctil, media: U7.umbralMedia, fragil: U7.xdLim });
+  function rotAdmitida(ctx2, p, s) {
+    let U7 = null;
+    try {
+      U7 = clasificarRotura(datosViga(p, s, est4.signo), 0);
+    } catch {
+    }
+    const lim = U7 ? XD2(U7) : {};
+    const aplica = est4.modo !== "comprobar";
+    return h(
+      "div",
+      { class: "campo apilado", title: aplica ? void 0 : t("flex.rotAdmNoAplica") },
+      h("span", { class: "etq-grupo" }, t("flex.rotAdm"), U7 ? h("span", { class: "info-i izq", tabindex: 0, role: "img", "aria-label": t("flex.infoRotAdm"), "data-tip": t("flex.infoRotAdm") }, "i") : null),
+      segmentado({ ancho: true, etiqueta: t("flex.rotAdm"), opciones: ["ductil", "media", "fragil"].map((k) => [k, `${t(`rot.${k}`)}${U7 ? ` <span class="n">${fmt(lim[k], 3)}</span>` : ""}`, aplica ? {} : { disabled: true }]), valor: est4.rotura, onCambio: (v2) => {
+        est4.rotura = v2;
+        ctx2.pintar();
+      } })
+    );
+  }
   function datos8(ctx2, form) {
     const p = ctx2.p;
     const R = vigas(p);
@@ -11292,12 +11358,12 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
         est4.i = p.secciones.findIndex((x) => x.nombre === nombre);
         ctx2.pintar();
       } }),
-      segmentado({ ancho: true, etiqueta: t("flex.signo"), opciones: [["1", t("flex.positivo")], ["-1", t("flex.negativo")]], valor: String(est4.signo), onCambio: (v2) => {
-        est4.signo = Number(v2);
+      segmentado({ ancho: true, capsula: true, etiqueta: t("flex.modo"), opciones: [["comprobar", t("flex.v.comprobar")], ["dimensionar", t("flex.v.dimensionar")], ["diagrama", t("fcr.modoDiagrama")]], valor: est4.modo, onCambio: (m) => {
+        est4.modo = m;
         ctx2.pintar();
       } }),
-      segmentado({ ancho: true, etiqueta: t("flex.modo"), opciones: [["comprobar", t("comprobar")], ["dimensionar", t("dimensionar")]], valor: est4.modo, onCambio: (m) => {
-        est4.modo = m;
+      selector({ id: "f-signo", etq: t("flex.signo"), linea: true, opciones: [["1", t("flex.positivo")], ["-1", t("flex.negativo")]], valor: String(est4.signo), onCambio: (v2) => {
+        est4.signo = Number(v2);
         ctx2.pintar();
       } }),
       grupo(
@@ -11305,7 +11371,8 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
         campoNum({ id: "f-md", etq: sub18("M", "Ed") + (pos ? "\u207A" : "\u207B"), valor: est4.Md, mag: "M", paso: 1, min: 0.1, max: 1e5, nombre: t("flex.momento"), onCambio: (v2) => {
           est4.Md = v2;
           cambio();
-        } })
+        } }),
+        rotAdmitida(ctx2, ctx2.p, s)
       )
     );
     const ct = capa(s, pos ? "inf" : "sup");
@@ -11324,7 +11391,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
           cc.texto = v2;
           cambio();
         } })
-      ) : h("p", { class: "calculada", html: t("flex.armCalculada") }),
+      ) : h("p", { class: "calculada", html: t(est4.modo === "diagrama" ? "flex.armDiagrama" : "flex.armCalculada") }),
       par(
         campoNum({ id: "f-d1", etq: sub18("d", "1"), valor: ct.d, mag: "long", paso: 5, min: 0.01, max: 1, onCambio: (v2) => {
           ct.d = v2;
@@ -11350,7 +11417,8 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     const geo = geometriaDe(p, s);
     const d = datosViga(p, s, est4.signo);
     const neg = est4.signo < 0;
-    const opt = { elemento: est4.elemento };
+    const xdMax = XD2(clasificarRotura(d, 0))[est4.rotura];
+    const opt = { elemento: est4.elemento, xdMax };
     let r;
     let dim = null;
     let prop = null;
@@ -11365,7 +11433,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     } else {
       dim = dimensionar(d, est4.Md, opt);
       r = dim;
-      if (dim.caso !== "escuadria") prop = propuestaArmado(d, dim.Ainf, dim.Asup, est4.Md);
+      if (dim.caso !== "escuadria" && est4.modo === "dimensionar") prop = propuestaArmado(d, dim.Ainf, dim.Asup, est4.Md);
     }
     (_a = p.calculos).flexionSimple ?? (_a.flexionSimple = {});
     p.calculos.flexionSimple[s.nombre] = { modo: est4.modo, signo: est4.signo, elemento: est4.elemento, MEd: est4.Md, norma: p.norma, fecha: (/* @__PURE__ */ new Date()).toISOString().slice(0, 10), resultado: { caso: r.caso, MRd: r.Mu, As1: r.Ainf, As2: r.Asup, x: r.x, rotura: clasificarRotura(d, r.x).clase } };
@@ -11385,7 +11453,8 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
       const cu = r.cuantias;
       if (r.Ainf < (cu.Amec ?? 0) - 1e-12) avisos4.push(t("a.minMec", q(cu.Amec, "As"), q(r.Ainf, "As"), cu.regla ?? ""));
       else if (r.Ainf < (cu.Ageo ?? 0) - 1e-12) avisos4.push(t("a.minGeo", q(cu.Ageo, "As"), q(r.Ainf, "As")));
-      if (r.Ainf > r.cuantias.Amax) avisos4.push(t("a.maxima"));
+      if (r.Ainf > cu.Amax) avisos4.push(t("a.max1", q(cu.Amax, "As"), q(r.Ainf, "As")));
+      if (r.Asup > cu.Amax2) avisos4.push(t("a.max2", q(cu.Amax2, "As"), q(r.Asup, "As"), cu.refMax2));
     } else {
       if (r.caso === "escuadria") {
         res.append(veredicto("nocumple", t("aumentar"), t("armaduraNec"), "\u2014", t("a.escuadria", q(r.MuMax, "M"))));
@@ -11403,12 +11472,13 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     if (rot.xd > rot.xdLim && !(r.Asup > 0)) avisos4.push(t("a.ductil"));
     if (avisos4.length) res.append(h("div", { class: "avisos" }, ...avisos4.map((a) => aviso(a))));
     const Asreq = dim && dim.caso !== "escuadria" ? dim.Ainf : NaN;
-    const cif = est4.modo === "comprobar" ? [[sub18("M", "Rd"), qh(r.Mu, "M")], [t("c.x"), qh(r.x, "long")], ["x / d", fmt(rot.xd, 3)], [sub18("A", "s1,req"), qh(Asreq, "As")]] : [[sub18("A", "s1,req"), qh(r.Ainf, "As")], [sub18("A", "s2,req"), qh(r.Asup, "As")], [t("c.x"), qh(r.x, "long")], ["x / d", fmt(rot.xd, 3)]];
+    const cif = est4.modo === "comprobar" ? [[sub18("M", "Rd"), qh(r.Mu, "M")], [t("c.x"), qh(r.x, "long")], ["x / d", fmt(rot.xd, 3)], [sub18("A", "s1,req"), qh(Asreq, "As")]] : [[sub18("A", "s1,req"), qh(r.Ainf, "As")], [`${sub18("A", "s2,req")}${infoAs2(xdMax)}`, qh(r.Asup, "As")], [t("c.x"), qh(r.x, "long")], ["x / d", fmt(rot.xd, 3)]];
     const [caraT, caraC] = neg ? ["sup", "inf"] : ["inf", "sup"];
     const dibGeo = est4.modo === "comprobar" ? geo : geometriaDe(p, { ...s, armado: [
       { tipo: "capa", cara: caraT, texto: String(Math.round(r.Ainf * 1e6)), d: d.rinf },
       ...r.Asup > 0 ? [{ tipo: "capa", cara: caraC, texto: String(Math.round(r.Asup * 1e6)), d: d.rsup }] : []
     ] });
+    if (est4.modo === "diagrama") return res.append(panelDiagrama(ctx2, { s, d, neg, xdMax }));
     const ancha = dibGeo.caja.xmax - dibGeo.caja.xmin > 2 * dibGeo.h;
     const lienzo = h("div", { class: "lienzo", html: dibujoFlexion(dibGeo, s, d, r, est4.desp) });
     const deslizador = h("input", {
@@ -11434,14 +11504,13 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
       leyenda2()
     );
     const tarjetaRes = h("article", { class: "panel tarjeta" });
-    const lista = [["resultados", t("t.resultados")], ["grafico", t("t.grafico")], ...prop ? [["propuesta", t("t.propuesta")]] : []];
+    const lista = [["resultados", t("t.resultados")], ...prop ? [["propuesta", t("t.propuesta")]] : []];
     if (!lista.some(([k]) => k === est4.pestanaRes)) est4.pestanaRes = "resultados";
     tarjetaRes.append(pestanas({ lista, activa: est4.pestanaRes, onCambio: (k) => {
       est4.pestanaRes = k;
       ctx2.pintar();
     } }));
     if (est4.pestanaRes === "propuesta") tarjetaRes.append(propuesta(ctx2, s, prop, r, neg));
-    else if (est4.pestanaRes === "grafico") tarjetaRes.append(graficoMRd(ctx2, d, r, dim));
     else tarjetaRes.append(roturaChip(rot), cifras(cif), h("p", { class: "sub", style: "margin:0" }, t("t.desplegar")), traza(p, d, r, Asreq, rot));
     res.append(h("div", { class: "cuerpo dib-ancho" }, tarjetaDib, tarjetaRes));
   }
@@ -11455,31 +11524,103 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
       h("span", { class: "pista", html: `x/d = ${fmt(rot.xd, 3)}` })
     );
   }
-  var ind = (a, b) => `${a}<tspan class="ind" dy="3">${b}</tspan>`;
-  function graficoMRd(ctx2, d, r, dim) {
-    const c = curvaMRd(d, { elemento: est4.elemento });
-    const KA = MAG.As.f;
-    const simple = c.simple.map(([a, m]) => [a * KA, m]);
-    const doble = c.doble.map(([a, m]) => [a * KA, m]);
-    const xmax = Math.max(...simple.map((v2) => v2[0]), 1);
-    const series = [
-      { nombre: t("g.soloAs1"), clase: "s1", xy: simple },
-      { nombre: t("g.conAs2"), clase: "s2", xy: doble },
-      { nombre: `${ind("M", "Ed")}`, clase: "ref", cruz: false, xy: [[0, est4.Md], [xmax, est4.Md]] }
-    ];
-    const puntos = [{ x: r.Ainf * KA, y: r.Mu, etq: est4.modo === "comprobar" ? t("g.estaSeccion") : t("g.dimensionada"), clase: "s1" }];
-    if (est4.modo === "comprobar" && Number.isFinite(c.Amin)) puntos.push({ x: c.Amin * KA, y: curvaPunto(d, c.Amin), etq: `${ind("A", "s,min")}`, clase: "ref", abajo: true });
-    return h("div", { class: "grafica-flex" }, grafica({
-      series,
-      puntos,
-      ejeX: eje("As", ind("A", "s1")),
-      ejeY: eje("M", ind("M", "Rd")),
-      archivo: `MRd-As ${ctx2.p.secciones[est4.i].nombre}${est4.signo < 0 ? " M-" : " M+"}`,
-      avisar: ctx2.avisar
-    }), h("p", { class: "nota", html: t("g.nota", q(c.Alim, "As")) }));
+  function interp(xy, x) {
+    if (x <= xy[0][0]) return xy[0][1];
+    for (let i = 1; i < xy.length; i++) {
+      if (x <= xy[i][0]) return xy[i - 1][1] + (xy[i][1] - xy[i - 1][1]) * (x - xy[i - 1][0]) / (xy[i][0] - xy[i - 1][0] || 1);
+    }
+    return xy.at(-1)[1];
   }
-  function curvaPunto(d, A) {
-    return comprobar({ ...d, Ainf: A, Asup: 0 }).Mu;
+  var infoAs2 = (xd) => `<span class="info-i izq" tabindex="0" role="img" aria-label="${t("flex.infoAs2", fmt(xd, 3), t(`rot.${est4.rotura}`).toLowerCase())}" data-tip="${t("flex.infoAs2", fmt(xd, 3), t(`rot.${est4.rotura}`).toLowerCase())}">i</span>`;
+  var ind = (a, b) => `${a}<tspan class="ind" dy="3">${b}</tspan>`;
+  function panelDiagrama(ctx2, { s, d, neg, xdMax }) {
+    const p = ctx2.p;
+    const c = curvaDiseno(d, { elemento: est4.elemento, xdMax });
+    const KA = MAG.As.f;
+    const as1 = c.as1.map(([a, m]) => [a * KA, m]);
+    const as2 = c.as2.map(([a, m]) => [a * KA, m]);
+    const xmax = as1.at(-1)[0];
+    const lista = c.as1.map(([a, m]) => [m, a * KA]);
+    const lista2 = c.as2.map(([a, m]) => [m, a * KA]);
+    const caja = h("div", { class: "fcr-graf" });
+    const dibujar = (Md) => {
+      const A1 = interp(lista, Md);
+      const A2 = interp(lista2, Md);
+      const puntos = [
+        { x: A1, y: Md, etq: `${ind("A", "s1")} = ${fmt(A1, 0)}`, clase: "s1", marca: "neutro" },
+        ...A2 > 0 ? [{ x: A2, y: Md, etq: `${ind("A", "s2")} = ${fmt(A2, 0)}`, clase: "s2", abajo: true, marca: "neutro" }] : [],
+        { x: c.Amin * KA, y: c.Mmin, etq: ind("A", "s,min"), clase: "ref", abajo: true, marca: "neutro" }
+      ];
+      return grafica({
+        series: [
+          { nombre: `${ind("A", "s1")} ${t("g.principal")}`, clase: "s1", xy: as1 },
+          { nombre: `${ind("A", "s2")} ${t("g.opuesta")}`, clase: "s2", xy: as2 },
+          { nombre: ind("M", "Ed"), clase: "ref", cruz: false, xy: [[0, Md], [xmax, Md]] }
+        ],
+        puntos,
+        ejeX: eje("As", 'A<tspan class="ind" dy="3">s</tspan>'),
+        ejeY: eje("M", ind("M", "Rd")),
+        archivo: `Diagrama flexion ${s.nombre}${est4.signo < 0 ? " M-" : " M+"}`,
+        avisar: ctx2.avisar
+      });
+    };
+    const lado = h("aside", { class: "fcr-lado" });
+    const pintarLado = (Md) => {
+      let r;
+      try {
+        r = dimensionar(d, Md, { elemento: est4.elemento, xdMax });
+      } catch {
+        r = null;
+      }
+      if (!r || r.caso === "escuadria") return lado.replaceChildren(aviso(t("a.escuadria", q(r?.MuMax ?? NaN, "M"))));
+      const rot = clasificarRotura(d, r.x);
+      lado.replaceChildren(
+        h("div", { class: "fcr-sec", html: dibujoSeccionViva(p, s, d, r, neg) }),
+        roturaChip(rot),
+        cifras([[sub18("A", "s1,req"), qh(r.Ainf, "As")], [`${sub18("A", "s2,req")}${infoAs2(xdMax)}`, qh(r.Asup, "As")], [t("c.x"), qh(r.x, "long")], ["x / d", fmt(rot.xd, 3)]])
+      );
+    };
+    let graf = dibujar(est4.Md);
+    caja.append(graf);
+    pintarLado(est4.Md);
+    const Mlo = Math.ceil(c.Mmin);
+    const Mhi = Math.floor(c.Mmax);
+    const texto = (Md) => `${sub18("M", "Ed")} = <b>${fmt(Md, MAG.M.d)}</b> ${MAG.M.ud}`;
+    const valor = h("output", { class: "desl-valor", html: texto(est4.Md) });
+    const deslizador = h("input", { type: "range", class: "desliza-sec", min: Mlo, max: Mhi, step: 1, value: Math.min(Math.max(est4.Md, Mlo), Mhi), "aria-label": t("flex.deslizaMd") });
+    deslizador.addEventListener("input", () => {
+      const Md = +deslizador.value;
+      est4.Md = Md;
+      valor.innerHTML = texto(Md);
+      const campo = document.getElementById("f-md");
+      if (campo) campo.value = fmt(Md, MAG.M.d);
+      const nuevo2 = dibujar(Md);
+      graf.replaceWith(nuevo2);
+      graf = nuevo2;
+      pintarLado(Md);
+    });
+    deslizador.addEventListener("change", () => ctx2.cambio());
+    caja.append(h("div", { class: "desl-md" }, valor, deslizador));
+    return h(
+      "article",
+      { class: "panel tarjeta" },
+      h("h2", {}, `${t("flex.diagrama")} \xB7 ${s.nombre}`),
+      h("div", { class: "fcr-diag" }, caja, lado)
+    );
+  }
+  function dibujoSeccionViva(p, s, d, r, neg) {
+    const [caraT, caraC] = neg ? ["sup", "inf"] : ["inf", "sup"];
+    const geo = geometriaDe(p, { ...s, armado: [
+      { tipo: "capa", cara: caraT, texto: String(Math.round(r.Ainf * 1e6)), d: d.rinf },
+      ...r.Asup > 0 ? [{ tipo: "capa", cara: caraC, texto: String(Math.round(r.Asup * 1e6)), d: d.rsup }] : []
+    ] });
+    const e2 = encuadre(geo, 190, 250, { completa: true });
+    const x0 = 46;
+    const y0 = 14;
+    const { svg, hp, bp } = capasSeccion(geo, s, { e: e2, x0, y0, x: r.x, id: "fsd", cotasCapas: false, abajo: neg });
+    const yn = neg ? y0 + hp - Math.min(r.x, d.h) * e2.s : y0 + Math.min(r.x, d.h) * e2.s;
+    const en = `<line class="en" x1="${x0 - 8}" y1="${yn}" x2="${x0 + bp + 8}" y2="${yn}"/><text x="${x0 + bp + 12}" y="${yn + 4}" style="fill:var(--acento)">x = ${fmt(r.x * 1e3, 0)}</text>`;
+    return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${x0 + bp + 70} ${y0 + hp + 44}" role="img" aria-label="${t("g.seccion")}">${DEFS}${svg}${en}</svg>`;
   }
   function veredicto(clase, sello, etq, valor, ecu, barra3) {
     const icos = {
@@ -11639,6 +11780,10 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
       } },
       { k: "p.dimensionar", b: "modo mode dimensionar design", f: () => {
         est4.modo = "dimensionar";
+        ctx2.ir("flexion");
+      } },
+      { k: "fcr.modoDiagrama", b: "modo mode diagrama diagram", f: () => {
+        est4.modo = "diagrama";
         ctx2.ir("flexion");
       } }
     ];
@@ -17442,6 +17587,64 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     ));
   }
 
+  // src/ui/globo.js
+  var MARGEN3 = 8;
+  var globo = null;
+  var actual = null;
+  function asegurar() {
+    if (globo) return globo;
+    globo = document.createElement("div");
+    globo.className = "globo-i";
+    globo.id = "globo-i";
+    globo.setAttribute("role", "tooltip");
+    globo.hidden = true;
+    document.body.append(globo);
+    return globo;
+  }
+  function poner2(icono3) {
+    const g = asegurar();
+    g.textContent = icono3.dataset.tip ?? "";
+    g.hidden = false;
+    actual = icono3;
+    const r = icono3.getBoundingClientRect();
+    const w = g.offsetWidth;
+    const alto = g.offsetHeight;
+    const arriba = r.top - alto - MARGEN3 >= MARGEN3;
+    const y = arriba ? r.top - alto - MARGEN3 : Math.min(r.bottom + MARGEN3, window.innerHeight - alto - MARGEN3);
+    const x = Math.min(Math.max(r.left + r.width / 2 - w / 2, MARGEN3), window.innerWidth - w - MARGEN3);
+    g.style.left = `${Math.round(x)}px`;
+    g.style.top = `${Math.round(Math.max(y, MARGEN3))}px`;
+    icono3.setAttribute("aria-describedby", "globo-i");
+  }
+  function quitar() {
+    if (!globo || !actual) return;
+    globo.hidden = true;
+    actual.removeAttribute("aria-describedby");
+    actual = null;
+  }
+  function iniciarGlobos() {
+    const de = (e2) => e2.target instanceof Element ? e2.target.closest(".info-i") : null;
+    document.addEventListener("mouseover", (e2) => {
+      const i = de(e2);
+      if (i) poner2(i);
+    });
+    document.addEventListener("mouseout", (e2) => {
+      if (de(e2)) quitar();
+    });
+    document.addEventListener("focusin", (e2) => {
+      const i = de(e2);
+      if (i) poner2(i);
+    });
+    document.addEventListener("focusout", (e2) => {
+      if (de(e2)) quitar();
+    });
+    document.addEventListener("keydown", (e2) => {
+      if (e2.key === "Escape") quitar();
+    });
+    window.addEventListener("scroll", quitar, true);
+    window.addEventListener("resize", quitar);
+  }
+
   // src/ui/app.js
   var EMISION = typeof __FECHA_EMISION__ !== "undefined" ? __FECHA_EMISION__ : (/* @__PURE__ */ new Date()).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "2-digit" }).replace(/\//g, ".");
   function vistaSecciones(m, propia) {
@@ -17800,6 +18003,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     }
   }
   function iniciar() {
+    iniciarGlobos();
     ponerLengua(lenguaActual());
     const guardado = cargarLocal();
     estado3.proyecto = guardado ?? proyectoNuevo(t("ejemploNombre"));
