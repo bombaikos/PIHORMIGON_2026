@@ -24,3 +24,19 @@ Como el «esviada por β» del 3.1: para cada dirección θ de la fibra más com
 
 ## Por verificar
 - Pendiente (en la lista de Pepiño): puntos (N, Mx, My) sobre el diagrama, otros modos del 3.1 (N–My a Mx constante), pretensado.
+
+## Diagramas N–M a Mx o My constante (31/10)
+
+- Pedido de Pepiño: además de Mx–My a N constante, mostrar N (eje x) frente a Mx o My (eje y) con el otro momento fijo en una regleta. Selector «Constante: N | Mx | My» en Diagrama.
+- Motor (`superficieEsviada`, `corteNM`, `estadoEnPlano`, `razonNM`, `coeficienteNM`): la superficie de rotura (N × θ, 33 niveles × 48 direcciones, unos 2 s) se calcula una sola vez por modelo y se guarda. El corte para cada momento fijo se obtiene interpolando (instantáneo). El polígono sigue al estado exacto con error de ~2 % como mucho; los puntos (γ, β, x, κ, ε) se afinan con el estado último exacto.
+- γ en N–M: análogo al de Mx–My. Con el momento fijo M0 y excentricidad constante (e = M/N), γ = λ con λ·(N, M) sobre el diagrama (Q = λ·P). Un punto dentro tiene γ ≥ 1 (el corte más lejano); fuera, el corte más cercano por debajo de 1 (0 si no hay).
+- Cada punto lleva su N y el otro momento; todos usan el momento fijo de la regleta. Con N constante siguen usando el N de la regleta.
+- Los ejes del diagrama N–M son fijos: N entre las capacidades de tracción y compresión; el otro momento hasta su máximo.
+- La tarjeta grande de diagnóstico no lleva la palabra «γ» ni «|OQ|/|OP|», pero sí el coeficiente de seguridad (número) con esa etiqueta (Pepiño, 31/10).
+- Figura de la sección: Mx y My como vectores de doble punta en gris (regla de la mano derecha: Mx>0 apunta a la izquierda, My>0 hacia arriba); β antihorario; x perpendicular a la recta neutra.
+
+## Aviso de cálculo y selector de ø (31/10)
+
+- Si la superficie de rotura aún no está calculada (primera vez con esa armadura, ~2 s), Diagrama muestra «Se está calculando…» en el centro del panel y se repinta al terminar.
+- El selector de ø está en los tres modos. En Rec pilar es editable; en genéricas (más de un diámetro) se queda en gris con el motivo, no se oculta.
+- En Dimensionamiento el selector va en gris con el ø que trae la sección (de él parte la propuesta); en genéricas, en gris con el motivo (Pepiño, 31/10).

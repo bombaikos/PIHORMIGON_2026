@@ -4,7 +4,7 @@ import { hormigon, acero, sigma } from '../src/core/materiales.js';
 import { estadoUltimo } from '../src/core/seccion.js';
 import { axilesLimite } from '../src/core/interaccion.js';
 import { dentro } from '../src/core/geometria.js';
-import { modeloEsviada, estadoUltimoEsviada, esfuerzosPlano, contornoMxMy, razonMxMy, coeficienteMxMy, dimensionarEsviada, axilesEsviada } from '../src/core/esviada.js';
+import { modeloEsviada, estadoUltimoEsviada, esfuerzosPlano, contornoMxMy, razonMxMy, coeficienteMxMy, dimensionarEsviada, axilesEsviada, superficieEsviada, corteNM, coeficienteNM, razonNM, estadoEnPlano, dentroCurva, maximosSuperficie } from '../src/core/esviada.js';
 
 const cerca = (a, b, tol, msg) => assert.ok(Math.abs(a - b) <= tol, `${msg ?? ''} ${a} ≠ ${b} (±${tol})`);
 const H = hormigon({ fck: 25 });
@@ -145,4 +145,49 @@ test('esviada: dimensionar da el menor factor k con γ ≥ 1', () => {
   assert.ok(coeficienteMxMy(modeloEsviada(simetrica, H, A, k * 0.97), 1500, 150, 120) < 1);
   assert.equal(dimensionarEsviada(simetrica, H, A, 100, 1, 1), 0);
   assert.equal(dimensionarEsviada(simetrica, H, A, 100, 5000, 5000), Infinity);
+});
+
+test('N–M: a My = 0 la rama superior coincide con el motor recto (θ = 270°) en cada axil del muestreo', () => {
+  const m = modeloEsviada(simetrica, H, A);
+  const S = superficieEsviada(m);
+  const c = corteNM(S, 'My', 0);
+  for (const k of [4, 12, 20, 28]) {
+    const e = estadoUltimoEsviada(m, c.N[k], (3 * Math.PI) / 2);
+    cerca(c.A[k], Math.max(e.Mx, estadoUltimoEsviada(m, c.N[k], Math.PI / 2).Mx), 0.01 * Math.abs(e.Mx) + 0.5, `Mx N=${c.N[k]}`);
+  }
+});
+
+test('N–M: sección simétrica, cortes a Mx = M0 y a My = M0 son el mismo diagrama; el polígono sigue al estado exacto (<2 %)', () => {
+  const m = modeloEsviada(simetrica, H, A);
+  const S = superficieEsviada(m);
+  const a = corteNM(S, 'My', 60);
+  const b = corteNM(S, 'Mx', 60);
+  assert.equal(a.N.length, b.N.length);
+  for (let k = 0; k < a.N.length; k++) { cerca(a.A[k], b.A[k], 1e-6, 'A'); cerca(a.B[k], b.B[k], 1e-6, 'B'); }
+  // Exactitud respecto al estado último exacto en un axil entre dos niveles
+  const N = (S.Ns[10] + S.Ns[11]) / 2;
+  const e = estadoEnPlano(m, S, N, 'My', 60, 'A');
+  cerca(e.My, 60, 1e-4, 'My fijo');
+  const k = a.N.findIndex((n) => n > N);
+  const f = (N - a.N[k - 1]) / (a.N[k] - a.N[k - 1]);
+  cerca(a.A[k - 1] + f * (a.A[k] - a.A[k - 1]), e.Mx, 0.02 * Math.abs(e.Mx), 'polígono vs exacto');
+});
+
+test('N–M: γ a excentricidad constante y My fijo: Q = γ·P sobre el diagrama, dentro/fuera coherentes', () => {
+  const m = modeloEsviada(simetrica, H, A);
+  const S = superficieEsviada(m);
+  const co = corteNM(S, 'My', 60);
+  assert.ok(dentroCurva(co.curva, 1000, 100) && !dentroCurva(co.curva, 1000, 300));
+  const dentroR = razonNM(m, S, co, 'My', 60, 1000, 100);
+  assert.ok(dentroR.g > 1);
+  cerca(dentroR.Q[0], dentroR.g * 1000, 1e-6, 'QN');
+  cerca(dentroR.Q[1], dentroR.g * 100, 0.01, 'QM');
+  cerca(dentroR.e.My, 60, 1e-3, 'My en Q');
+  assert.ok(Math.abs(coeficienteNM(co.curva, 1000, 100) - dentroR.g) < 0.01 * dentroR.g);
+  const fueraR = razonNM(m, S, co, 'My', 60, 1000, 300);
+  assert.ok(fueraR.g > 0 && fueraR.g < 1);
+  // Un par escalado por λ sobre el mismo rayo tiene el mismo Q
+  const otro = razonNM(m, S, co, 'My', 60, 500, 50);
+  cerca(otro.Q[0], dentroR.Q[0], 1, 'mismo Q');
+  assert.ok(maximosSuperficie(S).Mx > 150);
 });

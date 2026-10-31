@@ -6,7 +6,7 @@
 // Compresión positiva. Mx > 0 comprime la cara superior; My > 0 comprime la cara derecha. Motor: src/core/esviada.js.
 
 import { cuantiaMinima } from '../../core/cuantiaMinima.js';
-import { modeloEsviada, contornoMxMy, razonMxMy, coeficienteMxMy, dimensionarEsviada, axilesEsviada } from '../../core/esviada.js';
+import { modeloEsviada, contornoMxMy, razonMxMy, coeficienteMxMy, dimensionarEsviada, axilesEsviada, superficieEsviada, superficieCalculada, maximosSuperficie, corteNM, coeficienteNM, razonNM } from '../../core/esviada.js';
 import { leerNumero } from '../../core/armado.js';
 import { NORMAS } from '../../norma/normas.js';
 import { geometriaDe, materialesSeccion, sepCapas } from '../../io/proyecto.js';
@@ -22,9 +22,10 @@ import { veredicto } from './flexion.js';
 // Como el Prontuario 3.1: rectangulares definidas por redondo (pilares) y genéricas
 const FORMAS = ['pilar', 'generica'];
 const est = {
-  i: null, fi: null, modo: 'comprobar', NEd: 800, MxEd: 120, MyEd: 70, Ndiag: 500, dirEmin: 'y', puntos: [['120', '70'], ['-80', '110'], ['180', '-60'], ['40', '40'], ['', ''], ['', ''], ['', ''], ['', ''], ['', ''], ['', '']],
+  i: null, fi: null, modo: 'comprobar', NEd: 800, MxEd: 120, MyEd: 70, Ndiag: 500, fijo: 'N', Mdiag: { Mx: 0, My: 0 }, puntosNM: { My: [['500', '80'], ['1500', '120'], ['-200', '30'], ['', '']], Mx: [['500', '80'], ['1500', '120'], ['-200', '30'], ['', '']] }, dirEmin: 'y', puntos: [['120', '70'], ['-80', '110'], ['180', '-60'], ['40', '40'], ['', ''], ['', ''], ['', ''], ['', ''], ['', ''], ['', '']],
   abiertos: new Set(),
 };
+for (const k of ['Mx', 'My']) while (est.puntosNM[k].length < 10) est.puntosNM[k].push(['', '']);
 export function reiniciar() { est.i = null; }
 
 const sub = (a, b) => `${a}<sub>${b}</sub>`;
@@ -124,9 +125,21 @@ export function datos(ctx, form) {
   let c = null;
   try { c = calculo(p, s); } catch { /* el error se muestra en resultados */ }
   const campoFi = () => {
-    if (est.modo === 'dimensionar' || !c?.phi0) return null;
-    const serie = [...new Set([...serieDiametros(), c.phi0])].sort((x, y) => x - y);
-    return selector({ id: 'fe-fi', etq: 'ø [mm]', linea: true, opciones: serie.map((x) => [x, fmt(x, 0)]), valor: est.fi ?? c.phi0, onCambio: (v) => { est.fi = Number(v); cambio(); } });
+    if (!c) return null;
+    const dim = est.modo === 'dimensionar';
+    const serie = [...new Set([...serieDiametros(), c.phi0].filter(Boolean))].sort((x, y) => x - y);
+    const campo = selector({ id: 'fe-fi', etq: 'ø [mm]', linea: true, opciones: serie.map((x) => [x, fmt(x, 0)]), valor: dim ? c.phi0 : (est.fi ?? c.phi0),
+      onCambio: (v) => { est.fi = Number(v); cambio(); } });
+    // En gris, con el motivo: en Dimensionamiento el ø es el de la sección (de él parte la propuesta) y en las genéricas hay varios
+    const motivo = !c.phi0 ? t('fce.fiVarios') : dim ? t('fce.fiDim') : null;
+    if (motivo) {
+      campo.classList.add('no-aplica');
+      campo.title = motivo;
+      const sel = campo.querySelector('select');
+      sel.disabled = true;
+      sel.title = motivo;
+    }
+    return campo;
   };
   poner(form,
     segmentado({ ancho: true, capsula: true, etiqueta: t('flex.modo'), opciones: [['comprobar', t('flex.v.comprobar')], ['dimensionar', t('flex.v.dimensionar')], ['diagrama', t('fcr.modoDiagrama')]], valor: est.modo, onCambio: (m) => { est.modo = m; ctx.pintar(); } }),
@@ -137,9 +150,13 @@ export function datos(ctx, form) {
       campoFi(),
       selector({ id: 'fe-emin', etq: `${sub('e', 'mín')} [mm]`, linea: true, info: t('fce.infoEmin'),
         opciones: [['y', `${t('fce.dirY')} · ${c ? fmt(emin.y * 1000, 0) : ''}`], ['x', `${t('fce.dirX')} · ${c ? fmt(emin.x * 1000, 0) : ''}`]], valor: est.dirEmin, onCambio: (v) => { est.dirEmin = v; cambio(); } })) : grupo(t('fce.puntos'),
-      rejilla({ id: 'fe-pts', altoMax: 330,
+      segmentado({ ancho: true, etiqueta: t('fce.constante'), opciones: [['N', sub('N', '')], ['Mx', sub('M', 'x')], ['My', sub('M', 'y')]], valor: est.fijo, onCambio: (v) => { est.fijo = v; ctx.pintar(); } }),
+      est.fijo === 'N' ? rejilla({ id: 'fe-pts', altoMax: 330,
         columnas: [{ titulo: `${sub('M', 'x,Ed')} [kN·m]`, num: true }, { titulo: `${sub('M', 'y,Ed')} [kN·m]`, num: true }],
-        filas: est.puntos, onCambio: (f) => { est.puntos = Array.from({ length: Math.max(10, f.length) }, (_, i) => [f[i]?.[0] ?? '', f[i]?.[1] ?? '']); cambio(); } }),
+        filas: est.puntos, onCambio: (f) => { est.puntos = Array.from({ length: Math.max(10, f.length) }, (_, i) => [f[i]?.[0] ?? '', f[i]?.[1] ?? '']); cambio(); } })
+        : rejilla({ id: 'fe-pts', altoMax: 330,
+          columnas: [{ titulo: `${sub('N', 'Ed')} [kN]`, num: true }, { titulo: `${sub('M', est.fijo === 'My' ? 'x,Ed' : 'y,Ed')} [kN·m]`, num: true }],
+          filas: est.puntosNM[est.fijo], onCambio: (f) => { est.puntosNM[est.fijo] = Array.from({ length: Math.max(10, f.length) }, (_, i) => [f[i]?.[0] ?? '', f[i]?.[1] ?? '']); cambio(); } }),
       campoFi()));
 }
 
@@ -155,6 +172,11 @@ function resultadosEsviada(ctx, res) {
   const c = calculo(p, s);
   const { m, ps } = c;
   if (est.modo === 'diagrama') {
+    if (!superficieCalculada(c.m)) {
+      // Primera vez con esta armadura: unos 2 s de cálculo; se avisa en el centro y se repinta al terminar
+      requestAnimationFrame(() => setTimeout(() => { superficieEsviada(c.m); ctx.pintar(); }, 0));
+      return res.append(h('article', { class: 'panel tarjeta fce-calculando' }, h('p', { role: 'status' }, t('fce.calculando'))));
+    }
     res.append(veredictoDiagrama(c));
     return res.append(panelDiagrama(ctx, { s, c }));
   }
@@ -181,7 +203,7 @@ function resultadosEsviada(ctx, res) {
     }
   } else {
     const ok = gmin >= 1 - 1e-6;
-    res.append(veredicto(ok ? 'cumple' : 'nocumple', ok ? t('cumple') : t('noCumple'), 'γ = |OQ|/|OP|', sigla(gmin),
+    res.append(veredicto(ok ? 'cumple' : 'nocumple', ok ? t('cumple') : t('noCumple'), t('fcr.coefSeg'), sigla(gmin),
       `${sub('N', 'Ed')} <b>${q(gam[0].N, 'N')}</b> · ${sub('M', 'x,Ed')} <b>${q(gam[0].Mx, 'M')}</b> · ${sub('M', 'y,Ed')} <b>${q(gam[0].My, 'M')}</b>`, Math.min(1 / Math.max(gmin, 1e-9) / 1.25, 1)));
   }
 
@@ -195,15 +217,23 @@ function resultadosEsviada(ctx, res) {
 
 /** Pastilla del modo Diagrama: los puntos escritos frente al diagrama al axil de la regleta. */
 function veredictoDiagrama(c) {
-  const N = Math.min(Math.max(est.Ndiag, Math.ceil(c.lim.Ntrac)), Math.floor(c.lim.Ncomp) - 1);
-  const gs = est.puntos.map((f) => [nv(f[0]), nv(f[1])]).filter(([a, b]) => Number.isFinite(a) && Number.isFinite(b))
-    .map(([Mx, My]) => coeficienteMxMy(c.m, N, Mx, My));
-  const etq = `${sub('N', '')} = ${fmt(N, MAG.N.d)} ${MAG.N.ud}`;
-  if (!gs.length) return veredicto('atencion', t('fce.sinPuntos'), 'γ = |OQ|/|OP|', '—', etq);
+  let gs;
+  let etq;
+  if (est.fijo === 'N') {
+    const N = Math.min(Math.max(est.Ndiag, Math.ceil(c.lim.Ntrac)), Math.floor(c.lim.Ncomp) - 1);
+    gs = est.puntos.map((f) => [nv(f[0]), nv(f[1])]).filter(([a, b]) => Number.isFinite(a) && Number.isFinite(b))
+      .map(([Mx, My]) => coeficienteMxMy(c.m, N, Mx, My));
+    etq = `${sub('N', '')} = ${fmt(N, MAG.N.d)} ${MAG.N.ud}`;
+  } else {
+    const M0 = est.Mdiag[est.fijo] ?? 0;
+    gs = puntosNM(c, M0, true).pts.map((x) => x.g);
+    etq = `${sub('M', est.fijo === 'My' ? 'y' : 'x')} = ${fmt(M0, MAG.M.d)} ${MAG.M.ud}`;
+  }
+  if (!gs.length) return veredicto('atencion', t('fce.sinPuntos'), t('fcr.coefSeg'), '—', etq);
   const gmin = Math.min(...gs);
   const fuera = gs.filter((g) => g < 1 - 1e-6).length;
   const ok = fuera === 0;
-  return veredicto(ok ? 'cumple' : 'nocumple', ok ? t('cumple') : t('noCumple'), 'γ = |OQ|/|OP|', sigla(gmin),
+  return veredicto(ok ? 'cumple' : 'nocumple', ok ? t('cumple') : t('noCumple'), t('fcr.coefSeg'), sigla(gmin),
     `${etq} · ${t('fce.puntosFuera', fuera, gs.length)}`, Math.min(1 / Math.max(gmin, 1e-9) / 1.25, 1));
 }
 
@@ -266,24 +296,96 @@ function tablaPuntos(ctx, pts) {
     }), { cabecera: cab.map((k) => k[0]), clase: 'rejilla' }));
 }
 
-/** Momentos mayores del contorno entre todos los axiles (muestreo): los ejes del diagrama no se mueven con la regleta. */
+/** Momentos mayores de la superficie de rotura (muestreada una vez): los ejes de los diagramas no se mueven con la regleta. */
 function rangoFijo(c) {
   if (!c.rango) {
-    const { Ntrac, Ncomp } = c.lim;
-    let mx = 0;
-    let my = 0;
-    for (let i = 1; i < 24; i++) {
-      for (const v of contornoMxMy(c.m, Ntrac + ((Ncomp - Ntrac) * i) / 24, { n: 24 })) { mx = Math.max(mx, Math.abs(v.Mx)); my = Math.max(my, Math.abs(v.My)); }
-    }
-    const a = 1.08 * Math.max(mx, my, 1);
+    const mx = maximosSuperficie(superficieEsviada(c.m));
+    const a = 1.08 * Math.max(mx.Mx, mx.My, 1);
     c.rango = { x0: -a, x1: a, y0: -a, y1: a };
   }
   return c.rango;
 }
 
+/** Puntos del modo Diagrama con N–M (momento `est.fijo` constante): cada fila trae su N y el otro momento. */
+function puntosNM(c, M0, exacto) {
+  const S = superficieEsviada(c.m);
+  const f = est.fijo;
+  const co = corteNM(S, f, M0);
+  c.nmCache ??= new Map();
+  const pts = [];
+  est.puntosNM[f].forEach((r, i) => {
+    const N = nv(r[0]);
+    const Mv = nv(r[1]);
+    if (!Number.isFinite(N) || !Number.isFinite(Mv)) return;
+    const Mx = f === 'My' ? Mv : M0;
+    const My = f === 'My' ? M0 : Mv;
+    let g;
+    let e = null;
+    if (exacto) {
+      const clave = `${f}|${M0}|${N}|${Mv}`;
+      if (!c.nmCache.has(clave)) { const r2 = razonNM(c.m, S, co, f, M0, N, Mv); c.nmCache.set(clave, { g: r2.g, e: r2.e }); }
+      ({ g, e } = c.nmCache.get(clave));
+    } else g = coeficienteNM(co.curva, N, Mv);
+    pts.push({ i, N, Mx, My, g, e });
+  });
+  return { S, co, pts };
+}
+
+/** Rango fijo de los ejes N–M: N entre las capacidades de tracción y compresión; el otro momento hasta su máximo. */
+function rangoNM(c) {
+  const S = superficieEsviada(c.m);
+  const mx = maximosSuperficie(S);
+  const a = 1.08 * Math.max(est.fijo === 'My' ? mx.Mx : mx.My, 1);
+  const pad = 0.04 * (S.Ncomp - S.Ntrac);
+  return { x0: S.Ntrac - pad, x1: S.Ncomp + pad, y0: -a, y1: a };
+}
+
+/** Diagrama N–M a Mx o My constante, con el momento fijo en una regleta. */
+function panelNM(ctx, { s, c }) {
+  const S = superficieEsviada(c.m);
+  const f = est.fijo;
+  const mx = maximosSuperficie(S);
+  const L = Math.floor(f === 'My' ? mx.My : mx.Mx);
+  est.Mdiag[f] = Math.min(Math.max(Math.round(est.Mdiag[f] ?? 0), -L), L);
+  const nomF = sub('M', f === 'My' ? 'y' : 'x');
+  const nomV = sub('M', f === 'My' ? 'x' : 'y');
+  const caja = h('div', { class: 'fcr-graf' });
+  const lado = h('aside', { class: 'fcr-lado' });
+  const titulo = h('h2', {});
+  const dibujar = (M0, exacto) => {
+    const { co, pts } = puntosNM(c, M0, exacto);
+    const xy = co.curva.length ? [...co.curva, co.curva[0]] : [];
+    const g = h('div', { class: 'lienzo' }, grafica({
+      series: [{ nombre: t('fce.serieM', f === 'My' ? 'My' : 'Mx', fmt(M0, MAG.M.d)), clase: 's1', xy }], lecturaXY: true, rango: rangoNM(c),
+      puntos: pts.map((x) => ({ x: x.N, y: f === 'My' ? x.Mx : x.My, etq: String(x.i + 1), marca: x.g >= 1 - 1e-6 ? 'ok' : 'no' })),
+      ejeX: { titulo: t('fce.ejeN'), d: MAG.N.d, dt: MAG.N.d }, ejeY: { titulo: f === 'My' ? t('fce.ejeY') : t('fce.ejeX'), d: MAG.M.d, dt: MAG.M.d },
+      archivo: `N-M ${s.nombre} ${f}=${fmt(M0, 0)}`, avisar: ctx.avisar,
+    }));
+    const ext = (k, mxm) => (co.curva.length ? (mxm ? Math.max : Math.min)(...co.curva.map((v) => v[k])) : NaN);
+    lado.replaceChildren(
+      h('div', { class: 'fcr-sec', html: dibujoSeccionPeq(c.geo, s) }),
+      cifras([[sub('M', f === 'My' ? 'x,Rd,máx' : 'y,Rd,máx'), qh(ext(1, true), 'M')], [sub('M', f === 'My' ? 'x,Rd,mín' : 'y,Rd,mín'), qh(ext(1, false), 'M')],
+        [sub('N', 'Rd'), qh(ext(0, true), 'N')], [sub('N', 'Rd,t'), qh(ext(0, false), 'N')]]),
+      pts.length ? tablaPuntos(ctx, pts) : null);
+    titulo.innerHTML = `${t('fce.contorno')} · ${nomF} = ${fmt(M0, MAG.M.d)} ${MAG.M.ud}${c.phi0 ? ` · ø${fmt(c.phiProp ?? est.fi ?? c.phi0, 0)} mm` : ''}`;
+    return g;
+  };
+  let graf = dibujar(est.Mdiag[f], true);
+  caja.append(graf);
+  const rg = regleta({ etq: nomF, min: -L, max: L, step: 1, valor: est.Mdiag[f], etiqueta: f,
+    texto: (v) => `${fmt(v, MAG.M.d)} ${MAG.M.ud}`,
+    onInput: (v) => { est.Mdiag[f] = v; const g = dibujar(v, false); graf.replaceWith(g); graf = g; },
+    onChange: (v) => { est.Mdiag[f] = v; ctx.cambio(); } });
+  const escala = h('div', { class: 'regleta escala' }, h('span', { class: 'rg-et', html: nomF, style: 'visibility:hidden' }),
+    h('div', { class: 'rg-num' }, h('span', { style: 'left:0' }, fmt(-L, 0)), h('span', { style: 'left:50%;transform:translateX(-50%)' }, '0'), h('span', { style: 'right:0' }, fmt(L, 0))), h('span', { class: 'rg-v' }));
+  caja.append(rg, escala);
+  return h('article', { class: 'panel tarjeta' }, titulo, h('div', { class: 'fcr-diag fcr-ancho' }, caja, lado));
+}
+
 /** Modo Diagrama (como el del Prontuario 3.1): contorno Mx–My para un axil constante que se mueve con una regleta;
  *  en tracción (N < 0) el contorno y la regleta van en rosa, en compresión en azul. */
 function panelDiagrama(ctx, { s, c }) {
+  if (est.fijo !== 'N') return panelNM(ctx, { s, c });
   const { lim } = c;
   const lo = Math.ceil(lim.Ntrac);
   const hi = Math.floor(lim.Ncomp) - 1;
@@ -410,10 +512,14 @@ function dibujoPlano(c, s, e) {
     out.push(`<line class="cota" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" marker-start="url(#tic)" marker-end="url(#tic)"/>`);
     out.push(`<text class="fuerte" x="${(x1 + x2) / 2 + 6}" y="${(y1 + y2) / 2 - 4}">x</text>`);
   }
-  // Flecha hacia la cara comprimida, desde el c.d.g.
-  const flecha = Math.min(hp, bp) * 0.28;
-  out.push(`<line class="flecha" x1="${X(m.xc)}" y1="${Y(m.yc)}" x2="${X(m.xc) + ux * flecha}" y2="${Y(m.yc) + uy * flecha}" marker-end="url(#pta)"/>`);
-  return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${x0 + bp + 30} ${y0 + hp + 46}" role="img" aria-label="${t('fce.dibujoAria')}">${out.join('')}</svg>`;
+  // Momentos como vectores (regla de la mano derecha): flecha de doble punta en gris suave. M_x > 0 comprime la cara
+  // superior y su vector apunta a la izquierda; M_y > 0 comprime la cara derecha y su vector apunta hacia arriba.
+  out.push('<defs><marker id="fe-mm" viewBox="0 0 16 10" refX="15" refY="5" markerWidth="12" markerHeight="7.5" orient="auto"><path d="M0 1L7 5L0 9zM8 1L15 5L8 9z" style="fill:var(--tinta-3)"/></marker></defs>');
+  const cy = Y(m.yc);
+  const cx = X(m.xc);
+  out.push(`<line class="mom" x1="-2" y1="${cy}" x2="-58" y2="${cy}" marker-end="url(#fe-mm)"/><text class="mom-t" x="-52" y="${cy - 8}">M<tspan font-size="9" dy="3">x</tspan></text>`);
+  out.push(`<line class="mom" x1="${cx}" y1="${y0 - 8}" x2="${cx}" y2="-52" marker-end="url(#fe-mm)"/><text class="mom-t" x="${cx + 8}" y="-30">M<tspan font-size="9" dy="3">y</tspan></text>`);
+  return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="-62 -58 ${x0 + bp + 92} ${y0 + hp + 104}" role="img" aria-label="${t('fce.dibujoAria')}">${out.join('')}</svg>`;
 }
 
 function traza(p, c, gmin, e) {

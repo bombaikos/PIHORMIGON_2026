@@ -1116,6 +1116,12 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
 @media (min-width: 1100px) and (min-height: 600px) { .fcr-diag.fcr-ancho { grid-template-columns: minmax(0, 1fr) minmax(300px, 500px); } }
 .fce-tabla table.rejilla th, .fce-tabla table.rejilla td { font-size: 11px; padding-inline: 3px; }
 .fcr-ancho .fcr-lado .fcr-sec svg { max-height: min(230px, 32vh); }
+.dib .mom { stroke: var(--tinta-3); stroke-width: 1.8; fill: none; }
+.dib .mom-t { fill: var(--tinta-2); font-weight: 700; }
+.dib .mom-t .sub { font-size: 9px; font-weight: 600; }
+.fce-calculando { display: flex; align-items: center; justify-content: center; }
+.fce-calculando p { margin: 0; padding: 14px 24px; font-size: calc(18px + var(--mas)); color: var(--tinta-2); border: 1px solid var(--linea); border-radius: var(--r-campo); background: var(--hundido); }
+.campo.no-aplica select:disabled { background: var(--hundido); color: var(--tinta-3); cursor: not-allowed; }
 </style>
 
 <header class="barra">
@@ -5381,6 +5387,12 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     "fce.f.alfa": "\u03B2: \xE1ngulo de la recta neutra con la horizontal, entre \u221290\xB0 y 90\xB0 (0\xB0 = eje neutro horizontal)",
     "fce.sinPuntos": "Sin esfuerzos",
     "fce.puntosFuera": (k, n) => `${k} de ${n} fuera del diagrama`,
+    "fce.constante": "Constante",
+    "fce.ejeN": "N [kN]",
+    "fce.serieM": (m, v2) => `${m} = ${v2} kN\xB7m`,
+    "fce.calculando": "Se est\xE1 calculando\u2026",
+    "fce.fiVarios": "La secci\xF3n tiene m\xE1s de un di\xE1metro: no se puede elegir uno solo.",
+    "fce.fiDim": "En Dimensionamiento se parte del \xF8 de la secci\xF3n; el programa propone el di\xE1metro necesario.",
     "fce.puntos": "Esfuerzos",
     "fce.tabla": "Esfuerzos y coeficiente de seguridad",
     "fce.contornos": (n) => `${n} puntos`,
@@ -5426,6 +5438,12 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     "fce.f.alfa": "\u03B2: angle of the neutral line with the horizontal, between \u221290\xB0 and 90\xB0 (0\xB0 = horizontal neutral axis)",
     "fce.sinPuntos": "No actions",
     "fce.puntosFuera": (k, n) => `${k} of ${n} outside the diagram`,
+    "fce.constante": "Constant",
+    "fce.ejeN": "N [kN]",
+    "fce.serieM": (m, v2) => `${m} = ${v2} kN\xB7m`,
+    "fce.calculando": "Calculating\u2026",
+    "fce.fiVarios": "The section has more than one bar diameter: a single one cannot be chosen.",
+    "fce.fiDim": "Dimensioning starts from the section bar diameter; the program proposes the diameter needed.",
     "fce.puntos": "Actions",
     "fce.tabla": "Actions and safety factor",
     "fce.contornos": (n) => `${n} points`,
@@ -12652,6 +12670,184 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     }
     return hi;
   }
+  var SUPERFICIES = /* @__PURE__ */ new WeakMap();
+  function superficieEsviada(m, { nN = 33, nT = 48 } = {}) {
+    const clave = `${nN}/${nT}`;
+    const previa = SUPERFICIES.get(m);
+    if (previa?.clave === clave) return previa.S;
+    const { Ncomp, Ntrac } = axilesEsviada(m);
+    const thetas = Array.from({ length: nT }, (_2, j) => 2 * Math.PI * j / nT);
+    const Ns = [Ntrac];
+    const Mx = [new Array(nT).fill(0)];
+    const My = [new Array(nT).fill(0)];
+    for (let i = 1; i <= nN; i++) {
+      const tt = i / (nN + 1);
+      const N = Ntrac + (Ncomp - Ntrac) * (0.5 * tt + 0.25 * (1 - Math.cos(Math.PI * tt)));
+      const fx = [];
+      const fy = [];
+      for (const th of thetas) {
+        const e2 = estadoUltimoEsviada(m, N, th);
+        fx.push(e2.converge ? e2.Mx : NaN);
+        fy.push(e2.converge ? e2.My : NaN);
+      }
+      Ns.push(N);
+      Mx.push(fx);
+      My.push(fy);
+    }
+    Ns.push(Ncomp);
+    Mx.push(new Array(nT).fill(0));
+    My.push(new Array(nT).fill(0));
+    const S = { Ns, thetas, Mx, My, Ntrac, Ncomp };
+    SUPERFICIES.set(m, { clave, S });
+    return S;
+  }
+  function superficieCalculada(m) {
+    return SUPERFICIES.has(m);
+  }
+  function maximosSuperficie(S) {
+    let mx = 0;
+    let my = 0;
+    for (let i = 0; i < S.Ns.length; i++) for (let j = 0; j < S.thetas.length; j++) {
+      if (Number.isFinite(S.Mx[i][j])) mx = Math.max(mx, Math.abs(S.Mx[i][j]));
+      if (Number.isFinite(S.My[i][j])) my = Math.max(my, Math.abs(S.My[i][j]));
+    }
+    return { Mx: mx, My: my };
+  }
+  function crucesNivel(S, i, fijo, M0) {
+    const F2 = fijo === "Mx" ? S.Mx[i] : S.My[i];
+    const V = fijo === "Mx" ? S.My[i] : S.Mx[i];
+    const nT = F2.length;
+    const out = [];
+    for (let j = 0; j < nT; j++) {
+      const k = (j + 1) % nT;
+      const a = F2[j] - M0;
+      const b = F2[k] - M0;
+      if (!Number.isFinite(a) || !Number.isFinite(b) || a === 0 && b === 0) continue;
+      if (a <= 0 && b > 0 || a >= 0 && b < 0) {
+        const t2 = a / (a - b);
+        out.push({ v: V[j] + t2 * (V[k] - V[j]), j, t: t2 });
+      }
+    }
+    return out;
+  }
+  function corteNM(S, fijo, M0) {
+    const N = [];
+    const A = [];
+    const B = [];
+    for (let i = 1; i < S.Ns.length - 1; i++) {
+      const c = crucesNivel(S, i, fijo, M0);
+      if (c.length < 2) continue;
+      const vs = c.map((x) => x.v);
+      N.push(S.Ns[i]);
+      A.push(Math.max(...vs));
+      B.push(Math.min(...vs));
+    }
+    const curva = [];
+    if (Math.abs(M0) < 1e-9) {
+      curva.push([S.Ntrac, 0]);
+    }
+    N.forEach((n, k) => curva.push([n, A[k]]));
+    if (Math.abs(M0) < 1e-9) {
+      curva.push([S.Ncomp, 0]);
+    }
+    for (let k = N.length - 1; k >= 0; k--) curva.push([N[k], B[k]]);
+    return { N, A, B, curva };
+  }
+  function dentroCurva(curva, N, M2) {
+    let dentro2 = false;
+    for (let i = 0, j = curva.length - 1; i < curva.length; j = i++) {
+      const [xi, yi] = curva[i];
+      const [xj, yj] = curva[j];
+      if (yi > M2 !== yj > M2 && N < (xj - xi) * (M2 - yi) / (yj - yi) + xi) dentro2 = !dentro2;
+    }
+    return dentro2;
+  }
+  function cortesRayo(curva, N, M2) {
+    const out = [];
+    for (let i = 0; i < curva.length; i++) {
+      const [x1, y1] = curva[i];
+      const [x2, y2] = curva[(i + 1) % curva.length];
+      const dx = x2 - x1;
+      const dy = y2 - y1;
+      const den = N * dy - M2 * dx;
+      if (Math.abs(den) < 1e-12) continue;
+      const lam = (x1 * dy - y1 * dx) / den;
+      const u = (x1 * M2 - y1 * N) / den;
+      if (lam > 0 && u >= -1e-9 && u <= 1 + 1e-9) out.push({ lam, i });
+    }
+    return out.sort((a, b) => a.lam - b.lam);
+  }
+  function coeficienteNM2(curva, N, M2) {
+    return cruceRayo(curva, N, M2).g;
+  }
+  function cruceRayo(curva, N, M2) {
+    const cortes = cortesRayo(curva, N, M2);
+    if (dentroCurva(curva, N, M2)) return cortes.length ? { g: Math.max(cortes[cortes.length - 1].lam, 1), i: cortes[cortes.length - 1].i } : { g: Infinity, i: -1 };
+    const menores = cortes.filter((c) => c.lam <= 1);
+    return menores.length ? { g: menores[menores.length - 1].lam, i: menores[menores.length - 1].i } : { g: 0, i: -1 };
+  }
+  function razonNM(m, S, corte, fijo, M0, N, M2) {
+    const { g, i } = cruceRayo(corte.curva, N, M2);
+    if (!(g > 0) || !Number.isFinite(g) || i < 0) return { g, Q: null, e: null };
+    const rama = i < corte.N.length + (Math.abs(M0) < 1e-9 ? 1 : 0) ? "A" : "B";
+    const var_ = fijo === "Mx" ? "My" : "Mx";
+    const res = (lam) => {
+      const e2 = estadoEnPlano(m, S, lam * N, fijo, M0, rama);
+      return e2 ? { e: e2, r: e2[var_] - lam * M2 } : null;
+    };
+    let l0 = g;
+    let r0 = res(l0);
+    if (!r0) return { g, Q: null, e: null };
+    let l1 = g * 1.01;
+    let r1 = res(l1);
+    for (let it = 0; it < 4 && r1 && Math.abs(r1.r) > 1e-4 * Math.max(1, Math.abs(M2)); it++) {
+      const den = r1.r - r0.r;
+      if (Math.abs(den) < 1e-14) break;
+      const l2 = l1 - r1.r * (l1 - l0) / den;
+      l0 = l1;
+      r0 = r1;
+      l1 = l2;
+      r1 = res(l1);
+    }
+    const best = r1 && Math.abs(r1.r) <= Math.abs(r0.r) ? { l: l1, ...r1 } : { l: l0, ...r0 };
+    return { g: best.l, Q: [best.l * N, best.e[var_]], e: best.e };
+  }
+  function estadoEnPlano(m, S, N, fijo, M0, rama = "A") {
+    let ib = 1;
+    for (let i = 1; i < S.Ns.length - 1; i++) if (Math.abs(S.Ns[i] - N) < Math.abs(S.Ns[ib] - N)) ib = i;
+    const c = crucesNivel(S, ib, fijo, M0);
+    if (c.length < 2) return null;
+    const sel = rama === "A" ? c.reduce((p, q2) => q2.v > p.v ? q2 : p) : c.reduce((p, q2) => q2.v < p.v ? q2 : p);
+    const dT = 2 * Math.PI / S.thetas.length;
+    let lo = S.thetas[sel.j] - 0.5 * dT;
+    let hi = S.thetas[sel.j] + 1.5 * dT;
+    const f = (th) => {
+      const e2 = estadoUltimoEsviada(m, N, th);
+      return e2.converge ? { e: e2, d: (fijo === "Mx" ? e2.Mx : e2.My) - M0 } : null;
+    };
+    let flo = f(lo);
+    let fhi = f(hi);
+    if (!flo || !fhi || flo.d * fhi.d > 0) {
+      lo -= dT;
+      hi += dT;
+      flo = f(lo);
+      fhi = f(hi);
+      if (!flo || !fhi || flo.d * fhi.d > 0) return null;
+    }
+    let mejor = Math.abs(flo.d) < Math.abs(fhi.d) ? flo.e : fhi.e;
+    for (let it = 0; it < 40 && hi - lo > 1e-7; it++) {
+      const th = (lo + hi) / 2;
+      const r = f(th);
+      if (!r) break;
+      mejor = r.e;
+      if (Math.abs(r.d) < 1e-6) break;
+      if (r.d * flo.d > 0) {
+        lo = th;
+        flo = r;
+      } else hi = th;
+    }
+    return mejor;
+  }
 
   // src/ui/vistas/flexEsviada.js
   var FORMAS3 = ["pilar", "generica"];
@@ -12663,10 +12859,14 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     MxEd: 120,
     MyEd: 70,
     Ndiag: 500,
+    fijo: "N",
+    Mdiag: { Mx: 0, My: 0 },
+    puntosNM: { My: [["500", "80"], ["1500", "120"], ["-200", "30"], ["", ""]], Mx: [["500", "80"], ["1500", "120"], ["-200", "30"], ["", ""]] },
     dirEmin: "y",
     puntos: [["120", "70"], ["-80", "110"], ["180", "-60"], ["40", "40"], ["", ""], ["", ""], ["", ""], ["", ""], ["", ""], ["", ""]],
     abiertos: /* @__PURE__ */ new Set()
   };
+  for (const k of ["Mx", "My"]) while (est6.puntosNM[k].length < 10) est6.puntosNM[k].push(["", ""]);
   function reiniciar6() {
     est6.i = null;
   }
@@ -12760,12 +12960,29 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     } catch {
     }
     const campoFi = () => {
-      if (est6.modo === "dimensionar" || !c?.phi0) return null;
-      const serie = [.../* @__PURE__ */ new Set([...serieDiametros(), c.phi0])].sort((x, y) => x - y);
-      return selector({ id: "fe-fi", etq: "\xF8 [mm]", linea: true, opciones: serie.map((x) => [x, fmt(x, 0)]), valor: est6.fi ?? c.phi0, onCambio: (v2) => {
-        est6.fi = Number(v2);
-        cambio();
-      } });
+      if (!c) return null;
+      const dim = est6.modo === "dimensionar";
+      const serie = [...new Set([...serieDiametros(), c.phi0].filter(Boolean))].sort((x, y) => x - y);
+      const campo = selector({
+        id: "fe-fi",
+        etq: "\xF8 [mm]",
+        linea: true,
+        opciones: serie.map((x) => [x, fmt(x, 0)]),
+        valor: dim ? c.phi0 : est6.fi ?? c.phi0,
+        onCambio: (v2) => {
+          est6.fi = Number(v2);
+          cambio();
+        }
+      });
+      const motivo = !c.phi0 ? t("fce.fiVarios") : dim ? t("fce.fiDim") : null;
+      if (motivo) {
+        campo.classList.add("no-aplica");
+        campo.title = motivo;
+        const sel = campo.querySelector("select");
+        sel.disabled = true;
+        sel.title = motivo;
+      }
+      return campo;
     };
     poner(
       form,
@@ -12802,13 +13019,26 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
         })
       ) : grupo(
         t("fce.puntos"),
-        rejilla({
+        segmentado({ ancho: true, etiqueta: t("fce.constante"), opciones: [["N", sub20("N", "")], ["Mx", sub20("M", "x")], ["My", sub20("M", "y")]], valor: est6.fijo, onCambio: (v2) => {
+          est6.fijo = v2;
+          ctx2.pintar();
+        } }),
+        est6.fijo === "N" ? rejilla({
           id: "fe-pts",
           altoMax: 330,
           columnas: [{ titulo: `${sub20("M", "x,Ed")} [kN\xB7m]`, num: true }, { titulo: `${sub20("M", "y,Ed")} [kN\xB7m]`, num: true }],
           filas: est6.puntos,
           onCambio: (f) => {
             est6.puntos = Array.from({ length: Math.max(10, f.length) }, (_2, i) => [f[i]?.[0] ?? "", f[i]?.[1] ?? ""]);
+            cambio();
+          }
+        }) : rejilla({
+          id: "fe-pts",
+          altoMax: 330,
+          columnas: [{ titulo: `${sub20("N", "Ed")} [kN]`, num: true }, { titulo: `${sub20("M", est6.fijo === "My" ? "x,Ed" : "y,Ed")} [kN\xB7m]`, num: true }],
+          filas: est6.puntosNM[est6.fijo],
+          onCambio: (f) => {
+            est6.puntosNM[est6.fijo] = Array.from({ length: Math.max(10, f.length) }, (_2, i) => [f[i]?.[0] ?? "", f[i]?.[1] ?? ""]);
             cambio();
           }
         }),
@@ -12828,6 +13058,13 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     const c = calculo2(p, s);
     const { m, ps } = c;
     if (est6.modo === "diagrama") {
+      if (!superficieCalculada(c.m)) {
+        requestAnimationFrame(() => setTimeout(() => {
+          superficieEsviada(c.m);
+          ctx2.pintar();
+        }, 0));
+        return res.append(h("article", { class: "panel tarjeta fce-calculando" }, h("p", { role: "status" }, t("fce.calculando"))));
+      }
       res.append(veredictoDiagrama(c));
       return res.append(panelDiagrama2(ctx2, { s, c }));
     }
@@ -12866,7 +13103,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       res.append(veredicto(
         ok ? "cumple" : "nocumple",
         ok ? t("cumple") : t("noCumple"),
-        "\u03B3 = |OQ|/|OP|",
+        t("fcr.coefSeg"),
         sigla2(gmin),
         `${sub20("N", "Ed")} <b>${q(gam[0].N, "N")}</b> \xB7 ${sub20("M", "x,Ed")} <b>${q(gam[0].Mx, "M")}</b> \xB7 ${sub20("M", "y,Ed")} <b>${q(gam[0].My, "M")}</b>`,
         Math.min(1 / Math.max(gmin, 1e-9) / 1.25, 1)
@@ -12880,17 +13117,25 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     return resultadoUnico2(ctx2, res, { s, c, gam: gam[0], gmin, dim });
   }
   function veredictoDiagrama(c) {
-    const N = Math.min(Math.max(est6.Ndiag, Math.ceil(c.lim.Ntrac)), Math.floor(c.lim.Ncomp) - 1);
-    const gs = est6.puntos.map((f) => [nv2(f[0]), nv2(f[1])]).filter(([a, b]) => Number.isFinite(a) && Number.isFinite(b)).map(([Mx, My]) => coeficienteMxMy(c.m, N, Mx, My));
-    const etq = `${sub20("N", "")} = ${fmt(N, MAG.N.d)} ${MAG.N.ud}`;
-    if (!gs.length) return veredicto("atencion", t("fce.sinPuntos"), "\u03B3 = |OQ|/|OP|", "\u2014", etq);
+    let gs;
+    let etq;
+    if (est6.fijo === "N") {
+      const N = Math.min(Math.max(est6.Ndiag, Math.ceil(c.lim.Ntrac)), Math.floor(c.lim.Ncomp) - 1);
+      gs = est6.puntos.map((f) => [nv2(f[0]), nv2(f[1])]).filter(([a, b]) => Number.isFinite(a) && Number.isFinite(b)).map(([Mx, My]) => coeficienteMxMy(c.m, N, Mx, My));
+      etq = `${sub20("N", "")} = ${fmt(N, MAG.N.d)} ${MAG.N.ud}`;
+    } else {
+      const M0 = est6.Mdiag[est6.fijo] ?? 0;
+      gs = puntosNM(c, M0, true).pts.map((x) => x.g);
+      etq = `${sub20("M", est6.fijo === "My" ? "y" : "x")} = ${fmt(M0, MAG.M.d)} ${MAG.M.ud}`;
+    }
+    if (!gs.length) return veredicto("atencion", t("fce.sinPuntos"), t("fcr.coefSeg"), "\u2014", etq);
     const gmin = Math.min(...gs);
     const fuera = gs.filter((g) => g < 1 - 1e-6).length;
     const ok = fuera === 0;
     return veredicto(
       ok ? "cumple" : "nocumple",
       ok ? t("cumple") : t("noCumple"),
-      "\u03B3 = |OQ|/|OP|",
+      t("fcr.coefSeg"),
       sigla2(gmin),
       `${etq} \xB7 ${t("fce.puntosFuera", fuera, gs.length)}`,
       Math.min(1 / Math.max(gmin, 1e-9) / 1.25, 1)
@@ -12974,21 +13219,116 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
   }
   function rangoFijo(c) {
     if (!c.rango) {
-      const { Ntrac, Ncomp } = c.lim;
-      let mx = 0;
-      let my = 0;
-      for (let i = 1; i < 24; i++) {
-        for (const v2 of contornoMxMy(c.m, Ntrac + (Ncomp - Ntrac) * i / 24, { n: 24 })) {
-          mx = Math.max(mx, Math.abs(v2.Mx));
-          my = Math.max(my, Math.abs(v2.My));
-        }
-      }
-      const a = 1.08 * Math.max(mx, my, 1);
+      const mx = maximosSuperficie(superficieEsviada(c.m));
+      const a = 1.08 * Math.max(mx.Mx, mx.My, 1);
       c.rango = { x0: -a, x1: a, y0: -a, y1: a };
     }
     return c.rango;
   }
+  function puntosNM(c, M0, exacto) {
+    const S = superficieEsviada(c.m);
+    const f = est6.fijo;
+    const co = corteNM(S, f, M0);
+    c.nmCache ?? (c.nmCache = /* @__PURE__ */ new Map());
+    const pts = [];
+    est6.puntosNM[f].forEach((r, i) => {
+      const N = nv2(r[0]);
+      const Mv = nv2(r[1]);
+      if (!Number.isFinite(N) || !Number.isFinite(Mv)) return;
+      const Mx = f === "My" ? Mv : M0;
+      const My = f === "My" ? M0 : Mv;
+      let g;
+      let e2 = null;
+      if (exacto) {
+        const clave = `${f}|${M0}|${N}|${Mv}`;
+        if (!c.nmCache.has(clave)) {
+          const r2 = razonNM(c.m, S, co, f, M0, N, Mv);
+          c.nmCache.set(clave, { g: r2.g, e: r2.e });
+        }
+        ({ g, e: e2 } = c.nmCache.get(clave));
+      } else g = coeficienteNM2(co.curva, N, Mv);
+      pts.push({ i, N, Mx, My, g, e: e2 });
+    });
+    return { S, co, pts };
+  }
+  function rangoNM(c) {
+    const S = superficieEsviada(c.m);
+    const mx = maximosSuperficie(S);
+    const a = 1.08 * Math.max(est6.fijo === "My" ? mx.Mx : mx.My, 1);
+    const pad = 0.04 * (S.Ncomp - S.Ntrac);
+    return { x0: S.Ntrac - pad, x1: S.Ncomp + pad, y0: -a, y1: a };
+  }
+  function panelNM(ctx2, { s, c }) {
+    const S = superficieEsviada(c.m);
+    const f = est6.fijo;
+    const mx = maximosSuperficie(S);
+    const L = Math.floor(f === "My" ? mx.My : mx.Mx);
+    est6.Mdiag[f] = Math.min(Math.max(Math.round(est6.Mdiag[f] ?? 0), -L), L);
+    const nomF = sub20("M", f === "My" ? "y" : "x");
+    const nomV = sub20("M", f === "My" ? "x" : "y");
+    const caja = h("div", { class: "fcr-graf" });
+    const lado = h("aside", { class: "fcr-lado" });
+    const titulo = h("h2", {});
+    const dibujar = (M0, exacto) => {
+      const { co, pts } = puntosNM(c, M0, exacto);
+      const xy = co.curva.length ? [...co.curva, co.curva[0]] : [];
+      const g = h("div", { class: "lienzo" }, grafica({
+        series: [{ nombre: t("fce.serieM", f === "My" ? "My" : "Mx", fmt(M0, MAG.M.d)), clase: "s1", xy }],
+        lecturaXY: true,
+        rango: rangoNM(c),
+        puntos: pts.map((x) => ({ x: x.N, y: f === "My" ? x.Mx : x.My, etq: String(x.i + 1), marca: x.g >= 1 - 1e-6 ? "ok" : "no" })),
+        ejeX: { titulo: t("fce.ejeN"), d: MAG.N.d, dt: MAG.N.d },
+        ejeY: { titulo: f === "My" ? t("fce.ejeY") : t("fce.ejeX"), d: MAG.M.d, dt: MAG.M.d },
+        archivo: `N-M ${s.nombre} ${f}=${fmt(M0, 0)}`,
+        avisar: ctx2.avisar
+      }));
+      const ext = (k, mxm) => co.curva.length ? (mxm ? Math.max : Math.min)(...co.curva.map((v2) => v2[k])) : NaN;
+      lado.replaceChildren(
+        h("div", { class: "fcr-sec", html: dibujoSeccionPeq2(c.geo, s) }),
+        cifras([
+          [sub20("M", f === "My" ? "x,Rd,m\xE1x" : "y,Rd,m\xE1x"), qh(ext(1, true), "M")],
+          [sub20("M", f === "My" ? "x,Rd,m\xEDn" : "y,Rd,m\xEDn"), qh(ext(1, false), "M")],
+          [sub20("N", "Rd"), qh(ext(0, true), "N")],
+          [sub20("N", "Rd,t"), qh(ext(0, false), "N")]
+        ]),
+        pts.length ? tablaPuntos(ctx2, pts) : null
+      );
+      titulo.innerHTML = `${t("fce.contorno")} \xB7 ${nomF} = ${fmt(M0, MAG.M.d)} ${MAG.M.ud}${c.phi0 ? ` \xB7 \xF8${fmt(c.phiProp ?? est6.fi ?? c.phi0, 0)} mm` : ""}`;
+      return g;
+    };
+    let graf = dibujar(est6.Mdiag[f], true);
+    caja.append(graf);
+    const rg = regleta({
+      etq: nomF,
+      min: -L,
+      max: L,
+      step: 1,
+      valor: est6.Mdiag[f],
+      etiqueta: f,
+      texto: (v2) => `${fmt(v2, MAG.M.d)} ${MAG.M.ud}`,
+      onInput: (v2) => {
+        est6.Mdiag[f] = v2;
+        const g = dibujar(v2, false);
+        graf.replaceWith(g);
+        graf = g;
+      },
+      onChange: (v2) => {
+        est6.Mdiag[f] = v2;
+        ctx2.cambio();
+      }
+    });
+    const escala = h(
+      "div",
+      { class: "regleta escala" },
+      h("span", { class: "rg-et", html: nomF, style: "visibility:hidden" }),
+      h("div", { class: "rg-num" }, h("span", { style: "left:0" }, fmt(-L, 0)), h("span", { style: "left:50%;transform:translateX(-50%)" }, "0"), h("span", { style: "right:0" }, fmt(L, 0))),
+      h("span", { class: "rg-v" })
+    );
+    caja.append(rg, escala);
+    return h("article", { class: "panel tarjeta" }, titulo, h("div", { class: "fcr-diag fcr-ancho" }, caja, lado));
+  }
   function panelDiagrama2(ctx2, { s, c }) {
+    if (est6.fijo !== "N") return panelNM(ctx2, { s, c });
     const { lim } = c;
     const lo = Math.ceil(lim.Ntrac);
     const hi = Math.floor(lim.Ncomp) - 1;
@@ -13145,9 +13485,12 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       out.push(`<line class="cota" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" marker-start="url(#tic)" marker-end="url(#tic)"/>`);
       out.push(`<text class="fuerte" x="${(x1 + x2) / 2 + 6}" y="${(y1 + y2) / 2 - 4}">x</text>`);
     }
-    const flecha = Math.min(hp, bp) * 0.28;
-    out.push(`<line class="flecha" x1="${X(m.xc)}" y1="${Y(m.yc)}" x2="${X(m.xc) + ux * flecha}" y2="${Y(m.yc) + uy * flecha}" marker-end="url(#pta)"/>`);
-    return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${x0 + bp + 30} ${y0 + hp + 46}" role="img" aria-label="${t("fce.dibujoAria")}">${out.join("")}</svg>`;
+    out.push('<defs><marker id="fe-mm" viewBox="0 0 16 10" refX="15" refY="5" markerWidth="12" markerHeight="7.5" orient="auto"><path d="M0 1L7 5L0 9zM8 1L15 5L8 9z" style="fill:var(--tinta-3)"/></marker></defs>');
+    const cy = Y(m.yc);
+    const cx = X(m.xc);
+    out.push(`<line class="mom" x1="-2" y1="${cy}" x2="-58" y2="${cy}" marker-end="url(#fe-mm)"/><text class="mom-t" x="-52" y="${cy - 8}">M<tspan font-size="9" dy="3">x</tspan></text>`);
+    out.push(`<line class="mom" x1="${cx}" y1="${y0 - 8}" x2="${cx}" y2="-52" marker-end="url(#fe-mm)"/><text class="mom-t" x="${cx + 8}" y="-30">M<tspan font-size="9" dy="3">y</tspan></text>`);
+    return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="-62 -58 ${x0 + bp + 92} ${y0 + hp + 104}" role="img" aria-label="${t("fce.dibujoAria")}">${out.join("")}</svg>`;
   }
   function traza3(p, c, gmin, e2) {
     const fam = NORMAS[p.norma];
