@@ -36,6 +36,7 @@ Esta guía recoge las decisiones de José Luis (8 de octubre de 2026) y las reco
 - **Un solo acento azul**, que es también el color de la **compresión** en dibujos y gráficas.
 - **Acero en gris oscuro** (en el tema oscuro, gris claro). La **tracción va en gris rayado**. El hormigón es un gris cálido.
 - **El rojo solo para lo que está mal**: "No cumple" y errores. También **el nombre de una norma no vigente** (EHE-08 y EC-2 2023 hoy; la vigente, EC-2 2004 + AN, va en el color normal), en el selector de norma y en el chip de la cabecera. El ámbar se usa para avisos y el verde para "Cumple".
+- **Casillas (31/10/2026, Pepiño; regla general de todas las apps)**: caja blanca con borde azul grisáceo; marcada, fondo azul suave (`--acento-suave`) con borde y tick en el azul de acento (`--acento`); desactivada, en gris. Nunca el azul por defecto del navegador (`accent-color` por defecto), que está fuera de paleta. Mismo criterio para cualquier control nativo: se pinta con los tokens de la guía. El deslizador tiene su propia regla (`regleta()`).
 - Hay que dar soporte a `prefers-contrast: more` y a `forced-colors` (temas de contraste de Windows).
 - Rejilla de 4 px. Radios de 10 px en paneles, 6 px en campos y 4 px en chips.
 
