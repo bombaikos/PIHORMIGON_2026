@@ -205,7 +205,7 @@ function graficoMxMy(ctx, c, gam, s) {
 function tituloGraf(c, s, { N, Mx, My }) {
   const partes = [`${sub('N', 'Ed')} = ${fmt(N, MAG.N.d)} ${MAG.N.ud}`];
   if (Mx !== undefined) partes.push(`${sub('M', 'x,Ed')} = ${fmt(Mx, MAG.M.d)} ${MAG.M.ud}`, `${sub('M', 'y,Ed')} = ${fmt(My, MAG.M.d)} ${MAG.M.ud}`);
-  if (c.phi0) partes.push(`ø${fmt(est.fi ?? c.phi0, 0)} mm`);
+  if (c.phi0) partes.push(`ø${fmt(c.phiProp ?? est.fi ?? c.phi0, 0)} mm`);
   return `${t('fce.contorno')} · ${partes.join(' · ')}`;
 }
 
@@ -278,7 +278,7 @@ function recortar(pts, ux, uy, cte) {
 /** Sección con la zona comprimida y el eje neutro del estado último en Q. */
 function dibujoPlano(c, s, e) {
   const { geo, m } = c;
-  const em = encuadre(geo, 300, 290, { completa: true });
+  const em = encuadre(geo, 220, 220, { completa: true });
   const x0 = 46;
   const y0 = 14;
   const { svg, hp, bp } = capasSeccion(geo, s, { e: em, x0, y0, x: null, id: 'fe', cotasCapas: false });
@@ -357,10 +357,10 @@ function resultadoUnico(ctx, res, { s, c, gam, gmin, dim }) {
     ...(peor ? [[sub('ε', 's'), qh(peor.eps, 'def')]] : []),
     ...cifrasArmadura(c, dim, mm),
   ];
-  const tarjetaDib = h('article', { class: 'panel tarjeta' }, h('h2', {}, t('fce.dibujo')), h('p', { class: 'sub' }, t('fce.dibujoSub')),
-    h('div', { class: 'lienzo', html: e ? dibujoPlano(c, s, e) : '' }));
-  const tarjetaRes = h('article', { class: 'panel tarjeta' }, h('h2', { html: tituloGraf(c, s, { N: gam.N, Mx: gam.Mx, My: gam.My }) }), graficoMxMy(ctx, c, [gam], s), cifras(cif), h('p', { class: 'sub', style: 'margin:0' }, t('t.desplegar')), traza(ctx.p, c, gmin, e));
-  res.append(h('div', { class: 'cuerpo' }, tarjetaDib, tarjetaRes));
+  // Como en Diagrama: contorno grande y, a un lado, la sección con el plano de rotura (tamaño acotado), las cifras y la traza
+  const lado = h('aside', { class: 'fcr-lado' }, h('div', { class: 'fcr-sec', html: e ? dibujoPlano(c, s, e) : '' }), cifras(cif), h('p', { class: 'sub', style: 'margin:0' }, t('t.desplegar')), traza(ctx.p, c, gmin, e));
+  res.append(h('article', { class: 'panel tarjeta' }, h('h2', { html: tituloGraf(c, s, { N: gam.N, Mx: gam.Mx, My: gam.My }) }),
+    h('div', { class: 'fcr-diag' }, h('div', { class: 'fcr-graf' }, graficoMxMy(ctx, c, [gam], s)), lado)));
 }
 
 /** Cifras de la armadura: ø de cálculo, o en Dimensionar ø estricto y propuesto con sus áreas. */

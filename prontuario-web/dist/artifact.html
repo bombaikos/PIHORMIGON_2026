@@ -12814,7 +12814,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
   function tituloGraf(c, s, { N, Mx, My }) {
     const partes = [`${sub20("N", "Ed")} = ${fmt(N, MAG.N.d)} ${MAG.N.ud}`];
     if (Mx !== void 0) partes.push(`${sub20("M", "x,Ed")} = ${fmt(Mx, MAG.M.d)} ${MAG.M.ud}`, `${sub20("M", "y,Ed")} = ${fmt(My, MAG.M.d)} ${MAG.M.ud}`);
-    if (c.phi0) partes.push(`\xF8${fmt(est6.fi ?? c.phi0, 0)} mm`);
+    if (c.phi0) partes.push(`\xF8${fmt(c.phiProp ?? est6.fi ?? c.phi0, 0)} mm`);
     return `${t("fce.contorno")} \xB7 ${partes.join(" \xB7 ")}`;
   }
   function panelDiagrama2(ctx2, { s, c }) {
@@ -12913,7 +12913,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
   }
   function dibujoPlano(c, s, e2) {
     const { geo, m } = c;
-    const em = encuadre(geo, 300, 290, { completa: true });
+    const em = encuadre(geo, 220, 220, { completa: true });
     const x0 = 46;
     const y0 = 14;
     const { svg, hp, bp } = capasSeccion(geo, s, { e: em, x0, y0, x: null, id: "fe", cotasCapas: false });
@@ -12995,15 +12995,13 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       ...peor ? [[sub20("\u03B5", "s"), qh(peor.eps, "def")]] : [],
       ...cifrasArmadura2(c, dim, mm4)
     ];
-    const tarjetaDib = h(
+    const lado = h("aside", { class: "fcr-lado" }, h("div", { class: "fcr-sec", html: e2 ? dibujoPlano(c, s, e2) : "" }), cifras(cif), h("p", { class: "sub", style: "margin:0" }, t("t.desplegar")), traza3(ctx2.p, c, gmin, e2));
+    res.append(h(
       "article",
       { class: "panel tarjeta" },
-      h("h2", {}, t("fce.dibujo")),
-      h("p", { class: "sub" }, t("fce.dibujoSub")),
-      h("div", { class: "lienzo", html: e2 ? dibujoPlano(c, s, e2) : "" })
-    );
-    const tarjetaRes = h("article", { class: "panel tarjeta" }, h("h2", { html: tituloGraf(c, s, { N: gam.N, Mx: gam.Mx, My: gam.My }) }), graficoMxMy(ctx2, c, [gam], s), cifras(cif), h("p", { class: "sub", style: "margin:0" }, t("t.desplegar")), traza3(ctx2.p, c, gmin, e2));
-    res.append(h("div", { class: "cuerpo" }, tarjetaDib, tarjetaRes));
+      h("h2", { html: tituloGraf(c, s, { N: gam.N, Mx: gam.Mx, My: gam.My }) }),
+      h("div", { class: "fcr-diag" }, h("div", { class: "fcr-graf" }, graficoMxMy(ctx2, c, [gam], s)), lado)
+    ));
   }
   function cifrasArmadura2(c, dim, mm4) {
     if (dim && c.phiProp) {
