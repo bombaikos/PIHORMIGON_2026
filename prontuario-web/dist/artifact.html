@@ -1101,6 +1101,16 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
 
 .fce-tabla { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
 .fce-tabla .tabla-scroll { width: 100%; }
+
+/* Tabla de resultados como rejilla (guía § 3.2): cabecera sombreada fija, líneas finas, alto máximo con scroll propio */
+.fce-tabla .tabla-scroll { max-height: 210px; overflow-y: auto; }
+.fce-tabla table.rejilla td { cursor: default; }
+.fce-tabla table.rejilla th, .fce-tabla table.rejilla td { text-align: right; }
+.fce-tabla table.rejilla th:first-child, .fce-tabla table.rejilla td:first-child { text-align: left; }
+.fce-tabla table.rejilla { table-layout: auto; }
+.fce-tabla table.rejilla td { overflow: visible; text-overflow: clip; height: calc(22px + var(--mas)); }
+.fce-tabla table.rejilla th { white-space: nowrap; }
+.fce-tabla table.rejilla th, .fce-tabla table.rejilla td { padding-inline: 4px; }
 </style>
 
 <header class="barra">
@@ -5369,6 +5379,8 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     "fce.infoMrd": "M_Rd,x y M_Rd,y son los momentos resistentes en el punto Q del contorno: el corte de la recta que une el origen con (My,Ed, Mx,Ed). Mismo axil N_Ed y misma relaci\xF3n Mx,Ed / My,Ed (excentricidad constante).",
     "fce.infoBeta": "\u03B2 es el \xE1ngulo de la recta neutra con la horizontal (positivo si baja hacia la derecha). x es la profundidad de la fibra neutra, medida perpendicular a ella desde la fibra m\xE1s comprimida. Mx es el momento respecto al eje horizontal y My respecto al vertical.",
     "fce.copiarTabla": "Copiar tabla",
+    "fce.si": "S\xED",
+    "fce.no": "No",
     "fce.sinEsfuerzos": "Escribe al menos un par de esfuerzos."
   };
 
@@ -5405,6 +5417,8 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     "fce.infoMrd": "M_Rd,x and M_Rd,y are the resisting moments at point Q of the contour: where the line from the origin to (My,Ed, Mx,Ed) meets it. Same axial load N_Ed and same ratio Mx,Ed / My,Ed (constant eccentricity).",
     "fce.infoBeta": "\u03B2 is the angle of the neutral line with the horizontal (positive when it descends to the right). x is the neutral axis depth, measured perpendicular to it from the most compressed fibre. Mx is the moment about the horizontal axis and My about the vertical one.",
     "fce.copiarTabla": "Copy table",
+    "fce.si": "Yes",
+    "fce.no": "No",
     "fce.sinEsfuerzos": "Enter at least one pair of actions."
   };
 
@@ -12858,7 +12872,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
   }
   function tablaPuntos(ctx2, pts) {
     const dec = decimalAlCopiar();
-    const cab = ["#", "Mx,Ed [kN\xB7m]", "My,Ed [kN\xB7m]", "\u03B3"];
+    const cab = ["#", "Mx,Ed [kN\xB7m]", "My,Ed [kN\xB7m]", "\u03B3 [-]"];
     const num4 = (x, d) => fmt(x, d).replace("\u2212", "-").replace(".", dec);
     const filas = pts.map((x) => [String(x.i + 1), num4(x.Mx, MAG.M.d), num4(x.My, MAG.M.d), x.g === Infinity ? "\u221E" : num4(x.g, 2)]);
     const copiar = async () => {
@@ -12873,7 +12887,16 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       "div",
       { class: "fce-tabla" },
       h("button", { type: "button", class: "tecla", title: t("graf.copiarTablaTit"), onclick: copiar }, t("fce.copiarTabla")),
-      h("div", { class: "tabla-scroll" }, h("table", { class: "tabla", html: `<thead><tr>${["#", "M<sub>x,Ed</sub> [kN\xB7m]", "M<sub>y,Ed</sub> [kN\xB7m]", "\u03B3", ""].map((x) => `<th>${x}</th>`).join("")}</tr></thead><tbody>${pts.map((x) => `<tr><td>${x.i + 1}</td><td>${fmt(x.Mx, MAG.M.d)}</td><td>${fmt(x.My, MAG.M.d)}</td><td>${sigla2(x.g)}</td><td><span class="${x.g >= 1 - 1e-6 ? "ok" : "no"}">${x.g >= 1 - 1e-6 ? t("fcr.dentroSello") : t("fcr.fueraSello")}</span></td></tr>`).join("")}</tbody>` }))
+      tabla(
+        pts.map((x) => [
+          String(x.i + 1),
+          fmt(x.Mx, MAG.M.d),
+          fmt(x.My, MAG.M.d),
+          sigla2(x.g),
+          `<span class="${x.g >= 1 - 1e-6 ? "ok" : "no"}">${x.g >= 1 - 1e-6 ? t("fce.si") : t("fce.no")}</span>`
+        ]),
+        { cabecera: ["#", `${sub20("M", "x,Ed")} [kN\xB7m]`, `${sub20("M", "y,Ed")} [kN\xB7m]`, "\u03B3 [-]", t("fcr.dentroSello")], clase: "rejilla" }
+      )
     );
   }
   function rangoFijo(c) {

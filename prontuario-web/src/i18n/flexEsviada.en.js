@@ -19,5 +19,6 @@ export default {
   'fce.infoMx': 'Mx: moment about the horizontal axis of the section. Positive when it compresses the top face.', 'fce.infoMy': 'My: moment about the vertical axis of the section. Positive when it compresses the right face.',
   'fce.infoMrd': 'M_Rd,x and M_Rd,y are the resisting moments at point Q of the contour: where the line from the origin to (My,Ed, Mx,Ed) meets it. Same axial load N_Ed and same ratio Mx,Ed / My,Ed (constant eccentricity).', 'fce.infoBeta': 'β is the angle of the neutral line with the horizontal (positive when it descends to the right). x is the neutral axis depth, measured perpendicular to it from the most compressed fibre. Mx is the moment about the horizontal axis and My about the vertical one.',
   'fce.copiarTabla': 'Copy table',
+  'fce.si': 'Yes', 'fce.no': 'No',
   'fce.sinEsfuerzos': 'Enter at least one pair of actions.',
 };

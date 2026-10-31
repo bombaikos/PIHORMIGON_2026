@@ -1099,3 +1099,13 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
 
 .fce-tabla { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
 .fce-tabla .tabla-scroll { width: 100%; }
+
+/* Tabla de resultados como rejilla (guía § 3.2): cabecera sombreada fija, líneas finas, alto máximo con scroll propio */
+.fce-tabla .tabla-scroll { max-height: 210px; overflow-y: auto; }
+.fce-tabla table.rejilla td { cursor: default; }
+.fce-tabla table.rejilla th, .fce-tabla table.rejilla td { text-align: right; }
+.fce-tabla table.rejilla th:first-child, .fce-tabla table.rejilla td:first-child { text-align: left; }
+.fce-tabla table.rejilla { table-layout: auto; }
+.fce-tabla table.rejilla td { overflow: visible; text-overflow: clip; height: calc(22px + var(--mas)); }
+.fce-tabla table.rejilla th { white-space: nowrap; }
+.fce-tabla table.rejilla th, .fce-tabla table.rejilla td { padding-inline: 4px; }

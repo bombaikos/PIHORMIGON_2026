@@ -13,7 +13,7 @@ import { geometriaDe, materialesSeccion, sepCapas } from '../../io/proyecto.js';
 import { t } from '../i18n.js';
 import { fmt, q, qh, MAG, ESP, serieDiametros, decimalAlCopiar } from '../formato.js';
 import { grupoSeccion, rotulaSeccion } from './secciones.js';
-import { h, poner, campoNum, selector, segmentado, grupo, aviso, cifras, regleta } from '../campos.js';
+import { h, poner, campoNum, selector, segmentado, grupo, aviso, cifras, regleta, tabla } from '../campos.js';
 import { grafica } from '../grafica.js';
 import { rejilla } from '../rejilla.js';
 import { DEFS, encuadre, capasSeccion } from '../dibujoSeccion.js';
@@ -221,7 +221,7 @@ function tituloGraf(c, s, { N, Mx, My }) {
 /** Tabla de puntos con su γ y botón «Copiar tabla» (guía: más de 4 filas). */
 function tablaPuntos(ctx, pts) {
   const dec = decimalAlCopiar();
-  const cab = ['#', 'Mx,Ed [kN·m]', 'My,Ed [kN·m]', 'γ'];
+  const cab = ['#', 'Mx,Ed [kN·m]', 'My,Ed [kN·m]', 'γ [-]'];
   const num = (x, d) => fmt(x, d).replace('−', '-').replace('.', dec);
   const filas = pts.map((x) => [String(x.i + 1), num(x.Mx, MAG.M.d), num(x.My, MAG.M.d), x.g === Infinity ? '∞' : num(x.g, 2)]);
   const copiar = async () => {
@@ -229,7 +229,9 @@ function tablaPuntos(ctx, pts) {
   };
   return h('div', { class: 'fce-tabla' },
     h('button', { type: 'button', class: 'tecla', title: t('graf.copiarTablaTit'), onclick: copiar }, t('fce.copiarTabla')),
-    h('div', { class: 'tabla-scroll' }, h('table', { class: 'tabla', html: `<thead><tr>${['#', 'M<sub>x,Ed</sub> [kN·m]', 'M<sub>y,Ed</sub> [kN·m]', 'γ', ''].map((x) => `<th>${x}</th>`).join('')}</tr></thead><tbody>${pts.map((x) => `<tr><td>${x.i + 1}</td><td>${fmt(x.Mx, MAG.M.d)}</td><td>${fmt(x.My, MAG.M.d)}</td><td>${sigla(x.g)}</td><td><span class="${x.g >= 1 - 1e-6 ? 'ok' : 'no'}">${x.g >= 1 - 1e-6 ? t('fcr.dentroSello') : t('fcr.fueraSello')}</span></td></tr>`).join('')}</tbody>` })));
+    tabla(pts.map((x) => [String(x.i + 1), fmt(x.Mx, MAG.M.d), fmt(x.My, MAG.M.d), sigla(x.g),
+      `<span class="${x.g >= 1 - 1e-6 ? 'ok' : 'no'}">${x.g >= 1 - 1e-6 ? t('fce.si') : t('fce.no')}</span>`]),
+    { cabecera: ['#', `${sub('M', 'x,Ed')} [kN·m]`, `${sub('M', 'y,Ed')} [kN·m]`, 'γ [-]', t('fcr.dentroSello')], clase: 'rejilla' }));
 }
 
 /** Momentos mayores del contorno entre todos los axiles (muestreo): los ejes del diagrama no se mueven con la regleta. */
