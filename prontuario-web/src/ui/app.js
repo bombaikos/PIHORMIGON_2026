@@ -17,6 +17,7 @@ import * as durabilidad from './vistas/durabilidad.js';
 import * as flexion from './vistas/flexion.js';
 import * as flexRecta from './vistas/flexRecta.js';
 import * as flexEsviada from './vistas/flexEsviada.js';
+import * as estadoTensional from './vistas/estadoTensional.js';
 import * as fuego from './vistas/fuego.js';
 import * as anclaje from './vistas/anclaje.js';
 import * as cortante from './vistas/cortante.js';
@@ -38,7 +39,7 @@ function vistaSecciones(m, propia) {
   const v = { cabeza: fijar(secciones.cabeza), datos: fijar(secciones.datos), resultados: fijar(secciones.resultados) };
   return propia ? { ...secciones, ...v } : v;
 }
-const VISTAS = { proyecto, materiales, reologicas, secciones: vistaSecciones('seccion', true), durabilidad, diagramas: vistaSecciones('mk', false), vigas1vano, flexion, flexRecta, flexEsviada, fuego, anclaje, cortante, punzonamiento, rasante };
+const VISTAS = { proyecto, materiales, reologicas, secciones: vistaSecciones('seccion', true), durabilidad, diagramas: vistaSecciones('mk', false), vigas1vano, flexion, flexRecta, flexEsviada, estadoTensional, fuego, anclaje, cortante, punzonamiento, rasante };
 // Menú principal. Una entrada es un módulo suelto o un grupo con submenú; '|' separa familias dentro del
 // submenú. Lo que aún no está en VISTAS sale atenuado y sin acción, y se activa solo al migrarlo.
 const MENU = [
@@ -46,7 +47,7 @@ const MENU = [
   { grupo: 'secciones', vistas: ['secciones', 'durabilidad', 'diagramas'] },
   { grupo: 'analisis', vistas: ['vigas1vano'] },
   { grupo: 'elu', siempre: true, vistas: ['flexion', 'flexRecta', 'flexEsviada', '|', 'cortante', 'torsion', 'punzonamiento', 'anclaje', 'rasante', '|', 'inestabilidad'] },
-  { grupo: 'els', vistas: ['flechas'] },
+  { grupo: 'els', siempre: true, vistas: ['estadoTensional', 'flechas'] },
   'fuego', 'bielas', 'ejecucion', 'ayuda',
 ];
 const ORDEN = ['proyecto', ...MENU.flatMap((m) => (typeof m === 'string' ? [m] : m.vistas))].filter((v) => v in VISTAS);

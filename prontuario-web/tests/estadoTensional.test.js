@@ -162,3 +162,22 @@ test('geometría genérica: sección en L, equilibrio con N, Mx y My', () => {
   assert.ok(r.ok);
   cerca(r.N, 300, 1e-4); cerca(r.Mx, 50, 1e-4); cerca(r.My, -30, 1e-4);
 });
+
+test('franjas (armadura por área): se dan σ y ε en sus dos extremos y el equilibrio las incluye', () => {
+  const G = {
+    contornos: [{ pts: [[0, 0], [0.4, 0], [0.4, 0.6], [0, 0.6]], signo: 1 }],
+    caja: { xmin: 0, xmax: 0.4, ymin: 0, ymax: 0.6 }, h: 0.6, barras: [],
+    franjas: [{ y: 0.55, A: 8e-4, x1: 0.05, x2: 0.35 }, { y: 0.05, A: 4e-4, x1: 0.05, x2: 0.35 }],
+  };
+  const mod = modeloTensional(G, H, A, lin);
+  const r = estadoTensional(mod, { tipo: 'NM', N: 0, Mx: 100, My: 30 });
+  assert.ok(r.ok);
+  cerca(r.N, 0, 1e-4); cerca(r.Mx, 100, 1e-4); cerca(r.My, 30, 1e-4);
+  assert.equal(r.franjas.length, 2);
+  assert.equal(r.barras.length, 0);
+  const f = r.franjas[0];
+  // My > 0 comprime la cara derecha: la tensión crece con x en una franja horizontal
+  assert.ok(f.s2 > f.s1);
+  // tensión del extremo = Es · ε del plano en ese punto
+  rel(f.s1, (200000 * (r.e0 + r.ky * (0.05 - 0.2) - r.kx * (0.55 - 0.3))), 1e-9);
+});

@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
-for (const m of ['flexion', 'flexRecta', 'cortante']) {
+for (const m of ['flexion', 'flexRecta', 'cortante', 'estadoTensional']) {
   test(`${m}: elige la sección con grupoSeccion y rotula el nombre en la pastilla`, () => {
     const src = readFileSync(new URL(`../src/ui/vistas/${m}.js`, import.meta.url), 'utf8');
     assert.match(src, /grupoSeccion\(/);

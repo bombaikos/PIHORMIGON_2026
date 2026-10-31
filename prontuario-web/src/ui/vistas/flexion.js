@@ -274,6 +274,7 @@ export function veredicto(clase, sello, etq, valor, ecu, barra) {
     cumple: '<path d="M2.5 7.5l3 3 6-7"/>',
     nocumple: '<path d="M3 3l8 8M11 3l-8 8"/>',
     atencion: '<path d="M7 2v6M7 10.5v1.5"/>',
+    neutro: '<circle cx="7" cy="7" r="5.5"/><path d="M7 6.5v3.5M7 4v.3"/>',
   };
   const ico = `<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2">${icos[clase]}</svg>`;
   return h('div', { class: `veredicto ${clase}${barra === undefined ? ' sin-barra' : ''}` },
