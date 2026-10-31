@@ -199,7 +199,7 @@ function resultadosFlexRecta(ctx, res) {
   const lado = h('article', { class: 'panel tarjeta fcr-lado' },
     h('div', { class: 'fcr-sec', html: dibujoSeccionPeq(geo, s) }),
     tablaEsfuerzos(gam));
-  res.append(h('div', { class: 'cuerpo dib-ancho' },
+  res.append(h('div', { class: 'cuerpo dib-ancho fcr-diagrama' },
     h('article', { class: 'panel tarjeta' }, h('h2', {}, `${t('fcr.diagrama')} · ${s.nombre}${c.phi0 ? ` · ø${fmt(est.fi ?? c.phi0, 0)}` : ''}`),
       h('div', { class: 'fcr-graf' }, graficoNM(ctx, d, dH, gam, s), nota)),
     lado));
