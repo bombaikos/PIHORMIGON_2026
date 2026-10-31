@@ -15,19 +15,22 @@ import { fmt, q, qh, MAG, ESP, serieDiametros } from '../formato.js';
 import { grupoSeccion, rotulaSeccion } from './secciones.js';
 import { h, poner, campoNum, selector, segmentado, grupo, aviso, cifras, regleta } from '../campos.js';
 import { grafica } from '../grafica.js';
+import { rejilla } from '../rejilla.js';
 import { DEFS, encuadre, capasSeccion } from '../dibujoSeccion.js';
 import { veredicto } from './flexion.js';
 
 // Como el Prontuario 3.1: rectangulares definidas por redondo (pilares) y genéricas
 const FORMAS = ['pilar', 'generica'];
 const est = {
-  i: null, fi: null, modo: 'comprobar', NEd: 800, MxEd: 120, MyEd: 70, Ndiag: 500,
+  i: null, fi: null, modo: 'comprobar', NEd: 800, MxEd: 120, MyEd: 70, Ndiag: 500, puntos: [['120', '70'], ['-80', '110'], ['180', '-60'], ['40', '40']],
   abiertos: new Set(),
 };
 export function reiniciar() { est.i = null; }
 
 const sub = (a, b) => `${a}<sub>${b}</sub>`;
 const nv = (txt) => leerNumero(txt);
+/** Globo (i) dentro de una etiqueta de cifra. */
+const info = (tx) => `<span class="info-i izq" tabindex="0" role="img" aria-label="${tx}" data-tip="${tx}">i</span>`;
 const sigla = (g) => (g === Infinity ? '∞' : fmt(g, 2));
 const TOLCONT = 72; // direcciones del contorno dibujado
 
@@ -130,7 +133,11 @@ export function datos(ctx, form) {
       campoNum({ id: 'fe-n', etq: sub('N', 'Ed'), ref: t('fcr.compPos'), valor: est.NEd, mag: 'N', paso: 10, min: -1e6, max: 1e6, nombre: t('fcr.axil'), onCambio: (v) => { est.NEd = v; cambio(); } }),
       campoNum({ id: 'fe-mx', etq: sub('M', 'x,Ed'), ref: t('fce.mx'), valor: est.MxEd, mag: 'M', paso: 5, min: -1e6, max: 1e6, nombre: t('fce.nombreMx'), info: t('fce.infoMx'), onCambio: (v) => { est.MxEd = v; cambio(); } }),
       campoNum({ id: 'fe-my', etq: sub('M', 'y,Ed'), ref: t('fce.my'), valor: est.MyEd, mag: 'M', paso: 5, min: -1e6, max: 1e6, nombre: t('fce.nombreMy'), info: t('fce.infoMy'), onCambio: (v) => { est.MyEd = v; cambio(); } }),
-      campoFi()) : grupo(t('g.armadura'), campoFi(), h('p', { class: 'calculada', html: t('fce.axilGauge') })));
+      campoFi()) : grupo(t('fce.puntos'),
+      rejilla({ id: 'fe-pts', altoMax: 190,
+        columnas: [{ titulo: `${sub('M', 'x,Ed')} [kN·m]`, num: true }, { titulo: `${sub('M', 'y,Ed')} [kN·m]`, num: true }],
+        filas: est.puntos, onCambio: (f) => { est.puntos = f.map((r) => [r[0], r[1]]); cambio(); } }),
+      campoFi()));
 }
 
 export function resultados(ctx, res) {
@@ -209,6 +216,21 @@ function tituloGraf(c, s, { N, Mx, My }) {
   return `${t('fce.contorno')} · ${partes.join(' · ')}`;
 }
 
+/** Momentos mayores del contorno entre todos los axiles (muestreo): los ejes del diagrama no se mueven con la regleta. */
+function rangoFijo(c) {
+  if (!c.rango) {
+    const { Ntrac, Ncomp } = c.lim;
+    let mx = 0;
+    let my = 0;
+    for (let i = 1; i < 24; i++) {
+      for (const v of contornoMxMy(c.m, Ntrac + ((Ncomp - Ntrac) * i) / 24, { n: 24 })) { mx = Math.max(mx, Math.abs(v.Mx)); my = Math.max(my, Math.abs(v.My)); }
+    }
+    const a = 1.08 * Math.max(mx, my, 1);
+    c.rango = { x0: -a, x1: a, y0: -a, y1: a };
+  }
+  return c.rango;
+}
+
 /** Modo Diagrama (como el del Prontuario 3.1): contorno Mx–My para un axil constante que se mueve con una regleta;
  *  en tracción (N < 0) el contorno y la regleta van en rosa, en compresión en azul. */
 function panelDiagrama(ctx, { s, c }) {
@@ -222,30 +244,39 @@ function panelDiagrama(ctx, { s, c }) {
   let rg = null;
   const dibujar = (N, n) => {
     const cont = contornoMxMy(c.m, N, { n });
+    const pts = est.puntos.map((f, i) => ({ i, Mx: nv(f[0]), My: nv(f[1]) })).filter((x) => Number.isFinite(x.Mx) && Number.isFinite(x.My))
+      .map((x) => ({ ...x, g: coeficienteMxMy(c.m, N, x.Mx, x.My) }));
     const trac = N < 0;
     const xy = cont.length ? [...cont, cont[0]].map((v) => [v.My, v.Mx]) : [];
     const g = h('div', { class: 'lienzo' }, grafica({
-      series: [{ nombre: t('fce.serieN', fmt(N, MAG.N.d)), clase: `s1${trac ? ' trac' : ''}`, xy }], escalaIgual: true,
+      series: [{ nombre: t('fce.serieN', fmt(N, MAG.N.d)), clase: `s1${trac ? ' trac' : ''}`, xy }], escalaIgual: true, rango: rangoFijo(c),
+      puntos: pts.map((x) => ({ x: x.My, y: x.Mx, etq: String(x.i + 1), marca: x.g >= 1 - 1e-6 ? 'ok' : 'no' })),
       ejeX: { titulo: t('fce.ejeX'), d: MAG.M.d, dt: MAG.M.d }, ejeY: { titulo: t('fce.ejeY'), d: MAG.M.d, dt: MAG.M.d },
       archivo: `Mx-My ${s.nombre} N=${fmt(N, 0)}`, avisar: ctx.avisar,
     }));
     const ext = (f, mx) => (cont.length ? (mx ? Math.max : Math.min)(...cont.map(f)) : NaN);
     lado.replaceChildren(
       h('div', { class: 'fcr-sec', html: dibujoSeccionPeq(c.geo, s) }),
-      cifras([[sub('N', ''), qh(N, 'N')], [sub('M', 'x,Rd,máx'), qh(ext((v) => v.Mx, true), 'M')], [sub('M', 'x,Rd,mín'), qh(ext((v) => v.Mx, false), 'M')],
+      cifras([[sub('M', 'x,Rd,máx'), qh(ext((v) => v.Mx, true), 'M')], [sub('M', 'x,Rd,mín'), qh(ext((v) => v.Mx, false), 'M')],
         [sub('M', 'y,Rd,máx'), qh(ext((v) => v.My, true), 'M')], [sub('M', 'y,Rd,mín'), qh(ext((v) => v.My, false), 'M')],
-        [sub('N', 'Rd'), qh(lim.Ncomp, 'N')], [sub('N', 'Rd,t'), qh(lim.Ntrac, 'N')]]));
+        [sub('N', 'Rd'), qh(lim.Ncomp, 'N')], [sub('N', 'Rd,t'), qh(lim.Ntrac, 'N')]]),
+      pts.length ? h('table', { class: 'tabla', html: `<thead><tr>${['#', 'M<sub>x,Ed</sub> [kN·m]', 'M<sub>y,Ed</sub> [kN·m]', 'γ', ''].map((x) => `<th>${x}</th>`).join('')}</tr></thead><tbody>${pts.map((x) => `<tr><td>${x.i + 1}</td><td>${fmt(x.Mx, MAG.M.d)}</td><td>${fmt(x.My, MAG.M.d)}</td><td>${sigla(x.g)}</td><td><span class="${x.g >= 1 - 1e-6 ? 'ok' : 'no'}">${x.g >= 1 - 1e-6 ? t('fcr.dentroSello') : t('fcr.fueraSello')}</span></td></tr>`).join('')}</tbody>` }) : null);
     titulo.innerHTML = tituloGraf(c, s, { N });
     if (rg) rg.classList.toggle('trac', trac);
     return g;
   };
   let graf = dibujar(est.Ndiag, TOLCONT);
   caja.append(graf);
+  const z = ((0 - lo) / (hi - lo)) * 100;
   rg = regleta({ etq: sub('N', ''), min: lo, max: hi, step: 1, valor: est.Ndiag, etiqueta: t('fcr.axil'),
-    texto: (N) => `${fmt(N, MAG.N.d)} ${MAG.N.ud}`, clase: est.Ndiag < 0 ? 'trac' : '',
+    texto: (N) => `${fmt(N, MAG.N.d)} ${MAG.N.ud}`, clase: `rg-dual${est.Ndiag < 0 ? ' trac' : ''}`,
     onInput: (N) => { est.Ndiag = N; const g = dibujar(N, 36); graf.replaceWith(g); graf = g; },
     onChange: (N) => { est.Ndiag = N; const g = dibujar(N, TOLCONT); graf.replaceWith(g); graf = g; ctx.cambio(); } });
-  caja.append(rg);
+  rg.style.setProperty('--z', `${z}%`);
+  // Números pequeños bajo la regleta: tracción máxima, cero y compresión máxima
+  const escala = h('div', { class: 'regleta escala' }, h('span', { class: 'rg-et', html: sub('N', ''), style: 'visibility:hidden' }),
+    h('div', { class: 'rg-num' }, h('span', { style: 'left:0' }, fmt(lo, 0)), h('span', { style: `left:${z}%;transform:translateX(-50%)` }, '0'), h('span', { style: 'right:0' }, fmt(hi, 0))), h('span', { class: 'rg-v' }));
+  caja.append(rg, escala);
   return h('article', { class: 'panel tarjeta' }, titulo,
     h('div', { class: 'fcr-diag' }, caja, lado));
 }
@@ -302,6 +333,20 @@ function dibujoPlano(c, s, e) {
     out.push(`<clipPath id="fe-vb"><rect x="${x0 - 10}" y="${y0 - 10}" width="${bp + 20}" height="${hp + 20}"/></clipPath>`);
     out.push(`<line class="en" clip-path="url(#fe-vb)" x1="${X(px + uy * L)}" y1="${Y(py - ux * L)}" x2="${X(px - uy * L)}" y2="${Y(py + ux * L)}"/>`);
   }
+  // β: ángulo de la recta neutra con la horizontal, acotado en la figura (positivo si baja hacia la derecha)
+  if (e.x > 0 && Number.isFinite(e.x)) {
+    const b = alfa(e.theta);
+    const gx = (geo.caja.xmin + geo.caja.xmax) / 2;
+    const gy = (geo.caja.ymin + geo.caja.ymax) / 2;
+    const d0 = corte - (ux * gx + uy * gy);
+    const ax = X(gx + ux * d0);
+    const ay = Y(gy + uy * d0);
+    const r = Math.min(hp, bp) * 0.22;
+    const rad = (b * Math.PI) / 180;
+    out.push(`<line class="ref" x1="${ax - r * 1.3}" y1="${ay}" x2="${ax + r * 1.3}" y2="${ay}" stroke-dasharray="3 3"/>`);
+    out.push(`<path class="cota" d="M${ax + r} ${ay} A${r} ${r} 0 0 ${b >= 0 ? 1 : 0} ${ax + r * Math.cos(rad)} ${ay + r * Math.sin(rad)}"/>`);
+    out.push(`<text x="${ax + r * 0.5}" y="${ay + (b >= 0 ? -5 : 14)}">β</text>`);
+  }
   // Flecha hacia la cara comprimida, desde el c.d.g.
   const flecha = Math.min(hp, bp) * 0.28;
   out.push(`<line class="flecha" x1="${X(m.xc)}" y1="${Y(m.yc)}" x2="${X(m.xc) + ux * flecha}" y2="${Y(m.yc) + uy * flecha}" marker-end="url(#pta)"/>`);
@@ -316,7 +361,6 @@ function traza(p, c, gmin, e) {
     { id: 'cont', nom: t('fce.contorno'), val: t('fce.contornos', fmt(TOLCONT, 0)), cuenta: `<span class="f">${t('fce.f.contorno')}</span>
       <span class="n">${t('fce.f.ref', q(c.m.xc, 'long'), q(c.m.yc, 'long'))}</span>${art('art. 42.1', '8.1.1', '6.1')}` },
     { id: 'nrd', nom: sub('N', 'Rd'), val: q(c.lim.Ncomp, 'N'), cuenta: `<span class="f">${t('fcr.f.nrd')}</span>${art('art. 42.1', '8.1.1', '6.1')}` },
-    ...(e ? [{ id: 'alfa', nom: t('fce.alfa'), val: `${fmt(alfa(e.theta), 1)}°`, cuenta: `<span class="f">${t('fce.f.alfa')}</span>` }] : []),
   ];
   return h('div', { class: 'traza' }, ...filas.map((f) => {
     const det = h('details', { 'data-ref': f.id, open: est.abiertos.has(f.id) },
@@ -346,15 +390,9 @@ export function comandos(ctx) {
 function resultadoUnico(ctx, res, { s, c, gam, gmin, dim }) {
   const e = gam.e;
   const mm = (x, d) => `${fmt(x, d)}<span class="u"> mm</span>`;
-  // Armadura más traccionada (o menos comprimida) en el estado último
-  const g = e ? { ux: Math.cos(e.theta), uy: Math.sin(e.theta) } : null;
-  const barras = e ? c.m.puntos.map((pt) => { const t0 = Math.max(...c.geo.contornos[0].pts.map((v) => g.ux * v[0] + g.uy * v[1])) - (g.ux * pt.x + g.uy * pt.y); return { t: t0, eps: e.epsSup + e.kappa * t0 }; }) : [];
-  const peor = barras.length ? barras.reduce((a, b) => (b.eps > a.eps ? b : a)) : null;
   const cif = [
-    ...(gam.Q ? [[sub('M', 'Rd,x'), qh(gam.Q[0], 'M')], [sub('M', 'Rd,y'), qh(gam.Q[1], 'M')]] : []),
-    [sub('N', 'Rd'), qh(c.lim.Ncomp, 'N')],
-    ...(e ? [[t('c.x'), Number.isFinite(e.x) && e.x > 0 ? qh(e.x, 'long') : '—'], [t('fce.alfa'), `${fmt(alfa(e.theta), 1)}<span class="u">${ESP}°</span>`], [sub('ε', 'c'), qh(-e.epsSup, 'def')]] : []),
-    ...(peor ? [[sub('ε', 's'), qh(peor.eps, 'def')]] : []),
+    ...(gam.Q ? [[sub('M', 'Rd,x') + info(t('fce.infoMrd')), qh(gam.Q[0], 'M')], [sub('M', 'Rd,y') + info(t('fce.infoMrd')), qh(gam.Q[1], 'M')]] : []),
+    ...(e ? [[t('c.x'), Number.isFinite(e.x) && e.x > 0 ? qh(e.x, 'long') : '—'], ['β' + info(t('fce.infoBeta')), `${fmt(alfa(e.theta), 1)}<span class="u">${ESP}°</span>`], [sub('ε', 'c'), qh(-e.epsSup, 'def')]] : []),
     ...cifrasArmadura(c, dim, mm),
   ];
   // Como en Diagrama: contorno grande y, a un lado, la sección con el plano de rotura (tamaño acotado), las cifras y la traza
@@ -370,5 +408,5 @@ function cifrasArmadura(c, dim, mm) {
       [`${sub('A', 's')} ${t('fcr.estricto')}`, qh(c.As0 * c.kEstricto, 'As')], [`${sub('A', 's')} ${t('fcr.propuesto')}`, qh(c.As0 * c.k, 'As')]];
   }
   if (dim && Number.isFinite(c.k)) return [[sub('A', 's,req'), qh(c.As0 * c.k, 'As')], ['k', fmt(c.k, 2)]];
-  return c.phi0 ? [['ø', mm(est.fi ?? c.phi0, 0)], [sub('A', 's'), qh(c.As0 * c.k, 'As')], [sub('A', 's,mín'), qh(c.Amin, 'As')]] : [[sub('A', 's,mín'), qh(c.Amin, 'As')]];
+  return [[sub('A', 's'), qh(c.As0 * c.k, 'As')], [sub('A', 's,mín'), qh(c.Amin, 'As')]];
 }

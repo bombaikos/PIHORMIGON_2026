@@ -49,13 +49,14 @@ function interpolar(xy, x) {
  * @param {{titulo:string, d?:number, max?:number}} o.ejeY  max: fija el extremo superior de la vista completa
  * @param {boolean} [o.sinTabla]  sin el selector Gráfico/Tabla (la tabla numérica va aparte)
  * @param {{x?:number, y?:number}} [o.rejillaSec]  rejilla secundaria (sin números) cada x e y; solo si es más fina que la principal
+ * @param {{x0:number,x1:number,y0:number,y1:number}} [o.rango]  extensión fija de los ejes (vista completa), en lugar de la de los datos
  * @param {boolean} [o.escalaIgual]  la misma escala en x e y (contornos Mx–My): el eje que sobra se amplía en torno a su centro
  * @param {boolean} [o.invertirY]  el eje y crece hacia abajo (momentos flectores: positivos debajo)
  * @param {string} [o.archivo]  nombre base al guardar
  * @param {(texto:string)=>void} [o.avisar]
  * @returns {HTMLElement}
  */
-export function grafica({ series, puntos = [], ejeX, ejeY, archivo = 'grafica', rejillaSec = null, invertirY = false, sinTabla = false, escalaIgual = false, avisar = () => {} }) {
+export function grafica({ series, puntos = [], ejeX, ejeY, archivo = 'grafica', rejillaSec = null, invertirY = false, sinTabla = false, escalaIgual = false, rango = null, avisar = () => {} }) {
   // Guía § 1: fuerzas [kN], momentos [kN·m] y áreas de armadura [mm²] sin decimales, también en la cruz y en la tabla, diga lo que diga el módulo
   const sinDec = (e) => (/\((kN|kN·m|mm²)\)/.test(plano(e.titulo)) ? { ...e, d: 0, dt: 0 } : e);
   ejeX = sinDec(ejeX);
@@ -144,7 +145,7 @@ export function grafica({ series, puntos = [], ejeX, ejeY, archivo = 'grafica', 
   };
   const [xa, xb] = ext(0);
   const [ya, yb] = ext(1);
-  const completa = { x0: xa, x1: xb, y0: ya, y1: yb };
+  const completa = rango ? { ...rango } : { x0: xa, x1: xb, y0: ya, y1: yb };
   const completaBase = { ...completa };
   let vista = { ...completa };
   let W = 0;
