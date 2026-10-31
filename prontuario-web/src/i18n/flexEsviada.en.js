@@ -20,7 +20,7 @@ export default {
   'fce.constante': 'Constant', 'fce.ejeN': 'N [kN]', 'fce.serieM': (m, v) => `${m} = ${v} kN·m`,
   'fce.calculando': 'Calculating…', 'fce.fiVarios': 'The section has more than one bar diameter: a single one cannot be chosen.',
   'fce.fiDim': 'Dimensioning starts from the section bar diameter; the program proposes the diameter needed.',
-  'fce.puntos': 'Actions', 'fce.tabla': 'Actions and safety factor',
+  'fce.fijoDiagrama': 'Action held constant in the diagram', 'fce.puntos': 'Design actions', 'fce.tabla': 'Actions and safety factor',
   'fce.contornos': (n) => `${n} points`,
   'fce.infoMx': 'Mx: moment about the horizontal axis through the centroid of the gross concrete. Positive when it compresses the top face.', 'fce.infoMy': 'My: moment about the vertical axis through the centroid of the gross concrete. Positive when it compresses the right face.',
   'fce.infoMrdx': 'M_Rd,x: resisting moment about the horizontal axis through the centroid of the gross concrete (positive when it compresses the top face), at the point where the line from the origin to (My,Ed, Mx,Ed) meets the diagram; same axial load and same ratio Mx,Ed / My,Ed.', 'fce.infoMrdy': 'M_Rd,y: resisting moment about the vertical axis through the centroid of the gross concrete (positive when it compresses the right face), at the point where the line from the origin to (My,Ed, Mx,Ed) meets the diagram; same axial load and same ratio Mx,Ed / My,Ed.', 'fce.infoBeta': 'β: angle of the neutral line with the horizontal, positive counterclockwise.', 'fce.infoX': 'x: neutral axis depth, measured perpendicular to the neutral line from the most compressed fibre.',

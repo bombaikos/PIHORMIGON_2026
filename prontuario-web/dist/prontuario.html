@@ -5407,7 +5407,8 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     "fce.calculando": "Se est\xE1 calculando\u2026",
     "fce.fiVarios": "La secci\xF3n tiene m\xE1s de un di\xE1metro: no se puede elegir uno solo.",
     "fce.fiDim": "En Dimensionamiento se parte del \xF8 de la secci\xF3n; el programa propone el di\xE1metro necesario.",
-    "fce.puntos": "Esfuerzos",
+    "fce.fijoDiagrama": "Esfuerzo fijo para el diagrama",
+    "fce.puntos": "Esfuerzos solicitantes",
     "fce.tabla": "Esfuerzos y coeficiente de seguridad",
     "fce.contornos": (n) => `${n} puntos`,
     "fce.infoMx": "Mx: momento respecto al eje horizontal que pasa por el c.d.g. del hormig\xF3n bruto. Positivo si comprime la cara superior.",
@@ -5458,7 +5459,8 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     "fce.calculando": "Calculating\u2026",
     "fce.fiVarios": "The section has more than one bar diameter: a single one cannot be chosen.",
     "fce.fiDim": "Dimensioning starts from the section bar diameter; the program proposes the diameter needed.",
-    "fce.puntos": "Actions",
+    "fce.fijoDiagrama": "Action held constant in the diagram",
+    "fce.puntos": "Design actions",
     "fce.tabla": "Actions and safety factor",
     "fce.contornos": (n) => `${n} points`,
     "fce.infoMx": "Mx: moment about the horizontal axis through the centroid of the gross concrete. Positive when it compresses the top face.",
@@ -7201,7 +7203,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     const [x1, y1] = xy[i];
     return x1 === x0 ? y1 : y0 + (y1 - y0) * (x - x0) / (x1 - x0);
   }
-  function grafica({ series, puntos = [], ejeX, ejeY, archivo: archivo2 = "grafica", rejillaSec = null, invertirY = false, sinTabla = false, escalaIgual = false, rango = null, lecturaXY = false, avisar: avisar2 = () => {
+  function grafica({ series, puntos = [], ejeX, ejeY, archivo: archivo2 = "grafica", rejillaSec = null, invertirY = false, sinTabla = false, escalaIgual = false, rango = null, lecturaXY = false, detalle: detalle2 = null, avisar: avisar2 = () => {
   } }) {
     const sinDec = (e2) => /\((kN|kN·m|mm²)\)/.test(plano(e2.titulo)) ? { ...e2, d: 0, dt: 0 } : e2;
     ejeX = sinDec(ejeX);
@@ -7238,9 +7240,19 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     const tabla3 = document.createElement("div");
     tabla3.className = "graf-tabla";
     tabla3.hidden = true;
-    const filasT = Math.max(0, ...enCuadro.map((s) => s.xy.length));
-    const celda = (s, i, j, d) => s.xy[i] ? fmt(s.xy[i][j], d) : "";
-    tabla3.innerHTML = `<table><thead>${enCuadro.length > 1 ? `<tr>${enCuadro.map((s) => `<th colspan="2" class="${s.clase ?? "s1"}">${s.nombre}</th>`).join("")}</tr>` : ""}<tr>${enCuadro.map(() => `<th>${ejeX.titulo}</th><th>${ejeY.titulo}</th>`).join("")}</tr></thead><tbody>` + Array.from({ length: filasT }, (_2, i) => `<tr>${enCuadro.map((s) => `<td>${celda(s, i, 0, ejeX.dt ?? (ejeX.d ?? 2) + 1)}</td><td>${celda(s, i, 1, ejeY.dt ?? (ejeY.d ?? 1) + 1)}</td>`).join("")}</tr>`).join("") + "</tbody></table>";
+    const xyT = (s) => s.tabla ?? s.xy;
+    const filasT = Math.max(0, ...enCuadro.map((s) => xyT(s).length));
+    const celda = (s, i, j, d) => xyT(s)[i] ? fmt(xyT(s)[i][j], d) : "";
+    let detFilas = null;
+    let armada = false;
+    function armarTabla() {
+      if (armada) return;
+      armada = true;
+      detFilas = detalle2 ? detalle2.filas() : null;
+      const extraCab = detalle2 ? detalle2.cab.map((c) => `<th>${c}</th>`).join("") : "";
+      const extraFila = (i) => detalle2 ? detalle2.cab.map((_2, k) => `<td>${detFilas?.[i]?.[k] ?? ""}</td>`).join("") : "";
+      tabla3.innerHTML = `<table><thead>${enCuadro.length > 1 ? `<tr>${enCuadro.map((s) => `<th colspan="2" class="${s.clase ?? "s1"}">${s.nombre}</th>`).join("")}</tr>` : ""}<tr>${enCuadro.map((_2, k) => `<th>${ejeX.titulo}</th><th>${ejeY.titulo}</th>${k === 0 ? extraCab : ""}`).join("")}</tr></thead><tbody>` + Array.from({ length: filasT }, (_2, i) => `<tr>${enCuadro.map((s, k) => `<td>${celda(s, i, 0, ejeX.dt ?? (ejeX.d ?? 2) + 1)}</td><td>${celda(s, i, 1, ejeY.dt ?? (ejeY.d ?? 1) + 1)}</td>${k === 0 ? extraFila(i) : ""}`).join("")}</tr>`).join("") + "</tbody></table>";
+    }
     let enTabla = false;
     let listo = false;
     const modo2 = document.createElement("div");
@@ -7265,6 +7277,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       bG.setAttribute("aria-checked", String(!tabular));
       bT.setAttribute("aria-checked", String(tabular));
       svg.style.display = tabular ? "none" : "";
+      if (tabular) armarTabla();
       tabla3.hidden = !tabular;
       tip.hidden = true;
       for (const b of soloGrafico) b.hidden = tabular;
@@ -7489,10 +7502,12 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     const copiar = () => copiarPNG(svg, W, H, archivo2, avisar2);
     async function copiarTabla() {
       const num4 = (v2) => Number.isFinite(v2) ? String(Math.abs(v2) < 1e-6 ? 0 : +v2.toPrecision(6)).replace(".", decimalAlCopiar()) : "";
+      armarTabla();
       const lineas = [];
+      const extraT = (k, i) => k === 0 && detalle2 ? `	${detalle2.cab.map((_2, q2) => (detFilas?.[i]?.[q2] ?? "").replace(".", decimalAlCopiar())).join("	")}` : "";
       if (enCuadro.length > 1) lineas.push(enCuadro.map((s) => `${plano(s.nombre)}	`).join("	"));
-      lineas.push(enCuadro.map(() => `${plano(ejeX.titulo)}	${plano(ejeY.titulo)}`).join("	"));
-      for (let i = 0; i < filasT; i++) lineas.push(enCuadro.map((s) => s.xy[i] ? `${num4(s.xy[i][0])}	${num4(s.xy[i][1])}` : "	").join("	"));
+      lineas.push(enCuadro.map((_2, k) => `${plano(ejeX.titulo)}	${plano(ejeY.titulo)}${k === 0 && detalle2 ? `	${detalle2.plano.join("	")}` : ""}`).join("	"));
+      for (let i = 0; i < filasT; i++) lineas.push(enCuadro.map((s, k) => xyT(s)[i] ? `${num4(xyT(s)[i][0])}	${num4(xyT(s)[i][1])}${extraT(k, i)}` : "	").join("	"));
       try {
         await navigator.clipboard.writeText(lineas.join("\n"));
         avisar2(t("graf.tablaCopiada"));
@@ -12701,7 +12716,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     return hi;
   }
   var SUPERFICIES = /* @__PURE__ */ new WeakMap();
-  function superficieEsviada(m, { nN = 33, nT = 48 } = {}) {
+  function superficieEsviada(m, { nN = 48, nT = 48 } = {}) {
     const clave = `${nN}/${nT}`;
     const previa = SUPERFICIES.get(m);
     if (previa?.clave === clave) return previa.S;
@@ -12712,7 +12727,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     const My = [new Array(nT).fill(0)];
     for (let i = 1; i <= nN; i++) {
       const tt = i / (nN + 1);
-      const N = Ntrac + (Ncomp - Ntrac) * (0.5 * tt + 0.25 * (1 - Math.cos(Math.PI * tt)));
+      const N = Ntrac + (Ncomp - Ntrac) * (0.35 * tt + 0.325 * (1 - Math.cos(Math.PI * tt)));
       const fx = [];
       const fy = [];
       for (const th of thetas) {
@@ -12764,13 +12779,19 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     const N = [];
     const A = [];
     const B = [];
+    const thA = [];
+    const thB = [];
+    const dT = 2 * Math.PI / S.thetas.length;
     for (let i = 1; i < S.Ns.length - 1; i++) {
       const c = crucesNivel(S, i, fijo, M0);
       if (c.length < 2) continue;
-      const vs = c.map((x) => x.v);
+      const hi = c.reduce((p, q2) => q2.v > p.v ? q2 : p);
+      const lo = c.reduce((p, q2) => q2.v < p.v ? q2 : p);
       N.push(S.Ns[i]);
-      A.push(Math.max(...vs));
-      B.push(Math.min(...vs));
+      A.push(hi.v);
+      B.push(lo.v);
+      thA.push(S.thetas[hi.j] + hi.t * dT);
+      thB.push(S.thetas[lo.j] + lo.t * dT);
     }
     const curva = [];
     if (Math.abs(M0) < 1e-9) {
@@ -12781,7 +12802,63 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       curva.push([S.Ncomp, 0]);
     }
     for (let k = N.length - 1; k >= 0; k--) curva.push([N[k], B[k]]);
-    return { N, A, B, curva };
+    return { N, A, B, thA, thB, curva };
+  }
+  function pchip(x, y, k) {
+    const n = x.length;
+    if (n < 3) return x.map((v2, i) => [v2, y[i]]);
+    const d = [];
+    for (let i = 0; i < n - 1; i++) d.push((y[i + 1] - y[i]) / (x[i + 1] - x[i]));
+    const m = new Array(n);
+    m[0] = d[0];
+    m[n - 1] = d[n - 2];
+    for (let i = 1; i < n - 1; i++) m[i] = d[i - 1] * d[i] <= 0 ? 0 : (d[i - 1] + d[i]) / 2;
+    for (let i = 0; i < n - 1; i++) {
+      if (d[i] === 0) {
+        m[i] = 0;
+        m[i + 1] = 0;
+        continue;
+      }
+      const a = m[i] / d[i];
+      const b = m[i + 1] / d[i];
+      const r = a * a + b * b;
+      if (r > 9) {
+        const tau = 3 / Math.sqrt(r);
+        m[i] = tau * a * d[i];
+        m[i + 1] = tau * b * d[i];
+      }
+    }
+    const out = [];
+    for (let i = 0; i < n - 1; i++) {
+      const h2 = x[i + 1] - x[i];
+      for (let j = 0; j < k; j++) {
+        const t2 = j / k;
+        const h00 = 2 * t2 ** 3 - 3 * t2 ** 2 + 1;
+        const h10 = t2 ** 3 - 2 * t2 ** 2 + t2;
+        const h01 = -2 * t2 ** 3 + 3 * t2 ** 2;
+        const h11 = t2 ** 3 - t2 ** 2;
+        out.push([x[i] + t2 * h2, h00 * y[i] + h10 * h2 * m[i] + h01 * y[i + 1] + h11 * h2 * m[i + 1]]);
+      }
+    }
+    out.push([x[n - 1], y[n - 1]]);
+    return out;
+  }
+  function trazoNM(corte, S, M0, k = 5) {
+    if (!corte.N.length) return [];
+    const N = [...corte.N];
+    let A = [...corte.A];
+    let B = [...corte.B];
+    if (Math.abs(M0) < 1e-9) {
+      N.unshift(S.Ntrac);
+      A.unshift(0);
+      B.unshift(0);
+      N.push(S.Ncomp);
+      A.push(0);
+      B.push(0);
+    }
+    const sup3 = pchip(N, A, k);
+    const inf = pchip(N, B, k).reverse();
+    return [...sup3, ...inf];
   }
   function dentroCurva(curva, N, M2) {
     let dentro2 = false;
@@ -12891,17 +12968,17 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     Ndiag: 500,
     fijo: "N",
     Mdiag: { Mx: 0, My: 0 },
-    puntosNM: { My: [["500", "80"], ["1500", "120"], ["-200", "30"], ["", ""]], Mx: [["500", "80"], ["1500", "120"], ["-200", "30"], ["", ""]] },
+    puntosNM: { My: Array.from({ length: 5 }, () => ["0", "0"]), Mx: Array.from({ length: 5 }, () => ["0", "0"]) },
     dirEmin: "y",
-    puntos: [["120", "70"], ["-80", "110"], ["180", "-60"], ["40", "40"], ["", ""], ["", ""], ["", ""], ["", ""], ["", ""], ["", ""]],
+    puntos: Array.from({ length: 5 }, () => ["0", "0"]),
     abiertos: /* @__PURE__ */ new Set()
   };
-  for (const k of ["Mx", "My"]) while (est6.puntosNM[k].length < 10) est6.puntosNM[k].push(["", ""]);
   function reiniciar6() {
     est6.i = null;
   }
   var sub20 = (a, b) => `${a}<sub>${b}</sub>`;
   var nv2 = (txt) => leerNumero(txt);
+  var ALTO_PTS = 32 + 11 * 27;
   var info = (tx2) => `<span class="info-i izq" tabindex="0" role="img" aria-label="${tx2}" data-tip="${tx2}">i</span>`;
   var sigla2 = (g) => g === Infinity ? "\u221E" : fmt(g, 2);
   var TOLCONT = 72;
@@ -13047,33 +13124,38 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
             cambio();
           }
         })
-      ) : grupo(
-        t("fce.puntos"),
-        segmentado({ ancho: true, etiqueta: t("fce.constante"), opciones: [["N", sub20("N", "")], ["Mx", sub20("M", "x")], ["My", sub20("M", "y")]], valor: est6.fijo, onCambio: (v2) => {
-          est6.fijo = v2;
-          ctx2.pintar();
-        } }),
-        est6.fijo === "N" ? rejilla({
-          id: "fe-pts",
-          altoMax: 330,
-          columnas: [{ titulo: `${sub20("M", "x,Ed")} [kN\xB7m]`, num: true }, { titulo: `${sub20("M", "y,Ed")} [kN\xB7m]`, num: true }],
-          filas: est6.puntos,
-          onCambio: (f) => {
-            est6.puntos = Array.from({ length: Math.max(10, f.length) }, (_2, i) => [f[i]?.[0] ?? "", f[i]?.[1] ?? ""]);
-            cambio();
-          }
-        }) : rejilla({
-          id: "fe-pts",
-          altoMax: 330,
-          columnas: [{ titulo: `${sub20("N", "Ed")} [kN]`, num: true }, { titulo: `${sub20("M", est6.fijo === "My" ? "x,Ed" : "y,Ed")} [kN\xB7m]`, num: true }],
-          filas: est6.puntosNM[est6.fijo],
-          onCambio: (f) => {
-            est6.puntosNM[est6.fijo] = Array.from({ length: Math.max(10, f.length) }, (_2, i) => [f[i]?.[0] ?? "", f[i]?.[1] ?? ""]);
-            cambio();
-          }
-        }),
+      ) : [
+        grupo(
+          t("fce.fijoDiagrama"),
+          segmentado({ ancho: true, etiqueta: t("fce.fijoDiagrama"), opciones: [["N", sub20("N", "")], ["Mx", sub20("M", "x")], ["My", sub20("M", "y")]], valor: est6.fijo, onCambio: (v2) => {
+            est6.fijo = v2;
+            ctx2.pintar();
+          } })
+        ),
+        grupo(
+          t("fce.puntos"),
+          est6.fijo === "N" ? rejilla({
+            id: "fe-pts",
+            altoMax: ALTO_PTS,
+            columnas: [{ titulo: `${sub20("M", "x,Ed")} [kN\xB7m]`, num: true }, { titulo: `${sub20("M", "y,Ed")} [kN\xB7m]`, num: true }],
+            filas: est6.puntos,
+            onCambio: (f) => {
+              est6.puntos = f;
+              cambio();
+            }
+          }) : rejilla({
+            id: "fe-pts",
+            altoMax: ALTO_PTS,
+            columnas: [{ titulo: `${sub20("N", "Ed")} [kN]`, num: true }, { titulo: `${sub20("M", est6.fijo === "My" ? "x,Ed" : "y,Ed")} [kN\xB7m]`, num: true }],
+            filas: est6.puntosNM[est6.fijo],
+            onCambio: (f) => {
+              est6.puntosNM[est6.fijo] = f;
+              cambio();
+            }
+          })
+        ),
         campoFi()
-      )
+      ]
     );
   }
   function resultados10(ctx2, res) {
@@ -13201,33 +13283,8 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
   }
   function tablaPuntos(ctx2, pts) {
     const dec = decimalAlCopiar();
-    const cab = [
-      ["#", "#"],
-      [sub20("N", "Ed") + " [kN]", "NEd [kN]"],
-      [sub20("M", "x,Ed") + " [kN\xB7m]", "Mx,Ed [kN\xB7m]"],
-      [sub20("M", "y,Ed") + " [kN\xB7m]", "My,Ed [kN\xB7m]"],
-      ["\u03B2 [\xB0]", "\u03B2 [\xB0]"],
-      ["x [mm]", "x [mm]"],
-      ["\u03BA [\u2030/m]", "\u03BA [\u2030/m]"],
-      [sub20("\u03B5", "sup") + " [\u2030]", "\u03B5sup [\u2030]"],
-      [sub20("\u03B5", "inf") + " [\u2030]", "\u03B5inf [\u2030]"]
-    ];
-    const fila5 = (x) => {
-      const e2 = x.e;
-      const ok = e2 && Number.isFinite(e2.x);
-      return [
-        String(x.i + 1),
-        fmt(x.N, MAG.N.d),
-        fmt(x.Mx, MAG.M.d),
-        fmt(x.My, MAG.M.d),
-        ok ? fmt(alfa(e2.theta), 1) : "\u2014",
-        ok ? fmt(e2.x * 1e3, 0) : "\u2014",
-        ok ? fmt(e2.kappa * 1e3, 2) : "\u2014",
-        ok ? fmt(-e2.epsSup * 1e3, 2) : "\u2014",
-        ok && Number.isFinite(e2.epsInf) ? fmt(-e2.epsInf * 1e3, 2) : "\u2014"
-      ];
-    };
-    const filas = pts.map(fila5);
+    const cab = [["#", "#"], [sub20("N", "Ed") + " [kN]", "NEd [kN]"], [sub20("M", "x,Ed") + " [kN\xB7m]", "Mx,Ed [kN\xB7m]"], [sub20("M", "y,Ed") + " [kN\xB7m]", "My,Ed [kN\xB7m]"], ["\u03B3 [-]", "\u03B3 [-]"]];
+    const filas = pts.map((x) => [String(x.i + 1), fmt(x.N, MAG.N.d), fmt(x.Mx, MAG.M.d), fmt(x.My, MAG.M.d), sigla2(x.g)]);
     const copiar = async () => {
       try {
         const txt = [cab.map((k) => k[1]).join("	"), ...filas.map((f) => f.map((v2) => v2.replace("\u2212", "-").replace(".", dec)).join("	"))].join("\r\n");
@@ -13247,6 +13304,9 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       }), { cabecera: cab.map((k) => k[0]), clase: "rejilla" })
     );
   }
+  var DET_CAB = [`\u03B2 [\xB0]`, "x [mm]", "\u03BA [\u2030/m]", `${sub20("\u03B5", "sup")} [\u2030]`, `${sub20("\u03B5", "inf")} [\u2030]`];
+  var DET_PLANO = ["\u03B2 [\xB0]", "x [mm]", "\u03BA [\u2030/m]", "\u03B5sup [\u2030]", "\u03B5inf [\u2030]"];
+  var detEstado = (e2) => e2 && Number.isFinite(e2.x) ? [fmt(alfa(e2.theta), 1), e2.x > 0 ? fmt(e2.x * 1e3, 0) : "\u2014", fmt(e2.kappa * 1e3, 2), fmt(-e2.epsSup * 1e3, 2), Number.isFinite(e2.epsInf) ? fmt(-e2.epsInf * 1e3, 2) : "\u2014"] : ["\u2014", "\u2014", "\u2014", "\u2014", "\u2014"];
   function rangoFijo(c) {
     if (!c.rango) {
       const mx = maximosSuperficie(superficieEsviada(c.m));
@@ -13288,6 +13348,17 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     const pad = 0.04 * (S.Ncomp - S.Ntrac);
     return { x0: S.Ntrac - pad, x1: S.Ncomp + pad, y0: -a, y1: a };
   }
+  function filasDetalleNM(c, co, M0) {
+    const tips = Math.abs(M0) < 1e-9;
+    const fila5 = (N, th) => detEstado(estadoUltimoEsviada(c.m, N, th));
+    const vacia = ["\u2014", "\u2014", "\u2014", "\u2014", "\u2014"];
+    const out = [];
+    if (tips) out.push(vacia);
+    co.N.forEach((N, k) => out.push(fila5(N, co.thA[k])));
+    if (tips) out.push(vacia);
+    for (let k = co.N.length - 1; k >= 0; k--) out.push(fila5(co.N[k], co.thB[k]));
+    return out;
+  }
   function panelNM(ctx2, { s, c }) {
     const S = superficieEsviada(c.m);
     const f = est6.fijo;
@@ -13301,11 +13372,13 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     const titulo = h("h2", {});
     const dibujar = (M0, exacto) => {
       const { co, pts } = puntosNM(c, M0, exacto);
-      const xy = co.curva.length ? [...co.curva, co.curva[0]] : [];
+      const trazo = trazoNM(co, S, M0);
+      const xy = trazo.length ? [...trazo, trazo[0]] : [];
       const g = h("div", { class: "lienzo" }, grafica({
-        series: [{ nombre: t("fce.serieM", f === "My" ? "My" : "Mx", fmt(M0, MAG.M.d)), clase: "s1", xy }],
+        series: [{ nombre: t("fce.serieM", f === "My" ? "My" : "Mx", fmt(M0, MAG.M.d)), clase: "s1", xy, tabla: co.curva }],
         lecturaXY: true,
         rango: rangoNM(c),
+        detalle: { cab: DET_CAB, plano: DET_PLANO, filas: () => filasDetalleNM(c, co, M0) },
         puntos: pts.map((x) => ({ x: x.N, y: f === "My" ? x.Mx : x.My, etq: String(x.i + 1), marca: x.g >= 1 - 1e-6 ? "ok" : "no" })),
         ejeX: { titulo: t("fce.ejeN"), d: MAG.N.d, dt: MAG.N.d },
         ejeY: { titulo: f === "My" ? t("fce.ejeY") : t("fce.ejeX"), d: MAG.M.d, dt: MAG.M.d },
@@ -13380,6 +13453,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
         escalaIgual: true,
         lecturaXY: true,
         rango: rangoFijo(c),
+        detalle: { cab: [sub20("N", "") + " [kN]", ...DET_CAB], plano: ["N [kN]", ...DET_PLANO], filas: () => (cont.length ? [...cont, cont[0]] : []).map((e2) => [fmt(N, MAG.N.d), ...detEstado(e2)]) },
         puntos: pts.map((x) => ({ x: x.My, y: x.Mx, etq: String(x.i + 1), marca: x.g >= 1 - 1e-6 ? "ok" : "no" })),
         ejeX: { titulo: t("fce.ejeX"), d: MAG.M.d, dt: MAG.M.d },
         ejeY: { titulo: t("fce.ejeY"), d: MAG.M.d, dt: MAG.M.d },
