@@ -426,12 +426,12 @@ thead th { white-space: normal; vertical-align: bottom; }
 .pie-sec .fila-botones { margin: 0; }
 /* Rejilla de datos (guía § 12) */
 .rejilla-campo { gap: 2px; }
-.marco-rejilla { overflow: auto; border: 1px solid var(--linea); border-radius: var(--r-campo); background: var(--hoja); }
+.marco-rejilla { overflow: auto; border: 1px solid var(--campo-borde); border-radius: var(--r-campo); background: var(--campo); }
 .marco-rejilla.mal { border-color: color-mix(in oklch, var(--no) 50%, var(--linea)); }
 table.rejilla { border-collapse: separate; border-spacing: 0; width: 100%; font-size: var(--t-s); outline: none; table-layout: fixed; }
 table.rejilla th { position: sticky; top: 0; z-index: 1; background: var(--hundido); color: var(--tinta-2); font-weight: 600; text-align: right; padding: 4px 8px; border-bottom: 1px solid var(--linea); white-space: nowrap; }
 table.rejilla th:not(:first-child), table.rejilla td:not(:first-child) { border-left: 1px solid var(--linea); }
-table.rejilla td { padding: 0 8px; height: calc(26px + var(--mas)); border-bottom: 1px solid color-mix(in oklch, var(--linea) 60%, transparent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: cell; user-select: none; }
+table.rejilla td { background: var(--campo); padding: 0 8px; height: calc(26px + var(--mas)); border-bottom: 1px solid color-mix(in oklch, var(--linea) 60%, transparent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: cell; user-select: none; }
 table.rejilla td.num { text-align: right; font-variant-numeric: tabular-nums; }
 table.rejilla tr.nueva td { background: color-mix(in oklch, var(--hundido) 50%, transparent); }
 table.rejilla td.sel { background: var(--acento-suave); }
@@ -1109,3 +1109,5 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
 .fce-tabla table.rejilla td { overflow: visible; text-overflow: clip; height: calc(22px + var(--mas)); }
 .fce-tabla table.rejilla th { white-space: nowrap; }
 .fce-tabla table.rejilla th, .fce-tabla table.rejilla td { padding-inline: 4px; }
+
+.fce-tabla .fuera { color: var(--no); font-weight: 600; }
