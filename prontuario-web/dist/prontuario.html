@@ -1120,6 +1120,9 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
 .fce-tabla table.rejilla th, .fce-tabla table.rejilla td { padding-inline: 4px; }
 
 .fce-tabla .fuera { color: var(--no); font-weight: 600; }
+@media (min-width: 1100px) and (min-height: 600px) { .fcr-diag.fcr-ancho { grid-template-columns: minmax(0, 1fr) minmax(300px, 500px); } }
+.fce-tabla table.rejilla th, .fce-tabla table.rejilla td { font-size: 11px; padding-inline: 3px; }
+.fcr-ancho .fcr-lado .fcr-sec svg { max-height: min(230px, 32vh); }
 </style>
 
 <header class="barra">
@@ -12930,12 +12933,37 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
   }
   function tablaPuntos(ctx2, pts) {
     const dec = decimalAlCopiar();
-    const cab = ["#", "Mx,Ed [kN\xB7m]", "My,Ed [kN\xB7m]", "\u03B3 [-]"];
-    const num4 = (x, d) => fmt(x, d).replace("\u2212", "-").replace(".", dec);
-    const filas = pts.map((x) => [String(x.i + 1), num4(x.Mx, MAG.M.d), num4(x.My, MAG.M.d), x.g === Infinity ? "\u221E" : num4(x.g, 2)]);
+    const cab = [
+      ["#", "#"],
+      [sub20("N", "Ed") + " [kN]", "NEd [kN]"],
+      [sub20("M", "x,Ed") + " [kN\xB7m]", "Mx,Ed [kN\xB7m]"],
+      [sub20("M", "y,Ed") + " [kN\xB7m]", "My,Ed [kN\xB7m]"],
+      ["\u03B2 [\xB0]", "\u03B2 [\xB0]"],
+      ["x [mm]", "x [mm]"],
+      ["\u03BA [\u2030/m]", "\u03BA [\u2030/m]"],
+      [sub20("\u03B5", "sup") + " [\u2030]", "\u03B5sup [\u2030]"],
+      [sub20("\u03B5", "inf") + " [\u2030]", "\u03B5inf [\u2030]"]
+    ];
+    const fila5 = (x) => {
+      const e2 = x.e;
+      const ok = e2 && Number.isFinite(e2.x);
+      return [
+        String(x.i + 1),
+        fmt(x.N, MAG.N.d),
+        fmt(x.Mx, MAG.M.d),
+        fmt(x.My, MAG.M.d),
+        ok ? fmt(alfa(e2.theta), 1) : "\u2014",
+        ok ? fmt(e2.x * 1e3, 0) : "\u2014",
+        ok ? fmt(e2.kappa * 1e3, 2) : "\u2014",
+        ok ? fmt(-e2.epsSup * 1e3, 2) : "\u2014",
+        ok && Number.isFinite(e2.epsInf) ? fmt(-e2.epsInf * 1e3, 2) : "\u2014"
+      ];
+    };
+    const filas = pts.map(fila5);
     const copiar = async () => {
       try {
-        await navigator.clipboard.writeText([cab.join("	"), ...filas.map((f) => f.join("	"))].join("\r\n"));
+        const txt = [cab.map((k) => k[1]).join("	"), ...filas.map((f) => f.map((v2) => v2.replace("\u2212", "-").replace(".", dec)).join("	"))].join("\r\n");
+        await navigator.clipboard.writeText(txt);
         ctx2.avisar(t("graf.tablaCopiada"));
       } catch {
         ctx2.avisar(t("graf.error"));
@@ -12945,13 +12973,10 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       "div",
       { class: "fce-tabla" },
       h("button", { type: "button", class: "tecla", title: t("graf.copiarTablaTit"), onclick: copiar }, t("fce.copiarTabla")),
-      tabla(
-        pts.map((x) => {
-          const r = (v2) => x.g >= 1 - 1e-6 ? v2 : `<span class="fuera">${v2}</span>`;
-          return [r(String(x.i + 1)), r(fmt(x.Mx, MAG.M.d)), r(fmt(x.My, MAG.M.d)), r(sigla2(x.g))];
-        }),
-        { cabecera: ["#", `${sub20("M", "x,Ed")} [kN\xB7m]`, `${sub20("M", "y,Ed")} [kN\xB7m]`, "\u03B3 [-]"], clase: "rejilla" }
-      )
+      tabla(filas.map((f, k) => {
+        const dentro2 = pts[k].g >= 1 - 1e-6;
+        return f.map((v2) => dentro2 ? v2 : `<span class="fuera">${v2}</span>`);
+      }), { cabecera: cab.map((k) => k[0]), clase: "rejilla" })
     );
   }
   function rangoFijo(c) {
@@ -12981,7 +13006,10 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     let rg = null;
     const dibujar = (N, n) => {
       const cont = contornoMxMy(c.m, N, { n });
-      const pts = est6.puntos.map((f, i) => ({ i, Mx: nv2(f[0]), My: nv2(f[1]) })).filter((x) => Number.isFinite(x.Mx) && Number.isFinite(x.My)).map((x) => ({ ...x, g: coeficienteMxMy(c.m, N, x.Mx, x.My) }));
+      const pts = est6.puntos.map((f, i) => ({ i, Mx: nv2(f[0]), My: nv2(f[1]) })).filter((x) => Number.isFinite(x.Mx) && Number.isFinite(x.My)).map((x) => {
+        const r = razonMxMy(c.m, N, x.Mx, x.My);
+        return { ...x, N, e: r.e, g: Number.isFinite(r.ratio) ? r.ratio > 0 ? 1 / r.ratio : Infinity : 0 };
+      });
       const trac = N < 0;
       const xy = cont.length ? [...cont, cont[0]].map((v2) => [v2.My, v2.Mx]) : [];
       const g = h("div", { class: "lienzo" }, grafica({
@@ -13051,7 +13079,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       "article",
       { class: "panel tarjeta" },
       titulo,
-      h("div", { class: "fcr-diag" }, caja, lado)
+      h("div", { class: "fcr-diag fcr-ancho" }, caja, lado)
     );
   }
   function dibujoSeccionPeq2(geo, s) {
