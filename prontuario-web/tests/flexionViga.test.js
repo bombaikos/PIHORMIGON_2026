@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { proyectoNuevo, datosViga } from '../src/io/proyecto.js';
-import { comprobar, dimensionar, clasificarRotura, curvaMRd } from '../src/core/flexion.js';
+import { comprobar, dimensionar, clasificarRotura, curvaDiseno } from '../src/core/flexion.js';
 
 const cerca = (a, b, tol) => assert.ok(Math.abs(a - b) <= tol * Math.max(1, Math.abs(b)), `${a} no está a ${tol} de ${b}`);
 const viga = (p, nombre) => p.secciones.find((s) => s.nombre === nombre);
@@ -69,15 +69,63 @@ test('Clase de rotura con el criterio del EC-2 5.5(4) en las tres normas (εcu2 
   }
 });
 
-test('Curva MRd–As1: con compresión nunca queda por debajo y coincide hasta Alim', () => {
+test('Diagrama de dimensionamiento: M crece con A_s1, A_s2 nula hasta A_lim y la curva reproduce dimensionar', () => {
   const p = proyectoNuevo();
   const d = datosViga(p, viga(p, 'ejemplo_1'), 1);
-  const c = curvaMRd(d);
-  assert.equal(c.simple.length, c.doble.length);
-  c.simple.forEach(([A, M], i) => {
-    assert.ok(c.doble[i][1] >= M - 1e-6);
-    if (A <= c.Alim) cerca(c.doble[i][1], M, 1e-9);
-    if (i) assert.ok(M >= c.simple[i - 1][1] - 1e-6, 'creciente');
+  const c = curvaDiseno(d);
+  assert.ok(c.as1.length > 40);
+  cerca(c.as1[0][0], c.Amin, 1e-12);
+  c.as1.forEach(([A, M], i) => {
+    if (i) assert.ok(M >= c.as1[i - 1][1] - 1e-6, 'creciente');
+    if (A <= c.Alim) assert.equal(c.as2[i][0], 0);
+    else cerca(c.as2[i][0], A - c.Alim, 1e-12);
   });
-  assert.ok(c.doble.at(-1)[1] > c.simple.at(-1)[1]);
+  // A mitad de camino, dimensionar con ese M da la armadura de la curva
+  const [A, M] = c.as1[Math.floor(c.as1.length / 2)];
+  const r = dimensionar(d, M);
+  cerca(r.Ainf, A, 2e-3);
+  cerca(r.Asup, c.as2[Math.floor(c.as2.length / 2)][0], 2e-3);
+});
+
+test('Dimensionar con xdMax: con compresión la fibra neutra queda en el límite de rotura media', () => {
+  for (const nombre of ['ejemplo_1', 'ejemplo_3']) for (const signo of [1, -1]) {
+    const p = proyectoNuevo();
+    const d = datosViga(p, viga(p, nombre), signo);
+    const xdMax = clasificarRotura(d, 0).umbralMedia;
+    const r = dimensionar(d, 600, { xdMax });
+    if (r.caso !== 'doble') continue;
+    const rot = clasificarRotura(d, r.x);
+    assert.ok(rot.xd <= xdMax + 1e-3, `x/d = ${rot.xd}`);
+    assert.notEqual(rot.clase, 'fragil');
+    cerca(r.Mu, 600, 1e-3);
+  }
+});
+
+test('Coherencia de cuantías: dimensionar y diagrama respetan A_s,min de tracción y los máximos de cada cara en las tres normas', () => {
+  for (const norma of ['EHE-08', 'EC2-2004', 'EC2-2023']) for (const nombre of ['ejemplo_1', 'ejemplo_3']) for (const signo of [1, -1]) {
+    const p = proyectoNuevo();
+    p.norma = norma;
+    const d = datosViga(p, viga(p, nombre), signo);
+    const U = clasificarRotura(d, 0);
+    for (const xdMax of [U.umbralDuctil, U.umbralMedia, U.xdLim]) {
+      const c = curvaDiseno(d, { xdMax });
+      const k = c.Amin;
+      const eps = 1e-9;
+      assert.ok(c.as1[0][0] >= k - eps, 'el diagrama parte de A_s,min');
+      for (const [A] of c.as1) assert.ok(A <= c.Amax + eps, `${norma} A_s1 ≤ Amax`);
+      for (const [A] of c.as2) assert.ok(A <= c.Amax2 + eps, `${norma} A_s2 ≤ Amax2`);
+      for (const Md of [30, 150, 400, 900]) {
+        const r = dimensionar(d, Md, { xdMax });
+        if (r.caso === 'escuadria') continue;
+        assert.ok(r.Ainf >= k - 1e-7, `${norma} ${nombre} ${Md}: A_s1 ≥ A_s,min`);
+        assert.ok(r.Ainf <= r.cuantias.Amax + 1e-7, `${norma} A_s1 ≤ Amax`);
+        assert.ok(r.Asup <= r.cuantias.Amax2 + 1e-7, `${norma} A_s2 ≤ Amax2`);
+      }
+    }
+  }
+  // EC-2 2023 adopta el máximo 0,04·Ac del EC-2 2004 + AN
+  const p = proyectoNuevo();
+  p.norma = 'EC2-2023';
+  const d = datosViga(p, viga(p, 'ejemplo_1'), 1);
+  cerca(curvaDiseno(d).Amax, 0.04 * d.Ac, 1e-12);
 });

@@ -2,7 +2,7 @@
 // maqueta de diseño: veredicto fijo, cifras, dibujo a la misma escala vertical y traza desplegable.
 // La sección (geometría y materiales) viene de Secciones y aquí no se toca; solo se cambia la armadura.
 
-import { comprobar, dimensionar, propuestaArmado, clasificarRotura, curvaMRd } from '../../core/flexion.js';
+import { comprobar, dimensionar, propuestaArmado, clasificarRotura, curvaDiseno } from '../../core/flexion.js';
 import { geometria } from '../../core/geometria.js';
 import { NORMAS } from '../../norma/normas.js';
 import { datosViga, geometriaDe } from '../../io/proyecto.js';
@@ -29,6 +29,19 @@ function capa(s, cara) {
   return c;
 }
 
+const XD = (U) => ({ ductil: U.umbralDuctil, media: U.umbralMedia, fragil: U.xdLim });
+
+/** Rotura admitida al dimensionar con armadura de compresión: límite de x/d antes de ponerla. */
+function rotAdmitida(ctx, p, s) {
+  let U = null;
+  try { U = clasificarRotura(datosViga(p, s, est.signo), 0); } catch { /* sin datos: sin valores */ }
+  const lim = U ? XD(U) : {};
+  const aplica = est.modo !== 'comprobar';
+  return h('div', { class: 'campo apilado', title: aplica ? undefined : t('flex.rotAdmNoAplica') },
+    h('span', { class: 'etq-grupo' }, t('flex.rotAdm'), U ? h('span', { class: 'info-i izq', tabindex: 0, role: 'img', 'aria-label': t('flex.infoRotAdm'), 'data-tip': t('flex.infoRotAdm') }, 'i') : null),
+    segmentado({ ancho: true, etiqueta: t('flex.rotAdm'), opciones: ['ductil', 'media', 'fragil'].map((k) => [k, `${t(`rot.${k}`)}${U ? ` <span class="n">${fmt(lim[k], 3)}</span>` : ''}`, aplica ? {} : { disabled: true }]), valor: est.rotura, onCambio: (v) => { est.rotura = v; ctx.pintar(); } }));
+}
+
 export function datos(ctx, form) {
   const p = ctx.p;
   const R = vigas(p);
@@ -41,10 +54,11 @@ export function datos(ctx, form) {
 
   poner(form,
     grupoSeccion(ctx, { formas: ['rectangular', 'T'], activa: s, alElegir: (nombre) => { est.i = p.secciones.findIndex((x) => x.nombre === nombre); ctx.pintar(); } }),
-    segmentado({ ancho: true, etiqueta: t('flex.signo'), opciones: [['1', t('flex.positivo')], ['-1', t('flex.negativo')]], valor: String(est.signo), onCambio: (v) => { est.signo = Number(v); ctx.pintar(); } }),
-    segmentado({ ancho: true, etiqueta: t('flex.modo'), opciones: [['comprobar', t('comprobar')], ['dimensionar', t('dimensionar')]], valor: est.modo, onCambio: (m) => { est.modo = m; ctx.pintar(); } }),
+    segmentado({ ancho: true, capsula: true, etiqueta: t('flex.modo'), opciones: [['comprobar', t('flex.v.comprobar')], ['dimensionar', t('flex.v.dimensionar')], ['diagrama', t('fcr.modoDiagrama')]], valor: est.modo, onCambio: (m) => { est.modo = m; ctx.pintar(); } }),
+    selector({ id: 'f-signo', etq: t('flex.signo'), linea: true, opciones: [['1', t('flex.positivo')], ['-1', t('flex.negativo')]], valor: String(est.signo), onCambio: (v) => { est.signo = Number(v); ctx.pintar(); } }),
     grupo(t('g.esfuerzo'),
-      campoNum({ id: 'f-md', etq: sub('M', 'Ed') + (pos ? '⁺' : '⁻'), valor: est.Md, mag: 'M', paso: 1, min: 0.1, max: 1e5, nombre: t('flex.momento'), onCambio: (v) => { est.Md = v; cambio(); } })),
+      campoNum({ id: 'f-md', etq: sub('M', 'Ed') + (pos ? '⁺' : '⁻'), valor: est.Md, mag: 'M', paso: 1, min: 0.1, max: 1e5, nombre: t('flex.momento'), onCambio: (v) => { est.Md = v; cambio(); } }),
+      rotAdmitida(ctx, ctx.p, s)),
   );
   // Con momento positivo se traccionan las barras de la cara inferior; con negativo, las de la superior
   const ct = capa(s, pos ? 'inf' : 'sup');
@@ -54,7 +68,7 @@ export function datos(ctx, form) {
     est.modo === 'comprobar' ? h('div', { class: 'grupo', style: 'border:0;padding:0' },
       campoArmado({ id: 'f-as1', etq: sub('A', 's1'), ref: t('traccion') + (pos ? '' : ` (${t('caraSup')})`), texto: ct.texto, capas: {}, onCambio: (v) => { ct.texto = v; cambio(); } }),
       campoArmado({ id: 'f-as2', etq: sub('A', 's2'), ref: t('compresion'), texto: cc.texto, capas: {}, onCambio: (v) => { cc.texto = v; cambio(); } }))
-      : h('p', { class: 'calculada', html: t('flex.armCalculada') }),
+      : h('p', { class: 'calculada', html: t(est.modo === 'diagrama' ? 'flex.armDiagrama' : 'flex.armCalculada') }),
     par(
       campoNum({ id: 'f-d1', etq: sub('d', '1'), valor: ct.d, mag: 'long', paso: 5, min: 0.01, max: 1, onCambio: (v) => { ct.d = v; cambio(); } }),
       campoNum({ id: 'f-d2', etq: sub('d', '2'), valor: cc.d, mag: 'long', paso: 5, min: 0.01, max: 1, onCambio: (v) => { cc.d = v; cambio(); } })),
@@ -73,7 +87,9 @@ function resultadosFlexion(ctx, res) {
   const geo = geometriaDe(p, s);
   const d = datosViga(p, s, est.signo);
   const neg = est.signo < 0;
-  const opt = { elemento: est.elemento };
+  // Con compresión el dimensionamiento no pasa del x/d de la rotura admitida (dúctil, media o frágil)
+  const xdMax = XD(clasificarRotura(d, 0))[est.rotura];
+  const opt = { elemento: est.elemento, xdMax };
   let r;
   let dim = null;
   let prop = null;
@@ -82,9 +98,10 @@ function resultadosFlexion(ctx, res) {
     r = comprobar(d, opt);
     try { dim = dimensionar(d, est.Md, opt); } catch { dim = null; }
   } else {
+    // Dimensionar y Diagrama calculan la armadura necesaria para M_Ed
     dim = dimensionar(d, est.Md, opt);
     r = dim;
-    if (dim.caso !== 'escuadria') prop = propuestaArmado(d, dim.Ainf, dim.Asup, est.Md);
+    if (dim.caso !== 'escuadria' && est.modo === 'dimensionar') prop = propuestaArmado(d, dim.Ainf, dim.Asup, est.Md);
   }
   // Se guarda el último cálculo para la memoria
   p.calculos.flexionSimple ??= {};
@@ -100,7 +117,8 @@ function resultadosFlexion(ctx, res) {
     const cu = r.cuantias;
     if (r.Ainf < (cu.Amec ?? 0) - 1e-12) avisos.push(t('a.minMec', q(cu.Amec, 'As'), q(r.Ainf, 'As'), cu.regla ?? ''));
     else if (r.Ainf < (cu.Ageo ?? 0) - 1e-12) avisos.push(t('a.minGeo', q(cu.Ageo, 'As'), q(r.Ainf, 'As')));
-    if (r.Ainf > r.cuantias.Amax) avisos.push(t('a.maxima'));
+    if (r.Ainf > cu.Amax) avisos.push(t('a.max1', q(cu.Amax, 'As'), q(r.Ainf, 'As')));
+    if (r.Asup > cu.Amax2) avisos.push(t('a.max2', q(cu.Amax2, 'As'), q(r.Asup, 'As'), cu.refMax2));
   } else {
     if (r.caso === 'escuadria') {
       res.append(veredicto('nocumple', t('aumentar'), t('armaduraNec'), '—', t('a.escuadria', q(r.MuMax, 'M'))));
@@ -116,12 +134,13 @@ function resultadosFlexion(ctx, res) {
   const Asreq = dim && dim.caso !== 'escuadria' ? dim.Ainf : NaN;
   const cif = est.modo === 'comprobar'
     ? [[sub('M', 'Rd'), qh(r.Mu, 'M')], [t('c.x'), qh(r.x, 'long')], ['x / d', fmt(rot.xd, 3)], [sub('A', 's1,req'), qh(Asreq, 'As')]]
-    : [[sub('A', 's1,req'), qh(r.Ainf, 'As')], [sub('A', 's2,req'), qh(r.Asup, 'As')], [t('c.x'), qh(r.x, 'long')], ['x / d', fmt(rot.xd, 3)]];
+    : [[sub('A', 's1,req'), qh(r.Ainf, 'As')], [`${sub('A', 's2,req')}${infoAs2(xdMax)}`, qh(r.Asup, 'As')], [t('c.x'), qh(r.x, 'long')], ['x / d', fmt(rot.xd, 3)]];
 
   const [caraT, caraC] = neg ? ['sup', 'inf'] : ['inf', 'sup'];
   const dibGeo = est.modo === 'comprobar' ? geo : geometriaDe(p, { ...s, armado: [
     { tipo: 'capa', cara: caraT, texto: String(Math.round(r.Ainf * 1e6)), d: d.rinf },
     ...(r.Asup > 0 ? [{ tipo: 'capa', cara: caraC, texto: String(Math.round(r.Asup * 1e6)), d: d.rsup }] : [])] });
+  if (est.modo === 'diagrama') return res.append(panelDiagrama(ctx, { s, d, neg, xdMax }));
   // Sección muy ancha (más de 2 : 1): se ve un tramo de proporción 2 : 1 y un deslizador lo recorre
   const ancha = dibGeo.caja.xmax - dibGeo.caja.xmin > 2 * dibGeo.h;
   const lienzo = h('div', { class: 'lienzo', html: dibujoFlexion(dibGeo, s, d, r, est.desp) });
@@ -132,13 +151,12 @@ function resultadosFlexion(ctx, res) {
     lienzo,
     ...(ancha ? [deslizador] : []),
     leyenda());
-  // Pestañas antes que scroll (guía § 13): resultados, gráfico y, al dimensionar, la propuesta de armado
+  // Pestañas antes que scroll (guía § 13): resultados y, al dimensionar, la propuesta de armado
   const tarjetaRes = h('article', { class: 'panel tarjeta' });
-  const lista = [['resultados', t('t.resultados')], ['grafico', t('t.grafico')], ...(prop ? [['propuesta', t('t.propuesta')]] : [])];
+  const lista = [['resultados', t('t.resultados')], ...(prop ? [['propuesta', t('t.propuesta')]] : [])];
   if (!lista.some(([k]) => k === est.pestanaRes)) est.pestanaRes = 'resultados';
   tarjetaRes.append(pestanas({ lista, activa: est.pestanaRes, onCambio: (k) => { est.pestanaRes = k; ctx.pintar(); } }));
   if (est.pestanaRes === 'propuesta') tarjetaRes.append(propuesta(ctx, s, prop, r, neg));
-  else if (est.pestanaRes === 'grafico') tarjetaRes.append(graficoMRd(ctx, d, r, dim));
   else tarjetaRes.append(roturaChip(rot), cifras(cif), h('p', { class: 'sub', style: 'margin:0' }, t('t.desplegar')), traza(p, d, r, Asreq, rot));
   res.append(h('div', { class: 'cuerpo dib-ancho' }, tarjetaDib, tarjetaRes));
 }
@@ -152,32 +170,104 @@ function roturaChip(rot) {
     h('span', { class: 'pista', html: `x/d = ${fmt(rot.xd, 3)}` }));
 }
 
-/** Curva M_Rd–A_s1: solo con A_s1 y con armadura de compresión; el punto de la sección y la línea de M_Ed. */
-const ind = (a, b) => `${a}<tspan class="ind" dy="3">${b}</tspan>`;
-function graficoMRd(ctx, d, r, dim) {
-  const c = curvaMRd(d, { elemento: est.elemento });
-  const KA = MAG.As.f;
-  const simple = c.simple.map(([a, m]) => [a * KA, m]);
-  const doble = c.doble.map(([a, m]) => [a * KA, m]);
-  const xmax = Math.max(...simple.map((v) => v[0]), 1);
-  const series = [
-    { nombre: t('g.soloAs1'), clase: 's1', xy: simple },
-    { nombre: t('g.conAs2'), clase: 's2', xy: doble },
-    { nombre: `${ind('M', 'Ed')}`, clase: 'ref', cruz: false, xy: [[0, est.Md], [xmax, est.Md]] },
-  ];
-  const puntos = [{ x: r.Ainf * KA, y: r.Mu, etq: est.modo === 'comprobar' ? t('g.estaSeccion') : t('g.dimensionada'), clase: 's1' }];
-  if (est.modo === 'comprobar' && Number.isFinite(c.Amin)) puntos.push({ x: c.Amin * KA, y: curvaPunto(d, c.Amin), etq: `${ind('A', 's,min')}`, clase: 'ref', abajo: true });
-  return h('div', { class: 'grafica-flex' }, grafica({
-    series, puntos,
-    ejeX: eje('As', ind('A', 's1')),
-    ejeY: eje('M', ind('M', 'Rd')),
-    archivo: `MRd-As ${ctx.p.secciones[est.i].nombre}${est.signo < 0 ? ' M-' : ' M+'}`,
-    avisar: ctx.avisar,
-  }), h('p', { class: 'nota', html: t('g.nota', q(c.Alim, 'As')) }));
+/** Valor de la curva y(x) por interpolación lineal (x creciente); fuera del rango, el extremo. */
+function interp(xy, x) {
+  if (x <= xy[0][0]) return xy[0][1];
+  for (let i = 1; i < xy.length; i++) {
+    if (x <= xy[i][0]) return xy[i - 1][1] + ((xy[i][1] - xy[i - 1][1]) * (x - xy[i - 1][0])) / (xy[i][0] - xy[i - 1][0] || 1);
+  }
+  return xy.at(-1)[1];
 }
-/** M_Rd con solo A_s1 (para marcar A_s,min sobre la curva). */
-function curvaPunto(d, A) {
-  return comprobar({ ...d, Ainf: A, Asup: 0 }).Mu;
+/** (i) junto a A_s2,req: por qué se dispone y hasta dónde llega el dimensionamiento. */
+const infoAs2 = (xd) => `<span class="info-i izq" tabindex="0" role="img" aria-label="${t('flex.infoAs2', fmt(xd, 3), t(`rot.${est.rotura}`).toLowerCase())}" data-tip="${t('flex.infoAs2', fmt(xd, 3), t(`rot.${est.rotura}`).toLowerCase())}">i</span>`;
+const ind = (a, b) => `${a}<tspan class="ind" dy="3">${b}</tspan>`;
+
+/**
+ * Modo Diagrama (como el del Prontuario 3.1): en X la armadura (A_s1 de la cara traccionada y A_s2 de la opuesta),
+ * en Y el momento resistente. Una línea horizontal marca M_Ed; un deslizador la mueve y los puntos dan A_s1 y A_s2.
+ * A la derecha, la sección con la fibra neutra y las armaduras necesarias se actualizan mientras se arrastra.
+ */
+function panelDiagrama(ctx, { s, d, neg, xdMax }) {
+  const p = ctx.p;
+  const c = curvaDiseno(d, { elemento: est.elemento, xdMax });
+  const KA = MAG.As.f;
+  const as1 = c.as1.map(([a, m]) => [a * KA, m]);
+  const as2 = c.as2.map(([a, m]) => [a * KA, m]);
+  const xmax = as1.at(-1)[0];
+  const lista = c.as1.map(([a, m]) => [m, a * KA]);
+  const lista2 = c.as2.map(([a, m]) => [m, a * KA]);
+  const caja = h('div', { class: 'fcr-graf' });
+  const dibujar = (Md) => {
+    const A1 = interp(lista, Md);
+    const A2 = interp(lista2, Md);
+    const puntos = [
+      { x: A1, y: Md, etq: `${ind('A', 's1')} = ${fmt(A1, 0)}`, clase: 's1', marca: 'neutro' },
+      ...(A2 > 0 ? [{ x: A2, y: Md, etq: `${ind('A', 's2')} = ${fmt(A2, 0)}`, clase: 's2', abajo: true, marca: 'neutro' }] : []),
+      { x: c.Amin * KA, y: c.Mmin, etq: ind('A', 's,min'), clase: 'ref', abajo: true, marca: 'neutro' },
+    ];
+    return grafica({
+      series: [
+        { nombre: `${ind('A', 's1')} ${t('g.principal')}`, clase: 's1', xy: as1 },
+        { nombre: `${ind('A', 's2')} ${t('g.opuesta')}`, clase: 's2', xy: as2 },
+        { nombre: ind('M', 'Ed'), clase: 'ref', cruz: false, xy: [[0, Md], [xmax, Md]] },
+      ],
+      puntos,
+      ejeX: eje('As', 'A<tspan class="ind" dy="3">s</tspan>'),
+      ejeY: eje('M', ind('M', 'Rd')),
+      archivo: `Diagrama flexion ${s.nombre}${est.signo < 0 ? ' M-' : ' M+'}`,
+      avisar: ctx.avisar,
+    });
+  };
+  // Columna de la derecha: se rehace con cada M_Ed del deslizador (dimensionar tarda milisegundos)
+  const lado = h('aside', { class: 'fcr-lado' });
+  const pintarLado = (Md) => {
+    let r;
+    try { r = dimensionar(d, Md, { elemento: est.elemento, xdMax }); } catch { r = null; }
+    if (!r || r.caso === 'escuadria') return lado.replaceChildren(aviso(t('a.escuadria', q(r?.MuMax ?? NaN, 'M'))));
+    const rot = clasificarRotura(d, r.x);
+    lado.replaceChildren(
+      h('div', { class: 'fcr-sec', html: dibujoSeccionViva(p, s, d, r, neg) }),
+      roturaChip(rot),
+      cifras([[sub('A', 's1,req'), qh(r.Ainf, 'As')], [`${sub('A', 's2,req')}${infoAs2(xdMax)}`, qh(r.Asup, 'As')], [t('c.x'), qh(r.x, 'long')], ['x / d', fmt(rot.xd, 3)]]));
+  };
+  let graf = dibujar(est.Md);
+  caja.append(graf);
+  pintarLado(est.Md);
+  const Mlo = Math.ceil(c.Mmin);
+  const Mhi = Math.floor(c.Mmax);
+  const texto = (Md) => `${sub('M', 'Ed')} = <b>${fmt(Md, MAG.M.d)}</b> ${MAG.M.ud}`;
+  const valor = h('output', { class: 'desl-valor', html: texto(est.Md) });
+  const deslizador = h('input', { type: 'range', class: 'desliza-sec', min: Mlo, max: Mhi, step: 1, value: Math.min(Math.max(est.Md, Mlo), Mhi), 'aria-label': t('flex.deslizaMd') });
+  deslizador.addEventListener('input', () => {
+    const Md = +deslizador.value;
+    est.Md = Md;
+    valor.innerHTML = texto(Md);
+    const campo = document.getElementById('f-md');
+    if (campo) campo.value = fmt(Md, MAG.M.d);
+    const nuevo = dibujar(Md);
+    graf.replaceWith(nuevo);
+    graf = nuevo;
+    pintarLado(Md);
+  });
+  deslizador.addEventListener('change', () => ctx.cambio());
+  caja.append(h('div', { class: 'desl-md' }, valor, deslizador));
+  return h('article', { class: 'panel tarjeta' }, h('h2', {}, `${t('flex.diagrama')} · ${s.nombre}`),
+    h('div', { class: 'fcr-diag' }, caja, lado));
+}
+
+/** Sección con la armadura calculada, la zona comprimida y la fibra neutra (x) a su profundidad. */
+function dibujoSeccionViva(p, s, d, r, neg) {
+  const [caraT, caraC] = neg ? ['sup', 'inf'] : ['inf', 'sup'];
+  const geo = geometriaDe(p, { ...s, armado: [
+    { tipo: 'capa', cara: caraT, texto: String(Math.round(r.Ainf * 1e6)), d: d.rinf },
+    ...(r.Asup > 0 ? [{ tipo: 'capa', cara: caraC, texto: String(Math.round(r.Asup * 1e6)), d: d.rsup }] : [])] });
+  const e = encuadre(geo, 190, 250, { completa: true });
+  const x0 = 46;
+  const y0 = 14;
+  const { svg, hp, bp } = capasSeccion(geo, s, { e, x0, y0, x: r.x, id: 'fsd', cotasCapas: false, abajo: neg });
+  const yn = neg ? y0 + hp - Math.min(r.x, d.h) * e.s : y0 + Math.min(r.x, d.h) * e.s;
+  const en = `<line class="en" x1="${x0 - 8}" y1="${yn}" x2="${x0 + bp + 8}" y2="${yn}"/><text x="${x0 + bp + 12}" y="${yn + 4}" style="fill:var(--acento)">x = ${fmt(r.x * 1000, 0)}</text>`;
+  return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${x0 + bp + 70} ${y0 + hp + 44}" role="img" aria-label="${t('g.seccion')}">${DEFS}${svg}${en}</svg>`;
 }
 
 export function veredicto(clase, sello, etq, valor, ecu, barra) {
@@ -327,5 +417,6 @@ export function comandos(ctx) {
   return [
     { k: 'p.comprobar', b: 'modo mode comprobar check', f: () => { est.modo = 'comprobar'; ctx.ir('flexion'); } },
     { k: 'p.dimensionar', b: 'modo mode dimensionar design', f: () => { est.modo = 'dimensionar'; ctx.ir('flexion'); } },
+    { k: 'fcr.modoDiagrama', b: 'modo mode diagrama diagram', f: () => { est.modo = 'diagrama'; ctx.ir('flexion'); } },
   ];
 }

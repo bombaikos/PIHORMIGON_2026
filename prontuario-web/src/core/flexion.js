@@ -44,6 +44,14 @@ export function seccionRectangular(d, Ainf = d.Ainf, Asup = d.Asup) {
  * @returns {{Amin:number, Amax:number, romin:number, Amec:number, Ageo:number}}
  */
 export function cuantiasMinMax(d, elemento = 'viga', { Nd = 0 } = {}) {
+  const c = cuantiasBase(d, elemento, { Nd });
+  // Máximo de cada cara: EC-2 AN 9.2.1.1(3) (0,04·Ac, tracción o compresión); EHE-08 no lo fija y se toma el mismo
+  const Ac = d.Ac ?? d.b * d.h;
+  return { ...c, Amax2: 0.04 * Ac, refMax2: c.norma === 'EHE-08' || c.norma === 'EHE-98' ? 'EC-2 AN 9.2.1.1(3) (criterio del Prontuario)' : 'EC-2 AN 9.2.1.1(3)' };
+}
+
+function cuantiasBase(d, elemento, Nd) {
+  Nd = Nd?.Nd ?? 0;
   if (d.hormigon.norma === 'EC2-2023') return cuantiasEC2(d, elemento, Nd);
   if (d.hormigon.norma === 'EC2-2004') return cuantiasEC2004(d, elemento, Nd);
   if (d.hormigon.norma === 'EHE-08') return cuantiasEHE08(d, elemento, Nd);
@@ -127,7 +135,7 @@ function cuantiasEC2004(d, elemento, Nd) {
  * - Pilares (tabla 12.3): max{0,1·NEd/fyd; 0,002·Ac}.
  * - Además se informa de la mínima por fisuración 9.2.2 (fórmula 9.2), que solo
  *   aplica cuando se exige control de fisuración.
- * La norma no fija cuantía máxima en vigas: Amax es un criterio del programa.
+ * La norma no fija cuantía máxima en vigas: se adopta la del EC-2 2004 + AN, 0,04·Ac (decidido el 30/10).
  * @param {DatosRect} d
  * @param {string} elemento
  * @param {number} Nd  [kN], compresión positiva
@@ -144,7 +152,8 @@ function cuantiasEC2(d, elemento, Nd) {
   const Amax = (Ac * fcd) / fyd;
   const kh = Math.min(0.8, Math.max(0.5, 0.8 - 0.6 * (Math.min(d.b, d.h) - 0.3)));
   const AminFis = (0.2 * kh * fctm * (Ac / 2)) / fyk;
-  const base = { Amax, criterioAmax: true, AminFis, kh, norma: 'EC2-2023' };
+  // La norma no fija máximo en flexión: se adopta el del EC-2 2004 + AN (9.2.1.1(3)), 0,04·Ac
+  const base = { Amax: 0.04 * Ac, AminFis, kh, norma: 'EC2-2023' };
   if (!['viga', 'losa', 'muro', 'pilar'].includes(elemento)) throw new Error(`Elemento desconocido: ${elemento}`);
   if (elemento === 'pilar') {
     const Ageo = 0.002 * Ac;
@@ -155,7 +164,7 @@ function cuantiasEC2(d, elemento, Nd) {
   const aceroK = acero({ fyk: fyk / 1000, norma: 'EC2-2023', gammaS: 1, ductilidad: d.acero.ductilidad });
   const dK = { ...d, acero: aceroK, barrasExtra: [] };
   const MR = (A) => estadoUltimo(seccionRectangular(dK, A, 0), 0).M;
-  const A = regulaFalsi((a) => MR(a) - Mcr, 1e-7, Amax, 1e-3);
+  const A = regulaFalsi((a) => MR(a) - Mcr, 1e-7, Amax, 1e-3); // Amax (A_c·f_cd/f_yd) solo acota la búsqueda
   return { ...base, Amin: A, Amec: A, Ageo: 0, Mcr, regla: '12.2(2), fórmula 12.1: MR,min (acero a fyk) ≥ Mcr (fctm)' };
 }
 
@@ -163,12 +172,13 @@ function cuantiasEC2(d, elemento, Nd) {
  * Momento límite sin armadura de compresión (HallaMlim): plano con εcu arriba y
  * εy en la armadura de tracción; momento del bloque comprimido respecto a d.
  */
-export function momentoLimite(d) {
+export function momentoLimite(d, xdMax) {
   const ecu = d.hormigon.comp[d.hormigon.comp.length - 1][0];
   const ey = epsPlastificacion(d.acero);
   const dd = d.h - d.rinf;
-  const kappa = (Math.abs(ecu) + ey) / dd;
-  const xlim = Math.abs(ecu) / kappa;
+  // Con xdMax (x/d máximo admitido) el plano se queda en esa profundidad si es menor que la de plastificación
+  const xlim = xdMax > 0 ? Math.min(xdMax * dd, (Math.abs(ecu) / (Math.abs(ecu) + ey)) * dd) : (Math.abs(ecu) / (Math.abs(ecu) + ey)) * dd;
+  const kappa = Math.abs(ecu) / xlim;
   const sec = seccionRectangular({ ...d, barrasExtra: [] }, 0, 0);
   const { N, M } = esfuerzos(sec, ecu, kappa, dd);
   return { Mlim: M, Nlim: N, xlim, kappa };
@@ -242,7 +252,7 @@ export function comprobar(d, { Nd = 0, elemento = 'viga' } = {}) {
   const avisos = [];
   const c = cuantiasMinMax(d, elemento, { Nd });
   if (d.Ainf < c.Amin) avisos.push('La cuantía de armadura es inferior a la mínima');
-  if (d.Ainf > c.Amax) avisos.push('La cuantía supera el criterio de cuantía máxima del programa (capacidad mecánica del acero = hormigón)');
+  if (d.Ainf > c.Amax) avisos.push('La cuantía supera la máxima (0,04·Ac)');
   const r = Mu(d, d.Ainf, d.Asup, -Nd);
   return { ...detalle(d, r, d.Ainf, d.Asup), cuantias: c, avisos };
 }
@@ -253,11 +263,11 @@ export function comprobar(d, { Nd = 0, elemento = 'viga' } = {}) {
  * @param {number} Md [kN·m] positivo
  * @param {{Nd?:number, elemento?:string}} [opc]
  */
-export function dimensionar(d, Md, { Nd = 0, elemento = 'viga' } = {}) {
+export function dimensionar(d, Md, { Nd = 0, elemento = 'viga', xdMax } = {}) {
   if (!(Md > 0)) throw new Error('El momento solicitante debe ser un número positivo');
   const N = -Nd;
   const c = cuantiasMinMax(d, elemento, { Nd });
-  const lim = momentoLimite(d);
+  const lim = momentoLimite(d, xdMax);
   const base = { Md, cuantias: c, Mlim: lim.Mlim, xlim: lim.xlim };
 
   const rMin = Mu(d, c.Amin, 0, N);
@@ -266,7 +276,8 @@ export function dimensionar(d, Md, { Nd = 0, elemento = 'viga' } = {}) {
   }
   const fyd = resistenciaCalculo(d.acero);
   const Alim = -lim.Nlim / fyd;
-  const AsupMax = (c.Amax - Alim) / 2;
+  // Con xdMax cada cara tiene su máximo (A_s1 ≤ Amax y A_s2 ≤ Amax2); sin él, el reparto del Prontuario 3.1
+  const AsupMax = xdMax ? Math.max(0, Math.min(c.Amax2, c.Amax - Alim)) : (c.Amax - Alim) / 2;
   const rMax = Mu(d, Alim + AsupMax, AsupMax, N);
   if (rMax.M < Md) {
     return { ...base, caso: 'escuadria', mensaje: 'Hay que aumentar la escuadría', MuMax: rMax.M };
@@ -443,31 +454,39 @@ export function clasificarRotura(d, x) {
   const umbralDuctil = (0.8 - k1) / k2;
   const umbralMedia = (1 - k1) / k2;
   const redMax = Math.max(0, 1 - (k1 + k2 * xd));
-  const clase = xd > xdLim || xd > umbralMedia ? 'fragil' : xd > umbralDuctil ? 'media' : 'ductil';
+  // Tolerancia: el dimensionamiento con compresión se queda justo en el límite de la clase media
+  const tol = 1e-3;
+  const clase = xd > xdLim + tol || xd > umbralMedia + tol ? 'fragil' : xd > umbralDuctil + tol ? 'media' : 'ductil';
   return { xd, clase, umbralDuctil, umbralMedia, xdLim, redMax, k1, k2, ecu, norma: 'EC2-2004', ref: 'UNE-EN 1992-1-1, 5.5(4) y AN (k1 = 0,44; k3 = 0,54)' };
 }
 
 /**
- * Curva MRd–As1 de la sección para dos disposiciones de armadura:
- *  - «simple»: solo A_s1 (sin armadura de compresión);
- *  - «doble»: con A_s2 = máx(0, A_s1 − A_lim), la mínima que mantiene plastificada la de tracción
- *    (la misma regla que usa el dimensionamiento tras el momento límite).
+ * Diagrama de dimensionamiento de una sección: para cada A_s1 (armadura de la cara traccionada, «principal»)
+ * el momento resistente M_Rd y la armadura de la cara opuesta A_s2 que usa el dimensionamiento:
+ * A_s2 = máx(0, A_s1 − A_lim), la mínima que mantiene plastificada la de tracción (nula hasta M_lim).
+ * Parte de A_s,min y llega a 1,3·A_lim.
  * @param {DatosRect} d
- * @returns {{simple:number[][], doble:number[][], Alim:number, Amin:number, Amax:number, Mlim:number}}  puntos [A (m²), M (kN·m)]
+ * @returns {{as1:number[][], as2:number[][], Alim:number, Amin:number, Amax:number, Mlim:number, Mmin:number, Mmax:number}}
+ *   as1 = [A_s1 (m²), M (kN·m)], as2 = [A_s2 (m²), M (kN·m)]
  */
-export function curvaMRd(d, { Nd = 0, elemento = 'viga', n = 40 } = {}) {
+export function curvaDiseno(d, { Nd = 0, elemento = 'viga', n = 60, xdMax } = {}) {
   const c = cuantiasMinMax(d, elemento, { Nd });
-  const lim = momentoLimite(d);
+  const lim = momentoLimite(d, xdMax);
   const Alim = -lim.Nlim / resistenciaCalculo(d.acero);
-  // Hasta algo más de A_lim: ahí se separan las dos curvas y se ve lo que aporta la armadura de compresión
-  const Atope = Math.min(Alim + Math.max(0, (c.Amax - Alim) / 2), 1.3 * Alim);
+  // Hasta 1,3·A_lim de la rotura frágil (la mayor), sin pasar de los máximos de cada cara
+  const AlimF = -momentoLimite(d).Nlim / resistenciaCalculo(d.acero);
+  const Atope = Math.max(Math.min(Alim + c.Amax2, c.Amax, 1.3 * AlimF), 1.5 * c.Amin);
   const N = -Nd;
-  const simple = [];
-  const doble = [];
-  for (let i = 1; i <= n; i++) {
-    const A = (Atope * i) / n;
-    try { simple.push([A, Mu(d, A, 0, N).M]); } catch { /* sin plano admisible */ }
-    try { doble.push([A, Mu(d, A, Math.max(0, A - Alim), N).M]); } catch { /* idem */ }
+  const as1 = [];
+  const as2 = [];
+  for (let i = 0; i <= n; i++) {
+    const A = c.Amin + (Atope - c.Amin) * (i / n);
+    const A2 = Math.max(0, A - Alim);
+    try {
+      const M = Mu(d, A, A2, N).M;
+      as1.push([A, M]);
+      as2.push([A2, M]);
+    } catch { /* sin plano admisible */ }
   }
-  return { simple, doble, Alim, Amin: c.Amin, Amax: c.Amax, Mlim: lim.Mlim };
+  return { as1, as2, Alim, Amin: c.Amin, Amax: c.Amax, Amax2: c.Amax2, Mlim: lim.Mlim, Mmin: as1[0]?.[1], Mmax: as1.at(-1)?.[1] };
 }

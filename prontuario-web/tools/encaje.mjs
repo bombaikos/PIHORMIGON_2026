@@ -73,10 +73,11 @@ const PANTALLAS = [
   ['Rasante · EC-2 2023 sin anclaje', 'rasante', [norma(3), (p) => p.click('button:has-text("Parcial")')]],
   ['Rasante · EC-2 2023 dimensionar', 'rasante', [norma(3), (p) => p.click('button:text-is("Dimensionar")')]],
   ['Flexión · comprobar', 'flexion', []],
-  ['Flexión · dimensionar', 'flexion', [(p) => p.click('.datos .seg >> nth=1 >> button >> nth=1')]],
-  ['Flexión · T momento negativo', 'flexion', [(p) => p.selectOption('#sel-seccion', { label: 'ejemplo_3' }), (p) => p.click('.datos .seg >> nth=0 >> button >> nth=1')]],
-  ['Flexión · gráfico', 'flexion', [(p) => p.click('.pestanas button:nth-child(2)')]],
-  ['Flexión · T dimensionar, propuesta', 'flexion', [(p) => p.selectOption('#sel-seccion', { label: 'ejemplo_3' }), (p) => p.click('.datos .seg >> nth=1 >> button >> nth=1'), (p) => p.click('.pestanas button:nth-child(3)')]],
+  ['Flexión · dimensionar', 'flexion', [(p) => p.click('.datos .seg >> nth=0 >> button >> nth=1')]],
+  ['Flexión · T momento negativo', 'flexion', [(p) => p.selectOption('#sel-seccion', { label: 'ejemplo_3' }), (p) => p.selectOption('#f-signo', '-1')]],
+  ['Flexión · diagrama', 'flexion', [(p) => p.click('.datos .seg >> nth=0 >> button >> nth=2')]],
+  ['Flexión · diagrama T momento negativo', 'flexion', [(p) => p.selectOption('#sel-seccion', { label: 'ejemplo_3' }), (p) => p.selectOption('#f-signo', '-1'), (p) => p.click('.datos .seg >> nth=0 >> button >> nth=2')]],
+  ['Flexión · T dimensionar, propuesta', 'flexion', [(p) => p.selectOption('#sel-seccion', { label: 'ejemplo_3' }), (p) => p.click('.datos .seg >> nth=0 >> button >> nth=1'), (p) => p.click('.pestanas button:nth-child(2)')]],
 ];
 
 const b = await chromium.launch(process.env.PW_CHROMIUM ? { executablePath: process.env.PW_CHROMIUM } : {});
