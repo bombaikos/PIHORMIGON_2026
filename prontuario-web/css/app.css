@@ -1114,3 +1114,8 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
 @media (min-width: 1100px) and (min-height: 600px) { .fcr-diag.fcr-ancho { grid-template-columns: minmax(0, 1fr) minmax(300px, 500px); } }
 .fce-tabla table.rejilla th, .fce-tabla table.rejilla td { font-size: 11px; padding-inline: 3px; }
 .fcr-ancho .fcr-lado .fcr-sec svg { max-height: min(230px, 32vh); }
+.veredicto.con-sec.sin-ratio { grid-template-columns: auto minmax(0, 1fr) auto; }
+.veredicto.sin-ratio:not(.con-sec) { grid-template-columns: minmax(0, 1fr) auto; }
+.dib .mom { stroke: var(--tinta-3); stroke-width: 1.8; fill: none; }
+.dib .mom-t { fill: var(--tinta-2); font-weight: 700; }
+.dib .mom-t .sub { font-size: 9px; font-weight: 600; }

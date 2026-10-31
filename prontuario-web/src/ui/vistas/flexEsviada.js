@@ -181,8 +181,8 @@ function resultadosEsviada(ctx, res) {
     }
   } else {
     const ok = gmin >= 1 - 1e-6;
-    res.append(veredicto(ok ? 'cumple' : 'nocumple', ok ? t('cumple') : t('noCumple'), 'γ = |OQ|/|OP|', sigla(gmin),
-      `${sub('N', 'Ed')} <b>${q(gam[0].N, 'N')}</b> · ${sub('M', 'x,Ed')} <b>${q(gam[0].Mx, 'M')}</b> · ${sub('M', 'y,Ed')} <b>${q(gam[0].My, 'M')}</b>`, Math.min(1 / Math.max(gmin, 1e-9) / 1.25, 1)));
+    res.append(sinRatio(veredicto(ok ? 'cumple' : 'nocumple', ok ? t('cumple') : t('noCumple'), '', '',
+      `${sub('N', 'Ed')} <b>${q(gam[0].N, 'N')}</b> · ${sub('M', 'x,Ed')} <b>${q(gam[0].Mx, 'M')}</b> · ${sub('M', 'y,Ed')} <b>${q(gam[0].My, 'M')}</b>`, Math.min(1 / Math.max(gmin, 1e-9) / 1.25, 1))));
   }
 
   const Asd = c.As0 * c.k;
@@ -193,18 +193,25 @@ function resultadosEsviada(ctx, res) {
   return resultadoUnico(ctx, res, { s, c, gam: gam[0], gmin, dim });
 }
 
+/** La tarjeta de diagnóstico no lleva el número γ (Pepiño, 31/10): solo sección, estado y barra. */
+function sinRatio(v) {
+  v.querySelector('.ratio')?.remove();
+  v.classList.add('sin-ratio');
+  return v;
+}
+
 /** Pastilla del modo Diagrama: los puntos escritos frente al diagrama al axil de la regleta. */
 function veredictoDiagrama(c) {
   const N = Math.min(Math.max(est.Ndiag, Math.ceil(c.lim.Ntrac)), Math.floor(c.lim.Ncomp) - 1);
   const gs = est.puntos.map((f) => [nv(f[0]), nv(f[1])]).filter(([a, b]) => Number.isFinite(a) && Number.isFinite(b))
     .map(([Mx, My]) => coeficienteMxMy(c.m, N, Mx, My));
   const etq = `${sub('N', '')} = ${fmt(N, MAG.N.d)} ${MAG.N.ud}`;
-  if (!gs.length) return veredicto('atencion', t('fce.sinPuntos'), 'γ = |OQ|/|OP|', '—', etq);
+  if (!gs.length) return sinRatio(veredicto('atencion', t('fce.sinPuntos'), '', '', etq));
   const gmin = Math.min(...gs);
   const fuera = gs.filter((g) => g < 1 - 1e-6).length;
   const ok = fuera === 0;
-  return veredicto(ok ? 'cumple' : 'nocumple', ok ? t('cumple') : t('noCumple'), 'γ = |OQ|/|OP|', sigla(gmin),
-    `${etq} · ${t('fce.puntosFuera', fuera, gs.length)}`, Math.min(1 / Math.max(gmin, 1e-9) / 1.25, 1));
+  return sinRatio(veredicto(ok ? 'cumple' : 'nocumple', ok ? t('cumple') : t('noCumple'), '', '',
+    `${etq} · ${t('fce.puntosFuera', fuera, gs.length)}`, Math.min(1 / Math.max(gmin, 1e-9) / 1.25, 1)));
 }
 
 /** Contornos Mx–My (x = My, y = Mx, la cara comprimida cae del lado del signo): uno por cada axil distinto, con los esfuerzos. */
@@ -410,10 +417,14 @@ function dibujoPlano(c, s, e) {
     out.push(`<line class="cota" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" marker-start="url(#tic)" marker-end="url(#tic)"/>`);
     out.push(`<text class="fuerte" x="${(x1 + x2) / 2 + 6}" y="${(y1 + y2) / 2 - 4}">x</text>`);
   }
-  // Flecha hacia la cara comprimida, desde el c.d.g.
-  const flecha = Math.min(hp, bp) * 0.28;
-  out.push(`<line class="flecha" x1="${X(m.xc)}" y1="${Y(m.yc)}" x2="${X(m.xc) + ux * flecha}" y2="${Y(m.yc) + uy * flecha}" marker-end="url(#pta)"/>`);
-  return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${x0 + bp + 30} ${y0 + hp + 46}" role="img" aria-label="${t('fce.dibujoAria')}">${out.join('')}</svg>`;
+  // Momentos como vectores (regla de la mano derecha): flecha de doble punta en gris suave. M_x > 0 comprime la cara
+  // superior y su vector apunta a la izquierda; M_y > 0 comprime la cara derecha y su vector apunta hacia arriba.
+  out.push('<defs><marker id="fe-mm" viewBox="0 0 16 10" refX="15" refY="5" markerWidth="12" markerHeight="7.5" orient="auto"><path d="M0 1L7 5L0 9zM8 1L15 5L8 9z" style="fill:var(--tinta-3)"/></marker></defs>');
+  const cy = Y(m.yc);
+  const cx = X(m.xc);
+  out.push(`<line class="mom" x1="-2" y1="${cy}" x2="-58" y2="${cy}" marker-end="url(#fe-mm)"/><text class="mom-t" x="-52" y="${cy - 8}">M<tspan font-size="9" dy="3">x</tspan></text>`);
+  out.push(`<line class="mom" x1="${cx}" y1="${y0 - 8}" x2="${cx}" y2="-52" marker-end="url(#fe-mm)"/><text class="mom-t" x="${cx + 8}" y="-30">M<tspan font-size="9" dy="3">y</tspan></text>`);
+  return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="-62 -58 ${x0 + bp + 92} ${y0 + hp + 104}" role="img" aria-label="${t('fce.dibujoAria')}">${out.join('')}</svg>`;
 }
 
 function traza(p, c, gmin, e) {

@@ -1123,6 +1123,11 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
 @media (min-width: 1100px) and (min-height: 600px) { .fcr-diag.fcr-ancho { grid-template-columns: minmax(0, 1fr) minmax(300px, 500px); } }
 .fce-tabla table.rejilla th, .fce-tabla table.rejilla td { font-size: 11px; padding-inline: 3px; }
 .fcr-ancho .fcr-lado .fcr-sec svg { max-height: min(230px, 32vh); }
+.veredicto.con-sec.sin-ratio { grid-template-columns: auto minmax(0, 1fr) auto; }
+.veredicto.sin-ratio:not(.con-sec) { grid-template-columns: minmax(0, 1fr) auto; }
+.dib .mom { stroke: var(--tinta-3); stroke-width: 1.8; fill: none; }
+.dib .mom-t { fill: var(--tinta-2); font-weight: 700; }
+.dib .mom-t .sub { font-size: 9px; font-weight: 600; }
 </style>
 
 <header class="barra">
@@ -12870,14 +12875,14 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       }
     } else {
       const ok = gmin >= 1 - 1e-6;
-      res.append(veredicto(
+      res.append(sinRatio(veredicto(
         ok ? "cumple" : "nocumple",
         ok ? t("cumple") : t("noCumple"),
-        "\u03B3 = |OQ|/|OP|",
-        sigla2(gmin),
+        "",
+        "",
         `${sub20("N", "Ed")} <b>${q(gam[0].N, "N")}</b> \xB7 ${sub20("M", "x,Ed")} <b>${q(gam[0].Mx, "M")}</b> \xB7 ${sub20("M", "y,Ed")} <b>${q(gam[0].My, "M")}</b>`,
         Math.min(1 / Math.max(gmin, 1e-9) / 1.25, 1)
-      ));
+      )));
     }
     const Asd = c.As0 * c.k;
     if (Asd + 1e-12 < c.Amin) res.append(aviso(t("fcr.bajoMin", q(Asd, "As"), q(c.Amin, "As"))));
@@ -12886,22 +12891,27 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     if (gam.some((x) => x.N > c.lim.Ncomp + 1e-9 || x.N < c.lim.Ntrac - 1e-9)) res.append(aviso(t("fce.fueraAxil", `${q(c.lim.Ntrac, "N")} \u2026 ${q(c.lim.Ncomp, "N")}`)));
     return resultadoUnico2(ctx2, res, { s, c, gam: gam[0], gmin, dim });
   }
+  function sinRatio(v2) {
+    v2.querySelector(".ratio")?.remove();
+    v2.classList.add("sin-ratio");
+    return v2;
+  }
   function veredictoDiagrama(c) {
     const N = Math.min(Math.max(est6.Ndiag, Math.ceil(c.lim.Ntrac)), Math.floor(c.lim.Ncomp) - 1);
     const gs = est6.puntos.map((f) => [nv2(f[0]), nv2(f[1])]).filter(([a, b]) => Number.isFinite(a) && Number.isFinite(b)).map(([Mx, My]) => coeficienteMxMy(c.m, N, Mx, My));
     const etq = `${sub20("N", "")} = ${fmt(N, MAG.N.d)} ${MAG.N.ud}`;
-    if (!gs.length) return veredicto("atencion", t("fce.sinPuntos"), "\u03B3 = |OQ|/|OP|", "\u2014", etq);
+    if (!gs.length) return sinRatio(veredicto("atencion", t("fce.sinPuntos"), "", "", etq));
     const gmin = Math.min(...gs);
     const fuera = gs.filter((g) => g < 1 - 1e-6).length;
     const ok = fuera === 0;
-    return veredicto(
+    return sinRatio(veredicto(
       ok ? "cumple" : "nocumple",
       ok ? t("cumple") : t("noCumple"),
-      "\u03B3 = |OQ|/|OP|",
-      sigla2(gmin),
+      "",
+      "",
       `${etq} \xB7 ${t("fce.puntosFuera", fuera, gs.length)}`,
       Math.min(1 / Math.max(gmin, 1e-9) / 1.25, 1)
-    );
+    ));
   }
   function graficoMxMy(ctx2, c, gam, s) {
     const axiles = [];
@@ -13152,9 +13162,12 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       out.push(`<line class="cota" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" marker-start="url(#tic)" marker-end="url(#tic)"/>`);
       out.push(`<text class="fuerte" x="${(x1 + x2) / 2 + 6}" y="${(y1 + y2) / 2 - 4}">x</text>`);
     }
-    const flecha = Math.min(hp, bp) * 0.28;
-    out.push(`<line class="flecha" x1="${X(m.xc)}" y1="${Y(m.yc)}" x2="${X(m.xc) + ux * flecha}" y2="${Y(m.yc) + uy * flecha}" marker-end="url(#pta)"/>`);
-    return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${x0 + bp + 30} ${y0 + hp + 46}" role="img" aria-label="${t("fce.dibujoAria")}">${out.join("")}</svg>`;
+    out.push('<defs><marker id="fe-mm" viewBox="0 0 16 10" refX="15" refY="5" markerWidth="12" markerHeight="7.5" orient="auto"><path d="M0 1L7 5L0 9zM8 1L15 5L8 9z" style="fill:var(--tinta-3)"/></marker></defs>');
+    const cy = Y(m.yc);
+    const cx = X(m.xc);
+    out.push(`<line class="mom" x1="-2" y1="${cy}" x2="-58" y2="${cy}" marker-end="url(#fe-mm)"/><text class="mom-t" x="-52" y="${cy - 8}">M<tspan font-size="9" dy="3">x</tspan></text>`);
+    out.push(`<line class="mom" x1="${cx}" y1="${y0 - 8}" x2="${cx}" y2="-52" marker-end="url(#fe-mm)"/><text class="mom-t" x="${cx + 8}" y="-30">M<tspan font-size="9" dy="3">y</tspan></text>`);
+    return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="-62 -58 ${x0 + bp + 92} ${y0 + hp + 104}" role="img" aria-label="${t("fce.dibujoAria")}">${out.join("")}</svg>`;
   }
   function traza3(p, c, gmin, e2) {
     const fam = NORMAS[p.norma];
