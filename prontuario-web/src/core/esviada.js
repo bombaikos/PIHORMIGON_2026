@@ -266,6 +266,9 @@ export function superficieEsviada(m, { nN = 33, nT = 48 } = {}) {
   return S;
 }
 
+/** ¿Está ya muestreada la superficie de este modelo? (si no, `superficieEsviada` tarda ~2 s) */
+export function superficieCalculada(m) { return SUPERFICIES.has(m); }
+
 /** Momentos mayores en valor absoluto de toda la superficie (para fijar los ejes de los diagramas). */
 export function maximosSuperficie(S) {
   let mx = 0;

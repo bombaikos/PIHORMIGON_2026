@@ -20,6 +20,7 @@ export default {
   'fce.f.alfa': 'β: ángulo de la recta neutra con la horizontal, entre −90° y 90° (0° = eje neutro horizontal)',
   'fce.sinPuntos': 'Sin esfuerzos', 'fce.puntosFuera': (k, n) => `${k} de ${n} fuera del diagrama`,
   'fce.constante': 'Constante', 'fce.ejeN': 'N [kN]', 'fce.serieM': (m, v) => `${m} = ${v} kN·m`,
+  'fce.calculando': 'Se está calculando…', 'fce.fiMin': 'ø mínimo [mm]', 'fce.fiVarios': 'La sección tiene más de un diámetro: no se puede elegir uno solo.',
   'fce.puntos': 'Esfuerzos', 'fce.tabla': 'Esfuerzos y coeficiente de seguridad',
   'fce.contornos': (n) => `${n} puntos`,
   'fce.infoMx': 'Mx: momento respecto al eje horizontal que pasa por el c.d.g. del hormigón bruto. Positivo si comprime la cara superior.', 'fce.infoMy': 'My: momento respecto al eje vertical que pasa por el c.d.g. del hormigón bruto. Positivo si comprime la cara derecha.',

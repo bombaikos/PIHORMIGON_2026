@@ -34,3 +34,9 @@ Como el «esviada por β» del 3.1: para cada dirección θ de la fibra más com
 - Los ejes del diagrama N–M son fijos: N entre las capacidades de tracción y compresión; el otro momento hasta su máximo.
 - La tarjeta grande de diagnóstico no lleva la palabra «γ» ni «|OQ|/|OP|», pero sí el coeficiente de seguridad (número) con esa etiqueta (Pepiño, 31/10).
 - Figura de la sección: Mx y My como vectores de doble punta en gris (regla de la mano derecha: Mx>0 apunta a la izquierda, My>0 hacia arriba); β antihorario; x perpendicular a la recta neutra.
+
+## Aviso de cálculo y selector de ø (31/10)
+
+- Si la superficie de rotura aún no está calculada (primera vez con esa armadura, ~2 s), Diagrama muestra «Se está calculando…» en el centro del panel y se repinta al terminar.
+- El selector de ø está en los tres modos. En Rec pilar es editable; en genéricas (más de un diámetro) se queda en gris con el motivo, no se oculta.
+- En Dimensionamiento el selector es «ø mínimo»: la propuesta de diámetro no baja de él (interpretación mía, pendiente de confirmar con Pepiño).

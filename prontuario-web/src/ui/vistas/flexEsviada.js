@@ -6,7 +6,7 @@
 // Compresión positiva. Mx > 0 comprime la cara superior; My > 0 comprime la cara derecha. Motor: src/core/esviada.js.
 
 import { cuantiaMinima } from '../../core/cuantiaMinima.js';
-import { modeloEsviada, contornoMxMy, razonMxMy, coeficienteMxMy, dimensionarEsviada, axilesEsviada, superficieEsviada, maximosSuperficie, corteNM, coeficienteNM, razonNM } from '../../core/esviada.js';
+import { modeloEsviada, contornoMxMy, razonMxMy, coeficienteMxMy, dimensionarEsviada, axilesEsviada, superficieEsviada, superficieCalculada, maximosSuperficie, corteNM, coeficienteNM, razonNM } from '../../core/esviada.js';
 import { leerNumero } from '../../core/armado.js';
 import { NORMAS } from '../../norma/normas.js';
 import { geometriaDe, materialesSeccion, sepCapas } from '../../io/proyecto.js';
@@ -22,7 +22,7 @@ import { veredicto } from './flexion.js';
 // Como el Prontuario 3.1: rectangulares definidas por redondo (pilares) y genéricas
 const FORMAS = ['pilar', 'generica'];
 const est = {
-  i: null, fi: null, modo: 'comprobar', NEd: 800, MxEd: 120, MyEd: 70, Ndiag: 500, fijo: 'N', Mdiag: { Mx: 0, My: 0 }, puntosNM: { My: [['500', '80'], ['1500', '120'], ['-200', '30'], ['', '']], Mx: [['500', '80'], ['1500', '120'], ['-200', '30'], ['', '']] }, dirEmin: 'y', puntos: [['120', '70'], ['-80', '110'], ['180', '-60'], ['40', '40'], ['', ''], ['', ''], ['', ''], ['', ''], ['', ''], ['', '']],
+  i: null, fi: null, modo: 'comprobar', NEd: 800, MxEd: 120, MyEd: 70, Ndiag: 500, fiMin: null, fijo: 'N', Mdiag: { Mx: 0, My: 0 }, puntosNM: { My: [['500', '80'], ['1500', '120'], ['-200', '30'], ['', '']], Mx: [['500', '80'], ['1500', '120'], ['-200', '30'], ['', '']] }, dirEmin: 'y', puntos: [['120', '70'], ['-80', '110'], ['180', '-60'], ['40', '40'], ['', ''], ['', ''], ['', ''], ['', ''], ['', ''], ['', '']],
   abiertos: new Set(),
 };
 for (const k of ['Mx', 'My']) while (est.puntosNM[k].length < 10) est.puntosNM[k].push(['', '']);
@@ -74,7 +74,7 @@ function calculo(p, s) {
   if (geo.errores?.length) throw new Error(geo.errores.join(' '));
   emin = eMinimas(p.norma, geo);
   const ps = pares();
-  const clave = JSON.stringify([est.dirEmin, p.norma, s.geo, s.armado, s.hormigon, s.acero, sepCapas(p), est.modo, est.fi, serieDiametros(), ps.map((x) => [x.N, x.Mx, x.My])]);
+  const clave = JSON.stringify([est.dirEmin, p.norma, s.geo, s.armado, s.hormigon, s.acero, sepCapas(p), est.modo, est.fi, est.fiMin, serieDiametros(), ps.map((x) => [x.N, x.Mx, x.My])]);
   if (memo.clave === clave) return memo.c;
   const mats = materialesSeccion(p, s);
   const m0 = modeloEsviada(geo, mats.hormigon, mats.acero);
@@ -95,7 +95,7 @@ function calculo(p, s) {
     k = Number.isFinite(kEstricto) ? Math.max(kEstricto, kMin) : kEstricto;
     if (phi0 && Number.isFinite(k)) {
       phiEstricto = kEstricto > 0 ? phi0 * Math.sqrt(kEstricto) : 0;
-      phiProp = serieDiametros().find((v) => v >= phi0 * Math.sqrt(k) - 1e-9) ?? null;
+      phiProp = serieDiametros().find((v) => v >= phi0 * Math.sqrt(k) - 1e-9 && v >= (est.fiMin ?? 0)) ?? null;
       if (phiProp) k = (phiProp / phi0) ** 2;
     }
   } else if (phi0 && est.fi > 0) k = (est.fi / phi0) ** 2;
@@ -125,9 +125,21 @@ export function datos(ctx, form) {
   let c = null;
   try { c = calculo(p, s); } catch { /* el error se muestra en resultados */ }
   const campoFi = () => {
-    if (est.modo === 'dimensionar' || !c?.phi0) return null;
-    const serie = [...new Set([...serieDiametros(), c.phi0])].sort((x, y) => x - y);
-    return selector({ id: 'fe-fi', etq: 'ø [mm]', linea: true, opciones: serie.map((x) => [x, fmt(x, 0)]), valor: est.fi ?? c.phi0, onCambio: (v) => { est.fi = Number(v); cambio(); } });
+    if (!c) return null;
+    const dim = est.modo === 'dimensionar';
+    const serie = [...new Set([...serieDiametros(), c.phi0].filter(Boolean))].sort((x, y) => x - y);
+    const valor = dim ? (est.fiMin ?? serie[0]) : (est.fi ?? c.phi0);
+    const campo = selector({ id: 'fe-fi', etq: dim ? t('fce.fiMin') : 'ø [mm]', linea: true, opciones: serie.map((x) => [x, fmt(x, 0)]), valor,
+      onCambio: (v) => { if (dim) est.fiMin = Number(v); else est.fi = Number(v); cambio(); } });
+    if (!c.phi0) {
+      // Sección con más de un diámetro (genérica): el control se queda, en gris y con el motivo
+      campo.classList.add('no-aplica');
+      campo.title = t('fce.fiVarios');
+      const sel = campo.querySelector('select');
+      sel.disabled = true;
+      sel.title = t('fce.fiVarios');
+    }
+    return campo;
   };
   poner(form,
     segmentado({ ancho: true, capsula: true, etiqueta: t('flex.modo'), opciones: [['comprobar', t('flex.v.comprobar')], ['dimensionar', t('flex.v.dimensionar')], ['diagrama', t('fcr.modoDiagrama')]], valor: est.modo, onCambio: (m) => { est.modo = m; ctx.pintar(); } }),
@@ -160,6 +172,11 @@ function resultadosEsviada(ctx, res) {
   const c = calculo(p, s);
   const { m, ps } = c;
   if (est.modo === 'diagrama') {
+    if (!superficieCalculada(c.m)) {
+      // Primera vez con esta armadura: unos 2 s de cálculo; se avisa en el centro y se repinta al terminar
+      requestAnimationFrame(() => setTimeout(() => { superficieEsviada(c.m); ctx.pintar(); }, 0));
+      return res.append(h('article', { class: 'panel tarjeta fce-calculando' }, h('p', { role: 'status' }, t('fce.calculando'))));
+    }
     res.append(veredictoDiagrama(c));
     return res.append(panelDiagrama(ctx, { s, c }));
   }

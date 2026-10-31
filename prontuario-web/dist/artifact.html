@@ -1119,6 +1119,9 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
 .dib .mom { stroke: var(--tinta-3); stroke-width: 1.8; fill: none; }
 .dib .mom-t { fill: var(--tinta-2); font-weight: 700; }
 .dib .mom-t .sub { font-size: 9px; font-weight: 600; }
+.fce-calculando { display: flex; align-items: center; justify-content: center; }
+.fce-calculando p { margin: 0; padding: 14px 24px; font-size: calc(18px + var(--mas)); color: var(--tinta-2); border: 1px solid var(--linea); border-radius: var(--r-campo); background: var(--hundido); }
+.campo.no-aplica select:disabled { background: var(--hundido); color: var(--tinta-3); cursor: not-allowed; }
 </style>
 
 <header class="barra">
@@ -5387,6 +5390,9 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     "fce.constante": "Constante",
     "fce.ejeN": "N [kN]",
     "fce.serieM": (m, v2) => `${m} = ${v2} kN\xB7m`,
+    "fce.calculando": "Se est\xE1 calculando\u2026",
+    "fce.fiMin": "\xF8 m\xEDnimo [mm]",
+    "fce.fiVarios": "La secci\xF3n tiene m\xE1s de un di\xE1metro: no se puede elegir uno solo.",
     "fce.puntos": "Esfuerzos",
     "fce.tabla": "Esfuerzos y coeficiente de seguridad",
     "fce.contornos": (n) => `${n} puntos`,
@@ -5435,6 +5441,9 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     "fce.constante": "Constant",
     "fce.ejeN": "N [kN]",
     "fce.serieM": (m, v2) => `${m} = ${v2} kN\xB7m`,
+    "fce.calculando": "Calculating\u2026",
+    "fce.fiMin": "Minimum \xF8 [mm]",
+    "fce.fiVarios": "The section has more than one bar diameter: a single one cannot be chosen.",
     "fce.puntos": "Actions",
     "fce.tabla": "Actions and safety factor",
     "fce.contornos": (n) => `${n} points`,
@@ -12692,6 +12701,9 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     SUPERFICIES.set(m, { clave, S });
     return S;
   }
+  function superficieCalculada(m) {
+    return SUPERFICIES.has(m);
+  }
   function maximosSuperficie(S) {
     let mx = 0;
     let my = 0;
@@ -12847,6 +12859,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     MxEd: 120,
     MyEd: 70,
     Ndiag: 500,
+    fiMin: null,
     fijo: "N",
     Mdiag: { Mx: 0, My: 0 },
     puntosNM: { My: [["500", "80"], ["1500", "120"], ["-200", "30"], ["", ""]], Mx: [["500", "80"], ["1500", "120"], ["-200", "30"], ["", ""]] },
@@ -12894,7 +12907,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     if (geo.errores?.length) throw new Error(geo.errores.join(" "));
     emin2 = eMinimas(p.norma, geo);
     const ps = pares2();
-    const clave = JSON.stringify([est6.dirEmin, p.norma, s.geo, s.armado, s.hormigon, s.acero, sepCapas(p), est6.modo, est6.fi, serieDiametros(), ps.map((x) => [x.N, x.Mx, x.My])]);
+    const clave = JSON.stringify([est6.dirEmin, p.norma, s.geo, s.armado, s.hormigon, s.acero, sepCapas(p), est6.modo, est6.fi, est6.fiMin, serieDiametros(), ps.map((x) => [x.N, x.Mx, x.My])]);
     if (memo2.clave === clave) return memo2.c;
     const mats = materialesSeccion(p, s);
     const m0 = modeloEsviada(geo, mats.hormigon, mats.acero);
@@ -12914,7 +12927,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       k = Number.isFinite(kEstricto) ? Math.max(kEstricto, kMin) : kEstricto;
       if (phi0 && Number.isFinite(k)) {
         phiEstricto = kEstricto > 0 ? phi0 * Math.sqrt(kEstricto) : 0;
-        phiProp = serieDiametros().find((v2) => v2 >= phi0 * Math.sqrt(k) - 1e-9) ?? null;
+        phiProp = serieDiametros().find((v2) => v2 >= phi0 * Math.sqrt(k) - 1e-9 && v2 >= (est6.fiMin ?? 0)) ?? null;
         if (phiProp) k = (phiProp / phi0) ** 2;
       }
     } else if (phi0 && est6.fi > 0) k = (est6.fi / phi0) ** 2;
@@ -12948,12 +12961,30 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     } catch {
     }
     const campoFi = () => {
-      if (est6.modo === "dimensionar" || !c?.phi0) return null;
-      const serie = [.../* @__PURE__ */ new Set([...serieDiametros(), c.phi0])].sort((x, y) => x - y);
-      return selector({ id: "fe-fi", etq: "\xF8 [mm]", linea: true, opciones: serie.map((x) => [x, fmt(x, 0)]), valor: est6.fi ?? c.phi0, onCambio: (v2) => {
-        est6.fi = Number(v2);
-        cambio();
-      } });
+      if (!c) return null;
+      const dim = est6.modo === "dimensionar";
+      const serie = [...new Set([...serieDiametros(), c.phi0].filter(Boolean))].sort((x, y) => x - y);
+      const valor = dim ? est6.fiMin ?? serie[0] : est6.fi ?? c.phi0;
+      const campo = selector({
+        id: "fe-fi",
+        etq: dim ? t("fce.fiMin") : "\xF8 [mm]",
+        linea: true,
+        opciones: serie.map((x) => [x, fmt(x, 0)]),
+        valor,
+        onCambio: (v2) => {
+          if (dim) est6.fiMin = Number(v2);
+          else est6.fi = Number(v2);
+          cambio();
+        }
+      });
+      if (!c.phi0) {
+        campo.classList.add("no-aplica");
+        campo.title = t("fce.fiVarios");
+        const sel = campo.querySelector("select");
+        sel.disabled = true;
+        sel.title = t("fce.fiVarios");
+      }
+      return campo;
     };
     poner(
       form,
@@ -13029,6 +13060,13 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     const c = calculo2(p, s);
     const { m, ps } = c;
     if (est6.modo === "diagrama") {
+      if (!superficieCalculada(c.m)) {
+        requestAnimationFrame(() => setTimeout(() => {
+          superficieEsviada(c.m);
+          ctx2.pintar();
+        }, 0));
+        return res.append(h("article", { class: "panel tarjeta fce-calculando" }, h("p", { role: "status" }, t("fce.calculando"))));
+      }
       res.append(veredictoDiagrama(c));
       return res.append(panelDiagrama2(ctx2, { s, c }));
     }
