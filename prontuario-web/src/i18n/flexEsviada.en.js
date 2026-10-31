@@ -17,6 +17,7 @@ export default {
   'fce.f.ref': (x, y) => `Moments about the centroid of the gross concrete (x = ${x}, y = ${y} from the top-left corner).`,
   'fce.f.alfa': 'β: angle of the neutral line with the horizontal, between −90° and 90° (0° = horizontal neutral axis)',
   'fce.sinPuntos': 'No actions', 'fce.puntosFuera': (k, n) => `${k} of ${n} outside the diagram`,
+  'fce.constante': 'Constant', 'fce.ejeN': 'N [kN]', 'fce.serieM': (m, v) => `${m} = ${v} kN·m`,
   'fce.puntos': 'Actions', 'fce.tabla': 'Actions and safety factor',
   'fce.contornos': (n) => `${n} points`,
   'fce.infoMx': 'Mx: moment about the horizontal axis through the centroid of the gross concrete. Positive when it compresses the top face.', 'fce.infoMy': 'My: moment about the vertical axis through the centroid of the gross concrete. Positive when it compresses the right face.',

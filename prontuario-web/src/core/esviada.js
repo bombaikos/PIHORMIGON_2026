@@ -224,3 +224,209 @@ export function dimensionarEsviada(geo, hormigon, acero, N, Mx, My, { gamma = 1,
   }
   return hi;
 }
+
+/* ---------------------------------------------------------------------------------------------------------------
+ * Diagramas N–M: cortes de la superficie de rotura (N, Mx, My) por un plano Mx = constante o My = constante.
+ * La superficie se muestrea una vez por modelo (N × θ) y se guarda; el corte para cada valor del momento fijo se
+ * obtiene interpolando y es instantáneo. Los estados de cada punto (β, x, κ, ε) se calculan después en exacto.
+ * ------------------------------------------------------------------------------------------------------------- */
+
+const SUPERFICIES = new WeakMap();
+
+/**
+ * Superficie de rotura muestreada: nN axiles interiores entre la tracción y la compresión máximas (en los extremos
+ * el contorno se reduce a un punto) y nT direcciones θ de la fibra más comprimida.
+ * @returns {{Ns:number[], thetas:number[], Mx:number[][], My:number[][], Ntrac:number, Ncomp:number}}
+ */
+export function superficieEsviada(m, { nN = 33, nT = 48 } = {}) {
+  const clave = `${nN}/${nT}`;
+  const previa = SUPERFICIES.get(m);
+  if (previa?.clave === clave) return previa.S;
+  const { Ncomp, Ntrac } = axilesEsviada(m);
+  const thetas = Array.from({ length: nT }, (_, j) => (2 * Math.PI * j) / nT);
+  const Ns = [Ntrac];
+  const Mx = [new Array(nT).fill(0)];
+  const My = [new Array(nT).fill(0)];
+  for (let i = 1; i <= nN; i++) {
+    // Niveles algo más densos hacia los extremos (donde el diagrama se cierra) que en el centro
+    const tt = i / (nN + 1);
+    const N = Ntrac + (Ncomp - Ntrac) * (0.5 * tt + 0.25 * (1 - Math.cos(Math.PI * tt)));
+    const fx = [];
+    const fy = [];
+    for (const th of thetas) {
+      const e = estadoUltimoEsviada(m, N, th);
+      fx.push(e.converge ? e.Mx : NaN);
+      fy.push(e.converge ? e.My : NaN);
+    }
+    Ns.push(N); Mx.push(fx); My.push(fy);
+  }
+  Ns.push(Ncomp); Mx.push(new Array(nT).fill(0)); My.push(new Array(nT).fill(0));
+  const S = { Ns, thetas, Mx, My, Ntrac, Ncomp };
+  SUPERFICIES.set(m, { clave, S });
+  return S;
+}
+
+/** Momentos mayores en valor absoluto de toda la superficie (para fijar los ejes de los diagramas). */
+export function maximosSuperficie(S) {
+  let mx = 0;
+  let my = 0;
+  for (let i = 0; i < S.Ns.length; i++) for (let j = 0; j < S.thetas.length; j++) {
+    if (Number.isFinite(S.Mx[i][j])) mx = Math.max(mx, Math.abs(S.Mx[i][j]));
+    if (Number.isFinite(S.My[i][j])) my = Math.max(my, Math.abs(S.My[i][j]));
+  }
+  return { Mx: mx, My: my };
+}
+
+/** Cruces de la curva cerrada F(θ) = M0 en el nivel i: [{v, j, t}] con el otro momento v interpolado. */
+function crucesNivel(S, i, fijo, M0) {
+  const F = fijo === 'Mx' ? S.Mx[i] : S.My[i];
+  const V = fijo === 'Mx' ? S.My[i] : S.Mx[i];
+  const nT = F.length;
+  const out = [];
+  for (let j = 0; j < nT; j++) {
+    const k = (j + 1) % nT;
+    const a = F[j] - M0;
+    const b = F[k] - M0;
+    if (!Number.isFinite(a) || !Number.isFinite(b) || (a === 0 && b === 0)) continue;
+    if ((a <= 0 && b > 0) || (a >= 0 && b < 0)) {
+      const t = a / (a - b);
+      out.push({ v: V[j] + t * (V[k] - V[j]), j, t });
+    }
+  }
+  return out;
+}
+
+/**
+ * Diagrama N–M a Mx (o My) constante: la rama superior (mayor valor del otro momento) y la inferior, por axiles.
+ * @param {'Mx'|'My'} fijo  momento que se mantiene constante, con valor M0
+ * @returns {{N:number[], A:number[], B:number[], curva:number[][]}}  curva = [[N, M]] cerrada, M es el otro momento
+ */
+export function corteNM(S, fijo, M0) {
+  const N = [];
+  const A = [];
+  const B = [];
+  for (let i = 1; i < S.Ns.length - 1; i++) {
+    const c = crucesNivel(S, i, fijo, M0);
+    if (c.length < 2) continue;
+    const vs = c.map((x) => x.v);
+    N.push(S.Ns[i]); A.push(Math.max(...vs)); B.push(Math.min(...vs));
+  }
+  const curva = [];
+  if (Math.abs(M0) < 1e-9) { curva.push([S.Ntrac, 0]); }
+  N.forEach((n, k) => curva.push([n, A[k]]));
+  if (Math.abs(M0) < 1e-9) { curva.push([S.Ncomp, 0]); }
+  for (let k = N.length - 1; k >= 0; k--) curva.push([N[k], B[k]]);
+  return { N, A, B, curva };
+}
+
+/** ¿Está el punto (N, M) dentro del polígono cerrado `curva`? */
+export function dentroCurva(curva, N, M) {
+  let dentro = false;
+  for (let i = 0, j = curva.length - 1; i < curva.length; j = i++) {
+    const [xi, yi] = curva[i];
+    const [xj, yj] = curva[j];
+    if ((yi > M) !== (yj > M) && N < ((xj - xi) * (M - yi)) / (yj - yi) + xi) dentro = !dentro;
+  }
+  return dentro;
+}
+
+/** Cortes del rayo λ·(N, M), λ > 0, con el polígono: lista de λ ordenada. */
+function cortesRayo(curva, N, M) {
+  const out = [];
+  for (let i = 0; i < curva.length; i++) {
+    const [x1, y1] = curva[i];
+    const [x2, y2] = curva[(i + 1) % curva.length];
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const den = N * dy - M * dx;
+    if (Math.abs(den) < 1e-12) continue;
+    const lam = (x1 * dy - y1 * dx) / den;
+    const u = (x1 * M - y1 * N) / den;
+    if (lam > 0 && u >= -1e-9 && u <= 1 + 1e-9) out.push({ lam, i });
+  }
+  return out.sort((a, b) => a.lam - b.lam);
+}
+
+/**
+ * Coeficiente de seguridad en el plano N–M a excentricidad constante y momento fijo: γ = λ con λ·(N, M) sobre el
+ * diagrama (la misma idea que |OQ|/|OP| en Mx–My). Si el punto está dentro, el corte más lejano (≥ 1); si no, el
+ * más cercano por debajo de 1 (0 si no hay).
+ */
+export function coeficienteNM(curva, N, M) {
+  return cruceRayo(curva, N, M).g;
+}
+
+/** Corte elegido del rayo con el polígono: {g, i} con i el índice del lado de `curva` donde corta (-1 si no hay). */
+function cruceRayo(curva, N, M) {
+  const cortes = cortesRayo(curva, N, M);
+  if (dentroCurva(curva, N, M)) return cortes.length ? { g: Math.max(cortes[cortes.length - 1].lam, 1), i: cortes[cortes.length - 1].i } : { g: Infinity, i: -1 };
+  const menores = cortes.filter((c) => c.lam <= 1);
+  return menores.length ? { g: menores[menores.length - 1].lam, i: menores[menores.length - 1].i } : { g: 0, i: -1 };
+}
+
+/**
+ * Razón N–M exacta de un punto (N, M): γ = λ con λ·(N, M) sobre el diagrama a `fijo` = M0 constante. Parte del corte
+ * del polígono muestreado y lo afina con el estado último exacto (secante en λ).
+ * @returns {{g:number, Q:number[]|null, e:Object|null}}  Q = [N, M] del corte; e = estado último en Q
+ */
+export function razonNM(m, S, corte, fijo, M0, N, M) {
+  const { g, i } = cruceRayo(corte.curva, N, M);
+  if (!(g > 0) || !Number.isFinite(g) || i < 0) return { g, Q: null, e: null };
+  const rama = i < corte.N.length + (Math.abs(M0) < 1e-9 ? 1 : 0) ? 'A' : 'B';
+  const var_ = fijo === 'Mx' ? 'My' : 'Mx';
+  const res = (lam) => {
+    const e = estadoEnPlano(m, S, lam * N, fijo, M0, rama);
+    return e ? { e, r: e[var_] - lam * M } : null;
+  };
+  let l0 = g;
+  let r0 = res(l0);
+  if (!r0) return { g, Q: null, e: null };
+  let l1 = g * 1.01;
+  let r1 = res(l1);
+  for (let it = 0; it < 4 && r1 && Math.abs(r1.r) > 1e-4 * Math.max(1, Math.abs(M)); it++) {
+    const den = r1.r - r0.r;
+    if (Math.abs(den) < 1e-14) break;
+    const l2 = l1 - (r1.r * (l1 - l0)) / den;
+    l0 = l1; r0 = r1; l1 = l2; r1 = res(l1);
+  }
+  const best = r1 && Math.abs(r1.r) <= Math.abs(r0.r) ? { l: l1, ...r1 } : { l: l0, ...r0 };
+  return { g: best.l, Q: [best.l * N, best.e[var_]], e: best.e };
+}
+
+/**
+ * Estado último exacto a axil N con el momento `fijo` igual a M0, en la rama pedida ('A' = mayor otro momento,
+ * 'B' = menor): se busca θ por bisección entre las direcciones vecinas de la superficie muestreada.
+ * @returns {Object|null} estadoUltimoEsviada en ese θ
+ */
+export function estadoEnPlano(m, S, N, fijo, M0, rama = 'A') {
+  // Nivel de superficie más cercano para acotar θ
+  let ib = 1;
+  for (let i = 1; i < S.Ns.length - 1; i++) if (Math.abs(S.Ns[i] - N) < Math.abs(S.Ns[ib] - N)) ib = i;
+  const c = crucesNivel(S, ib, fijo, M0);
+  if (c.length < 2) return null;
+  const sel = rama === 'A' ? c.reduce((p, q) => (q.v > p.v ? q : p)) : c.reduce((p, q) => (q.v < p.v ? q : p));
+  const dT = (2 * Math.PI) / S.thetas.length;
+  let lo = S.thetas[sel.j] - 0.5 * dT;
+  let hi = S.thetas[sel.j] + 1.5 * dT;
+  const f = (th) => {
+    const e = estadoUltimoEsviada(m, N, th);
+    return e.converge ? { e, d: (fijo === 'Mx' ? e.Mx : e.My) - M0 } : null;
+  };
+  let flo = f(lo);
+  let fhi = f(hi);
+  if (!flo || !fhi || flo.d * fhi.d > 0) {
+    // El cruce puede haberse movido de intervalo: se amplía una vez a ±2 pasos
+    lo -= dT; hi += dT; flo = f(lo); fhi = f(hi);
+    if (!flo || !fhi || flo.d * fhi.d > 0) return null;
+  }
+  let mejor = Math.abs(flo.d) < Math.abs(fhi.d) ? flo.e : fhi.e;
+  for (let it = 0; it < 40 && hi - lo > 1e-7; it++) {
+    const th = (lo + hi) / 2;
+    const r = f(th);
+    if (!r) break;
+    mejor = r.e;
+    if (Math.abs(r.d) < 1e-6) break;
+    if (r.d * flo.d > 0) { lo = th; flo = r; } else hi = th;
+  }
+  return mejor;
+}
