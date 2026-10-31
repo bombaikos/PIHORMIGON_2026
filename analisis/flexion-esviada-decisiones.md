@@ -46,3 +46,7 @@ Como el «esviada por β» del 3.1: para cada dirección θ de la fibra más com
 - Datos de Diagrama: primero «Esfuerzo fijo para el diagrama» (N | Mx | My) y luego «Esfuerzos solicitantes». La tabla de esfuerzos empieza con 5 puntos a cero, crece hasta 10 sin scroll y solo con más de 10 lleva scroll.
 - La tabla de la derecha lleva solo N, Mx, My y el coeficiente; las filas fuera del diagrama, en rojo. β, x, κ, ε sup y ε inf van en la tabla detallada del gráfico (pestaña «Tabla»); en N–M se calculan al abrirla (estados exactos por nivel, ~0,5 s).
 - El trazo N–M se dibuja con interpolación cúbica monótona entre los 48 niveles de la superficie (más densos hacia los extremos); el polígono sin suavizar sigue sirviendo para dentro/fuera y γ.
+
+## Tres tarjetas (31/10)
+
+- Los tres modos usan el estándar de tres tarjetas (datos | gráfico | resultados): `.cuerpo.dib-ancho` con la tarjeta del gráfico y la del lateral (sección, cifras, tabla o traza). La tarjeta de la derecha ya no se estrecha y las filas de las tablas no se parten a 1366×657.

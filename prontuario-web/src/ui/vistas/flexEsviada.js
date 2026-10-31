@@ -363,7 +363,7 @@ function panelNM(ctx, { s, c }) {
   const nomF = sub('M', f === 'My' ? 'y' : 'x');
   const nomV = sub('M', f === 'My' ? 'x' : 'y');
   const caja = h('div', { class: 'fcr-graf' });
-  const lado = h('aside', { class: 'fcr-lado' });
+  const lado = h('article', { class: 'panel tarjeta fcr-lado' });
   const titulo = h('h2', {});
   const dibujar = (M0, exacto) => {
     const { co, pts } = puntosNM(c, M0, exacto);
@@ -394,7 +394,7 @@ function panelNM(ctx, { s, c }) {
   const escala = h('div', { class: 'regleta escala' }, h('span', { class: 'rg-et', html: nomF, style: 'visibility:hidden' }),
     h('div', { class: 'rg-num' }, h('span', { style: 'left:0' }, fmt(-L, 0)), h('span', { style: 'left:50%;transform:translateX(-50%)' }, '0'), h('span', { style: 'right:0' }, fmt(L, 0))), h('span', { class: 'rg-v' }));
   caja.append(rg, escala);
-  return h('article', { class: 'panel tarjeta' }, titulo, h('div', { class: 'fcr-diag fcr-ancho' }, caja, lado));
+  return h('div', { class: 'cuerpo dib-ancho' }, h('article', { class: 'panel tarjeta' }, titulo, caja), lado);
 }
 
 /** Modo Diagrama (como el del Prontuario 3.1): contorno Mx–My para un axil constante que se mueve con una regleta;
@@ -406,7 +406,7 @@ function panelDiagrama(ctx, { s, c }) {
   const hi = Math.floor(lim.Ncomp) - 1;
   est.Ndiag = Math.min(Math.max(est.Ndiag, lo), hi);
   const caja = h('div', { class: 'fcr-graf' });
-  const lado = h('aside', { class: 'fcr-lado' });
+  const lado = h('article', { class: 'panel tarjeta fcr-lado' });
   const titulo = h('h2', {});
   let rg = null;
   const dibujar = (N, n) => {
@@ -448,8 +448,7 @@ function panelDiagrama(ctx, { s, c }) {
   const escala = h('div', { class: 'regleta escala' }, h('span', { class: 'rg-et', html: sub('N', ''), style: 'visibility:hidden' }),
     h('div', { class: 'rg-num' }, h('span', { style: 'left:0' }, fmt(lo, 0)), h('span', { style: `left:${z}%;transform:translateX(-50%)` }, '0'), h('span', { style: 'right:0' }, fmt(hi, 0))), h('span', { class: 'rg-v' }));
   caja.append(rg, escala);
-  return h('article', { class: 'panel tarjeta' }, titulo,
-    h('div', { class: 'fcr-diag fcr-ancho' }, caja, lado));
+  return h('div', { class: 'cuerpo dib-ancho' }, h('article', { class: 'panel tarjeta' }, titulo, caja), lado);
 }
 
 /** Sección pequeña, solo contorno y barras con sus cotas. */
@@ -580,9 +579,9 @@ function resultadoUnico(ctx, res, { s, c, gam, gmin, dim }) {
     ...cifrasArmadura(c, dim, mm),
   ];
   // Como en Diagrama: contorno grande y, a un lado, la sección con el plano de rotura (tamaño acotado), las cifras y la traza
-  const lado = h('aside', { class: 'fcr-lado' }, h('div', { class: 'fcr-sec', html: e ? dibujoPlano(c, s, e) : '' }), cifras(cif), h('p', { class: 'sub', style: 'margin:0' }, t('t.desplegar')), traza(ctx.p, c, gmin, e));
-  res.append(h('article', { class: 'panel tarjeta' }, h('h2', { html: tituloGraf(c, s, { N: gam.N, Mx: gam.Mx, My: gam.My }) }),
-    h('div', { class: 'fcr-diag' }, h('div', { class: 'fcr-graf' }, graficoMxMy(ctx, c, [gam], s)), lado)));
+  const lado = h('article', { class: 'panel tarjeta fcr-lado' }, h('div', { class: 'fcr-sec', html: e ? dibujoPlano(c, s, e) : '' }), cifras(cif), h('p', { class: 'sub', style: 'margin:0' }, t('t.desplegar')), traza(ctx.p, c, gmin, e));
+  res.append(h('div', { class: 'cuerpo dib-ancho' }, h('article', { class: 'panel tarjeta' }, h('h2', { html: tituloGraf(c, s, { N: gam.N, Mx: gam.Mx, My: gam.My }) }),
+    h('div', { class: 'fcr-graf' }, graficoMxMy(ctx, c, [gam], s))), lado));
 }
 
 /** Cifras de la armadura: ø de cálculo, o en Dimensionar ø estricto y propuesto con sus áreas. */
