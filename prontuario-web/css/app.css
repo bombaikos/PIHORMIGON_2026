@@ -1120,3 +1120,9 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
 .fce-calculando { display: flex; align-items: center; justify-content: center; }
 .fce-calculando p { margin: 0; padding: 14px 24px; font-size: calc(18px + var(--mas)); color: var(--tinta-2); border: 1px solid var(--linea); border-radius: var(--r-campo); background: var(--hundido); }
 .campo.no-aplica select:disabled { background: var(--hundido); color: var(--tinta-3); cursor: not-allowed; }
+
+/* Flexión compuesta recta: tabla de esfuerzos con desplazamiento horizontal y filas fuera del diagrama en rojo */
+.fcr-tabla { overflow-x: auto; max-width: 100%; }
+.fcr-tabla table { width: max-content; min-width: 100%; }
+.fcr-tabla td, .fcr-tabla th { white-space: nowrap; }
+.fcr-tabla tr.fuera td { color: var(--no); font-weight: 600; }
