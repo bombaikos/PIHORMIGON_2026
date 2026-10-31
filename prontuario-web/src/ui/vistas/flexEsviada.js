@@ -407,8 +407,7 @@ function traza(p, c, gmin, e) {
   const fam = NORMAS[p.norma];
   const art = (a, b, cc) => `<span class="art">${fam.ref} · ${p.norma === 'EC2-2004' ? cc ?? b : fam.familia === 'EHE' ? a : b}</span>`;
   const filas = [
-    { id: 'coef', nom: t('fcr.coefSeg'), val: sigla(gmin), cuenta: `<span class="f">${t('fce.f.coef')}</span>` },
-    { id: 'cont', nom: t('fce.contorno'), val: t('fce.contornos', fmt(TOLCONT, 0)), cuenta: `<span class="f">${t('fce.f.contorno')}</span>
+    { id: 'coef', nom: t('fcr.coefSeg'), val: sigla(gmin), cuenta: `<span class="f">${t('fce.f.coef')}</span><span class="f">${t('fce.f.contorno')}</span>
       <span class="n">${t('fce.f.ref', q(c.m.xc, 'long'), q(c.m.yc, 'long'))}</span>${art('art. 42.1', '8.1.1', '6.1')}` },
     { id: 'nrd', nom: sub('N', 'Rd'), val: q(c.lim.Ncomp, 'N'), cuenta: `<span class="f">${t('fcr.f.nrd')}</span>${art('art. 42.1', '8.1.1', '6.1')}` },
   ];

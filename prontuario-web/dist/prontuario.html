@@ -5388,10 +5388,10 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     "fce.puntos": "Esfuerzos",
     "fce.tabla": "Esfuerzos y coeficiente de seguridad",
     "fce.contornos": (n) => `${n} puntos`,
-    "fce.infoMx": "Mx: momento respecto al eje horizontal de la secci\xF3n. Positivo si comprime la cara superior.",
-    "fce.infoMy": "My: momento respecto al eje vertical de la secci\xF3n. Positivo si comprime la cara derecha.",
-    "fce.infoMrdx": "M_Rd,x: momento resistente respecto al eje horizontal (positivo si comprime la cara superior), en el punto donde la recta del origen a (My,Ed, Mx,Ed) corta el diagrama; mismo axil y misma relaci\xF3n Mx,Ed / My,Ed.",
-    "fce.infoMrdy": "M_Rd,y: momento resistente respecto al eje vertical (positivo si comprime la cara derecha), en el punto donde la recta del origen a (My,Ed, Mx,Ed) corta el diagrama; mismo axil y misma relaci\xF3n Mx,Ed / My,Ed.",
+    "fce.infoMx": "Mx: momento respecto al eje horizontal que pasa por el c.d.g. del hormig\xF3n bruto. Positivo si comprime la cara superior.",
+    "fce.infoMy": "My: momento respecto al eje vertical que pasa por el c.d.g. del hormig\xF3n bruto. Positivo si comprime la cara derecha.",
+    "fce.infoMrdx": "M_Rd,x: momento resistente respecto al eje horizontal por el c.d.g. del hormig\xF3n bruto (positivo si comprime la cara superior), en el punto donde la recta del origen a (My,Ed, Mx,Ed) corta el diagrama; mismo axil y misma relaci\xF3n Mx,Ed / My,Ed.",
+    "fce.infoMrdy": "M_Rd,y: momento resistente respecto al eje vertical por el c.d.g. del hormig\xF3n bruto (positivo si comprime la cara derecha), en el punto donde la recta del origen a (My,Ed, Mx,Ed) corta el diagrama; mismo axil y misma relaci\xF3n Mx,Ed / My,Ed.",
     "fce.infoBeta": "\u03B2: \xE1ngulo de la recta neutra con la horizontal, positivo en sentido antihorario.",
     "fce.infoX": "x: profundidad de la fibra neutra, medida perpendicularmente a la recta neutra desde la fibra m\xE1s comprimida.",
     "fce.copiarTabla": "Copiar tabla",
@@ -5433,10 +5433,10 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     "fce.puntos": "Actions",
     "fce.tabla": "Actions and safety factor",
     "fce.contornos": (n) => `${n} points`,
-    "fce.infoMx": "Mx: moment about the horizontal axis of the section. Positive when it compresses the top face.",
-    "fce.infoMy": "My: moment about the vertical axis of the section. Positive when it compresses the right face.",
-    "fce.infoMrdx": "M_Rd,x: resisting moment about the horizontal axis (positive when it compresses the top face), at the point where the line from the origin to (My,Ed, Mx,Ed) meets the diagram; same axial load and same ratio Mx,Ed / My,Ed.",
-    "fce.infoMrdy": "M_Rd,y: resisting moment about the vertical axis (positive when it compresses the right face), at the point where the line from the origin to (My,Ed, Mx,Ed) meets the diagram; same axial load and same ratio Mx,Ed / My,Ed.",
+    "fce.infoMx": "Mx: moment about the horizontal axis through the centroid of the gross concrete. Positive when it compresses the top face.",
+    "fce.infoMy": "My: moment about the vertical axis through the centroid of the gross concrete. Positive when it compresses the right face.",
+    "fce.infoMrdx": "M_Rd,x: resisting moment about the horizontal axis through the centroid of the gross concrete (positive when it compresses the top face), at the point where the line from the origin to (My,Ed, Mx,Ed) meets the diagram; same axial load and same ratio Mx,Ed / My,Ed.",
+    "fce.infoMrdy": "M_Rd,y: resisting moment about the vertical axis through the centroid of the gross concrete (positive when it compresses the right face), at the point where the line from the origin to (My,Ed, Mx,Ed) meets the diagram; same axial load and same ratio Mx,Ed / My,Ed.",
     "fce.infoBeta": "\u03B2: angle of the neutral line with the horizontal, positive counterclockwise.",
     "fce.infoX": "x: neutral axis depth, measured perpendicular to the neutral line from the most compressed fibre.",
     "fce.copiarTabla": "Copy table",
@@ -13132,8 +13132,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     const fam = NORMAS[p.norma];
     const art4 = (a, b, cc) => `<span class="art">${fam.ref} \xB7 ${p.norma === "EC2-2004" ? cc ?? b : fam.familia === "EHE" ? a : b}</span>`;
     const filas = [
-      { id: "coef", nom: t("fcr.coefSeg"), val: sigla2(gmin), cuenta: `<span class="f">${t("fce.f.coef")}</span>` },
-      { id: "cont", nom: t("fce.contorno"), val: t("fce.contornos", fmt(TOLCONT, 0)), cuenta: `<span class="f">${t("fce.f.contorno")}</span>
+      { id: "coef", nom: t("fcr.coefSeg"), val: sigla2(gmin), cuenta: `<span class="f">${t("fce.f.coef")}</span><span class="f">${t("fce.f.contorno")}</span>
       <span class="n">${t("fce.f.ref", q(c.m.xc, "long"), q(c.m.yc, "long"))}</span>${art4("art. 42.1", "8.1.1", "6.1")}` },
       { id: "nrd", nom: sub20("N", "Rd"), val: q(c.lim.Ncomp, "N"), cuenta: `<span class="f">${t("fcr.f.nrd")}</span>${art4("art. 42.1", "8.1.1", "6.1")}` }
     ];
