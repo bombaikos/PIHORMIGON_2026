@@ -154,7 +154,10 @@ function resultadosEsviada(ctx, res) {
   if (!s) return;
   const c = calculo(p, s);
   const { m, ps } = c;
-  if (est.modo === 'diagrama') return res.append(panelDiagrama(ctx, { s, c }));
+  if (est.modo === 'diagrama') {
+    res.append(veredictoDiagrama(c));
+    return res.append(panelDiagrama(ctx, { s, c }));
+  }
   if (!ps.length) throw new Error(t('fce.sinEsfuerzos'));
   const gam = ps.map((x) => {
     const r = razonMxMy(m, x.N, x.Mx, x.My);
@@ -188,6 +191,20 @@ function resultadosEsviada(ctx, res) {
   if (gam.some((x) => x.subeM)) res.append(aviso(t('fce.subeEmin', est.dirEmin === 'y' ? t('fce.dirY') : t('fce.dirX'), fmt(emin[est.dirEmin] * 1000, 0)), 'info'));
   if (gam.some((x) => x.N > c.lim.Ncomp + 1e-9 || x.N < c.lim.Ntrac - 1e-9)) res.append(aviso(t('fce.fueraAxil', `${q(c.lim.Ntrac, 'N')} … ${q(c.lim.Ncomp, 'N')}`)));
   return resultadoUnico(ctx, res, { s, c, gam: gam[0], gmin, dim });
+}
+
+/** Pastilla del modo Diagrama: los puntos escritos frente al diagrama al axil de la regleta. */
+function veredictoDiagrama(c) {
+  const N = Math.min(Math.max(est.Ndiag, Math.ceil(c.lim.Ntrac)), Math.floor(c.lim.Ncomp) - 1);
+  const gs = est.puntos.map((f) => [nv(f[0]), nv(f[1])]).filter(([a, b]) => Number.isFinite(a) && Number.isFinite(b))
+    .map(([Mx, My]) => coeficienteMxMy(c.m, N, Mx, My));
+  const etq = `${sub('N', '')} = ${fmt(N, MAG.N.d)} ${MAG.N.ud}`;
+  if (!gs.length) return veredicto('atencion', t('fce.sinPuntos'), 'γ = |OQ|/|OP|', '—', etq);
+  const gmin = Math.min(...gs);
+  const fuera = gs.filter((g) => g < 1 - 1e-6).length;
+  const ok = fuera === 0;
+  return veredicto(ok ? 'cumple' : 'nocumple', ok ? t('cumple') : t('noCumple'), 'γ = |OQ|/|OP|', sigla(gmin),
+    `${etq} · ${t('fce.puntosFuera', fuera, gs.length)}`, Math.min(1 / Math.max(gmin, 1e-9) / 1.25, 1));
 }
 
 /** Contornos Mx–My (x = My, y = Mx, la cara comprimida cae del lado del signo): uno por cada axil distinto, con los esfuerzos. */
@@ -390,8 +407,7 @@ function traza(p, c, gmin, e) {
   const fam = NORMAS[p.norma];
   const art = (a, b, cc) => `<span class="art">${fam.ref} · ${p.norma === 'EC2-2004' ? cc ?? b : fam.familia === 'EHE' ? a : b}</span>`;
   const filas = [
-    { id: 'coef', nom: t('fcr.coefSeg'), val: sigla(gmin), cuenta: `<span class="f">${t('fce.f.coef')}</span>` },
-    { id: 'cont', nom: t('fce.contorno'), val: t('fce.contornos', fmt(TOLCONT, 0)), cuenta: `<span class="f">${t('fce.f.contorno')}</span>
+    { id: 'coef', nom: t('fcr.coefSeg'), val: sigla(gmin), cuenta: `<span class="f">${t('fce.f.coef')}</span><span class="f">${t('fce.f.contorno')}</span>
       <span class="n">${t('fce.f.ref', q(c.m.xc, 'long'), q(c.m.yc, 'long'))}</span>${art('art. 42.1', '8.1.1', '6.1')}` },
     { id: 'nrd', nom: sub('N', 'Rd'), val: q(c.lim.Ncomp, 'N'), cuenta: `<span class="f">${t('fcr.f.nrd')}</span>${art('art. 42.1', '8.1.1', '6.1')}` },
   ];
@@ -424,8 +440,8 @@ function resultadoUnico(ctx, res, { s, c, gam, gmin, dim }) {
   const e = gam.e;
   const mm = (x, d) => `${fmt(x, d)}<span class="u"> mm</span>`;
   const cif = [
-    ...(gam.Q ? [[sub('M', 'Rd,x') + info(t('fce.infoMrd')), qh(gam.Q[0], 'M')], [sub('M', 'Rd,y') + info(t('fce.infoMrd')), qh(gam.Q[1], 'M')]] : []),
-    ...(e ? [['x' + info(t('fce.infoBeta')), Number.isFinite(e.x) && e.x > 0 ? qh(e.x, 'long') : '—'], ['β' + info(t('fce.infoBeta')), `${fmt(alfa(e.theta), 1)}<span class="u">${ESP}°</span>`]] : []),
+    ...(gam.Q ? [[sub('M', 'Rd,x') + info(t('fce.infoMrdx')), qh(gam.Q[0], 'M')], [sub('M', 'Rd,y') + info(t('fce.infoMrdy')), qh(gam.Q[1], 'M')]] : []),
+    ...(e ? [['x' + info(t('fce.infoX')), Number.isFinite(e.x) && e.x > 0 ? qh(e.x, 'long') : '—'], ['β' + info(t('fce.infoBeta')), `${fmt(alfa(e.theta), 1)}<span class="u">${ESP}°</span>`]] : []),
     ...cifrasArmadura(c, dim, mm),
   ];
   // Como en Diagrama: contorno grande y, a un lado, la sección con el plano de rotura (tamaño acotado), las cifras y la traza
