@@ -5367,7 +5367,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     "fce.infoMx": "Mx: momento respecto al eje horizontal de la secci\xF3n. Positivo si comprime la cara superior.",
     "fce.infoMy": "My: momento respecto al eje vertical de la secci\xF3n. Positivo si comprime la cara derecha.",
     "fce.infoMrd": "M_Rd,x y M_Rd,y son los momentos resistentes en el punto Q del contorno: el corte de la recta que une el origen con (My,Ed, Mx,Ed). Mismo axil N_Ed y misma relaci\xF3n Mx,Ed / My,Ed (excentricidad constante).",
-    "fce.infoBeta": "\u03B2 es el \xE1ngulo de la recta neutra con la horizontal (positivo si baja hacia la derecha). Mx es el momento respecto al eje horizontal y My respecto al vertical.",
+    "fce.infoBeta": "\u03B2 es el \xE1ngulo de la recta neutra con la horizontal (positivo si baja hacia la derecha). x es la profundidad de la fibra neutra, medida perpendicular a ella desde la fibra m\xE1s comprimida. Mx es el momento respecto al eje horizontal y My respecto al vertical.",
     "fce.copiarTabla": "Copiar tabla",
     "fce.sinEsfuerzos": "Escribe al menos un par de esfuerzos."
   };
@@ -5403,7 +5403,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     "fce.infoMx": "Mx: moment about the horizontal axis of the section. Positive when it compresses the top face.",
     "fce.infoMy": "My: moment about the vertical axis of the section. Positive when it compresses the right face.",
     "fce.infoMrd": "M_Rd,x and M_Rd,y are the resisting moments at point Q of the contour: where the line from the origin to (My,Ed, Mx,Ed) meets it. Same axial load N_Ed and same ratio Mx,Ed / My,Ed (constant eccentricity).",
-    "fce.infoBeta": "\u03B2 is the angle of the neutral line with the horizontal (positive when it descends to the right). Mx is the moment about the horizontal axis and My about the vertical one.",
+    "fce.infoBeta": "\u03B2 is the angle of the neutral line with the horizontal (positive when it descends to the right). x is the neutral axis depth, measured perpendicular to it from the most compressed fibre. Mx is the moment about the horizontal axis and My about the vertical one.",
     "fce.copiarTabla": "Copy table",
     "fce.sinEsfuerzos": "Enter at least one pair of actions."
   };
@@ -13035,6 +13035,15 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       out.push(`<line class="ref" x1="${ax - r * 1.3}" y1="${ay}" x2="${ax + r * 1.3}" y2="${ay}" stroke-dasharray="3 3"/>`);
       out.push(`<path class="cota" d="M${ax + r} ${ay} A${r} ${r} 0 0 ${b >= 0 ? 1 : 0} ${ax + r * Math.cos(rad5)} ${ay + r * Math.sin(rad5)}"/>`);
       out.push(`<text x="${ax + r * 0.5}" y="${ay + (b >= 0 ? -5 : 14)}">\u03B2</text>`);
+    }
+    if (e2.x > 0 && Number.isFinite(e2.x)) {
+      const ext = geo.contornos[0].pts.reduce((m2, v2) => ux * v2[0] + uy * v2[1] > ux * m2[0] + uy * m2[1] ? v2 : m2);
+      const x1 = X(ext[0]);
+      const y1 = Y(ext[1]);
+      const x2 = x1 - ux * e2.x * em.s;
+      const y2 = y1 - uy * e2.x * em.s;
+      out.push(`<line class="cota" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" marker-start="url(#tic)" marker-end="url(#tic)"/>`);
+      out.push(`<text class="fuerte" x="${(x1 + x2) / 2 + 6}" y="${(y1 + y2) / 2 - 4}">x</text>`);
     }
     const flecha = Math.min(hp, bp) * 0.28;
     out.push(`<line class="flecha" x1="${X(m.xc)}" y1="${Y(m.yc)}" x2="${X(m.xc) + ux * flecha}" y2="${Y(m.yc) + uy * flecha}" marker-end="url(#pta)"/>`);

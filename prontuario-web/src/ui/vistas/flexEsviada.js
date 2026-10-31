@@ -363,6 +363,16 @@ function dibujoPlano(c, s, e) {
     out.push(`<path class="cota" d="M${ax + r} ${ay} A${r} ${r} 0 0 ${b >= 0 ? 1 : 0} ${ax + r * Math.cos(rad)} ${ay + r * Math.sin(rad)}"/>`);
     out.push(`<text x="${ax + r * 0.5}" y="${ay + (b >= 0 ? -5 : 14)}">β</text>`);
   }
+  // x: profundidad de la fibra neutra, medida perpendicularmente a la recta neutra desde la fibra más comprimida
+  if (e.x > 0 && Number.isFinite(e.x)) {
+    const ext = geo.contornos[0].pts.reduce((m, v) => (ux * v[0] + uy * v[1] > ux * m[0] + uy * m[1] ? v : m));
+    const x1 = X(ext[0]);
+    const y1 = Y(ext[1]);
+    const x2 = x1 - ux * e.x * em.s;
+    const y2 = y1 - uy * e.x * em.s;
+    out.push(`<line class="cota" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" marker-start="url(#tic)" marker-end="url(#tic)"/>`);
+    out.push(`<text class="fuerte" x="${(x1 + x2) / 2 + 6}" y="${(y1 + y2) / 2 - 4}">x</text>`);
+  }
   // Flecha hacia la cara comprimida, desde el c.d.g.
   const flecha = Math.min(hp, bp) * 0.28;
   out.push(`<line class="flecha" x1="${X(m.xc)}" y1="${Y(m.yc)}" x2="${X(m.xc) + ux * flecha}" y2="${Y(m.yc) + uy * flecha}" marker-end="url(#pta)"/>`);
