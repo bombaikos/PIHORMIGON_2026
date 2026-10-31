@@ -23,6 +23,10 @@ La memoria de proyecto de claude.ai **no se comparte entre cuentas**. Lo único 
 - Al cerrar una tarea, actualiza `docs/HANDOFF.md` (qué quedó hecho, qué a medias, rama/PR).
 - Antes de empezar, mira las ramas y PR abiertos para no duplicar trabajo.
 
+### Relevo entre cuentas
+
+Si Pepiño dice «pon todo al día para que yo siga trabajando en el otro proyecto» (o algo equivalente), haz sin preguntar: (1) pasa a `docs/HANDOFF.md` y `docs/DECISIONS.md` todo lo que solo esté en la memoria del proyecto o en hilos abiertos (decisiones, estado, pendientes, ramas y PR abiertos); (2) sube a ramas los cambios sin subir y abre PR, sin fusionar; (3) avisa con la lista de ramas/PR abiertos y lo que queda a medias.
+
 ## Stack y comandos
 
 - JavaScript vanilla con módulos ES, sin framework; la app es una SPA que se empaqueta en **un solo HTML** (`dist/prontuario.html`, funciona con doble clic, sin servidor; `dist/artifact.html` es el mismo contenido como fragmento).
