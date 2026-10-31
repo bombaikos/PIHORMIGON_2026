@@ -95,9 +95,11 @@ export function grafica({ series, puntos = [], ejeX, ejeY, archivo = 'grafica', 
   tabla.hidden = true;
   const filasT = Math.max(0, ...enCuadro.map((s) => s.xy.length));
   const celda = (s, i, j, d) => (s.xy[i] ? fmt(s.xy[i][j], d) : '');
-  tabla.innerHTML = `<table><thead>${enCuadro.length > 1 ? `<tr>${enCuadro.map((s) => `<th colspan="2" class="${s.clase ?? 's1'}">${s.nombre}</th>`).join('')}</tr>` : ''}`
-    + `<tr>${enCuadro.map(() => `<th>${ejeX.titulo}</th><th>${ejeY.titulo}</th>`).join('')}</tr></thead><tbody>`
-    + Array.from({ length: filasT }, (_, i) => `<tr>${enCuadro.map((s) => `<td>${celda(s, i, 0, ejeX.dt ?? (ejeX.d ?? 2) + 1)}</td><td>${celda(s, i, 1, ejeY.dt ?? (ejeY.d ?? 1) + 1)}</td>`).join('')}</tr>`).join('')
+  // s.extra: columnas añadidas tras X e Y en la tabla, [{titulo, vals: texto por punto}] (por ejemplo x, κ, ε del estado de cada punto)
+  const extras = (s) => s.extra ?? [];
+  tabla.innerHTML = `<table><thead>${enCuadro.length > 1 ? `<tr>${enCuadro.map((s) => `<th colspan="${2 + extras(s).length}" class="${s.clase ?? 's1'}">${s.nombre}</th>`).join('')}</tr>` : ''}`
+    + `<tr>${enCuadro.map((s) => `<th>${ejeX.titulo}</th><th>${ejeY.titulo}</th>${extras(s).map((c) => `<th>${c.titulo}</th>`).join('')}`).join('')}</tr></thead><tbody>`
+    + Array.from({ length: filasT }, (_, i) => `<tr>${enCuadro.map((s) => `<td>${celda(s, i, 0, ejeX.dt ?? (ejeX.d ?? 2) + 1)}</td><td>${celda(s, i, 1, ejeY.dt ?? (ejeY.d ?? 1) + 1)}</td>${extras(s).map((c) => `<td>${c.vals[i] ?? ''}</td>`).join('')}`).join('')}</tr>`).join('')
     + '</tbody></table>';
 
   // Selector Gráfico/Tabla debajo de la gráfica

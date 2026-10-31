@@ -159,13 +159,7 @@ function resultadosFlexRecta(ctx, res) {
   const { d, dH, geo } = c;
   const ps = pares();
   if (!ps.length) throw new Error(t('fcr.sinEsfuerzos'));
-  // Plano de rotura de cada punto: estado último en el corte Q de su recta a excentricidad constante
-  const plano = (x) => {
-    const Q = comprobarNM(d, x.N, x.M).Q;
-    const e = Q ? estadoUltimo(c.secD, -Q[0], { signo: 1, yref: d.yref }) : null;
-    return e?.converge ? e : null;
-  };
-  const gam = ps.map((x) => ({ ...x, g: coeficienteNM(d, x.N, x.M), e: est.modo === 'diagrama' ? plano(x) : null }));
+  const gam = ps.map((x) => ({ ...x, g: coeficienteNM(d, x.N, x.M) }));
   const gmin = Math.min(...gam.map((x) => x.g));
   const dim = est.modo === 'dimensionar';
   const unico = est.modo !== 'diagrama';
@@ -218,21 +212,25 @@ function dibujoSeccionPeq(geo, s) {
 }
 
 function tablaEsfuerzos(gam) {
-  const num = (v, dd) => (Number.isFinite(v) ? fmt(v, dd) : '—');
-  const filas = gam.map((x) => [String(x.i + 1), fmt(x.N, MAG.N.d), fmt(x.M, MAG.M.d) + (x.subeM ? '*' : ''), x.N !== 0 ? fmt((x.M / x.N) * 1000, MAG.long.d) : '∞', sigla(x.g),
-    x.e && Number.isFinite(x.e.x) && x.e.x > 0 ? fmt(x.e.x * 1000, 0) : '—', x.e ? num(x.e.kappa * 1000, 2) : '—', x.e ? num(-x.e.epsSup * 1000, 2) : '—', x.e ? num(-x.e.epsInf * 1000, 2) : '—',
-    ]);
-  const cab = ['#', 'N<sub>Ed</sub> [kN]', 'M<sub>Ed</sub> [kN·m]', 'e [mm]', 'γ', 'x [mm]', 'κ [‰/m]', 'ε<sub>sup</sub> [‰]', 'ε<sub>inf</sub> [‰]'];
-  // Fila entera en rojo si el punto queda fuera del diagrama; si no cabe, la tabla se desplaza en horizontal
+  const filas = gam.map((x) => [String(x.i + 1), fmt(x.N, MAG.N.d), fmt(x.M, MAG.M.d) + (x.subeM ? '*' : ''), sigla(x.g)]);
+  const cab = ['#', 'N<sub>Ed</sub> [kN]', 'M<sub>Ed</sub> [kN·m]', 'γ'];
+  // Fila entera en rojo si el punto queda fuera del diagrama
   return h('div', { class: 'fcr-tabla' }, h('table', { class: 'tabla', html: `<thead><tr>${cab.map((x) => `<th>${x}</th>`).join('')}</tr></thead><tbody>${filas.map((f, i) => `<tr${gam[i].g >= 1 - 1e-6 ? '' : ' class="fuera"'}>${f.map((x) => `<td>${x}</td>`).join('')}</tr>`).join('')}</tbody>` }));
 }
 
 /** Contorno N-M (x = N, y = M) con la envolvente del hormigón solo y los esfuerzos: verde dentro, rojo fuera. */
+/** Columnas de la tabla del diagrama: estado de rotura (x, κ, ε sup, ε inf) de cada punto del contorno, en el orden de la curva. */
+function planoContorno(rama) {
+  const pts = [...rama].reverse();
+  const col = (titulo, f, dd = 2) => ({ titulo, vals: pts.map((v) => { const r = f(v); return Number.isFinite(r) ? fmt(r, dd) : '—'; }) });
+  return [col('x [mm]', (v) => v.x * 1000, 0), col('κ [‰/m]', (v) => v.kappa * 1000), col(`ε<sub>sup</sub> [‰]`, (v) => -v.epsSup * 1000), col(`ε<sub>inf</sub> [‰]`, (v) => -v.epsInf * 1000)];
+}
+
 function graficoNM(ctx, d, dH, gam, s) {
   const eMm = fmt(emin * 1000, 0);
   const xy = (rama) => [...rama].reverse().map((v) => [v.N, v.M]);
   const series = [
-    { nombre: ind('M', 'Rd'), clase: 's1', xy: xy(d.pos) },
+    { nombre: ind('M', 'Rd'), clase: 's1', xy: xy(d.pos), extra: planoContorno(d.pos) },
     { nombre: t('fcr.hormigon'), clase: 'ref', cruz: false, xy: xy(dH.pos) },
     { nombre: `e mín = ${eMm} mm`, clase: 'ref', cruz: false, xy: [[0, 0], [d.Ncomp, d.Ncomp * emin]] },
   ];
