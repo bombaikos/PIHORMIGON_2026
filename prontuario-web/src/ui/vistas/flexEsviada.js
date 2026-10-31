@@ -199,6 +199,8 @@ function graficoMxMy(ctx, c, gam, s) {
   // En un solo par, la recta de O a Q (cuánto falta o sobra)
   if (gam.length === 1 && gam[0].Q) series.push({ nombre: t('fce.rayo'), clase: 'ref', cruz: false, xy: [[0, 0], [gam[0].Q[1], gam[0].Q[0]]] });
   const puntos = gam.map((x) => ({ x: x.My, y: x.Mx, etq: String(x.i + 1), marca: x.g >= 1 - 1e-6 ? 'ok' : 'no' }));
+  // Q: corte de la recta O–P con el contorno; sus coordenadas son M_Rd,y y M_Rd,x
+  if (gam.length === 1 && gam[0].Q) puntos.push({ x: gam[0].Q[1], y: gam[0].Q[0], etq: 'Q', marca: 'neutro' });
   return h('div', { class: 'lienzo' }, grafica({
     series, puntos, escalaIgual: true,
     ejeX: { titulo: t('fce.ejeX'), d: MAG.M.d, dt: MAG.M.d },
