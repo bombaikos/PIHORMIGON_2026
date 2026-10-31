@@ -5398,8 +5398,8 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     "fce.ejeN": "N [kN]",
     "fce.serieM": (m, v2) => `${m} = ${v2} kN\xB7m`,
     "fce.calculando": "Se est\xE1 calculando\u2026",
-    "fce.fiMin": "\xF8 m\xEDnimo [mm]",
     "fce.fiVarios": "La secci\xF3n tiene m\xE1s de un di\xE1metro: no se puede elegir uno solo.",
+    "fce.fiDim": "En Dimensionamiento se parte del \xF8 de la secci\xF3n; el programa propone el di\xE1metro necesario.",
     "fce.puntos": "Esfuerzos",
     "fce.tabla": "Esfuerzos y coeficiente de seguridad",
     "fce.contornos": (n) => `${n} puntos`,
@@ -5449,8 +5449,8 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     "fce.ejeN": "N [kN]",
     "fce.serieM": (m, v2) => `${m} = ${v2} kN\xB7m`,
     "fce.calculando": "Calculating\u2026",
-    "fce.fiMin": "Minimum \xF8 [mm]",
     "fce.fiVarios": "The section has more than one bar diameter: a single one cannot be chosen.",
+    "fce.fiDim": "Dimensioning starts from the section bar diameter; the program proposes the diameter needed.",
     "fce.puntos": "Actions",
     "fce.tabla": "Actions and safety factor",
     "fce.contornos": (n) => `${n} points`,
@@ -12866,7 +12866,6 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     MxEd: 120,
     MyEd: 70,
     Ndiag: 500,
-    fiMin: null,
     fijo: "N",
     Mdiag: { Mx: 0, My: 0 },
     puntosNM: { My: [["500", "80"], ["1500", "120"], ["-200", "30"], ["", ""]], Mx: [["500", "80"], ["1500", "120"], ["-200", "30"], ["", ""]] },
@@ -12914,7 +12913,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     if (geo.errores?.length) throw new Error(geo.errores.join(" "));
     emin2 = eMinimas(p.norma, geo);
     const ps = pares2();
-    const clave = JSON.stringify([est6.dirEmin, p.norma, s.geo, s.armado, s.hormigon, s.acero, sepCapas(p), est6.modo, est6.fi, est6.fiMin, serieDiametros(), ps.map((x) => [x.N, x.Mx, x.My])]);
+    const clave = JSON.stringify([est6.dirEmin, p.norma, s.geo, s.armado, s.hormigon, s.acero, sepCapas(p), est6.modo, est6.fi, serieDiametros(), ps.map((x) => [x.N, x.Mx, x.My])]);
     if (memo2.clave === clave) return memo2.c;
     const mats = materialesSeccion(p, s);
     const m0 = modeloEsviada(geo, mats.hormigon, mats.acero);
@@ -12934,7 +12933,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       k = Number.isFinite(kEstricto) ? Math.max(kEstricto, kMin) : kEstricto;
       if (phi0 && Number.isFinite(k)) {
         phiEstricto = kEstricto > 0 ? phi0 * Math.sqrt(kEstricto) : 0;
-        phiProp = serieDiametros().find((v2) => v2 >= phi0 * Math.sqrt(k) - 1e-9 && v2 >= (est6.fiMin ?? 0)) ?? null;
+        phiProp = serieDiametros().find((v2) => v2 >= phi0 * Math.sqrt(k) - 1e-9) ?? null;
         if (phiProp) k = (phiProp / phi0) ** 2;
       }
     } else if (phi0 && est6.fi > 0) k = (est6.fi / phi0) ** 2;
@@ -12971,25 +12970,24 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       if (!c) return null;
       const dim = est6.modo === "dimensionar";
       const serie = [...new Set([...serieDiametros(), c.phi0].filter(Boolean))].sort((x, y) => x - y);
-      const valor = dim ? est6.fiMin ?? serie[0] : est6.fi ?? c.phi0;
       const campo = selector({
         id: "fe-fi",
-        etq: dim ? t("fce.fiMin") : "\xF8 [mm]",
+        etq: "\xF8 [mm]",
         linea: true,
         opciones: serie.map((x) => [x, fmt(x, 0)]),
-        valor,
+        valor: dim ? c.phi0 : est6.fi ?? c.phi0,
         onCambio: (v2) => {
-          if (dim) est6.fiMin = Number(v2);
-          else est6.fi = Number(v2);
+          est6.fi = Number(v2);
           cambio();
         }
       });
-      if (!c.phi0) {
+      const motivo = !c.phi0 ? t("fce.fiVarios") : dim ? t("fce.fiDim") : null;
+      if (motivo) {
         campo.classList.add("no-aplica");
-        campo.title = t("fce.fiVarios");
+        campo.title = motivo;
         const sel = campo.querySelector("select");
         sel.disabled = true;
-        sel.title = t("fce.fiVarios");
+        sel.title = motivo;
       }
       return campo;
     };

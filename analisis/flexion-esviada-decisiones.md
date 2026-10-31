@@ -39,4 +39,4 @@ Como el «esviada por β» del 3.1: para cada dirección θ de la fibra más com
 
 - Si la superficie de rotura aún no está calculada (primera vez con esa armadura, ~2 s), Diagrama muestra «Se está calculando…» en el centro del panel y se repinta al terminar.
 - El selector de ø está en los tres modos. En Rec pilar es editable; en genéricas (más de un diámetro) se queda en gris con el motivo, no se oculta.
-- En Dimensionamiento el selector es «ø mínimo»: la propuesta de diámetro no baja de él (interpretación mía, pendiente de confirmar con Pepiño).
+- En Dimensionamiento el selector va en gris con el ø que trae la sección (de él parte la propuesta); en genéricas, en gris con el motivo (Pepiño, 31/10).

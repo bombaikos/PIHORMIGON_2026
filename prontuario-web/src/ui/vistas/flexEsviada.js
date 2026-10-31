@@ -22,7 +22,7 @@ import { veredicto } from './flexion.js';
 // Como el Prontuario 3.1: rectangulares definidas por redondo (pilares) y genéricas
 const FORMAS = ['pilar', 'generica'];
 const est = {
-  i: null, fi: null, modo: 'comprobar', NEd: 800, MxEd: 120, MyEd: 70, Ndiag: 500, fiMin: null, fijo: 'N', Mdiag: { Mx: 0, My: 0 }, puntosNM: { My: [['500', '80'], ['1500', '120'], ['-200', '30'], ['', '']], Mx: [['500', '80'], ['1500', '120'], ['-200', '30'], ['', '']] }, dirEmin: 'y', puntos: [['120', '70'], ['-80', '110'], ['180', '-60'], ['40', '40'], ['', ''], ['', ''], ['', ''], ['', ''], ['', ''], ['', '']],
+  i: null, fi: null, modo: 'comprobar', NEd: 800, MxEd: 120, MyEd: 70, Ndiag: 500, fijo: 'N', Mdiag: { Mx: 0, My: 0 }, puntosNM: { My: [['500', '80'], ['1500', '120'], ['-200', '30'], ['', '']], Mx: [['500', '80'], ['1500', '120'], ['-200', '30'], ['', '']] }, dirEmin: 'y', puntos: [['120', '70'], ['-80', '110'], ['180', '-60'], ['40', '40'], ['', ''], ['', ''], ['', ''], ['', ''], ['', ''], ['', '']],
   abiertos: new Set(),
 };
 for (const k of ['Mx', 'My']) while (est.puntosNM[k].length < 10) est.puntosNM[k].push(['', '']);
@@ -74,7 +74,7 @@ function calculo(p, s) {
   if (geo.errores?.length) throw new Error(geo.errores.join(' '));
   emin = eMinimas(p.norma, geo);
   const ps = pares();
-  const clave = JSON.stringify([est.dirEmin, p.norma, s.geo, s.armado, s.hormigon, s.acero, sepCapas(p), est.modo, est.fi, est.fiMin, serieDiametros(), ps.map((x) => [x.N, x.Mx, x.My])]);
+  const clave = JSON.stringify([est.dirEmin, p.norma, s.geo, s.armado, s.hormigon, s.acero, sepCapas(p), est.modo, est.fi, serieDiametros(), ps.map((x) => [x.N, x.Mx, x.My])]);
   if (memo.clave === clave) return memo.c;
   const mats = materialesSeccion(p, s);
   const m0 = modeloEsviada(geo, mats.hormigon, mats.acero);
@@ -95,7 +95,7 @@ function calculo(p, s) {
     k = Number.isFinite(kEstricto) ? Math.max(kEstricto, kMin) : kEstricto;
     if (phi0 && Number.isFinite(k)) {
       phiEstricto = kEstricto > 0 ? phi0 * Math.sqrt(kEstricto) : 0;
-      phiProp = serieDiametros().find((v) => v >= phi0 * Math.sqrt(k) - 1e-9 && v >= (est.fiMin ?? 0)) ?? null;
+      phiProp = serieDiametros().find((v) => v >= phi0 * Math.sqrt(k) - 1e-9) ?? null;
       if (phiProp) k = (phiProp / phi0) ** 2;
     }
   } else if (phi0 && est.fi > 0) k = (est.fi / phi0) ** 2;
@@ -128,16 +128,16 @@ export function datos(ctx, form) {
     if (!c) return null;
     const dim = est.modo === 'dimensionar';
     const serie = [...new Set([...serieDiametros(), c.phi0].filter(Boolean))].sort((x, y) => x - y);
-    const valor = dim ? (est.fiMin ?? serie[0]) : (est.fi ?? c.phi0);
-    const campo = selector({ id: 'fe-fi', etq: dim ? t('fce.fiMin') : 'ø [mm]', linea: true, opciones: serie.map((x) => [x, fmt(x, 0)]), valor,
-      onCambio: (v) => { if (dim) est.fiMin = Number(v); else est.fi = Number(v); cambio(); } });
-    if (!c.phi0) {
-      // Sección con más de un diámetro (genérica): el control se queda, en gris y con el motivo
+    const campo = selector({ id: 'fe-fi', etq: 'ø [mm]', linea: true, opciones: serie.map((x) => [x, fmt(x, 0)]), valor: dim ? c.phi0 : (est.fi ?? c.phi0),
+      onCambio: (v) => { est.fi = Number(v); cambio(); } });
+    // En gris, con el motivo: en Dimensionamiento el ø es el de la sección (de él parte la propuesta) y en las genéricas hay varios
+    const motivo = !c.phi0 ? t('fce.fiVarios') : dim ? t('fce.fiDim') : null;
+    if (motivo) {
       campo.classList.add('no-aplica');
-      campo.title = t('fce.fiVarios');
+      campo.title = motivo;
       const sel = campo.querySelector('select');
       sel.disabled = true;
-      sel.title = t('fce.fiVarios');
+      sel.title = motivo;
     }
     return campo;
   };
