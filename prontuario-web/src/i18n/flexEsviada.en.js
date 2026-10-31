@@ -16,6 +16,7 @@ export default {
   'fce.f.contorno': 'The direction of the most compressed fibre is rotated; for each one, ultimate state (maximum curvature with an admissible plane balancing N<sub>Ed</sub>) and stresses integrated over the whole section: M<sub>x</sub> = ∫σ·(y<sub>G</sub> − y)·dA, M<sub>y</sub> = ∫σ·(x − x<sub>G</sub>)·dA',
   'fce.f.ref': (x, y) => `Moments about the centroid of the gross concrete (x = ${x}, y = ${y} from the top-left corner).`,
   'fce.f.alfa': 'β: angle of the neutral line with the horizontal, between −90° and 90° (0° = horizontal neutral axis)',
+  'fce.sinPuntos': 'No actions', 'fce.puntosFuera': (k, n) => `${k} of ${n} outside the diagram`,
   'fce.puntos': 'Actions', 'fce.tabla': 'Actions and safety factor',
   'fce.contornos': (n) => `${n} points`,
   'fce.infoMx': 'Mx: moment about the horizontal axis of the section. Positive when it compresses the top face.', 'fce.infoMy': 'My: moment about the vertical axis of the section. Positive when it compresses the right face.',

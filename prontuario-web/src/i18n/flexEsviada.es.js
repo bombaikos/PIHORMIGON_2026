@@ -18,6 +18,7 @@ export default {
   'fce.f.contorno': 'Se gira la dirección de la fibra más comprimida; para cada una, estado último (máxima curvatura con plano admisible que equilibra N<sub>Ed</sub>) y esfuerzos integrados en la sección entera: M<sub>x</sub> = ∫σ·(y<sub>G</sub> − y)·dA, M<sub>y</sub> = ∫σ·(x − x<sub>G</sub>)·dA',
   'fce.f.ref': (x, y) => `Momentos respecto al c.d.g. del hormigón bruto (x = ${x}, y = ${y} desde la esquina superior izquierda).`,
   'fce.f.alfa': 'β: ángulo de la recta neutra con la horizontal, entre −90° y 90° (0° = eje neutro horizontal)',
+  'fce.sinPuntos': 'Sin esfuerzos', 'fce.puntosFuera': (k, n) => `${k} de ${n} fuera del diagrama`,
   'fce.puntos': 'Esfuerzos', 'fce.tabla': 'Esfuerzos y coeficiente de seguridad',
   'fce.contornos': (n) => `${n} puntos`,
   'fce.infoMx': 'Mx: momento respecto al eje horizontal de la sección. Positivo si comprime la cara superior.', 'fce.infoMy': 'My: momento respecto al eje vertical de la sección. Positivo si comprime la cara derecha.',

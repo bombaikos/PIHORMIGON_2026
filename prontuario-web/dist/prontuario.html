@@ -5383,6 +5383,8 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     "fce.f.contorno": "Se gira la direcci\xF3n de la fibra m\xE1s comprimida; para cada una, estado \xFAltimo (m\xE1xima curvatura con plano admisible que equilibra N<sub>Ed</sub>) y esfuerzos integrados en la secci\xF3n entera: M<sub>x</sub> = \u222B\u03C3\xB7(y<sub>G</sub> \u2212 y)\xB7dA, M<sub>y</sub> = \u222B\u03C3\xB7(x \u2212 x<sub>G</sub>)\xB7dA",
     "fce.f.ref": (x, y) => `Momentos respecto al c.d.g. del hormig\xF3n bruto (x = ${x}, y = ${y} desde la esquina superior izquierda).`,
     "fce.f.alfa": "\u03B2: \xE1ngulo de la recta neutra con la horizontal, entre \u221290\xB0 y 90\xB0 (0\xB0 = eje neutro horizontal)",
+    "fce.sinPuntos": "Sin esfuerzos",
+    "fce.puntosFuera": (k, n) => `${k} de ${n} fuera del diagrama`,
     "fce.puntos": "Esfuerzos",
     "fce.tabla": "Esfuerzos y coeficiente de seguridad",
     "fce.contornos": (n) => `${n} puntos`,
@@ -5426,6 +5428,8 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     "fce.f.contorno": "The direction of the most compressed fibre is rotated; for each one, ultimate state (maximum curvature with an admissible plane balancing N<sub>Ed</sub>) and stresses integrated over the whole section: M<sub>x</sub> = \u222B\u03C3\xB7(y<sub>G</sub> \u2212 y)\xB7dA, M<sub>y</sub> = \u222B\u03C3\xB7(x \u2212 x<sub>G</sub>)\xB7dA",
     "fce.f.ref": (x, y) => `Moments about the centroid of the gross concrete (x = ${x}, y = ${y} from the top-left corner).`,
     "fce.f.alfa": "\u03B2: angle of the neutral line with the horizontal, between \u221290\xB0 and 90\xB0 (0\xB0 = horizontal neutral axis)",
+    "fce.sinPuntos": "No actions",
+    "fce.puntosFuera": (k, n) => `${k} of ${n} outside the diagram`,
     "fce.puntos": "Actions",
     "fce.tabla": "Actions and safety factor",
     "fce.contornos": (n) => `${n} points`,
@@ -12827,7 +12831,10 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     if (!s) return;
     const c = calculo2(p, s);
     const { m, ps } = c;
-    if (est6.modo === "diagrama") return res.append(panelDiagrama2(ctx2, { s, c }));
+    if (est6.modo === "diagrama") {
+      res.append(veredictoDiagrama(c));
+      return res.append(panelDiagrama2(ctx2, { s, c }));
+    }
     if (!ps.length) throw new Error(t("fce.sinEsfuerzos"));
     const gam = ps.map((x) => {
       const r = razonMxMy(m, x.N, x.Mx, x.My);
@@ -12875,6 +12882,23 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     if (gam.some((x) => x.subeM)) res.append(aviso(t("fce.subeEmin", est6.dirEmin === "y" ? t("fce.dirY") : t("fce.dirX"), fmt(emin2[est6.dirEmin] * 1e3, 0)), "info"));
     if (gam.some((x) => x.N > c.lim.Ncomp + 1e-9 || x.N < c.lim.Ntrac - 1e-9)) res.append(aviso(t("fce.fueraAxil", `${q(c.lim.Ntrac, "N")} \u2026 ${q(c.lim.Ncomp, "N")}`)));
     return resultadoUnico2(ctx2, res, { s, c, gam: gam[0], gmin, dim });
+  }
+  function veredictoDiagrama(c) {
+    const N = Math.min(Math.max(est6.Ndiag, Math.ceil(c.lim.Ntrac)), Math.floor(c.lim.Ncomp) - 1);
+    const gs = est6.puntos.map((f) => [nv2(f[0]), nv2(f[1])]).filter(([a, b]) => Number.isFinite(a) && Number.isFinite(b)).map(([Mx, My]) => coeficienteMxMy(c.m, N, Mx, My));
+    const etq = `${sub20("N", "")} = ${fmt(N, MAG.N.d)} ${MAG.N.ud}`;
+    if (!gs.length) return veredicto("atencion", t("fce.sinPuntos"), "\u03B3 = |OQ|/|OP|", "\u2014", etq);
+    const gmin = Math.min(...gs);
+    const fuera = gs.filter((g) => g < 1 - 1e-6).length;
+    const ok = fuera === 0;
+    return veredicto(
+      ok ? "cumple" : "nocumple",
+      ok ? t("cumple") : t("noCumple"),
+      "\u03B3 = |OQ|/|OP|",
+      sigla2(gmin),
+      `${etq} \xB7 ${t("fce.puntosFuera", fuera, gs.length)}`,
+      Math.min(1 / Math.max(gmin, 1e-9) / 1.25, 1)
+    );
   }
   function graficoMxMy(ctx2, c, gam, s) {
     const axiles = [];
