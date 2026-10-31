@@ -1,6 +1,6 @@
 # Módulo ELS ▸ Estado tensional: decisiones (31/10/2026)
 
-Código: `src/core/estadoTensional.js` (motor), tests en `tests/estadoTensional.test.js`. Maqueta de la pantalla: `analisis/maqueta/estado-tensional.html`. La vista y el menú están **pendientes** (rama `els-estado-tensional`).
+Código: `src/core/estadoTensional.js` (motor), tests en `tests/estadoTensional.test.js`. Maqueta de la pantalla: `analisis/maqueta/estado-tensional.html`. Vista: `src/ui/vistas/estadoTensional.js` (rama `els-estado-tensional-vista`; menú ELS, primera entrada), textos en `src/i18n/estadoTensional.*.js`.
 
 ## Alcance (Pepiño)
 - Solo calcula; no comprueba límites. Motor general (contornos con huecos, barras y franjas); la elección de sección es la de siempre (todos los tipos).
@@ -26,3 +26,8 @@ Código: `src/core/estadoTensional.js` (motor), tests en `tests/estadoTensional.
 - Parámetros de fctm: la vista debe pasar `fctm` de la norma (`normaMat(...).fctm(fck)`).
 - Aviso `eps-cu`: ε_sup por encima de 3,5 ‰·(1+φ) (fuera de servicio).
 - Si se quiere restar el hueco de las barras comprimidas en el hormigón (n − 1): hoy no se descuenta, como en el motor de rotura.
+
+## Vista (31/10)
+- Datos: desplegable de sección (todos los tipos), cápsula de modo, campos del modo, γC, αcc, φ, casilla «Ley lineal (Ecm)» y Ec,eff / n derivados. Al cambiar de modo se conserva el estado.
+- Resultados: pastilla con el nombre de la sección, σc máx. y «Sección fisurada / sin fisurar» (pardo / neutro); avisos pardos (PR, ley lineal, ε_sup por encima de εcu); dibujo con regletas al 80 %; tablas de los tres modos, fibras extremas y armadura (con «Copiar tabla» si hay más de 4 barras y scroll interno).
+- x = ∞ se escribe como 100 000 mm o más; la regleta de x es no lineal y acaba en ∞.
