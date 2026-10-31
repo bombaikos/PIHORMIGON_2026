@@ -526,7 +526,7 @@ table.rejilla tr.foco td { background: var(--acento-suave); }
 .graf-tabla th.s1 { color: var(--acento); text-align: center; }
 .graf-tabla th.s2 { color: var(--serie-v); text-align: center; }
 .graf-tabla td { text-align: right; padding: 2px 8px; border-bottom: 1px solid color-mix(in oklch, var(--linea) 60%, transparent); }
-.graf-modo { display: flex; gap: 4px; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+.graf-modo { display: flex; gap: 4px; justify-content: center; flex-shrink: 0; margin-top: var(--e3); }
 .graf-modo .seg button { min-height: 22px; padding: 1px 12px; }
 .graf .cruz { stroke: var(--tinta-3); stroke-width: 1; stroke-dasharray: 2 3; }
 .graf .zoom { fill: var(--acento-suave); fill-opacity: .5; stroke: var(--acento); stroke-width: 1; }
@@ -882,7 +882,7 @@ details.an-ce { margin-top: var(--e2); }
 
 /* Flexión compuesta recta, modo Diagrama: todo a la vista (diagrama, nota de resultados, sección pequeña y tabla) */
 .fcr-diag { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--e4); flex: 1; min-height: 0; }
-@media (min-width: 1100px) and (min-height: 600px) { .fcr-diag { grid-template-columns: minmax(0, 1fr) minmax(220px, 300px); } }
+@media (min-width: 1100px) and (min-height: 600px) { .fcr-diag { grid-template-columns: minmax(0, 1fr) minmax(210px, 250px); } }
 .fcr-graf { display: flex; flex-direction: column; gap: var(--e2); min-width: 0; min-height: 0; }
 .fcr-graf > .lienzo { flex: 1; min-height: 0; }
 .nota-diag { margin: 0; font-size: var(--t-s); color: var(--tinta-2); line-height: 1.5; flex-shrink: 0; }
@@ -1127,6 +1127,12 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
 .fce-calculando { display: flex; align-items: center; justify-content: center; }
 .fce-calculando p { margin: 0; padding: 14px 24px; font-size: calc(18px + var(--mas)); color: var(--tinta-2); border: 1px solid var(--linea); border-radius: var(--r-campo); background: var(--hundido); }
 .campo.no-aplica select:disabled { background: var(--hundido); color: var(--tinta-3); cursor: not-allowed; }
+
+/* Flexión compuesta recta: tabla de esfuerzos con desplazamiento horizontal y filas fuera del diagrama en rojo */
+.fcr-tabla { overflow-x: auto; max-width: 100%; }
+.fcr-tabla table { width: max-content; min-width: 100%; }
+.fcr-tabla td, .fcr-tabla th { white-space: nowrap; }
+.fcr-tabla tr.fuera td { color: var(--no); font-weight: 600; }
 </style>
 
 <header class="barra">
@@ -12228,7 +12234,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     };
     poner(
       form,
-      segmentado({ ancho: true, etiqueta: t("flex.modo"), opciones: [["comprobar", t("comprobar")], ["dimensionar", t("dimensionar")], ["diagrama", t("fcr.modoDiagrama")]], valor: est5.modo, onCambio: (m) => {
+      segmentado({ ancho: true, capsula: true, etiqueta: t("flex.modo"), opciones: [["comprobar", t("flex.v.comprobar")], ["dimensionar", t("flex.v.dimensionar")], ["diagrama", t("fcr.modoDiagrama")]], valor: est5.modo, onCambio: (m) => {
         est5.modo = m;
         ctx2.pintar();
       } }),
@@ -12273,12 +12279,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     const { d, dH, geo } = c;
     const ps = pares();
     if (!ps.length) throw new Error(t("fcr.sinEsfuerzos"));
-    const plano3 = (x) => {
-      const Q = comprobarNM(d, x.N, x.M).Q;
-      const e2 = Q ? estadoUltimo(c.secD, -Q[0], { signo: 1, yref: d.yref }) : null;
-      return e2?.converge ? e2 : null;
-    };
-    const gam = ps.map((x) => ({ ...x, g: coeficienteNM(d, x.N, x.M), e: est5.modo === "diagrama" ? plano3(x) : null }));
+    const gam = ps.map((x) => ({ ...x, g: coeficienteNM(d, x.N, x.M) }));
     const gmin = Math.min(...gam.map((x) => x.g));
     const dim = est5.modo === "dimensionar";
     const unico = est5.modo !== "diagrama";
@@ -12340,7 +12341,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       "article",
       { class: "panel tarjeta" },
       h("h2", {}, `${t("fcr.diagrama")} \xB7 ${s.nombre}${c.phi0 ? ` \xB7 \xF8${fmt(est5.fi ?? c.phi0, 0)}` : ""}`),
-      h("div", { class: "fcr-diag fcr-ancho" }, h("div", { class: "fcr-graf" }, graficoNM(ctx2, d, dH, gam, s), nota), lado)
+      h("div", { class: "fcr-diag" }, h("div", { class: "fcr-graf" }, graficoNM(ctx2, d, dH, gam, s), nota), lado)
     ));
   }
   function dibujoSeccionPeq(geo, s) {
@@ -12348,24 +12349,21 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     const x0 = 46;
     const y0 = 10;
     const { svg, hp, bp } = capasSeccion(geo, s, { e: e2, x0, y0, x: null, id: "fcrs", cotasCapas: false });
-    return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${x0 + bp + 30} ${y0 + hp + 32}"${topeEscala(x0 + bp + 30, y0 + hp + 32)} role="img" aria-label="${t("g.seccion")}">${DEFS}${svg}</svg>`;
+    return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${x0 + bp + 30} ${y0 + hp + 46}"${topeEscala(x0 + bp + 30, y0 + hp + 46)} role="img" aria-label="${t("g.seccion")}">${DEFS}${svg}</svg>`;
   }
   function tablaEsfuerzos(gam) {
-    const num4 = (v2, dd) => Number.isFinite(v2) ? fmt(v2, dd) : "\u2014";
-    const filas = gam.map((x) => [
-      String(x.i + 1),
-      fmt(x.N, MAG.N.d),
-      fmt(x.M, MAG.M.d) + (x.subeM ? "*" : ""),
-      x.N !== 0 ? fmt(x.M / x.N * 1e3, MAG.long.d) : "\u221E",
-      sigla(x.g),
-      x.e && Number.isFinite(x.e.x) && x.e.x > 0 ? fmt(x.e.x * 1e3, 0) : "\u2014",
-      x.e ? num4(x.e.kappa * 1e3, 2) : "\u2014",
-      x.e ? num4(-x.e.epsSup * 1e3, 2) : "\u2014",
-      x.e ? num4(-x.e.epsInf * 1e3, 2) : "\u2014",
-      `<span class="${x.g >= 1 - 1e-6 ? "ok" : "no"}">${x.g >= 1 - 1e-6 ? t("fcr.dentroSello") : t("fcr.fueraSello")}</span>`
-    ]);
-    const cab = ["#", "N<sub>Ed</sub> [kN]", "M<sub>Ed</sub> [kN\xB7m]", "e [mm]", "\u03B3", "x [mm]", "\u03BA [\u2030/m]", "\u03B5<sub>sup</sub> [\u2030]", "\u03B5<sub>inf</sub> [\u2030]", ""];
-    return h("div", {}, h("table", { class: "tabla", html: `<thead><tr>${cab.map((x) => `<th>${x}</th>`).join("")}</tr></thead><tbody>${filas.map((f) => `<tr>${f.map((x) => `<td>${x}</td>`).join("")}</tr>`).join("")}</tbody>` }));
+    const filas = gam.map((x) => [String(x.i + 1), fmt(x.N, MAG.N.d), fmt(x.M, MAG.M.d) + (x.subeM ? "*" : ""), sigla(x.g)]);
+    const cab = ["#", "N<sub>Ed</sub> [kN]", "M<sub>Ed</sub> [kN\xB7m]", "\u03B3"];
+    return h("div", { class: "fcr-tabla" }, h("table", { class: "tabla", html: `<thead><tr>${cab.map((x) => `<th>${x}</th>`).join("")}</tr></thead><tbody>${filas.map((f, i) => `<tr${gam[i].g >= 1 - 1e-6 ? "" : ' class="fuera"'}>${f.map((x) => `<td>${x}</td>`).join("")}</tr>`).join("")}</tbody>` }));
+  }
+  function planoContorno(rama) {
+    const pts = [...rama].reverse();
+    const f = (v2, dd = 2) => Number.isFinite(v2) ? fmt(v2, dd) : "\u2014";
+    return {
+      cab: ["x [mm]", "\u03BA [\u2030/m]", "\u03B5<sub>sup</sub> [\u2030]", "\u03B5<sub>inf</sub> [\u2030]"],
+      plano: ["x [mm]", "\u03BA [\u2030/m]", "\u03B5sup [\u2030]", "\u03B5inf [\u2030]"],
+      filas: () => pts.map((v2) => [f(v2.x * 1e3, 0), f(v2.kappa * 1e3), f(-v2.epsSup * 1e3), f(-v2.epsInf * 1e3)])
+    };
   }
   function graficoNM(ctx2, d, dH, gam, s) {
     const eMm = fmt(emin * 1e3, 0);
@@ -12379,6 +12377,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     return h("div", { class: "lienzo" }, grafica({
       series,
       puntos,
+      detalle: planoContorno(d.pos),
       ejeX: { titulo: `N [${MAG.N.ud}], ${t("fcr.compPos")}`, d: MAG.N.d, dt: MAG.N.d },
       ejeY: { titulo: `M [${MAG.M.ud}]`, d: MAG.M.d, dt: MAG.M.d },
       archivo: `N-M ${s.nombre}`,

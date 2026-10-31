@@ -133,7 +133,7 @@ export function datos(ctx, form) {
     return Number.isFinite(N) && Number.isFinite(M) ? sigla(coeficienteNM(c.d, N, M)) : '';
   };
   poner(form,
-    segmentado({ ancho: true, etiqueta: t('flex.modo'), opciones: [['comprobar', t('comprobar')], ['dimensionar', t('dimensionar')], ['diagrama', t('fcr.modoDiagrama')]], valor: est.modo, onCambio: (m) => { est.modo = m; ctx.pintar(); } }),
+    segmentado({ ancho: true, capsula: true, etiqueta: t('flex.modo'), opciones: [['comprobar', t('flex.v.comprobar')], ['dimensionar', t('flex.v.dimensionar')], ['diagrama', t('fcr.modoDiagrama')]], valor: est.modo, onCambio: (m) => { est.modo = m; ctx.pintar(); } }),
     est.modo !== 'diagrama' ? grupo(t('g.esfuerzo'),
       campoNum({ id: 'fr-n', etq: sub('N', 'Ed'), ref: t('fcr.compPos'), valor: est.NEd, mag: 'N', paso: 10, min: -1e6, max: 1e6, nombre: t('fcr.axil'), onCambio: (v) => { est.NEd = v; cambio(); } }),
       campoNum({ id: 'fr-m', etq: sub('M', 'Ed'), valor: est.MEd, mag: 'M', paso: 5, min: -1e6, max: 1e6, nombre: t('flex.momento'), onCambio: (v) => { est.MEd = v; cambio(); } }),
@@ -159,13 +159,7 @@ function resultadosFlexRecta(ctx, res) {
   const { d, dH, geo } = c;
   const ps = pares();
   if (!ps.length) throw new Error(t('fcr.sinEsfuerzos'));
-  // Plano de rotura de cada punto: estado último en el corte Q de su recta a excentricidad constante
-  const plano = (x) => {
-    const Q = comprobarNM(d, x.N, x.M).Q;
-    const e = Q ? estadoUltimo(c.secD, -Q[0], { signo: 1, yref: d.yref }) : null;
-    return e?.converge ? e : null;
-  };
-  const gam = ps.map((x) => ({ ...x, g: coeficienteNM(d, x.N, x.M), e: est.modo === 'diagrama' ? plano(x) : null }));
+  const gam = ps.map((x) => ({ ...x, g: coeficienteNM(d, x.N, x.M) }));
   const gmin = Math.min(...gam.map((x) => x.g));
   const dim = est.modo === 'dimensionar';
   const unico = est.modo !== 'diagrama';
@@ -205,7 +199,7 @@ function resultadosFlexRecta(ctx, res) {
     h('div', { class: 'fcr-sec', html: dibujoSeccionPeq(geo, s) }),
     tablaEsfuerzos(gam));
   res.append(h('article', { class: 'panel tarjeta' }, h('h2', {}, `${t('fcr.diagrama')} · ${s.nombre}${c.phi0 ? ` · ø${fmt(est.fi ?? c.phi0, 0)}` : ''}`),
-    h('div', { class: 'fcr-diag fcr-ancho' }, h('div', { class: 'fcr-graf' }, graficoNM(ctx, d, dH, gam, s), nota), lado)));
+    h('div', { class: 'fcr-diag' }, h('div', { class: 'fcr-graf' }, graficoNM(ctx, d, dH, gam, s), nota), lado)));
 }
 
 /** Sección pequeña, solo contorno y barras con sus cotas. */
@@ -214,19 +208,28 @@ function dibujoSeccionPeq(geo, s) {
   const x0 = 46;
   const y0 = 10;
   const { svg, hp, bp } = capasSeccion(geo, s, { e, x0, y0, x: null, id: 'fcrs', cotasCapas: false });
-  return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${x0 + bp + 30} ${y0 + hp + 32}"${topeEscala(x0 + bp + 30, y0 + hp + 32)} role="img" aria-label="${t('g.seccion')}">${DEFS}${svg}</svg>`;
+  return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${x0 + bp + 30} ${y0 + hp + 46}"${topeEscala(x0 + bp + 30, y0 + hp + 46)} role="img" aria-label="${t('g.seccion')}">${DEFS}${svg}</svg>`;
 }
 
 function tablaEsfuerzos(gam) {
-  const num = (v, dd) => (Number.isFinite(v) ? fmt(v, dd) : '—');
-  const filas = gam.map((x) => [String(x.i + 1), fmt(x.N, MAG.N.d), fmt(x.M, MAG.M.d) + (x.subeM ? '*' : ''), x.N !== 0 ? fmt((x.M / x.N) * 1000, MAG.long.d) : '∞', sigla(x.g),
-    x.e && Number.isFinite(x.e.x) && x.e.x > 0 ? fmt(x.e.x * 1000, 0) : '—', x.e ? num(x.e.kappa * 1000, 2) : '—', x.e ? num(-x.e.epsSup * 1000, 2) : '—', x.e ? num(-x.e.epsInf * 1000, 2) : '—',
-    `<span class="${x.g >= 1 - 1e-6 ? 'ok' : 'no'}">${x.g >= 1 - 1e-6 ? t('fcr.dentroSello') : t('fcr.fueraSello')}</span>`]);
-  const cab = ['#', 'N<sub>Ed</sub> [kN]', 'M<sub>Ed</sub> [kN·m]', 'e [mm]', 'γ', 'x [mm]', 'κ [‰/m]', 'ε<sub>sup</sub> [‰]', 'ε<sub>inf</sub> [‰]', ''];
-  return h('div', {}, h('table', { class: 'tabla', html: `<thead><tr>${cab.map((x) => `<th>${x}</th>`).join('')}</tr></thead><tbody>${filas.map((f) => `<tr>${f.map((x) => `<td>${x}</td>`).join('')}</tr>`).join('')}</tbody>` }));
+  const filas = gam.map((x) => [String(x.i + 1), fmt(x.N, MAG.N.d), fmt(x.M, MAG.M.d) + (x.subeM ? '*' : ''), sigla(x.g)]);
+  const cab = ['#', 'N<sub>Ed</sub> [kN]', 'M<sub>Ed</sub> [kN·m]', 'γ'];
+  // Fila entera en rojo si el punto queda fuera del diagrama
+  return h('div', { class: 'fcr-tabla' }, h('table', { class: 'tabla', html: `<thead><tr>${cab.map((x) => `<th>${x}</th>`).join('')}</tr></thead><tbody>${filas.map((f, i) => `<tr${gam[i].g >= 1 - 1e-6 ? '' : ' class="fuera"'}>${f.map((x) => `<td>${x}</td>`).join('')}</tr>`).join('')}</tbody>` }));
 }
 
 /** Contorno N-M (x = N, y = M) con la envolvente del hormigón solo y los esfuerzos: verde dentro, rojo fuera. */
+/** Columnas de la tabla del diagrama: estado de rotura (x, κ, ε sup, ε inf) de cada punto del contorno, en el orden de la curva. */
+function planoContorno(rama) {
+  const pts = [...rama].reverse();
+  const f = (v, dd = 2) => (Number.isFinite(v) ? fmt(v, dd) : '—');
+  return {
+    cab: ['x [mm]', 'κ [‰/m]', 'ε<sub>sup</sub> [‰]', 'ε<sub>inf</sub> [‰]'],
+    plano: ['x [mm]', 'κ [‰/m]', 'εsup [‰]', 'εinf [‰]'],
+    filas: () => pts.map((v) => [f(v.x * 1000, 0), f(v.kappa * 1000), f(-v.epsSup * 1000), f(-v.epsInf * 1000)]),
+  };
+}
+
 function graficoNM(ctx, d, dH, gam, s) {
   const eMm = fmt(emin * 1000, 0);
   const xy = (rama) => [...rama].reverse().map((v) => [v.N, v.M]);
@@ -237,7 +240,7 @@ function graficoNM(ctx, d, dH, gam, s) {
   ];
   const puntos = gam.map((x) => ({ x: x.N, y: x.M, etq: String(x.i + 1), marca: x.g >= 1 - 1e-6 ? 'ok' : 'no' }));
   return h('div', { class: 'lienzo' }, grafica({
-    series, puntos,
+    series, puntos, detalle: planoContorno(d.pos),
     ejeX: { titulo: `N [${MAG.N.ud}], ${t('fcr.compPos')}`, d: MAG.N.d, dt: MAG.N.d },
     ejeY: { titulo: `M [${MAG.M.ud}]`, d: MAG.M.d, dt: MAG.M.d },
     archivo: `N-M ${s.nombre}`,
