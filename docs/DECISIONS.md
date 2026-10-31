@@ -62,3 +62,6 @@ Resumen de lo decidido por José Luis (fechas de 2026). Cada módulo tiene su de
 ## Repositorios
 - `bombaikos/pihormigon_2026`: código (fuente de verdad). `bombaikos/guia-de-diseno`: guía común de diseño (nacida de VLASTA; guía de reglas, no diario). Bitbucket `ines_dev/pih_2026`: copia automática, solo lectura para los hilos.
 - Fuentes del Prontuario 3.1 (Delphi) en el equipo de José Luis: `C:\Users\jlmm\OneDrive - Ines Ingenieros Consultores\01_PROYECTOS\00_IA\26_PIH_2026\FUENTES_3_1`.
+
+## Flexión compuesta esviada (Pepiño, 31/10)
+- Primero igualar el 3.1: Rec pilar (ø como dato de cálculo) y genéricas; diagrama Mx–My a axil constante con el axil en una regleta; **tracción en rosa** (`--rosa`), compresión en azul. Detalle en `analisis/flexion-esviada-decisiones.md`.

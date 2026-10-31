@@ -49,12 +49,13 @@ function interpolar(xy, x) {
  * @param {{titulo:string, d?:number, max?:number}} o.ejeY  max: fija el extremo superior de la vista completa
  * @param {boolean} [o.sinTabla]  sin el selector Gráfico/Tabla (la tabla numérica va aparte)
  * @param {{x?:number, y?:number}} [o.rejillaSec]  rejilla secundaria (sin números) cada x e y; solo si es más fina que la principal
+ * @param {boolean} [o.escalaIgual]  la misma escala en x e y (contornos Mx–My): el eje que sobra se amplía en torno a su centro
  * @param {boolean} [o.invertirY]  el eje y crece hacia abajo (momentos flectores: positivos debajo)
  * @param {string} [o.archivo]  nombre base al guardar
  * @param {(texto:string)=>void} [o.avisar]
  * @returns {HTMLElement}
  */
-export function grafica({ series, puntos = [], ejeX, ejeY, archivo = 'grafica', rejillaSec = null, invertirY = false, sinTabla = false, avisar = () => {} }) {
+export function grafica({ series, puntos = [], ejeX, ejeY, archivo = 'grafica', rejillaSec = null, invertirY = false, sinTabla = false, escalaIgual = false, avisar = () => {} }) {
   // Guía § 1: fuerzas [kN], momentos [kN·m] y áreas de armadura [mm²] sin decimales, también en la cruz y en la tabla, diga lo que diga el módulo
   const sinDec = (e) => (/\((kN|kN·m|mm²)\)/.test(plano(e.titulo)) ? { ...e, d: 0, dt: 0 } : e);
   ejeX = sinDec(ejeX);
@@ -144,6 +145,7 @@ export function grafica({ series, puntos = [], ejeX, ejeY, archivo = 'grafica', 
   const [xa, xb] = ext(0);
   const [ya, yb] = ext(1);
   const completa = { x0: xa, x1: xb, y0: ya, y1: yb };
+  const completaBase = { ...completa };
   let vista = { ...completa };
   let W = 0;
   let H = 0;
@@ -157,10 +159,22 @@ export function grafica({ series, puntos = [], ejeX, ejeY, archivo = 'grafica', 
   const deY = (py) => vista.y0 + ((invertirY ? py - M.arr : H - M.aba - py) / (H - M.arr - M.aba)) * (vista.y1 - vista.y0);
 
   function dibujar() {
-    bTodo.disabled = ['x0', 'x1', 'y0', 'y1'].every((k) => vista[k] === completa[k]);
     W = caja.clientWidth;
     H = svg.clientHeight || caja.clientHeight;
     if (!(W > 0 && H > 0)) return;
+    if (escalaIgual) {
+      const pw0 = W - M.izq - M.der;
+      const ph0 = H - M.arr - M.aba;
+      const igualar = (v) => {
+        const u = Math.max((v.x1 - v.x0) / pw0, (v.y1 - v.y0) / ph0);
+        const cx = (v.x0 + v.x1) / 2;
+        const cy = (v.y0 + v.y1) / 2;
+        return { x0: cx - (u * pw0) / 2, x1: cx + (u * pw0) / 2, y0: cy - (u * ph0) / 2, y1: cy + (u * ph0) / 2 };
+      };
+      Object.assign(completa, igualar(completaBase));
+      vista = igualar(vista);
+    }
+    bTodo.disabled = ['x0', 'x1', 'y0', 'y1'].every((k) => Math.abs(vista[k] - completa[k]) <= 1e-9 * (Math.abs(completa.x1 - completa.x0) + Math.abs(completa.y1 - completa.y0)));
     svg.setAttribute('width', W);
     svg.setAttribute('height', H);
     svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
