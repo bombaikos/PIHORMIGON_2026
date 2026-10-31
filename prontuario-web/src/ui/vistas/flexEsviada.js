@@ -238,22 +238,32 @@ function tituloGraf(c, s, { N, Mx, My }) {
   return `${t('fce.contorno')} · ${partes.join(' · ')}`;
 }
 
-/** Tabla de puntos con su γ y botón «Copiar tabla» (guía: más de 4 filas). */
+/** Tabla de puntos con el estado de rotura de cada uno y botón «Copiar tabla» (guía: más de 4 filas).
+ *  Las filas fuera del diagrama van en rojo. */
 function tablaPuntos(ctx, pts) {
   const dec = decimalAlCopiar();
-  const cab = ['#', 'Mx,Ed [kN·m]', 'My,Ed [kN·m]', 'γ [-]'];
-  const num = (x, d) => fmt(x, d).replace('−', '-').replace('.', dec);
-  const filas = pts.map((x) => [String(x.i + 1), num(x.Mx, MAG.M.d), num(x.My, MAG.M.d), x.g === Infinity ? '∞' : num(x.g, 2)]);
+  const cab = [['#', '#'], [sub('N', 'Ed') + ' [kN]', 'NEd [kN]'], [sub('M', 'x,Ed') + ' [kN·m]', 'Mx,Ed [kN·m]'], [sub('M', 'y,Ed') + ' [kN·m]', 'My,Ed [kN·m]'],
+    ['β [°]', 'β [°]'], ['x [mm]', 'x [mm]'], ['κ [‰/m]', 'κ [‰/m]'], [sub('ε', 'sup') + ' [‰]', 'εsup [‰]'], [sub('ε', 'inf') + ' [‰]', 'εinf [‰]']];
+  const fila = (x) => {
+    const e = x.e;
+    const ok = e && Number.isFinite(e.x);
+    return [String(x.i + 1), fmt(x.N, MAG.N.d), fmt(x.Mx, MAG.M.d), fmt(x.My, MAG.M.d),
+      ok ? fmt(alfa(e.theta), 1) : '—', ok ? fmt(e.x * 1000, 0) : '—', ok ? fmt(e.kappa * 1000, 2) : '—',
+      ok ? fmt(-e.epsSup * 1000, 2) : '—', ok && Number.isFinite(e.epsInf) ? fmt(-e.epsInf * 1000, 2) : '—'];
+  };
+  const filas = pts.map(fila);
   const copiar = async () => {
-    try { await navigator.clipboard.writeText([cab.join('\t'), ...filas.map((f) => f.join('\t'))].join('\r\n')); ctx.avisar(t('graf.tablaCopiada')); } catch { ctx.avisar(t('graf.error')); }
+    try {
+      const txt = [cab.map((k) => k[1]).join('\t'), ...filas.map((f) => f.map((v) => v.replace('−', '-').replace('.', dec)).join('\t'))].join('\r\n');
+      await navigator.clipboard.writeText(txt); ctx.avisar(t('graf.tablaCopiada'));
+    } catch { ctx.avisar(t('graf.error')); }
   };
   return h('div', { class: 'fce-tabla' },
     h('button', { type: 'button', class: 'tecla', title: t('graf.copiarTablaTit'), onclick: copiar }, t('fce.copiarTabla')),
-    tabla(pts.map((x) => {
-      const r = (v) => (x.g >= 1 - 1e-6 ? v : `<span class="fuera">${v}</span>`); // fuera del diagrama: la fila va en rojo
-      return [r(String(x.i + 1)), r(fmt(x.Mx, MAG.M.d)), r(fmt(x.My, MAG.M.d)), r(sigla(x.g))];
-    }),
-    { cabecera: ['#', `${sub('M', 'x,Ed')} [kN·m]`, `${sub('M', 'y,Ed')} [kN·m]`, 'γ [-]'], clase: 'rejilla' }));
+    tabla(filas.map((f, k) => {
+      const dentro = pts[k].g >= 1 - 1e-6;
+      return f.map((v) => (dentro ? v : `<span class="fuera">${v}</span>`));
+    }), { cabecera: cab.map((k) => k[0]), clase: 'rejilla' }));
 }
 
 /** Momentos mayores del contorno entre todos los axiles (muestreo): los ejes del diagrama no se mueven con la regleta. */
@@ -285,7 +295,10 @@ function panelDiagrama(ctx, { s, c }) {
   const dibujar = (N, n) => {
     const cont = contornoMxMy(c.m, N, { n });
     const pts = est.puntos.map((f, i) => ({ i, Mx: nv(f[0]), My: nv(f[1]) })).filter((x) => Number.isFinite(x.Mx) && Number.isFinite(x.My))
-      .map((x) => ({ ...x, g: coeficienteMxMy(c.m, N, x.Mx, x.My) }));
+      .map((x) => {
+        const r = razonMxMy(c.m, N, x.Mx, x.My);
+        return { ...x, N, e: r.e, g: Number.isFinite(r.ratio) ? (r.ratio > 0 ? 1 / r.ratio : Infinity) : 0 };
+      });
     const trac = N < 0;
     const xy = cont.length ? [...cont, cont[0]].map((v) => [v.My, v.Mx]) : [];
     const g = h('div', { class: 'lienzo' }, grafica({
@@ -318,7 +331,7 @@ function panelDiagrama(ctx, { s, c }) {
     h('div', { class: 'rg-num' }, h('span', { style: 'left:0' }, fmt(lo, 0)), h('span', { style: `left:${z}%;transform:translateX(-50%)` }, '0'), h('span', { style: 'right:0' }, fmt(hi, 0))), h('span', { class: 'rg-v' }));
   caja.append(rg, escala);
   return h('article', { class: 'panel tarjeta' }, titulo,
-    h('div', { class: 'fcr-diag' }, caja, lado));
+    h('div', { class: 'fcr-diag fcr-ancho' }, caja, lado));
 }
 
 /** Sección pequeña, solo contorno y barras con sus cotas. */
