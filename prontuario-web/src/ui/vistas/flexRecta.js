@@ -195,11 +195,14 @@ function resultadosFlexRecta(ctx, res) {
     `${sub('N', 'Rd')} <b>${q(d.Ncomp, 'N')}</b>`, `${sub('N', 'Rd,t')} <b>${q(d.Ntrac, 'N')}</b>`,
     `${sub('M', 'Rd,máx')} <b>${q(mp.M, 'M')}</b> (N = ${fmt(mp.N, MAG.N.d)})`, `${sub('N', 'Rd,hormigón')} <b>${q(dH.Ncomp, 'N')}</b>`,
     ...(c.phi0 ? [`ø <b>${fmt(est.fi ?? c.phi0, 0)}</b> mm · ${sub('A', 's')} <b>${q(c.As0 * c.k, 'As')}</b> (${sub('A', 's,mín')} ${q(c.Amin, 'As')})`] : [])].join(' · ') });
-  const lado = h('aside', { class: 'fcr-lado' },
+  // Estándar de tres tarjetas (datos | gráfico | lateral), como Flexión esviada
+  const lado = h('article', { class: 'panel tarjeta fcr-lado' },
     h('div', { class: 'fcr-sec', html: dibujoSeccionPeq(geo, s) }),
     tablaEsfuerzos(gam));
-  res.append(h('article', { class: 'panel tarjeta' }, h('h2', {}, `${t('fcr.diagrama')} · ${s.nombre}${c.phi0 ? ` · ø${fmt(est.fi ?? c.phi0, 0)}` : ''}`),
-    h('div', { class: 'fcr-diag' }, h('div', { class: 'fcr-graf' }, graficoNM(ctx, d, dH, gam, s), nota), lado)));
+  res.append(h('div', { class: 'cuerpo dib-ancho fcr-diagrama' },
+    h('article', { class: 'panel tarjeta' }, h('h2', {}, `${t('fcr.diagrama')} · ${s.nombre}${c.phi0 ? ` · ø${fmt(est.fi ?? c.phi0, 0)}` : ''}`),
+      h('div', { class: 'fcr-graf' }, graficoNM(ctx, d, dH, gam, s), nota)),
+    lado));
 }
 
 /** Sección pequeña, solo contorno y barras con sus cotas. */
