@@ -1160,3 +1160,4 @@ tr.et-act td { font-weight: 650; }
 .dib .et-fr.c { fill: var(--acento); }
 .dib .et-fr.t { fill: var(--traccion); }
 .dib .et-pt { fill: var(--acero); }
+.et-nota { margin: 0; color: var(--tinta-3); font-size: var(--t-s); }

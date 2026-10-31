@@ -233,21 +233,23 @@ function dibujo(c, r) {
   } else if (r.beta === null || !Number.isFinite(r.x)) {
     out.push(`<text class="fuerte" x="${x0 + 40}" y="${(yTop + yBot) / 2}">x = ∞</text>`);
   }
-  // Armadura con su tensión
-    for (const b of r.barras) {
+  // Armadura con su tensión (con más de 10 puntos, solo se escriben los extremos de cada signo)
+  const ver = visibles(filasArmadura(r));
+  for (const [ib, b] of r.barras.entries()) {
     const q = T([b.x, b.y]);
     const rr = Math.max(3.5, S * Math.sqrt(b.A / Math.PI));
     out.push(`<circle class="et-ba ${b.sigma >= 0 ? 'c' : 't'}" cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="${rr.toFixed(1)}"/>`);
-    if (r.barras.length <= 16) out.push(`<text x="${q[0].toFixed(1)}" y="${(q[1] + rr + 12).toFixed(1)}" text-anchor="middle">${fmt(b.sigma, 0)}</text>`);
+    if (ver.has(ib)) out.push(`<text x="${q[0].toFixed(1)}" y="${(q[1] + rr + 12).toFixed(1)}" text-anchor="middle">${fmt(b.sigma, 0)}</text>`);
   }
   // Franjas (armadura por área): rectángulo con su espesor equivalente y la tensión en sus dos extremos
-  for (const f of r.franjas) {
+  for (const [jf, f] of r.franjas.entries()) {
     const th = Math.max(5, (S * f.A) / (f.x2 - f.x1) / 2) / S; // espesor equivalente [m], con un mínimo visible
     const quad = [[f.x1, f.y - th / 2], [f.x2, f.y - th / 2], [f.x2, f.y + th / 2], [f.x1, f.y + th / 2]].map(T);
     out.push(`<polygon class="et-fr ${(f.s1 + f.s2) / 2 >= 0 ? 'c' : 't'}" points="${pts2(quad)}"/>`);
-    for (const [xe, se, lado] of [[f.x1, f.s1, -1], [f.x2, f.s2, 1]]) {
+    for (const [ie, [xe, se, lado]] of [[f.x1, f.s1, -1], [f.x2, f.s2, 1]].entries()) {
       const q = T([xe, f.y]);
-      out.push(`<circle class="et-pt" cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="3"/><text x="${(q[0] + lado * 8).toFixed(1)}" y="${(q[1] + 4).toFixed(1)}" text-anchor="${lado > 0 ? 'start' : 'end'}">${fmt(se, 0)}</text>`);
+      const eti = ver.has(r.barras.length + 2 * jf + ie);
+      out.push(`<circle class="et-pt" cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="3"/>${eti ? `<text x="${(q[0] + lado * 8).toFixed(1)}" y="${(q[1] + 4).toFixed(1)}" text-anchor="${lado > 0 ? 'start' : 'end'}">${fmt(se, 0)}</text>` : ''}`);
     }
   }
   // c.d.g.
@@ -301,6 +303,21 @@ function filasArmadura(r) {
   return [...b, ...f];
 }
 
+/** Con más de 10 puntos de armadura solo se muestran los extremos de cada signo: mayor y menor σ de compresión y de tracción. */
+const MAX_PUNTOS = 10;
+function visibles(todas) {
+  if (todas.length <= MAX_PUNTOS) return new Set(todas.keys());
+  const out = new Set();
+  const por = (signo) => {
+    const lista = todas.map((q, i) => [q.s, i]).filter(([v]) => (signo > 0 ? v >= 0 : v < 0));
+    if (!lista.length) return;
+    out.add(lista.reduce((a, b) => (Math.abs(b[0]) > Math.abs(a[0]) ? b : a))[1]);
+    out.add(lista.reduce((a, b) => (Math.abs(b[0]) < Math.abs(a[0]) ? b : a))[1]);
+  };
+  por(1); por(-1);
+  return out;
+}
+
 function tablaBarras(ctx, r) {
   const cab = ['#', 'x [mm]', 'y [mm]', 'ε [‰]', sub('σ', 's') + ' [MPa]'];
   const todas = filasArmadura(r);
@@ -316,10 +333,12 @@ function tablaBarras(ctx, r) {
     } catch { ctx.avisar(t('graf.error')); }
   };
   // Las tensiones extremas (mayor compresión y mayor tracción de la armadura) van en negrita, sin color
-  const marcadas = filas.map((f, i) => { if (todas[i].s === smax || todas[i].s === smin) f[4] = `<b>${f[4]}</b>`; return f; });
+  const ver = visibles(todas);
+  const marcadas = filas.map((f, i) => { if (todas[i].s === smax || todas[i].s === smin) f[4] = `<b>${f[4]}</b>`; return f; }).filter((_, i) => ver.has(i));
   return h('div', { class: 'et-barras' },
-    h('div', { class: 'et-cab-barras' }, h('h3', {}, t('est.tBarras')), filas.length > 4 ? h('button', { type: 'button', class: 'tecla', title: t('graf.copiarTablaTit'), onclick: copiar }, t('est.copiarTabla')) : null),
-    tabla(marcadas, { cabecera: cab, clase: 'rejilla' }));
+    h('div', { class: 'et-cab-barras' }, h('h3', {}, t('est.tBarras')), marcadas.length > 4 || filas.length > marcadas.length ? h('button', { type: 'button', class: 'tecla', title: t('graf.copiarTablaTit'), onclick: copiar }, t('est.copiarTabla')) : null),
+    tabla(marcadas, { cabecera: cab, clase: 'rejilla' }),
+    ver.size < filas.length ? h('p', { class: 'et-nota', html: t('est.soloExtremos', filas.length) }) : null);
 }
 
 function pastilla(c, r) {
