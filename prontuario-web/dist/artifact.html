@@ -1113,9 +1113,10 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
 .fce-tabla table.rejilla th, .fce-tabla table.rejilla td { padding-inline: 4px; }
 
 .fce-tabla .fuera { color: var(--no); font-weight: 600; }
-@media (min-width: 1100px) and (min-height: 600px) { .fcr-diag.fcr-ancho { grid-template-columns: minmax(0, 1fr) minmax(300px, 500px); } }
 .fce-tabla table.rejilla th, .fce-tabla table.rejilla td { font-size: 11px; padding-inline: 3px; }
-.fcr-ancho .fcr-lado .fcr-sec svg { max-height: min(230px, 32vh); }
+.cuerpo > .fcr-lado .fcr-sec svg { max-height: min(230px, 32vh); }
+.cuerpo > .fcr-lado { overflow: auto; }
+.cuerpo > .tarjeta > .fcr-graf { flex: 1; min-height: 0; }
 
 /* Genérica: zona del DXF más ancha, con «.dxf» grande aunque en gris; globo de la (i) con saltos de línea (31/10, José Luis) */
 .zona-dxf { width: 100%; box-sizing: border-box; padding: 9px 24px; }
@@ -13360,7 +13361,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     const nomF = sub20("M", f === "My" ? "y" : "x");
     const nomV = sub20("M", f === "My" ? "x" : "y");
     const caja = h("div", { class: "fcr-graf" });
-    const lado = h("aside", { class: "fcr-lado" });
+    const lado = h("article", { class: "panel tarjeta fcr-lado" });
     const titulo = h("h2", {});
     const dibujar = (M0, exacto) => {
       const { co, pts } = puntosNM(c, M0, exacto);
@@ -13420,7 +13421,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       h("span", { class: "rg-v" })
     );
     caja.append(rg, escala);
-    return h("article", { class: "panel tarjeta" }, titulo, h("div", { class: "fcr-diag fcr-ancho" }, caja, lado));
+    return h("div", { class: "cuerpo dib-ancho" }, h("article", { class: "panel tarjeta" }, titulo, caja), lado);
   }
   function panelDiagrama2(ctx2, { s, c }) {
     if (est6.fijo !== "N") return panelNM(ctx2, { s, c });
@@ -13429,7 +13430,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     const hi = Math.floor(lim.Ncomp) - 1;
     est6.Ndiag = Math.min(Math.max(est6.Ndiag, lo), hi);
     const caja = h("div", { class: "fcr-graf" });
-    const lado = h("aside", { class: "fcr-lado" });
+    const lado = h("article", { class: "panel tarjeta fcr-lado" });
     const titulo = h("h2", {});
     let rg = null;
     const dibujar = (N, n) => {
@@ -13504,12 +13505,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       h("span", { class: "rg-v" })
     );
     caja.append(rg, escala);
-    return h(
-      "article",
-      { class: "panel tarjeta" },
-      titulo,
-      h("div", { class: "fcr-diag fcr-ancho" }, caja, lado)
-    );
+    return h("div", { class: "cuerpo dib-ancho" }, h("article", { class: "panel tarjeta" }, titulo, caja), lado);
   }
   function dibujoSeccionPeq2(geo, s) {
     const e2 = encuadre(geo, 150, 150, { completa: true });
@@ -13633,13 +13629,13 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       ...e2 ? [["x" + info(t("fce.infoX")), Number.isFinite(e2.x) && e2.x > 0 ? qh(e2.x, "long") : "\u2014"], ["\u03B2" + info(t("fce.infoBeta")), `${fmt(alfa(e2.theta), 1)}<span class="u">${ESP}\xB0</span>`]] : [],
       ...cifrasArmadura2(c, dim, mm4)
     ];
-    const lado = h("aside", { class: "fcr-lado" }, h("div", { class: "fcr-sec", html: e2 ? dibujoPlano(c, s, e2) : "" }), cifras(cif), h("p", { class: "sub", style: "margin:0" }, t("t.desplegar")), traza3(ctx2.p, c, gmin, e2));
-    res.append(h(
+    const lado = h("article", { class: "panel tarjeta fcr-lado" }, h("div", { class: "fcr-sec", html: e2 ? dibujoPlano(c, s, e2) : "" }), cifras(cif), h("p", { class: "sub", style: "margin:0" }, t("t.desplegar")), traza3(ctx2.p, c, gmin, e2));
+    res.append(h("div", { class: "cuerpo dib-ancho" }, h(
       "article",
       { class: "panel tarjeta" },
       h("h2", { html: tituloGraf(c, s, { N: gam.N, Mx: gam.Mx, My: gam.My }) }),
-      h("div", { class: "fcr-diag" }, h("div", { class: "fcr-graf" }, graficoMxMy(ctx2, c, [gam], s)), lado)
-    ));
+      h("div", { class: "fcr-graf" }, graficoMxMy(ctx2, c, [gam], s))
+    ), lado));
   }
   function cifrasArmadura2(c, dim, mm4) {
     if (dim && c.phiProp) {
