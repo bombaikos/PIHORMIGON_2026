@@ -159,6 +159,7 @@ export default {
   'pro.ajustes': 'Ajustes del proyecto', 'pro.sepCapas': 'Separación entre capas', 'pro.sepCapasRef': 'entre ejes, en todas las secciones',
   'rej.falta': 'Falta este dato', 'rej.noNumero': 'No es un número', 'rej.errores': (n) => `${n} celda${n > 1 ? 's' : ''} con error: no se aplica hasta corregir${n > 1 ? 'las' : 'la'}`,
   'geo.caraN': (i) => `Cara ${i}`, 'geo.colArmado': 'Barras',
+  'geo.ayudaArmado': 'Se admiten dos formatos:\n4D25 (4 barras de ø25)\nD20/0.15 (barras de ø20 a 0.15 m, aprox.)',
   'geo.contornoCaras': 'Vértices y barras de la cara que sale de cada uno (sin el vértice siguiente)',
   'geo.huecoOpc': 'Hueco (opcional)', 'geo.huecoN': (n, v) => `Hueco · ${v} vértices${n > 1 ? ` (${n} huecos, solo se edita el primero)` : ''}`,
   'geo.pistaRejilla': 'x hacia la derecha, y hacia abajo. Barras: 3D16, o D16/0.20 con diámetro y separación en m. Se copia y pega con Excel. Insert añade fila; Ctrl+Supr la borra.',

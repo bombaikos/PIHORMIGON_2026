@@ -357,7 +357,8 @@ function datosSeccion(ctx, form, s, cambio) {
       };
       return [
         zonaDXF(ctx, s),
-        h('p', { class: 'etq-rejilla', html: t('geo.contornoCaras') }),
+        h('p', { class: 'etq-rejilla' }, h('span', { html: t('geo.contornoCaras') }), ' ',
+          h('span', { class: 'info-i', tabindex: 0, role: 'img', 'aria-label': t('geo.ayudaArmado'), 'data-tip': t('geo.ayudaArmado') }, 'i')),
         rejilla({
           id: 'g-cont', altoMax: 210,
           columnas: [{ titulo: 'x [mm]', num: true }, { titulo: 'y [mm]', num: true }, { titulo: t('geo.colArmado'), validar: validarCara }],

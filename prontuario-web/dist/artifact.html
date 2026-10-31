@@ -1116,6 +1116,11 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
 @media (min-width: 1100px) and (min-height: 600px) { .fcr-diag.fcr-ancho { grid-template-columns: minmax(0, 1fr) minmax(300px, 500px); } }
 .fce-tabla table.rejilla th, .fce-tabla table.rejilla td { font-size: 11px; padding-inline: 3px; }
 .fcr-ancho .fcr-lado .fcr-sec svg { max-height: min(230px, 32vh); }
+
+/* Genérica: zona del DXF más ancha, con «.dxf» grande aunque en gris; globo de la (i) con saltos de línea (31/10, José Luis) */
+.zona-dxf { width: 100%; box-sizing: border-box; padding: 9px 24px; }
+.zona-dxf b { font-size: calc(18px + var(--mas)); color: var(--tinta-3); }
+.globo-i { white-space: pre-line; }
 </style>
 
 <header class="barra">
@@ -2828,6 +2833,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     "rej.errores": (n) => `${n} celda${n > 1 ? "s" : ""} con error: no se aplica hasta corregir${n > 1 ? "las" : "la"}`,
     "geo.caraN": (i) => `Cara ${i}`,
     "geo.colArmado": "Barras",
+    "geo.ayudaArmado": "Se admiten dos formatos:\n4D25 (4 barras de \xF825)\nD20/0.15 (barras de \xF820 a 0.15 m, aprox.)",
     "geo.contornoCaras": "V\xE9rtices y barras de la cara que sale de cada uno (sin el v\xE9rtice siguiente)",
     "geo.huecoOpc": "Hueco (opcional)",
     "geo.huecoN": (n, v2) => `Hueco \xB7 ${v2} v\xE9rtices${n > 1 ? ` (${n} huecos, solo se edita el primero)` : ""}`,
@@ -3863,6 +3869,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     "rej.errores": (n) => `${n} cell${n > 1 ? "s" : ""} with errors: nothing is applied until ${n > 1 ? "they are" : "it is"} fixed`,
     "geo.caraN": (i) => `Face ${i}`,
     "geo.colArmado": "Face bars",
+    "geo.ayudaArmado": "Two formats are accepted:\n4D25 (4 bars of \xF825)\nD20/0.15 (\xF820 bars at about 0.15 m)",
     "geo.contornoCaras": "Vertices and bars of the face starting at each (not counting the next vertex)",
     "geo.huecoN": (n, v2) => `Void \xB7 ${v2} vertices${n > 1 ? ` (${n} voids, only the first is editable)` : ""}`,
     "geo.huecoOpc": "Hole (optional)",
@@ -9810,7 +9817,13 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
         };
         return [
           zonaDXF(ctx2, s),
-          h("p", { class: "etq-rejilla", html: t("geo.contornoCaras") }),
+          h(
+            "p",
+            { class: "etq-rejilla" },
+            h("span", { html: t("geo.contornoCaras") }),
+            " ",
+            h("span", { class: "info-i", tabindex: 0, role: "img", "aria-label": t("geo.ayudaArmado"), "data-tip": t("geo.ayudaArmado") }, "i")
+          ),
           rejilla({
             id: "g-cont",
             altoMax: 210,
