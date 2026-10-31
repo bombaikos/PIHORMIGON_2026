@@ -176,7 +176,7 @@ export function materialesSeccion(p, s) {
   if (!fa) throw new ErrorClave('err.sinAcero', s.nombre, s.acero);
   // Los diagramas importados de un .mat se regeneran siempre a partir de fck/fyk con la norma activa.
   const usar = (f) => ({ ...f, diagrama: undefined });
-  return { hormigon: materialDeFicha(usar(fh), p.norma), acero: materialDeFicha(usar(fa), p.norma), fichaH: fh, fichaA: fa };
+  return { hormigon: materialDeFicha(usar(fh), p.norma), hormigonCalc: materialDeFicha(usar(fh), p.norma, { calculo: true }), acero: materialDeFicha(usar(fa), p.norma), fichaH: fh, fichaA: fa };
 }
 
 /**
@@ -185,7 +185,7 @@ export function materialesSeccion(p, s) {
  */
 export function datosRectangular(p, s) {
   if (s.forma !== 'rectangular') throw new ErrorClave('err.flexSoloRect', s.nombre, s.forma);
-  const { hormigon, acero } = materialesSeccion(p, s);
+  const { hormigonCalc: hormigon, acero } = materialesSeccion(p, s);
   const g = geometriaDe(p, s);
   if (g.errores.length) throw new ErrorClave('err.varios', g.errores);
   const H = s.geo.h;
@@ -210,7 +210,7 @@ export function datosRectangular(p, s) {
  */
 export function datosViga(p, s, signo = 1) {
   if (s.forma !== 'rectangular' && s.forma !== 'T') throw new ErrorClave('err.flexSoloRect', s.nombre, s.forma);
-  const { hormigon, acero } = materialesSeccion(p, s);
+  const { hormigonCalc: hormigon, acero } = materialesSeccion(p, s);
   const g = geometriaDe(p, s);
   if (g.errores.length) throw new ErrorClave('err.varios', g.errores);
   const H = s.geo.h;

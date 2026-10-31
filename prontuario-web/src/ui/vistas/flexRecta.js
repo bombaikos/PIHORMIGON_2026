@@ -74,7 +74,7 @@ function calculo(p, s) {
   const geo = geometriaDe(p, s);
   if (geo.errores?.length) throw new Error(geo.errores.join(' '));
   const mats = materialesSeccion(p, s);
-  const sec = seccionMotor(geo, mats.hormigon, mats.acero);
+  const sec = seccionMotor(geo, mats.hormigonCalc, mats.acero);
   const As0 = sec.barras.reduce((a, b) => a + b.A, 0);
   const phi0 = fiComun(geo);
   // Cuantía mínima de pilar (EHE-08 42.3.3; EC-2 9.5.2(2)): máx{0,10·N/fyd; cuantía geométrica}, con el mayor N_Ed

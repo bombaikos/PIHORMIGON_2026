@@ -1,4 +1,4 @@
-<title>Prontuario Informático del Hormigón 2026 BETA a</title>
+<title>Prontuario del Hormigón</title>
 <style>
 /* Prontuario web. Estilo según analisis/guia-estilo-prontuario.md (la maqueta de flexión es la referencia).
    Disposición: todo en una pantalla de PC (§ 13): barra de una línea; datos | dibujo | resultados, sin scroll de página. En móvil, una columna. */
@@ -824,8 +824,8 @@ details.an-ce { margin-top: var(--e2); }
 .t-nom.t-desig.t-larga { font-size: 17px; line-height: 1.2; }
 .tarjeton #d-desig2 { font-size: calc(11px + var(--mas)); overflow-wrap: anywhere; }
 /* selectores apilados más compactos para que quepan los módulos de muchos datos (a 1366×657) */
-:root .datos .campo.apilado { gap: 1px; }
-:root .datos .campo.apilado > label { line-height: 1.1; }
+:root .datos .campo.apilado { gap: 2px; }
+:root .datos .campo.apilado > label { line-height: 1.2; }
 :root .datos .campo.apilado .caja { height: var(--alto-campo); }
 :root .datos .campo.apilado select { height: var(--alto-campo); }
 
@@ -1135,6 +1135,9 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
 .fcr-tabla td, .fcr-tabla th { white-space: nowrap; }
 .fcr-tabla tr.fuera td { color: var(--no); font-weight: 600; }
 
+/* Campos desactivados (p. ej. fck de un hormigón tipificado): fondo gris, texto gris y cursor de no permitido; el gris solo es para lo desactivado */
+.caja:has(input:disabled, select:disabled) { background: var(--hundido); border-color: var(--linea); }
+.caja input:disabled, .caja select:disabled, select:disabled { color: var(--tinta-3); -webkit-text-fill-color: var(--tinta-3); opacity: 1; cursor: not-allowed; }
 /* Flexión compuesta recta · Diagrama: la tarjeta del gráfico (la de enmedio) toma el ancho y la lateral se queda en 300–380 px */
 @media (min-width: 1100px) and (min-height: 600px) {
   .trabajo:has(.cuerpo.fcr-diagrama) { grid-template-columns: 324px minmax(0, 1fr) minmax(300px, 380px); }
@@ -1462,7 +1465,7 @@ tr.et-act td { font-weight: 650; }
   var IDS_NORMAS = Object.keys(EXTRAS);
 
   // src/core/materiales.js
-  function hormigon({ nombre = "", fck, norma: norma2 = "EHE-98", gammaC, alfa: alfa2, alfaCC, ktc, kE, coefArido, tramos = 10, diag = "PR", refDiag = "fcm", puntos, tracc = false }) {
+  function hormigon({ nombre = "", fck, norma: norma2 = "EHE-98", gammaC, alfa: alfa2, alfaCC, ktc, kE, coefArido, tramos = 10, diag = "PR", refDiag = "fcm", puntos, tracc = false, calculo: calculo4 = false }) {
     const n = normaMat(norma2);
     if (!(fck > 0)) throw new Error("fck debe ser positivo");
     if (fck > n.fckMax) throw new Error(`${n.nombre}: esta versi\xF3n solo admite fck \u2264 ${n.fckMax} MPa`);
@@ -1471,15 +1474,15 @@ tr.et-act td { font-weight: 650; }
     if (diag === "EC2" || diag === "puntos") {
       const E = n.Ec(fck, { kE, coefArido }) * 1e3;
       const fcd2 = a * fck / g;
-      const comp2 = diag === "EC2" ? compSargin(fck, norma2, { kE, coefArido, refDiag, fcd: fcd2 }) : compPuntos(puntos);
+      const comp2 = diag === "EC2" ? compSargin(fck, norma2, { kE, coefArido, refDiag: calculo4 ? "fcd" : refDiag, fcd: fcd2 }) : compPuntos(puntos);
       return {
         tipo: "hormigon",
         nombre,
         norma: n.id,
         E,
         fk: fck * 1e3,
-        gamma: 1,
-        alfa: 1,
+        gamma: calculo4 && diag === "EC2" ? g : 1,
+        alfa: calculo4 && diag === "EC2" ? a : 1,
         ktc: n.id === "EC2-2023" ? ktc ?? n.ktc : void 0,
         diag,
         comp: comp2,
@@ -1685,12 +1688,12 @@ tr.et-act td { font-weight: 650; }
       rama: m.rama
     };
   }
-  function materialDeFicha(ficha, normaId, { tracc = false } = {}) {
+  function materialDeFicha(ficha, normaId, { tracc = false, calculo: calculo4 = false } = {}) {
     if (ficha.diagrama) return { ...ficha.diagrama, nombre: ficha.nombre };
     if (ficha.tipo !== "acero") ficha = { ...ficha, fck: fckTipificado(ficha.nombre) ?? ficha.fck };
     else if (aceroTipificado(ficha.nombre)) ficha = { ...ficha, ...aceroTipificado(ficha.nombre) };
     if (ficha.tipo === "hormigon") {
-      return hormigon({ nombre: ficha.nombre, fck: ficha.fck, norma: normaId, gammaC: ficha.gammaC, alfa: ficha.alfa, alfaCC: ficha.alfaCC, ktc: ktcDe(ficha, normaId), kE: ficha.kE, coefArido: coefAridoDe(ficha, normaId), diag: ficha.diag, refDiag: ficha.refDiag, puntos: ficha.puntos, tracc });
+      return hormigon({ nombre: ficha.nombre, fck: ficha.fck, norma: normaId, gammaC: ficha.gammaC, alfa: ficha.alfa, alfaCC: ficha.alfaCC, ktc: ktcDe(ficha, normaId), kE: ficha.kE, coefArido: coefAridoDe(ficha, normaId), diag: ficha.diag, refDiag: ficha.refDiag, puntos: ficha.puntos, tracc, calculo: calculo4 });
     }
     return acero({ nombre: ficha.nombre, fyk: ficha.fyk, norma: normaId, gammaS: ficha.gammaS, Es: ficha.Es, epsUd: ficha.epsUd, ductilidad: ficha.ductilidad, rama: ficha.rama, epsUdModo: ficha.epsUdModo, k: ficha.k });
   }
@@ -2513,11 +2516,11 @@ tr.et-act td { font-weight: 650; }
     if (!fh) throw new ErrorClave("err.sinHormigon", s.nombre, s.hormigon);
     if (!fa) throw new ErrorClave("err.sinAcero", s.nombre, s.acero);
     const usar = (f) => ({ ...f, diagrama: void 0 });
-    return { hormigon: materialDeFicha(usar(fh), p.norma), acero: materialDeFicha(usar(fa), p.norma), fichaH: fh, fichaA: fa };
+    return { hormigon: materialDeFicha(usar(fh), p.norma), hormigonCalc: materialDeFicha(usar(fh), p.norma, { calculo: true }), acero: materialDeFicha(usar(fa), p.norma), fichaH: fh, fichaA: fa };
   }
   function datosViga(p, s, signo = 1) {
     if (s.forma !== "rectangular" && s.forma !== "T") throw new ErrorClave("err.flexSoloRect", s.nombre, s.forma);
-    const { hormigon: hormigon2, acero: acero2 } = materialesSeccion(p, s);
+    const { hormigonCalc: hormigon2, acero: acero2 } = materialesSeccion(p, s);
     const g = geometriaDe(p, s);
     if (g.errores.length) throw new ErrorClave("err.varios", g.errores);
     const H2 = s.geo.h;
@@ -2708,8 +2711,6 @@ tr.et-act td { font-weight: 650; }
     "mat.notaEC2": (n) => `Curva de la UNE-EN 1992-1-1 para an\xE1lisis no lineal, por defecto con f<sub>cm</sub> y sin \u03B3. En ELU el hormig\xF3n no resiste a tracci\xF3n. (${n})`,
     "mat.notaPuntos": "Compresi\xF3n en positivo, \u03B5 crecientes. El origen (0, 0) se a\xF1ade solo. Sin resistencia a tracci\xF3n.",
     "mat.avTipificado": (n) => `${n} solo admite cambiar \u03B1cc. Para cambiar otra cosa, gu\xE1rdalo con otro nombre.`,
-    "mat.avNombreEC2": "Con diagrama EC-2 (Sargin) el nombre debe terminar en _EC2.",
-    "mat.avNombreNoEC2": "Un nombre acabado en _EC2 es para el diagrama EC-2 (Sargin).",
     "mat.alfaCansancio": "larga duraci\xF3n",
     "mat.avInfoTipH": "Material tipificado: solo se puede cambiar el coeficiente \u03B1_cc / k_tc (1,00 o 0,85). Si quieres cambiar otra cosa, usa otro nombre.",
     "mat.avInfoTipA": "Material tipificado: no admite cambios. Si quieres cambiarlo, usa otro nombre.",
@@ -3745,8 +3746,6 @@ tr.et-act td { font-weight: 650; }
     "mat.notaEC2": (n) => `EN 1992-1-1 curve for non-linear analysis, by default with f<sub>cm</sub> and no \u03B3. At ULS concrete takes no tension. (${n})`,
     "mat.notaPuntos": "Compression positive, increasing \u03B5. The origin (0, 0) is added automatically. No tensile strength.",
     "mat.avTipificado": (n) => `${n} only allows changing \u03B1cc. To change anything else, save it under another name.`,
-    "mat.avNombreEC2": "With the EC 2 (Sargin) diagram the name must end in _EC2.",
-    "mat.avNombreNoEC2": "A name ending in _EC2 is for the EC 2 (Sargin) diagram.",
     "mat.alfaCansancio": "long-term loading",
     "mat.avInfoTipH": "Standard material: only the \u03B1_cc / k_tc coefficient (1.00 or 0.85) can be changed. To change anything else, use another name.",
     "mat.avInfoTipA": "Standard material: it cannot be changed. To change it, use another name.",
@@ -7797,17 +7796,12 @@ tr.et-act td { font-weight: 650; }
       return "";
     }
   }
-  var ICONOS = {
-    hormigones: '<rect x="2" y="2.5" width="12" height="11"/><path d="M4.2 5.4 6.4 4.4 7.6 6.2 6.2 7.8 4.3 7.2z"/><path d="M9 9.6 11.4 8.8 12.2 10.8 10.6 12 8.8 11.4z"/><circle cx="10.4" cy="5.2" r=".55"/><circle cx="4.8" cy="10.8" r=".55"/><circle cx="7.8" cy="9.6" r=".45"/>',
-    aceros: '<rect x="1.5" y="5.5" width="13" height="5" rx="1.4"/><path d="M6.4 5.5 5.4 10.5M10.6 5.5 9.6 10.5"/>'
-  };
-  var icono = (k) => `<svg class="ico" viewBox="0 0 16 16" aria-hidden="true">${ICONOS[k]}</svg>`;
   var etiquetaTipo = (k) => t(k === "hormigones" ? "mat.tipoH" : "mat.tipoA");
   function tarjeton(ctx2, m) {
     return h(
       "div",
       { class: "tarjeton", "aria-live": "polite" },
-      h("div", { class: "t-tipo", html: `${icono(est.tipo)}${etiquetaTipo(est.tipo)}` }),
+      h("div", { class: "t-tipo", html: etiquetaTipo(est.tipo) }),
       h("div", { class: "t-nom" }, m.nombre),
       h("div", { class: "t-res", id: "m-resumen", html: resumen(ctx2, m) })
     );
@@ -7850,7 +7844,7 @@ tr.et-act td { font-weight: 650; }
         type: "button",
         role: "option",
         "aria-current": s.nombre === activo ? "true" : void 0,
-        html: `${icono(tipo)}${s.nombre}${tipo === "hormigones" ? "" : `<span class="nombre-sec">${breve(tipo, s)}</span>`}`,
+        html: `${s.nombre}${tipo === "hormigones" ? "" : `<span class="nombre-sec">${breve(tipo, s)}</span>`}`,
         onclick: () => elegir(ctx2, tipo, s.nombre)
       })));
       if (!filas.children.length) filas.append(h("span", { class: "vacio" }, lista.length ? t("sec.ningunaCoincide") : t("sec.ningunaTipo")));
@@ -7885,7 +7879,7 @@ tr.et-act td { font-weight: 650; }
         "aria-haspopup": "listbox",
         "aria-expanded": String(est.abierto === k),
         title: etiquetaTipo(k),
-        html: `${icono(k)}<span class="nom">${titulo}</span><span class="cnt">${lista.length}</span><span class="car">\u25BE</span>`,
+        html: `<span class="nom">${titulo}</span><span class="cnt">${lista.length}</span><span class="car">\u25BE</span>`,
         onclick: (e2) => {
           e2.stopPropagation();
           est.abierto = est.abierto === k ? null : k;
@@ -8131,9 +8125,6 @@ tr.et-act td { font-weight: 650; }
     const out = [];
     if (m.tipo === "hormigon") {
       if (fckTipificado(m.nombre) && CAMBIOS_TIPIFICADO(m).length) out.push(["error", t("mat.avTipificado", m.nombre)]);
-      const esEC23 = (m.diag ?? "PR") === "EC2";
-      if (esEC23 && !/_EC2$/i.test(m.nombre)) out.push(["error", t("mat.avNombreEC2")]);
-      else if (!esEC23 && /_EC2$/i.test(m.nombre)) out.push(["error", t("mat.avNombreNoEC2")]);
       if (m.fck < (N.fckMin ?? 12) || m.fck > N.fckMax) out.push(["error", t("mat.avFckRango", N.fckMin ?? 12, N.fckMax)]);
       else if (N.id === "EHE-08" && m.fck < N.fckMinArmado) out.push(["", t("mat.avFckArmado")]);
       if (N.alfaRango && (m.alfaCC ?? 1) < N.alfaRango[0] - 1e-9) out.push(["error", t("mat.avAlfa", N.alfaRango[0], N.alfaRango[1])]);
@@ -8149,12 +8140,17 @@ tr.et-act td { font-weight: 650; }
     const xy = (mt) => [...mt.comp.slice().reverse(), ...mt.tracc.slice(1)].map(([e2, s]) => [-e2 * 1e3, -s / 1e3]);
     const sargin = mat.tipo === "hormigon" && mat.diag === "EC2";
     const car = caracteristico(mat);
-    const series = [{ nombre: t(sargin ? "mat.sCaract" : "mat.sCalculo"), xy: xy(mat), clase: "s1" }];
+    const series = [{ nombre: t("mat.sCalculo"), xy: xy(mat), clase: "s1" }];
+    let calc = null;
     if (sargin) {
       try {
-        series.push({ nombre: t("mat.sCalculo"), xy: xy(materialDeFicha({ ...ctx2.ficha, refDiag: "fcd", diagrama: void 0 }, ctx2.p.norma)), clase: "ref" });
+        calc = materialDeFicha({ ...ctx2.ficha, diagrama: void 0 }, ctx2.p.norma, { calculo: true });
       } catch {
       }
+      if (calc) {
+        series[0].xy = xy(calc);
+        series.push({ nombre: t("mat.sCaract"), xy: xy(mat), clase: "ref" });
+      } else series[0].nombre = t("mat.sCaract");
     } else if (car !== mat) series.push({ nombre: t("mat.sCaract"), xy: xy(car), clase: "ref" });
     const tag = (a, b) => `${a}<tspan class="ind">${b}</tspan>`;
     const puntos = [];
@@ -8168,6 +8164,10 @@ tr.et-act td { font-weight: 650; }
           { x: -pico[0] * 1e3, y: 0, etq: tag("\u03B5", "c1"), abajo: true },
           { x: -ult[0] * 1e3, y: -ult[1] / 1e3, etq: tag("\u03B5", "cu1"), abajo: true }
         );
+        if (calc) {
+          const pc = calc.comp.reduce((a, b) => Math.abs(b[1]) > Math.abs(a[1]) ? b : a);
+          puntos.push({ x: -pc[0] * 1e3, y: -pc[1] / 1e3, etq: `${tag("f", "cd")} = ${fmt(-pc[1] / 1e3, 1)}`, abajo: true });
+        }
       } else if (d === "PR") {
         const fcd = -ult[1] / 1e3;
         puntos.push(
@@ -9781,7 +9781,7 @@ tr.et-act td { font-weight: 650; }
     return h(
       "div",
       { class: "tarjeton", "aria-live": "polite" },
-      h("div", { class: "t-tipo", html: `${icono2(s.forma)}${t("forma." + s.forma)}` }),
+      h("div", { class: "t-tipo", html: `${icono(s.forma)}${t("forma." + s.forma)}` }),
       h("div", { class: "t-nom" }, s.nombre),
       h("div", { class: "t-res", id: "s-resumen" }, resumenSeccion(s))
     );
@@ -9854,14 +9854,14 @@ tr.et-act td { font-weight: 650; }
     poner(form, pie);
     if (est3.pendiente) queueMicrotask(() => pie.querySelector(".confirma")?.scrollIntoView({ block: "nearest", behavior: "smooth" }));
   }
-  var ICONOS2 = {
+  var ICONOS = {
     rectangular: '<rect x="4" y="2" width="8" height="12"/><circle cx="6" cy="12" r=".8"/><circle cx="10" cy="12" r=".8"/>',
     pilar: '<rect x="3" y="3" width="10" height="10"/><circle cx="5" cy="5" r=".8"/><circle cx="11" cy="5" r=".8"/><circle cx="5" cy="11" r=".8"/><circle cx="11" cy="11" r=".8"/>',
     T: '<path d="M2 3h12v3H10v8H6V6H2z"/>',
     circular: '<circle cx="8" cy="8" r="6"/>',
     generica: '<path d="M2 13 4 3h8l2 10z"/>'
   };
-  var icono2 = (f) => `<svg class="ico" viewBox="0 0 16 16" aria-hidden="true">${ICONOS2[f]}</svg>`;
+  var icono = (f) => `<svg class="ico" viewBox="0 0 16 16" aria-hidden="true">${ICONOS[f]}</svg>`;
   var abierto = null;
   function elegir2(ctx2, forma, nombre) {
     const b = est3.b[forma];
@@ -9892,7 +9892,7 @@ tr.et-act td { font-weight: 650; }
         "aria-haspopup": "listbox",
         "aria-expanded": String(abierto === f),
         title: t(`forma.${f}`),
-        html: `${icono2(f)}<span class="nom">${titulo}</span><span class="cnt">${delTipo.length}</span><span class="car">\u25BE</span>`,
+        html: `${icono(f)}<span class="nom">${titulo}</span><span class="cnt">${delTipo.length}</span><span class="car">\u25BE</span>`,
         onclick: (e2) => {
           e2.stopPropagation();
           abierto = abierto === f ? null : f;
@@ -9939,7 +9939,7 @@ tr.et-act td { font-weight: 650; }
         type: "button",
         role: "option",
         "aria-current": s.nombre === activa5 ? "true" : void 0,
-        html: `${icono2(f)}${s.nombre}<span class="nombre-sec">${resumenForma(s)}</span>`,
+        html: `${icono(f)}${s.nombre}<span class="nombre-sec">${resumenForma(s)}</span>`,
         onclick: () => alElegir(s.nombre)
       })));
       if (!filas.children.length) filas.append(h("span", { class: "vacio" }, delTipo.length ? t("sec.ningunaCoincide") : t("sec.ningunaTipo")));
@@ -12332,7 +12332,7 @@ tr.et-act td { font-weight: 650; }
     const geo = geometriaDe(p, s);
     if (geo.errores?.length) throw new Error(geo.errores.join(" "));
     const mats = materialesSeccion(p, s);
-    const sec = seccionMotor(geo, mats.hormigon, mats.acero);
+    const sec = seccionMotor(geo, mats.hormigonCalc, mats.acero);
     const As0 = sec.barras.reduce((a, b) => a + b.A, 0);
     const phi0 = fiComun(geo);
     const Ac = sec.trapecios.reduce((a, t2) => a + (t2.b1 + t2.b2) / 2 * (t2.y2 - t2.y1), 0);
@@ -13175,7 +13175,7 @@ tr.et-act td { font-weight: 650; }
     const clave = JSON.stringify([est6.dirEmin, p.norma, s.geo, s.armado, s.hormigon, s.acero, sepCapas(p), est6.modo, est6.fi, serieDiametros(), ps.map((x) => [x.N, x.Mx, x.My])]);
     if (memo2.clave === clave) return memo2.c;
     const mats = materialesSeccion(p, s);
-    const m0 = modeloEsviada(geo, mats.hormigon, mats.acero);
+    const m0 = modeloEsviada(geo, mats.hormigonCalc, mats.acero);
     const As0 = m0.As;
     const phi0 = fiComun2(geo);
     const cm = cuantiaMinima({ norma: p.norma, tipo: "pilar", h: 0, Ac: m0.Ac, yg: 0, Ix: 0, fctm: 0, fyk: mats.acero.fk, gammaS: mats.acero.gamma, N: Math.max(0, ...ps.map((x) => x.N)) });
@@ -13188,7 +13188,7 @@ tr.et-act td { font-weight: 650; }
     if (est6.modo === "dimensionar") {
       if (!(As0 > 0)) throw new Error(t("fcr.sinArmadura"));
       const x = ps[0];
-      kEstricto = x ? dimensionarEsviada(geo, mats.hormigon, mats.acero, x.N, x.Mx, x.My) : 1;
+      kEstricto = x ? dimensionarEsviada(geo, mats.hormigonCalc, mats.acero, x.N, x.Mx, x.My) : 1;
       k = Number.isFinite(kEstricto) ? Math.max(kEstricto, kMin) : kEstricto;
       if (phi0 && Number.isFinite(k)) {
         phiEstricto = kEstricto > 0 ? phi0 * Math.sqrt(kEstricto) : 0;
@@ -13196,7 +13196,7 @@ tr.et-act td { font-weight: 650; }
         if (phiProp) k = (phiProp / phi0) ** 2;
       }
     } else if (phi0 && est6.fi > 0) k = (est6.fi / phi0) ** 2;
-    const m = modeloEsviada(geo, mats.hormigon, mats.acero, Number.isFinite(k) ? k : 1);
+    const m = modeloEsviada(geo, mats.hormigonCalc, mats.acero, Number.isFinite(k) ? k : 1);
     const c = { geo, mats, m, ps, As0, Amin, cm, k, kEstricto, phi0, phiEstricto, phiProp, lim: axilesEsviada(m), cont: /* @__PURE__ */ new Map() };
     memo2 = { clave, c };
     return c;
@@ -19809,12 +19809,12 @@ tr.et-act td { font-weight: 650; }
     document.body.append(globo);
     return globo;
   }
-  function poner2(icono3) {
+  function poner2(icono2) {
     const g = asegurar();
-    g.textContent = icono3.dataset.tip ?? "";
+    g.textContent = icono2.dataset.tip ?? "";
     g.hidden = false;
-    actual = icono3;
-    const r = icono3.getBoundingClientRect();
+    actual = icono2;
+    const r = icono2.getBoundingClientRect();
     const w = g.offsetWidth;
     const alto = g.offsetHeight;
     const arriba = r.top - alto - MARGEN3 >= MARGEN3;
@@ -19822,7 +19822,7 @@ tr.et-act td { font-weight: 650; }
     const x = Math.min(Math.max(r.left + r.width / 2 - w / 2, MARGEN3), window.innerWidth - w - MARGEN3);
     g.style.left = `${Math.round(x)}px`;
     g.style.top = `${Math.round(Math.max(y, MARGEN3))}px`;
-    icono3.setAttribute("aria-describedby", "globo-i");
+    icono2.setAttribute("aria-describedby", "globo-i");
   }
   function quitar() {
     if (!globo || !actual) return;
@@ -19854,7 +19854,7 @@ tr.et-act td { font-weight: 650; }
   }
 
   // src/ui/app.js
-  var EMISION = true ? "31.10.26" : (/* @__PURE__ */ new Date()).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "2-digit" }).replace(/\//g, ".");
+  var EMISION = typeof __FECHA_EMISION__ !== "undefined" ? __FECHA_EMISION__ : (/* @__PURE__ */ new Date()).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "2-digit" }).replace(/\//g, ".");
   function vistaSecciones(m, propia) {
     const fijar = (f) => (...a) => {
       modo(m);

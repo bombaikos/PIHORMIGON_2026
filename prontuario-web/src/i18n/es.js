@@ -68,8 +68,6 @@ export default {
   'mat.notaEC2': (n) => `Curva de la UNE-EN 1992-1-1 para análisis no lineal, por defecto con f<sub>cm</sub> y sin γ. En ELU el hormigón no resiste a tracción. (${n})`,
   'mat.notaPuntos': "Compresión en positivo, ε crecientes. El origen (0, 0) se añade solo. Sin resistencia a tracción.",
   'mat.avTipificado': (n) => `${n} solo admite cambiar αcc. Para cambiar otra cosa, guárdalo con otro nombre.`,
-  'mat.avNombreEC2': "Con diagrama EC-2 (Sargin) el nombre debe terminar en _EC2.",
-  'mat.avNombreNoEC2': "Un nombre acabado en _EC2 es para el diagrama EC-2 (Sargin).",
   'mat.alfaCansancio': 'larga duración',
   'mat.avInfoTipH': 'Material tipificado: solo se puede cambiar el coeficiente α_cc / k_tc (1,00 o 0,85). Si quieres cambiar otra cosa, usa otro nombre.',
   'mat.avInfoTipA': 'Material tipificado: no admite cambios. Si quieres cambiarlo, usa otro nombre.',
