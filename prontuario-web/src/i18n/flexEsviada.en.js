@@ -17,5 +17,6 @@ export default {
   'fce.puntos': 'Actions', 'fce.tabla': 'Actions and safety factor',
   'fce.contornos': (n) => `${n} points`,
   'fce.axilGauge': 'The axial load moves with the gauge under the diagram (blue in compression, pink in tension).',
+  'fce.infoMx': 'Mx: moment about the horizontal axis of the section. Positive when it compresses the top face.', 'fce.infoMy': 'My: moment about the vertical axis of the section. Positive when it compresses the right face.',
   'fce.sinEsfuerzos': 'Enter at least one pair of actions.',
 };

@@ -19,5 +19,6 @@ export default {
   'fce.puntos': 'Esfuerzos', 'fce.tabla': 'Esfuerzos y coeficiente de seguridad',
   'fce.contornos': (n) => `${n} puntos`,
   'fce.axilGauge': 'El axil se mueve con la regleta bajo el diagrama (azul en compresión, rosa en tracción).',
+  'fce.infoMx': 'Mx: momento respecto al eje horizontal de la sección. Positivo si comprime la cara superior.', 'fce.infoMy': 'My: momento respecto al eje vertical de la sección. Positivo si comprime la cara derecha.',
   'fce.sinEsfuerzos': 'Escribe al menos un par de esfuerzos.',
 };

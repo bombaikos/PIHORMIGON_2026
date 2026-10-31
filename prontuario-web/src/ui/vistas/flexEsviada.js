@@ -128,8 +128,8 @@ export function datos(ctx, form) {
     segmentado({ ancho: true, capsula: true, etiqueta: t('flex.modo'), opciones: [['comprobar', t('flex.v.comprobar')], ['dimensionar', t('flex.v.dimensionar')], ['diagrama', t('fcr.modoDiagrama')]], valor: est.modo, onCambio: (m) => { est.modo = m; ctx.pintar(); } }),
     est.modo !== 'diagrama' ? grupo(t('g.esfuerzo'),
       campoNum({ id: 'fe-n', etq: sub('N', 'Ed'), ref: t('fcr.compPos'), valor: est.NEd, mag: 'N', paso: 10, min: -1e6, max: 1e6, nombre: t('fcr.axil'), onCambio: (v) => { est.NEd = v; cambio(); } }),
-      campoNum({ id: 'fe-mx', etq: sub('M', 'x,Ed'), ref: t('fce.mx'), valor: est.MxEd, mag: 'M', paso: 5, min: -1e6, max: 1e6, nombre: t('fce.nombreMx'), onCambio: (v) => { est.MxEd = v; cambio(); } }),
-      campoNum({ id: 'fe-my', etq: sub('M', 'y,Ed'), ref: t('fce.my'), valor: est.MyEd, mag: 'M', paso: 5, min: -1e6, max: 1e6, nombre: t('fce.nombreMy'), onCambio: (v) => { est.MyEd = v; cambio(); } }),
+      campoNum({ id: 'fe-mx', etq: sub('M', 'x,Ed'), ref: t('fce.mx'), valor: est.MxEd, mag: 'M', paso: 5, min: -1e6, max: 1e6, nombre: t('fce.nombreMx'), info: t('fce.infoMx'), onCambio: (v) => { est.MxEd = v; cambio(); } }),
+      campoNum({ id: 'fe-my', etq: sub('M', 'y,Ed'), ref: t('fce.my'), valor: est.MyEd, mag: 'M', paso: 5, min: -1e6, max: 1e6, nombre: t('fce.nombreMy'), info: t('fce.infoMy'), onCambio: (v) => { est.MyEd = v; cambio(); } }),
       campoFi()) : grupo(t('g.armadura'), campoFi(), h('p', { class: 'calculada', html: t('fce.axilGauge') })));
 }
 

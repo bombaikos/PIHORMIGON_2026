@@ -5360,6 +5360,8 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     "fce.tabla": "Esfuerzos y coeficiente de seguridad",
     "fce.contornos": (n) => `${n} puntos`,
     "fce.axilGauge": "El axil se mueve con la regleta bajo el diagrama (azul en compresi\xF3n, rosa en tracci\xF3n).",
+    "fce.infoMx": "Mx: momento respecto al eje horizontal de la secci\xF3n. Positivo si comprime la cara superior.",
+    "fce.infoMy": "My: momento respecto al eje vertical de la secci\xF3n. Positivo si comprime la cara derecha.",
     "fce.sinEsfuerzos": "Escribe al menos un par de esfuerzos."
   };
 
@@ -5392,6 +5394,8 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     "fce.tabla": "Actions and safety factor",
     "fce.contornos": (n) => `${n} points`,
     "fce.axilGauge": "The axial load moves with the gauge under the diagram (blue in compression, pink in tension).",
+    "fce.infoMx": "Mx: moment about the horizontal axis of the section. Positive when it compresses the top face.",
+    "fce.infoMy": "My: moment about the vertical axis of the section. Positive when it compresses the right face.",
     "fce.sinEsfuerzos": "Enter at least one pair of actions."
   };
 
@@ -12728,11 +12732,11 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
           est6.NEd = v2;
           cambio();
         } }),
-        campoNum({ id: "fe-mx", etq: sub20("M", "x,Ed"), ref: t("fce.mx"), valor: est6.MxEd, mag: "M", paso: 5, min: -1e6, max: 1e6, nombre: t("fce.nombreMx"), onCambio: (v2) => {
+        campoNum({ id: "fe-mx", etq: sub20("M", "x,Ed"), ref: t("fce.mx"), valor: est6.MxEd, mag: "M", paso: 5, min: -1e6, max: 1e6, nombre: t("fce.nombreMx"), info: t("fce.infoMx"), onCambio: (v2) => {
           est6.MxEd = v2;
           cambio();
         } }),
-        campoNum({ id: "fe-my", etq: sub20("M", "y,Ed"), ref: t("fce.my"), valor: est6.MyEd, mag: "M", paso: 5, min: -1e6, max: 1e6, nombre: t("fce.nombreMy"), onCambio: (v2) => {
+        campoNum({ id: "fe-my", etq: sub20("M", "y,Ed"), ref: t("fce.my"), valor: est6.MyEd, mag: "M", paso: 5, min: -1e6, max: 1e6, nombre: t("fce.nombreMy"), info: t("fce.infoMy"), onCambio: (v2) => {
           est6.MyEd = v2;
           cambio();
         } }),
