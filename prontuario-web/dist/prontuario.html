@@ -1059,6 +1059,9 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
 #rg-historia td, #rg-historia tr.nueva td { background: var(--campo); } #rg-historia td.sel, #rg-historia tr.foco td { background: var(--acento-suave); }
 .tarjeta .seg.ancho{display:grid;grid-auto-flow:column;grid-auto-columns:1fr}.tarjeta .seg.ancho button{flex:none}
 #rg-historia td { height: 22px; } #rg-historia th { padding-block: 2px; }
+.tarjeta .lienzo.g32{flex:none;overflow:visible}.lienzo.g32 .grafica{display:flex;flex-direction:column}.lienzo.g32 .grafica svg.graf{flex:none;height:auto;aspect-ratio:3/2}
+.fig-ley .lienzo.g32{flex:none}
+.tarjeta > .boton.pequeno{align-self:flex-start}
 
 /* Globo de las (i): flotante, fuera de los paneles (src/ui/globo.js); nunca lo corta un panel con scroll */
 .globo-i { position: fixed; z-index: 1000; box-sizing: border-box; width: max-content; max-width: min(280px, calc(100vw - 16px)); padding: 6px 9px; border: 1px solid var(--linea-fuerte); border-radius: var(--r-campo); background: var(--hoja); box-shadow: var(--sombra); color: var(--tinta); font: 400 var(--t-s)/1.4 var(--f); text-align: left; pointer-events: none; }
@@ -7113,7 +7116,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     const todos = [...series.flatMap((s) => s.xy), ...puntos.map((p) => [p.x, p.y])].filter(([x, y]) => Number.isFinite(x) && Number.isFinite(y));
     const ext = (i) => {
       const a = Math.min(0, ...todos.map((p) => p[i]));
-      const b = Math.max(0, ...todos.map((p) => p[i]));
+      const b = i === 1 && ejeY.max !== void 0 ? ejeY.max : Math.max(0, ...todos.map((p) => p[i]));
       const r = b > a ? b - a : 1;
       return [a - 0.1 * r, a === b ? a + 1 : b + 0.1 * r];
     };
@@ -7952,6 +7955,53 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     reiniciar: () => reiniciar2,
     resultados: () => resultados3
   });
+
+  // src/ui/designacion.js
+  function tarjetonDesignacion() {
+    return h(
+      "div",
+      { class: "tarjeton", "aria-live": "polite" },
+      h("div", { class: "t-tipo" }, t("dur.designacion")),
+      h("div", { class: "t-nom t-desig", id: "d-desig" }, ""),
+      h("div", { class: "t-res", id: "d-desig2" }, "")
+    );
+  }
+  function actualizarDesignacion(principal, secundaria) {
+    const a = document.getElementById("d-desig");
+    const b = document.getElementById("d-desig2");
+    if (a) {
+      a.textContent = principal;
+      a.classList.toggle("t-larga", principal.length > 22);
+    }
+    if (b) b.textContent = secundaria ?? "";
+  }
+  var plano2 = (s) => {
+    const d = document.createElement("div");
+    d.innerHTML = String(s);
+    return d.textContent;
+  };
+  var esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+  function botonCopiar(filas) {
+    const b = boton(t("dur.copiar"), async () => {
+      const datos16 = filas().map((f) => f.map((c) => typeof c === "number" || /^-?\d+(\.\d+)?$/.test(String(c)) ? String(c).replace(".", decimalAlCopiar()) : plano2(c)));
+      const txt = datos16.map((f) => f.join("	")).join("\r\n");
+      const htm = `<table>${datos16.map((f, i) => `<tr>${f.map((c) => `<${i ? "td" : "th"}>${esc(c)}</${i ? "td" : "th"}>`).join("")}</tr>`).join("")}</table>`;
+      try {
+        if (navigator.clipboard?.write && typeof ClipboardItem !== "undefined") await navigator.clipboard.write([new ClipboardItem({ "text/plain": new Blob([txt], { type: "text/plain" }), "text/html": new Blob([htm], { type: "text/html" }) })]);
+        else await navigator.clipboard.writeText(txt);
+        b.textContent = t("dur.copiado");
+      } catch {
+        b.textContent = t("dur.noCopiado");
+      }
+      setTimeout(() => {
+        b.textContent = t("dur.copiar");
+      }, 1600);
+    }, "secundario pequeno");
+    b.title = t("dur.copiarAyuda");
+    return b;
+  }
+
+  // src/ui/vistas/reologicas.js
   var TIEMPOS = [3, 7, 14, 28, 60, 90, 180, 360, 1e3, 3650];
   var filasPorDefecto = () => TIEMPOS.map((tt) => [String(tt), "60", "0"]);
   var inicial = () => ({
@@ -8103,22 +8153,23 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     if (est2.pestana === "fluencia") {
       const PHI = tablaFluencia(E.norma, { ...base2, humedad: base2.humedad }, tiempos, tiempos);
       const cab = [`${sub12("t", "0")}${ESP}\\${ESP}t`, ...tiempos.map((x) => dias(x))];
-      poner(
-        centro,
-        h(
-          "div",
-          { class: "lienzo" },
-          h("div", { class: "edad" }, tabla(PHI.map((f, i) => [dias(tiempos[i]), ...f.map((v2) => v2 === null ? "\u2013" : fmt(v2, 2))]), { cabecera: cab, clase: "num excel" })),
-          h("p", { class: "sub", html: `\u03C6(t, ${sub12("t", "0")}) \xB7 t ${t("rg.eje")} [${t("dias")}], ${sub12("t", "0")} ${t("rg.eje2")} [${t("dias")}]` })
-        )
+      const filasPhi = () => [cab.map((c) => String(c).replace(/\\/, "/")), ...PHI.map((f, i) => [dias(tiempos[i]), ...f.map((v2) => v2 === null ? "" : fmt(v2, 2))])];
+      const tarjetaPhi = h(
+        "article",
+        { class: "panel tarjeta" },
+        h("h2", {}, t("rg.resultados")),
+        botonCopiar(filasPhi),
+        h("p", { class: "sub", html: `\u03C6(t, ${sub12("t", "0")}) \xB7 t ${t("rg.eje")} [${t("dias")}], ${sub12("t", "0")} ${t("rg.eje2")} [${t("dias")}]` }),
+        h("div", { class: "edad" }, tabla(PHI.map((f, i) => [dias(tiempos[i]), ...f.map((v2) => v2 === null ? "\u2013" : fmt(v2, 2))]), { cabecera: cab, clase: "num excel" }))
       );
+      const phiMax = Math.max(...PHI.flat().filter((v2) => v2 !== null));
       est2.t0 = Math.min(Math.max(est2.t0, tMin), tMax);
-      const lienzo2 = h("div", { class: "lienzo" });
+      const lienzo2 = h("div", { class: "lienzo g32" });
       const dibuja2 = () => {
         const t0 = est2.t0;
         const ts = est2.logT ? logx(Math.min(t0 * 1.02, tMax), Math.max(tMax, t0 * 1.03), 60) : Array.from({ length: 61 }, (_2, i) => t0 * 1.02 + (Math.max(tMax, t0 * 1.03) - t0 * 1.02) * i / 60);
         const xy = ts.map((tt) => [lg(tt), fluencia(E.norma, { fck: m.fck, HR: humedadEn(base2.humedad, tt), h0: est2.h0, t0, t: tt, cemento: E.cemento }).phi]);
-        lienzo2.replaceChildren(grafica({ series: [{ nombre: `t\u2080 = ${fmt(t0, 0)} d`, xy, clase: "s1" }], sinTabla: true, ejeX: ejeX(dibuja2), ejeY: { titulo: "\u03C6(t, t\u2080)", d: 2 }, archivo: "fluencia", avisar: ctx2.avisar }));
+        lienzo2.replaceChildren(grafica({ series: [{ nombre: `t\u2080 = ${fmt(t0, 0)} d`, xy, clase: "s1" }], sinTabla: true, ejeX: ejeX(dibuja2), ejeY: { titulo: "\u03C6(t, t\u2080)", d: 2, max: phiMax }, archivo: "fluencia", avisar: ctx2.avisar }));
       };
       const gauge = regleta({
         etq: t("rg.t0Gauge"),
@@ -8132,22 +8183,15 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
         }
       });
       dibuja2();
-      const dib = h(
-        "article",
-        { class: "panel tarjeta" },
-        h("h2", { html: `\u03C6(t, ${sub12("t", "0")})` }),
-        h("p", { class: "sub" }, t("rg.phiEvolucion")),
-        lienzo2,
-        gauge
-      );
-      return poner(res, h("div", { class: "cuerpo" }, centro, dib));
+      poner(centro, h("h2", { html: `\u03C6(t, ${sub12("t", "0")})` }), lienzo2, gauge);
+      return poner(res, h("div", { class: "cuerpo" }, centro, tarjetaPhi));
     }
     const saltos = base2.cargas.flatMap(([t0]) => [t0, t0 - 1e-3]);
     const mallaFig = [...logx(tMin, tMax, 90), ...tiempos, ...saltos].filter((x) => x >= tMin * 0.999).sort((a, b) => a - b);
     const mallaTabla = [.../* @__PURE__ */ new Set([...logx(tMin, tMax, 40).map((x) => Math.round(x)), ...tiempos])].sort((a, b) => a - b);
     const H = (tt) => historia(E.norma, { ...base2, tiempos: tt });
     const LINEAS = [["elastica", "rg.elastica", "s2"], ["diferida", "rg.diferida", "s3"], ["retraccion", "rg.retraccion", "s4"], ["total", "rg.total", "s1"]];
-    const lienzo = h("div", { class: "lienzo" });
+    const lienzo = h("div", { class: "lienzo g32" });
     const dibuja = () => {
       const G = H(mallaFig).map((g) => ({ ...g, secado: g.retraccion - g.autogena }));
       const ser = (k, nombre, clase) => ({ nombre, xy: G.map((g) => [lg(g.t), g[k] * 1e3]), clase });
@@ -8187,6 +8231,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     dibuja();
     poner(centro, h("div", { class: "fig-ley" }, lienzo, leyenda3));
     const marco2 = h("div", { class: "edad tabla-res" });
+    let copia3 = [];
     const pintaTabla = () => {
       const R = H(est2.completa ? mallaTabla : tiempos);
       const e2 = (x) => fmt(x * 1e6, 0);
@@ -8195,6 +8240,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
         `${sub12("\u03C3", "c")}<br><span class="u u-cab">[MPa]</span>`,
         ...["el", "dif", "cs", "tot"].map((k) => `${sub12("\u03B5", k)}<br><span class="u u-cab">[\xB710\u207B\u2076]</span>`)
       ];
+      copia3 = [["t [d\xEDas]", "\u03C3c [MPa]", "\u03B5el [\xB710\u207B\u2076]", "\u03B5dif [\xB710\u207B\u2076]", "\u03B5cs [\xB710\u207B\u2076]", "\u03B5tot [\xB710\u207B\u2076]"], ...R.map((g) => [dias(g.t), fmt(g.tension, 1), e2(g.elastica), e2(g.diferida), e2(g.retraccion), e2(g.total)])];
       marco2.replaceChildren(tabla(R.map((g) => [dias(g.t), fmt(g.tension, 1), e2(g.elastica), e2(g.diferida), e2(g.retraccion), e2(g.total)]), { cabecera: cab, clase: "num excel" }));
     };
     const tarjeta = h(
@@ -8202,6 +8248,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
       { class: "panel tarjeta" },
       h("h2", {}, t("rg.resultados")),
       h("p", { class: "sub" }, t("rg.notaHistoria")),
+      botonCopiar(() => copia3),
       segmentado({
         opciones: [[false, t("rg.resumida")], [true, t("rg.completa")]],
         valor: est2.completa,
@@ -10303,51 +10350,6 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
     const clase = `C${fck}/${cubica ?? "?"}`;
     const cl3 = tipo === "armado" ? " Cl 0,40" : tipo === "pretensado" ? " Cl 0,20" : "";
     return `${clase} ${clases.length ? clases.join(", ") : "\u2026"} D${arido} ${CONSISTENCIA_EN[consistencia] ?? "S2"}${cl3}`;
-  }
-
-  // src/ui/designacion.js
-  function tarjetonDesignacion() {
-    return h(
-      "div",
-      { class: "tarjeton", "aria-live": "polite" },
-      h("div", { class: "t-tipo" }, t("dur.designacion")),
-      h("div", { class: "t-nom t-desig", id: "d-desig" }, ""),
-      h("div", { class: "t-res", id: "d-desig2" }, "")
-    );
-  }
-  function actualizarDesignacion(principal, secundaria) {
-    const a = document.getElementById("d-desig");
-    const b = document.getElementById("d-desig2");
-    if (a) {
-      a.textContent = principal;
-      a.classList.toggle("t-larga", principal.length > 22);
-    }
-    if (b) b.textContent = secundaria ?? "";
-  }
-  var plano2 = (s) => {
-    const d = document.createElement("div");
-    d.innerHTML = String(s);
-    return d.textContent;
-  };
-  var esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
-  function botonCopiar(filas) {
-    const b = boton(t("dur.copiar"), async () => {
-      const datos16 = filas().map((f) => f.map((c) => typeof c === "number" ? String(c).replace(".", decimalAlCopiar()) : plano2(c)));
-      const txt = datos16.map((f) => f.join("	")).join("\r\n");
-      const htm = `<table>${datos16.map((f, i) => `<tr>${f.map((c) => `<${i ? "td" : "th"}>${esc(c)}</${i ? "td" : "th"}>`).join("")}</tr>`).join("")}</table>`;
-      try {
-        if (navigator.clipboard?.write && typeof ClipboardItem !== "undefined") await navigator.clipboard.write([new ClipboardItem({ "text/plain": new Blob([txt], { type: "text/plain" }), "text/html": new Blob([htm], { type: "text/html" }) })]);
-        else await navigator.clipboard.writeText(txt);
-        b.textContent = t("dur.copiado");
-      } catch {
-        b.textContent = t("dur.noCopiado");
-      }
-      setTimeout(() => {
-        b.textContent = t("dur.copiar");
-      }, 1600);
-    }, "secundario pequeno");
-    b.title = t("dur.copiarAyuda");
-    return b;
   }
 
   // src/ui/vistas/durabilidadEHE08.js

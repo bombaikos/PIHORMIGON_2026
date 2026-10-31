@@ -29,7 +29,7 @@ const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
  */
 export function botonCopiar(filas) {
   const b = boton(t('dur.copiar'), async () => {
-    const datos = filas().map((f) => f.map((c) => (typeof c === 'number' ? String(c).replace('.', decimalAlCopiar()) : plano(c))));
+    const datos = filas().map((f) => f.map((c) => (typeof c === 'number' || /^-?\d+(\.\d+)?$/.test(String(c)) ? String(c).replace('.', decimalAlCopiar()) : plano(c))));
     const txt = datos.map((f) => f.join('\t')).join('\r\n');
     const htm = `<table>${datos.map((f, i) => `<tr>${f.map((c) => `<${i ? 'td' : 'th'}>${esc(c)}</${i ? 'td' : 'th'}>`).join('')}</tr>`).join('')}</table>`;
     try {
