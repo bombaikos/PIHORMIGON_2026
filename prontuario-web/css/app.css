@@ -1087,3 +1087,25 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
 .regleta.trac input[type=range]::-moz-range-track { background: linear-gradient(to right, var(--rosa) var(--p, 50%), var(--rosa-suave) var(--p, 50%)); }
 .regleta.trac input[type=range]::-webkit-slider-thumb { background: var(--rosa); box-shadow: 0 0 0 1px var(--rosa); }
 .regleta.trac input[type=range]::-moz-range-thumb { background: var(--rosa); box-shadow: 0 0 0 1px var(--rosa); }
+
+/* Regleta del axil: mitad rosa (tracción) y mitad azul (compresión), con el cero marcado; números pequeños debajo */
+.regleta.rg-dual input[type=range]::-webkit-slider-runnable-track { background: linear-gradient(to right, transparent calc(var(--z) - 1px), var(--tinta-3) calc(var(--z) - 1px), var(--tinta-3) calc(var(--z) + 1px), transparent calc(var(--z) + 1px)), linear-gradient(to right, var(--rosa-suave) var(--z), var(--acento-suave) var(--z)); }
+.regleta.rg-dual input[type=range]::-moz-range-track { background: linear-gradient(to right, transparent calc(var(--z) - 1px), var(--tinta-3) calc(var(--z) - 1px), var(--tinta-3) calc(var(--z) + 1px), transparent calc(var(--z) + 1px)), linear-gradient(to right, var(--rosa-suave) var(--z), var(--acento-suave) var(--z)); }
+.regleta.escala { margin-top: -2px; font-size: 10px; color: var(--tinta-3); }
+.regleta.escala .rg-num { position: relative; height: 12px; font-variant-numeric: tabular-nums; }
+.regleta.escala .rg-num span { position: absolute; }
+
+.cifra .info-i { display: inline-block; vertical-align: middle; margin: 0 0 0 4px; }
+
+.fce-tabla { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
+.fce-tabla .tabla-scroll { width: 100%; }
+
+/* Tabla de resultados como rejilla (guía § 3.2): cabecera sombreada fija, líneas finas, alto máximo con scroll propio */
+.fce-tabla .tabla-scroll { max-height: 210px; overflow-y: auto; }
+.fce-tabla table.rejilla td { cursor: default; }
+.fce-tabla table.rejilla th, .fce-tabla table.rejilla td { text-align: right; }
+.fce-tabla table.rejilla th:first-child, .fce-tabla table.rejilla td:first-child { text-align: left; }
+.fce-tabla table.rejilla { table-layout: auto; }
+.fce-tabla table.rejilla td { overflow: visible; text-overflow: clip; height: calc(22px + var(--mas)); }
+.fce-tabla table.rejilla th { white-space: nowrap; }
+.fce-tabla table.rejilla th, .fce-tabla table.rejilla td { padding-inline: 4px; }
