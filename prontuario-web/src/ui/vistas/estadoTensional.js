@@ -315,7 +315,8 @@ function tablaBarras(ctx, r) {
       ctx.avisar(t('graf.tablaCopiada'));
     } catch { ctx.avisar(t('graf.error')); }
   };
-  const marcadas = filas.map((f, i) => Object.assign(f, { clase: todas[i].s === smax || todas[i].s === smin ? 'et-extremo' : '' }));
+  // Las tensiones extremas (mayor compresión y mayor tracción de la armadura) van en negrita, sin color
+  const marcadas = filas.map((f, i) => { if (todas[i].s === smax || todas[i].s === smin) f[4] = `<b>${f[4]}</b>`; return f; });
   return h('div', { class: 'et-barras' },
     h('div', { class: 'et-cab-barras' }, h('h3', {}, t('est.tBarras')), filas.length > 4 ? h('button', { type: 'button', class: 'tecla', title: t('graf.copiarTablaTit'), onclick: copiar }, t('est.copiarTabla')) : null),
     tabla(marcadas, { cabecera: cab, clase: 'rejilla' }));

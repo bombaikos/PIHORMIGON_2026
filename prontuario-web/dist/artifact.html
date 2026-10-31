@@ -1149,7 +1149,6 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
 .et-der { display: flex; justify-content: space-between; color: var(--tinta-3); font-size: var(--t-s); padding: 2px 2px 0; }
 table.et-estado td:first-child, table.et-estado th:first-child { text-align: left; }
 tr.et-act td { font-weight: 650; }
-tr.et-extremo td { background: var(--acento-suave); }
 .et-cab-barras { display: flex; align-items: center; justify-content: space-between; gap: var(--e3); }
 .et-cab-barras h3 { margin: 0; }
 .et-izq { align-items: stretch; }
@@ -14354,7 +14353,10 @@ tr.et-extremo td { background: var(--acento-suave); }
         ctx2.avisar(t("graf.error"));
       }
     };
-    const marcadas = filas.map((f, i) => Object.assign(f, { clase: todas[i].s === smax || todas[i].s === smin ? "et-extremo" : "" }));
+    const marcadas = filas.map((f, i) => {
+      if (todas[i].s === smax || todas[i].s === smin) f[4] = `<b>${f[4]}</b>`;
+      return f;
+    });
     return h(
       "div",
       { class: "et-barras" },
