@@ -1116,6 +1116,11 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
 @media (min-width: 1100px) and (min-height: 600px) { .fcr-diag.fcr-ancho { grid-template-columns: minmax(0, 1fr) minmax(300px, 500px); } }
 .fce-tabla table.rejilla th, .fce-tabla table.rejilla td { font-size: 11px; padding-inline: 3px; }
 .fcr-ancho .fcr-lado .fcr-sec svg { max-height: min(230px, 32vh); }
+
+/* Genérica: zona del DXF más ancha, con «.dxf» grande aunque en gris; globo de la (i) con saltos de línea (31/10, José Luis) */
+.zona-dxf { width: 100%; box-sizing: border-box; padding: 9px 24px; }
+.zona-dxf b { font-size: calc(18px + var(--mas)); color: var(--tinta-3); }
+.globo-i { white-space: pre-line; }
 .dib .mom { stroke: var(--tinta-3); stroke-width: 1.8; fill: none; }
 .dib .mom-t { fill: var(--tinta-2); font-weight: 700; }
 .dib .mom-t .sub { font-size: 9px; font-weight: 600; }
@@ -2834,6 +2839,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     "rej.errores": (n) => `${n} celda${n > 1 ? "s" : ""} con error: no se aplica hasta corregir${n > 1 ? "las" : "la"}`,
     "geo.caraN": (i) => `Cara ${i}`,
     "geo.colArmado": "Barras",
+    "geo.ayudaArmado": "Se admiten dos formatos:\n4D25 (4 barras de \xF825)\nD20/0.15 (barras de \xF820 a 0.15 m, aprox.)",
     "geo.contornoCaras": "V\xE9rtices y barras de la cara que sale de cada uno (sin el v\xE9rtice siguiente)",
     "geo.huecoOpc": "Hueco (opcional)",
     "geo.huecoN": (n, v2) => `Hueco \xB7 ${v2} v\xE9rtices${n > 1 ? ` (${n} huecos, solo se edita el primero)` : ""}`,
@@ -3869,6 +3875,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     "rej.errores": (n) => `${n} cell${n > 1 ? "s" : ""} with errors: nothing is applied until ${n > 1 ? "they are" : "it is"} fixed`,
     "geo.caraN": (i) => `Face ${i}`,
     "geo.colArmado": "Face bars",
+    "geo.ayudaArmado": "Two formats are accepted:\n4D25 (4 bars of \xF825)\nD20/0.15 (\xF820 bars at about 0.15 m)",
     "geo.contornoCaras": "Vertices and bars of the face starting at each (not counting the next vertex)",
     "geo.huecoN": (n, v2) => `Void \xB7 ${v2} vertices${n > 1 ? ` (${n} voids, only the first is editable)` : ""}`,
     "geo.huecoOpc": "Hole (optional)",
@@ -9828,7 +9835,13 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
         };
         return [
           zonaDXF(ctx2, s),
-          h("p", { class: "etq-rejilla", html: t("geo.contornoCaras") }),
+          h(
+            "p",
+            { class: "etq-rejilla" },
+            h("span", { html: t("geo.contornoCaras") }),
+            " ",
+            h("span", { class: "info-i", tabindex: 0, role: "img", "aria-label": t("geo.ayudaArmado"), "data-tip": t("geo.ayudaArmado") }, "i")
+          ),
           rejilla({
             id: "g-cont",
             altoMax: 210,
@@ -12245,7 +12258,12 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     const { d, dH, geo } = c;
     const ps = pares();
     if (!ps.length) throw new Error(t("fcr.sinEsfuerzos"));
-    const gam = ps.map((x) => ({ ...x, g: coeficienteNM(d, x.N, x.M) }));
+    const plano3 = (x) => {
+      const Q = comprobarNM(d, x.N, x.M).Q;
+      const e2 = Q ? estadoUltimo(c.secD, -Q[0], { signo: 1, yref: d.yref }) : null;
+      return e2?.converge ? e2 : null;
+    };
+    const gam = ps.map((x) => ({ ...x, g: coeficienteNM(d, x.N, x.M), e: est5.modo === "diagrama" ? plano3(x) : null }));
     const gmin = Math.min(...gam.map((x) => x.g));
     const dim = est5.modo === "dimensionar";
     const unico = est5.modo !== "diagrama";
@@ -12307,7 +12325,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       "article",
       { class: "panel tarjeta" },
       h("h2", {}, `${t("fcr.diagrama")} \xB7 ${s.nombre}${c.phi0 ? ` \xB7 \xF8${fmt(est5.fi ?? c.phi0, 0)}` : ""}`),
-      h("div", { class: "fcr-diag" }, h("div", { class: "fcr-graf" }, graficoNM(ctx2, d, dH, gam, s), nota), lado)
+      h("div", { class: "fcr-diag fcr-ancho" }, h("div", { class: "fcr-graf" }, graficoNM(ctx2, d, dH, gam, s), nota), lado)
     ));
   }
   function dibujoSeccionPeq(geo, s) {
@@ -12318,16 +12336,21 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${x0 + bp + 30} ${y0 + hp + 32}"${topeEscala(x0 + bp + 30, y0 + hp + 32)} role="img" aria-label="${t("g.seccion")}">${DEFS}${svg}</svg>`;
   }
   function tablaEsfuerzos(gam) {
+    const num4 = (v2, dd) => Number.isFinite(v2) ? fmt(v2, dd) : "\u2014";
     const filas = gam.map((x) => [
       String(x.i + 1),
       fmt(x.N, MAG.N.d),
       fmt(x.M, MAG.M.d) + (x.subeM ? "*" : ""),
       x.N !== 0 ? fmt(x.M / x.N * 1e3, MAG.long.d) : "\u221E",
       sigla(x.g),
+      x.e && Number.isFinite(x.e.x) && x.e.x > 0 ? fmt(x.e.x * 1e3, 0) : "\u2014",
+      x.e ? num4(x.e.kappa * 1e3, 2) : "\u2014",
+      x.e ? num4(-x.e.epsSup * 1e3, 2) : "\u2014",
+      x.e ? num4(-x.e.epsInf * 1e3, 2) : "\u2014",
       `<span class="${x.g >= 1 - 1e-6 ? "ok" : "no"}">${x.g >= 1 - 1e-6 ? t("fcr.dentroSello") : t("fcr.fueraSello")}</span>`
     ]);
-    const cont = h("div", {}, h("table", { class: "tabla", html: `<thead><tr>${["#", "N<sub>Ed</sub> [kN]", "M<sub>Ed</sub> [kN\xB7m]", "e [mm]", "\u03B3", ""].map((x) => `<th>${x}</th>`).join("")}</tr></thead><tbody>${filas.map((f) => `<tr>${f.map((x) => `<td>${x}</td>`).join("")}</tr>`).join("")}</tbody>` }));
-    return cont;
+    const cab = ["#", "N<sub>Ed</sub> [kN]", "M<sub>Ed</sub> [kN\xB7m]", "e [mm]", "\u03B3", "x [mm]", "\u03BA [\u2030/m]", "\u03B5<sub>sup</sub> [\u2030]", "\u03B5<sub>inf</sub> [\u2030]", ""];
+    return h("div", {}, h("table", { class: "tabla", html: `<thead><tr>${cab.map((x) => `<th>${x}</th>`).join("")}</tr></thead><tbody>${filas.map((f) => `<tr>${f.map((x) => `<td>${x}</td>`).join("")}</tr>`).join("")}</tbody>` }));
   }
   function graficoNM(ctx2, d, dH, gam, s) {
     const eMm = fmt(emin * 1e3, 0);
