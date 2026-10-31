@@ -1119,3 +1119,9 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
 .zona-dxf { width: 100%; box-sizing: border-box; padding: 9px 24px; }
 .zona-dxf b { font-size: calc(18px + var(--mas)); color: var(--tinta-3); }
 .globo-i { white-space: pre-line; }
+.dib .mom { stroke: var(--tinta-3); stroke-width: 1.8; fill: none; }
+.dib .mom-t { fill: var(--tinta-2); font-weight: 700; }
+.dib .mom-t .sub { font-size: 9px; font-weight: 600; }
+.fce-calculando { display: flex; align-items: center; justify-content: center; }
+.fce-calculando p { margin: 0; padding: 14px 24px; font-size: calc(18px + var(--mas)); color: var(--tinta-2); border: 1px solid var(--linea); border-radius: var(--r-campo); background: var(--hundido); }
+.campo.no-aplica select:disabled { background: var(--hundido); color: var(--tinta-3); cursor: not-allowed; }

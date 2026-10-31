@@ -39,6 +39,8 @@ const PANTALLAS = [
   ['Flexión compuesta esviada', 'flexEsviada', []],
   ['Flexión compuesta esviada · dimensionar', 'flexEsviada', [(p) => p.click('.datos .seg button:nth-child(2)')]],
   ['Flexión compuesta esviada · diagrama', 'flexEsviada', [(p) => p.click('.datos .seg button:nth-child(3)')]],
+  ['Flexión compuesta esviada · diagrama My constante', 'flexEsviada', [(p) => p.click('.datos .seg button:nth-child(3)'), (p) => p.click('.datos .seg:not(.capsula) button:nth-child(3)')]],
+  ['Flexión compuesta esviada · diagrama Mx constante', 'flexEsviada', [(p) => p.click('.datos .seg button:nth-child(3)'), (p) => p.click('.datos .seg:not(.capsula) button:nth-child(2)')]],
   ['Flexión compuesta esviada · genérica', 'flexEsviada', [SEC('Genérica')]],
   ['Cortante · EC-2 comprobar', 'cortante', []],
   ['Cortante · EC-2 dimensionar', 'cortante', [(p) => p.click('.datos .seg >> nth=0 >> button >> nth=1')]],
