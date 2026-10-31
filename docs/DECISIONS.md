@@ -49,6 +49,7 @@ Resumen de lo decidido por José Luis (fechas de 2026). Cada módulo tiene su de
 ## Diseño (resumen; manda la guía)
 - Tres columnas (datos | dibujo | resultados), **sin scroll de página** a 1536×730 y 1366×657 (`npm run test:pantalla`); por debajo de 1100×600 y en móvil, una columna. Todo alineado arriba.
 - Campos editables **blancos** con borde azul grisáceo; gris solo para desactivado (28/10). Controles que no aplican: en gris con explicación.
+- Casillas (31/10): caja blanca, marcada con fondo azul suave y tick azul de acento; nunca el azul por defecto del navegador. Regla general (guía común).
 - Unidades entre corchetes `[mm]` en cabeceras (no en cada celda). Texto 12/14/16 px, cartel 28; textos de dibujos a 12 px reales.
 - Barra superior de 52 px; Ctrl+K se queda; menú Archivo con «Datos de proyecto» primero.
 - Un solo cartel grande de resultado; notas y referencias plegadas; jerarquía «una forma por nivel».

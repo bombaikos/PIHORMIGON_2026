@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 </head>
 <body>
-<title>Prontuario Informático del Hormigón 2026 BETA a</title>
+<title>Prontuario del Hormigón</title>
 <style>
 /* Prontuario web. Estilo según analisis/guia-estilo-prontuario.md (la maqueta de flexión es la referencia).
    Disposición: todo en una pantalla de PC (§ 13): barra de una línea; datos | dibujo | resultados, sin scroll de página. En móvil, una columna. */
@@ -1067,6 +1067,14 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
 .globo-i { position: fixed; z-index: 1000; box-sizing: border-box; width: max-content; max-width: min(280px, calc(100vw - 16px)); padding: 6px 9px; border: 1px solid var(--linea-fuerte); border-radius: var(--r-campo); background: var(--hoja); box-shadow: var(--sombra); color: var(--tinta); font: 400 var(--t-s)/1.4 var(--f); text-align: left; pointer-events: none; }
 .globo-i[hidden] { display: none; }
 
+/* Casillas (regla de diseño general): caja blanca con borde azul grisáceo; marcada, fondo azul suave, borde y tick en el azul de acento.
+   Nunca el azul por defecto del navegador (fuera de paleta). */
+input[type="checkbox"] { appearance: none; -webkit-appearance: none; width: 16px; height: 16px; margin: 0; flex: none; box-sizing: border-box; border: 1.5px solid var(--campo-borde); border-radius: 3px; background: var(--campo); display: inline-grid; place-content: center; cursor: pointer; }
+input[type="checkbox"]:checked { background: var(--acento-suave); border-color: var(--acento); }
+input[type="checkbox"]:checked::after { content: ''; width: 8px; height: 4px; border-left: 2px solid var(--acento); border-bottom: 2px solid var(--acento); transform: translateY(-1px) rotate(-45deg); }
+input[type="checkbox"]:disabled { background: var(--hundido); border-color: var(--linea-fuerte); cursor: default; }
+input[type="checkbox"]:disabled:checked::after { border-color: var(--tinta-3); }
+input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline-offset: 2px; }
 /* Regleta: deslizador común (guía §9.4). Ancho: 80 % del gráfico al que acompaña, centrada. */
 .regleta { display: grid; grid-template-columns: max-content minmax(0, 1fr) 9ch; align-items: center; gap: var(--e3); width: 80%; margin: 4px auto; flex-shrink: 0; font-size: var(--t-s); color: var(--tinta-2); }
 .regleta.sin-etq { grid-template-columns: minmax(0, 1fr) 9ch; }
@@ -17676,7 +17684,7 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
   }
 
   // src/ui/app.js
-  var EMISION = true ? "31.10.26" : (/* @__PURE__ */ new Date()).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "2-digit" }).replace(/\//g, ".");
+  var EMISION = typeof __FECHA_EMISION__ !== "undefined" ? __FECHA_EMISION__ : (/* @__PURE__ */ new Date()).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "2-digit" }).replace(/\//g, ".");
   function vistaSecciones(m, propia) {
     const fijar = (f) => (...a) => {
       modo(m);
