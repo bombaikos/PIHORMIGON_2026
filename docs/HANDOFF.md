@@ -16,6 +16,7 @@ Actualizado: 31/10/2026. **Actualiza este archivo al cerrar cada tarea.** El est
 - Este PR de documentación (`claude/project-thread-na7g56`).
 
 - **Flexión compuesta esviada** (fusionada 31/10; PR 39–41 y siguiente): Rec pilar y genéricas, diagrama de interacción Mx–My con regleta de axil (rosa en tracción), selector e_mín en una dirección. PENDIENTE: figura emergente (opción A, flechas de doble punta en gris; Mx>0 apunta a la izquierda y My>0 hacia arriba por la mano derecha; β antihorario en el corte de la recta neutra con la horizontal; x perpendicular desde la fibra más comprimida; maquetas en /mnt/project-files/flexion-esviada/figura-A-v3.png). Ver `analisis/flexion-esviada-decisiones.md`.
+- Flexión esviada, PENDIENTE (Pepiño 31/10, «apunta, aún no cambies nada»): quitar «γ = |OQ|/|OP|» de la tarjeta grande de diagnóstico (Comprobar, Dimensionar y Diagrama).
 
 ## A medias / pendiente conocido
 - **Cápsula de modo** (Comprobación | Dimensionamiento | Diagrama): José Luis la extenderá a todos los módulos.
