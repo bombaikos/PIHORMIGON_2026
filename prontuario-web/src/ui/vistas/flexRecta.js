@@ -159,7 +159,13 @@ function resultadosFlexRecta(ctx, res) {
   const { d, dH, geo } = c;
   const ps = pares();
   if (!ps.length) throw new Error(t('fcr.sinEsfuerzos'));
-  const gam = ps.map((x) => ({ ...x, g: coeficienteNM(d, x.N, x.M) }));
+  // Plano de rotura de cada punto: estado último en el corte Q de su recta a excentricidad constante
+  const plano = (x) => {
+    const Q = comprobarNM(d, x.N, x.M).Q;
+    const e = Q ? estadoUltimo(c.secD, -Q[0], { signo: 1, yref: d.yref }) : null;
+    return e?.converge ? e : null;
+  };
+  const gam = ps.map((x) => ({ ...x, g: coeficienteNM(d, x.N, x.M), e: est.modo === 'diagrama' ? plano(x) : null }));
   const gmin = Math.min(...gam.map((x) => x.g));
   const dim = est.modo === 'dimensionar';
   const unico = est.modo !== 'diagrama';
@@ -199,7 +205,7 @@ function resultadosFlexRecta(ctx, res) {
     h('div', { class: 'fcr-sec', html: dibujoSeccionPeq(geo, s) }),
     tablaEsfuerzos(gam));
   res.append(h('article', { class: 'panel tarjeta' }, h('h2', {}, `${t('fcr.diagrama')} · ${s.nombre}${c.phi0 ? ` · ø${fmt(est.fi ?? c.phi0, 0)}` : ''}`),
-    h('div', { class: 'fcr-diag' }, h('div', { class: 'fcr-graf' }, graficoNM(ctx, d, dH, gam, s), nota), lado)));
+    h('div', { class: 'fcr-diag fcr-ancho' }, h('div', { class: 'fcr-graf' }, graficoNM(ctx, d, dH, gam, s), nota), lado)));
 }
 
 /** Sección pequeña, solo contorno y barras con sus cotas. */
@@ -212,10 +218,12 @@ function dibujoSeccionPeq(geo, s) {
 }
 
 function tablaEsfuerzos(gam) {
+  const num = (v, dd) => (Number.isFinite(v) ? fmt(v, dd) : '—');
   const filas = gam.map((x) => [String(x.i + 1), fmt(x.N, MAG.N.d), fmt(x.M, MAG.M.d) + (x.subeM ? '*' : ''), x.N !== 0 ? fmt((x.M / x.N) * 1000, MAG.long.d) : '∞', sigla(x.g),
+    x.e && Number.isFinite(x.e.x) && x.e.x > 0 ? fmt(x.e.x * 1000, 0) : '—', x.e ? num(x.e.kappa * 1000, 2) : '—', x.e ? num(-x.e.epsSup * 1000, 2) : '—', x.e ? num(-x.e.epsInf * 1000, 2) : '—',
     `<span class="${x.g >= 1 - 1e-6 ? 'ok' : 'no'}">${x.g >= 1 - 1e-6 ? t('fcr.dentroSello') : t('fcr.fueraSello')}</span>`]);
-  const cont = h('div', {}, h('table', { class: 'tabla', html: `<thead><tr>${['#', 'N<sub>Ed</sub> [kN]', 'M<sub>Ed</sub> [kN·m]', 'e [mm]', 'γ', ''].map((x) => `<th>${x}</th>`).join('')}</tr></thead><tbody>${filas.map((f) => `<tr>${f.map((x) => `<td>${x}</td>`).join('')}</tr>`).join('')}</tbody>` }));
-  return cont;
+  const cab = ['#', 'N<sub>Ed</sub> [kN]', 'M<sub>Ed</sub> [kN·m]', 'e [mm]', 'γ', 'x [mm]', 'κ [‰/m]', 'ε<sub>sup</sub> [‰]', 'ε<sub>inf</sub> [‰]', ''];
+  return h('div', {}, h('table', { class: 'tabla', html: `<thead><tr>${cab.map((x) => `<th>${x}</th>`).join('')}</tr></thead><tbody>${filas.map((f) => `<tr>${f.map((x) => `<td>${x}</td>`).join('')}</tr>`).join('')}</tbody>` }));
 }
 
 /** Contorno N-M (x = N, y = M) con la envolvente del hormigón solo y los esfuerzos: verde dentro, rojo fuera. */
