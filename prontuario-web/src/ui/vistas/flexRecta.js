@@ -199,7 +199,7 @@ function resultadosFlexRecta(ctx, res) {
     h('div', { class: 'fcr-sec', html: dibujoSeccionPeq(geo, s) }),
     tablaEsfuerzos(gam));
   res.append(h('article', { class: 'panel tarjeta' }, h('h2', {}, `${t('fcr.diagrama')} · ${s.nombre}${c.phi0 ? ` · ø${fmt(est.fi ?? c.phi0, 0)}` : ''}`),
-    h('div', { class: 'fcr-diag fcr-ancho' }, h('div', { class: 'fcr-graf' }, graficoNM(ctx, d, dH, gam, s), nota), lado)));
+    h('div', { class: 'fcr-diag' }, h('div', { class: 'fcr-graf' }, graficoNM(ctx, d, dH, gam, s), nota), lado)));
 }
 
 /** Sección pequeña, solo contorno y barras con sus cotas. */
