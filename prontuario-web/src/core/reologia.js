@@ -224,8 +224,9 @@ export function historia(norma, { fck, fcm, fctm, Ecm, Ec28, cemento = 'N', h0, 
       elastica += ds / E0[j];
       if (t > t0) diferida += (ds * fluencia(norma, { fck, HR, h0, t0, t, cemento }).phi) / Ec0;
     });
-    const rc = -retraccion(norma, { fck, HR, h0, t, ts, cemento }).total;
-    return { t, HR, elastica, diferida, retraccion: rc, total: elastica + diferida + rc };
+    const r = retraccion(norma, { fck, HR, h0, t, ts, cemento });
+    const rc = -r.total;
+    return { t, HR, elastica, diferida, retraccion: rc, autogena: -r.autogena, tension: cargas.reduce((a, [t0, ds]) => (t >= t0 ? a + ds : a), 0), total: elastica + diferida + rc };
   });
 }
 

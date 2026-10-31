@@ -183,7 +183,7 @@ function listaMateriales(ctx, tipo, lista, activo) {
     const x = (q?.value ?? '').trim().toLowerCase();
     filas.replaceChildren(...lista.filter((s) => !x || s.nombre.toLowerCase().includes(x)).map((s) => h('button', {
       type: 'button', role: 'option', 'aria-current': s.nombre === activo ? 'true' : undefined,
-      html: `${icono(tipo)}${s.nombre}<span class="nombre-sec">${breve(tipo, s)}</span>`,
+      html: `${icono(tipo)}${s.nombre}${tipo === 'hormigones' ? "" : `<span class="nombre-sec">${breve(tipo, s)}</span>`}`,
       onclick: () => elegir(ctx, tipo, s.nombre) })));
     if (!filas.children.length) filas.append(h('span', { class: 'vacio' }, lista.length ? t('sec.ningunaCoincide') : t('sec.ningunaTipo')));
   };

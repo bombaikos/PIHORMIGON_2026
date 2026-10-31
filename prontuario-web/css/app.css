@@ -1044,3 +1044,20 @@ table.rejilla-res tbody tr.manda td { font-weight: 650; background: var(--acento
 .desl-md .desliza-sec { flex: 1; }
 .fcr-graf > .grafica { flex: 1; min-height: 0; }
 .seg button:disabled { opacity: .5; cursor: not-allowed; }
+
+/* Propiedades reológicas: figura con leyenda vertical y deslizador de t0 */
+.fig-ley{display:flex;flex-direction:column;gap:6px;flex:1;min-height:0}
+.fig-ley .lienzo{flex:1;min-width:0}
+.leyenda-v{display:flex;flex-direction:row;flex-wrap:wrap;justify-content:center;gap:4px 18px;font-size:12px}
+.ley-item{display:flex;align-items:center;gap:6px;cursor:pointer;white-space:nowrap}
+.ley-muestra{width:34px;height:10px;flex:none}
+.gauge-fila{display:flex;align-items:center;gap:10px;font-size:12px}
+.gauge{flex:1}
+.gauge-valor{min-width:70px;text-align:right;font-weight:600}
+
+/* Tablas de resultados: fondo blanco, gris solo para los datos */
+.edad table.excel th, .edad table.excel td { background: var(--campo); }
+.fig-ley .lienzo{order:1}.fig-ley .leyenda-v{order:2}
+#rg-historia td, #rg-historia tr.nueva td { background: var(--campo); } #rg-historia td.sel, #rg-historia tr.foco td { background: var(--acento-suave); }
+.tarjeta .seg.ancho{display:grid;grid-auto-flow:column;grid-auto-columns:1fr}.tarjeta .seg.ancho button{flex:none}
+#rg-historia td { height: 22px; } #rg-historia th { padding-block: 2px; }
