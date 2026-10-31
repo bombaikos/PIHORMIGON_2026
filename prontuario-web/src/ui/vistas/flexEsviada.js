@@ -201,6 +201,14 @@ function graficoMxMy(ctx, c, gam, s) {
   }));
 }
 
+/** Título de los gráficos: la acción (N, y Mx y My si los hay), el ø de la armadura y la sección. */
+function tituloGraf(c, s, { N, Mx, My }) {
+  const partes = [`${sub('N', 'Ed')} = ${fmt(N, MAG.N.d)} ${MAG.N.ud}`];
+  if (Mx !== undefined) partes.push(`${sub('M', 'x,Ed')} = ${fmt(Mx, MAG.M.d)} ${MAG.M.ud}`, `${sub('M', 'y,Ed')} = ${fmt(My, MAG.M.d)} ${MAG.M.ud}`);
+  if (c.phi0) partes.push(`ø${fmt(est.fi ?? c.phi0, 0)} mm`);
+  return `${t('fce.contorno')} · ${partes.join(' · ')}`;
+}
+
 /** Modo Diagrama (como el del Prontuario 3.1): contorno Mx–My para un axil constante que se mueve con una regleta;
  *  en tracción (N < 0) el contorno y la regleta van en rosa, en compresión en azul. */
 function panelDiagrama(ctx, { s, c }) {
@@ -210,6 +218,7 @@ function panelDiagrama(ctx, { s, c }) {
   est.Ndiag = Math.min(Math.max(est.Ndiag, lo), hi);
   const caja = h('div', { class: 'fcr-graf' });
   const lado = h('aside', { class: 'fcr-lado' });
+  const titulo = h('h2', {});
   let rg = null;
   const dibujar = (N, n) => {
     const cont = contornoMxMy(c.m, N, { n });
@@ -226,6 +235,7 @@ function panelDiagrama(ctx, { s, c }) {
       cifras([[sub('N', ''), qh(N, 'N')], [sub('M', 'x,Rd,máx'), qh(ext((v) => v.Mx, true), 'M')], [sub('M', 'x,Rd,mín'), qh(ext((v) => v.Mx, false), 'M')],
         [sub('M', 'y,Rd,máx'), qh(ext((v) => v.My, true), 'M')], [sub('M', 'y,Rd,mín'), qh(ext((v) => v.My, false), 'M')],
         [sub('N', 'Rd'), qh(lim.Ncomp, 'N')], [sub('N', 'Rd,t'), qh(lim.Ntrac, 'N')]]));
+    titulo.innerHTML = tituloGraf(c, s, { N });
     if (rg) rg.classList.toggle('trac', trac);
     return g;
   };
@@ -236,7 +246,7 @@ function panelDiagrama(ctx, { s, c }) {
     onInput: (N) => { est.Ndiag = N; const g = dibujar(N, 36); graf.replaceWith(g); graf = g; },
     onChange: (N) => { est.Ndiag = N; const g = dibujar(N, TOLCONT); graf.replaceWith(g); graf = g; ctx.cambio(); } });
   caja.append(rg);
-  return h('article', { class: 'panel tarjeta' }, h('h2', {}, `${t('fce.contorno')} · ${s.nombre}${c.phi0 ? ` · ø${fmt(est.fi ?? c.phi0, 0)}` : ''}`),
+  return h('article', { class: 'panel tarjeta' }, titulo,
     h('div', { class: 'fcr-diag' }, caja, lado));
 }
 
@@ -349,7 +359,7 @@ function resultadoUnico(ctx, res, { s, c, gam, gmin, dim }) {
   ];
   const tarjetaDib = h('article', { class: 'panel tarjeta' }, h('h2', {}, t('fce.dibujo')), h('p', { class: 'sub' }, t('fce.dibujoSub')),
     h('div', { class: 'lienzo', html: e ? dibujoPlano(c, s, e) : '' }));
-  const tarjetaRes = h('article', { class: 'panel tarjeta' }, graficoMxMy(ctx, c, [gam], s), cifras(cif), h('p', { class: 'sub', style: 'margin:0' }, t('t.desplegar')), traza(ctx.p, c, gmin, e));
+  const tarjetaRes = h('article', { class: 'panel tarjeta' }, h('h2', { html: tituloGraf(c, s, { N: gam.N, Mx: gam.Mx, My: gam.My }) }), graficoMxMy(ctx, c, [gam], s), cifras(cif), h('p', { class: 'sub', style: 'margin:0' }, t('t.desplegar')), traza(ctx.p, c, gmin, e));
   res.append(h('div', { class: 'cuerpo' }, tarjetaDib, tarjetaRes));
 }
 

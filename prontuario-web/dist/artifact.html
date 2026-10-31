@@ -12811,6 +12811,12 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       avisar: ctx2.avisar
     }));
   }
+  function tituloGraf(c, s, { N, Mx, My }) {
+    const partes = [`${sub20("N", "Ed")} = ${fmt(N, MAG.N.d)} ${MAG.N.ud}`];
+    if (Mx !== void 0) partes.push(`${sub20("M", "x,Ed")} = ${fmt(Mx, MAG.M.d)} ${MAG.M.ud}`, `${sub20("M", "y,Ed")} = ${fmt(My, MAG.M.d)} ${MAG.M.ud}`);
+    if (c.phi0) partes.push(`\xF8${fmt(est6.fi ?? c.phi0, 0)} mm`);
+    return `${t("fce.contorno")} \xB7 ${partes.join(" \xB7 ")}`;
+  }
   function panelDiagrama2(ctx2, { s, c }) {
     const { lim } = c;
     const lo = Math.ceil(lim.Ntrac);
@@ -12818,6 +12824,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     est6.Ndiag = Math.min(Math.max(est6.Ndiag, lo), hi);
     const caja = h("div", { class: "fcr-graf" });
     const lado = h("aside", { class: "fcr-lado" });
+    const titulo = h("h2", {});
     let rg = null;
     const dibujar = (N, n) => {
       const cont = contornoMxMy(c.m, N, { n });
@@ -12844,6 +12851,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
           [sub20("N", "Rd,t"), qh(lim.Ntrac, "N")]
         ])
       );
+      titulo.innerHTML = tituloGraf(c, s, { N });
       if (rg) rg.classList.toggle("trac", trac);
       return g;
     };
@@ -12876,7 +12884,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
     return h(
       "article",
       { class: "panel tarjeta" },
-      h("h2", {}, `${t("fce.contorno")} \xB7 ${s.nombre}${c.phi0 ? ` \xB7 \xF8${fmt(est6.fi ?? c.phi0, 0)}` : ""}`),
+      titulo,
       h("div", { class: "fcr-diag" }, caja, lado)
     );
   }
@@ -12994,7 +13002,7 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline
       h("p", { class: "sub" }, t("fce.dibujoSub")),
       h("div", { class: "lienzo", html: e2 ? dibujoPlano(c, s, e2) : "" })
     );
-    const tarjetaRes = h("article", { class: "panel tarjeta" }, graficoMxMy(ctx2, c, [gam], s), cifras(cif), h("p", { class: "sub", style: "margin:0" }, t("t.desplegar")), traza3(ctx2.p, c, gmin, e2));
+    const tarjetaRes = h("article", { class: "panel tarjeta" }, h("h2", { html: tituloGraf(c, s, { N: gam.N, Mx: gam.Mx, My: gam.My }) }), graficoMxMy(ctx2, c, [gam], s), cifras(cif), h("p", { class: "sub", style: "margin:0" }, t("t.desplegar")), traza3(ctx2.p, c, gmin, e2));
     res.append(h("div", { class: "cuerpo" }, tarjetaDib, tarjetaRes));
   }
   function cifrasArmadura2(c, dim, mm4) {
