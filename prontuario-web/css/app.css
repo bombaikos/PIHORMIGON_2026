@@ -1164,3 +1164,7 @@ tr.et-act td { font-weight: 650; }
 .dib .et-fr.t { fill: var(--traccion); }
 .dib .et-pt { fill: var(--acero); }
 .et-nota { margin: 0; color: var(--tinta-3); font-size: var(--t-s); }
+
+/* Inestabilidad de soportes: fila de un soporte o viga de un nudo (b, h, luz) */
+.ine-fila { display: flex; flex-direction: column; gap: 2px; }
+.ine-fila .etq-grupo { font-size: var(--t-xs); color: var(--tinta-3); }

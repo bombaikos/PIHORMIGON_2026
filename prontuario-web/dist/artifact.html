@@ -1,4 +1,4 @@
-<title>Prontuario del Hormigón</title>
+<title>Prontuario Informático del Hormigón 2026 BETA a</title>
 <style>
 /* Prontuario web. Estilo según analisis/guia-estilo-prontuario.md (la maqueta de flexión es la referencia).
    Disposición: todo en una pantalla de PC (§ 13): barra de una línea; datos | dibujo | resultados, sin scroll de página. En móvil, una columna. */
@@ -1166,6 +1166,10 @@ tr.et-act td { font-weight: 650; }
 .dib .et-fr.t { fill: var(--traccion); }
 .dib .et-pt { fill: var(--acero); }
 .et-nota { margin: 0; color: var(--tinta-3); font-size: var(--t-s); }
+
+/* Inestabilidad de soportes: fila de un soporte o viga de un nudo (b, h, luz) */
+.ine-fila { display: flex; flex-direction: column; gap: 2px; }
+.ine-fila .etq-grupo { font-size: var(--t-xs); color: var(--tinta-3); }
 </style>
 
 <header class="barra">
@@ -1465,7 +1469,7 @@ tr.et-act td { font-weight: 650; }
   var IDS_NORMAS = Object.keys(EXTRAS);
 
   // src/core/materiales.js
-  function hormigon({ nombre = "", fck, norma: norma2 = "EHE-98", gammaC, alfa: alfa2, alfaCC, ktc, kE, coefArido, tramos = 10, diag = "PR", refDiag = "fcm", puntos, tracc = false, calculo: calculo4 = false }) {
+  function hormigon({ nombre = "", fck, norma: norma2 = "EHE-98", gammaC, alfa: alfa2, alfaCC, ktc, kE, coefArido, tramos = 10, diag = "PR", refDiag = "fcm", puntos, tracc = false, calculo: calculo5 = false }) {
     const n = normaMat(norma2);
     if (!(fck > 0)) throw new Error("fck debe ser positivo");
     if (fck > n.fckMax) throw new Error(`${n.nombre}: esta versi\xF3n solo admite fck \u2264 ${n.fckMax} MPa`);
@@ -1474,15 +1478,15 @@ tr.et-act td { font-weight: 650; }
     if (diag === "EC2" || diag === "puntos") {
       const E = n.Ec(fck, { kE, coefArido }) * 1e3;
       const fcd2 = a * fck / g;
-      const comp2 = diag === "EC2" ? compSargin(fck, norma2, { kE, coefArido, refDiag: calculo4 ? "fcd" : refDiag, fcd: fcd2 }) : compPuntos(puntos);
+      const comp2 = diag === "EC2" ? compSargin(fck, norma2, { kE, coefArido, refDiag: calculo5 ? "fcd" : refDiag, fcd: fcd2 }) : compPuntos(puntos);
       return {
         tipo: "hormigon",
         nombre,
         norma: n.id,
         E,
         fk: fck * 1e3,
-        gamma: calculo4 && diag === "EC2" ? g : 1,
-        alfa: calculo4 && diag === "EC2" ? a : 1,
+        gamma: calculo5 && diag === "EC2" ? g : 1,
+        alfa: calculo5 && diag === "EC2" ? a : 1,
         ktc: n.id === "EC2-2023" ? ktc ?? n.ktc : void 0,
         diag,
         comp: comp2,
@@ -1688,12 +1692,12 @@ tr.et-act td { font-weight: 650; }
       rama: m.rama
     };
   }
-  function materialDeFicha(ficha, normaId, { tracc = false, calculo: calculo4 = false } = {}) {
+  function materialDeFicha(ficha, normaId, { tracc = false, calculo: calculo5 = false } = {}) {
     if (ficha.diagrama) return { ...ficha.diagrama, nombre: ficha.nombre };
     if (ficha.tipo !== "acero") ficha = { ...ficha, fck: fckTipificado(ficha.nombre) ?? ficha.fck };
     else if (aceroTipificado(ficha.nombre)) ficha = { ...ficha, ...aceroTipificado(ficha.nombre) };
     if (ficha.tipo === "hormigon") {
-      return hormigon({ nombre: ficha.nombre, fck: ficha.fck, norma: normaId, gammaC: ficha.gammaC, alfa: ficha.alfa, alfaCC: ficha.alfaCC, ktc: ktcDe(ficha, normaId), kE: ficha.kE, coefArido: coefAridoDe(ficha, normaId), diag: ficha.diag, refDiag: ficha.refDiag, puntos: ficha.puntos, tracc, calculo: calculo4 });
+      return hormigon({ nombre: ficha.nombre, fck: ficha.fck, norma: normaId, gammaC: ficha.gammaC, alfa: ficha.alfa, alfaCC: ficha.alfaCC, ktc: ktcDe(ficha, normaId), kE: ficha.kE, coefArido: coefAridoDe(ficha, normaId), diag: ficha.diag, refDiag: ficha.refDiag, puntos: ficha.puntos, tracc, calculo: calculo5 });
     }
     return acero({ nombre: ficha.nombre, fyk: ficha.fyk, norma: normaId, gammaS: ficha.gammaS, Es: ficha.Es, epsUd: ficha.epsUd, ductilidad: ficha.ductilidad, rama: ficha.rama, epsUdModo: ficha.epsUdModo, k: ficha.k });
   }
@@ -5925,8 +5929,191 @@ tr.et-act td { font-weight: 650; }
     "ras.cmdDimensionar": "Shear at interfaces: design"
   };
 
+  // src/i18n/inestabilidad.es.js
+  var inestabilidad_es_default = {
+    "m.inestabilidad": "Inestabilidad de soportes",
+    "ine.subtitulo": "Soporte aislado con efectos de segundo orden: longitud de pandeo, esbeltez y momento de c\xE1lculo amplificado",
+    "ine.sinSec": "No hay secciones de pilar (rectangular o circular): cr\xE9alas en Secciones.",
+    "ine.pSoporte": "Soporte",
+    "ine.pExtremos": "Extremos",
+    "ine.gSoporte": "Soporte",
+    "ine.gEsfuerzos": "Esfuerzos de c\xE1lculo",
+    "ine.gFluencia": "Fluencia",
+    "ine.gRigidez": "Rigidez de c\xE1lculo",
+    "ine.L": "Altura libre",
+    "ine.LNombre": "La altura libre",
+    "ine.LAyuda": "Altura libre l del soporte entre las caras de las vigas o cimentaciones que lo coaccionan",
+    "ine.porticoEtq": "P\xF3rtico",
+    "ine.intra": "Intraslacional",
+    "ine.trasl": "Traslacional",
+    "ine.porticoAyuda": "Intraslacional (arriostrado): los nudos no se desplazan lateralmente. Traslacional: s\xED. Lo decide el proyectista.",
+    "ine.nombreN": "El axil",
+    "ine.nombreM": "El momento",
+    "ine.MA": "M<sub>A</sub>",
+    "ine.MB": "M<sub>B</sub>",
+    "ine.refM": "mismo signo = curvatura simple",
+    "ine.MAyuda": "Momentos de primer orden en los extremos A (inferior) y B (superior). Mismo signo: tracciones en la misma cara (curvatura simple). Ninguno baja de N_Ed\xB7e_m\xEDn.",
+    "ine.phi": "\u03C6(\u221E,t<sub>0</sub>)",
+    "ine.phiNombre": "El coeficiente de fluencia",
+    "ine.phiAyuda": "Coeficiente de fluencia final. Por defecto 2,0.",
+    "ine.perm": "Carga permanente",
+    "ine.permNombre": "La proporci\xF3n",
+    "ine.permAyuda": "Proporci\xF3n de la carga que es permanente (0 a 1). Con ella \u03C6ef = \u03C6(\u221E,t0) \xB7 proporci\xF3n (EC-2 5.8.4(2) y 7.4.2(3), con la raz\xF3n de cargas verticales). La EHE-08 cubre la fluencia con e_a.",
+    "ine.fp": "Pilares",
+    "ine.fv": "Vigas",
+    "ine.fpNombre": "La fracci\xF3n de los soportes",
+    "ine.fvNombre": "La fracci\xF3n de las vigas",
+    "ine.fAyuda": "Fracci\xF3n de la rigidez a flexi\xF3n bruta (E\xB7I) que se toma para calcular \u03A8. Por defecto 0,70 en soportes y 0,30 en vigas.",
+    "ine.extremoA": "Extremo A (inferior)",
+    "ine.extremoB": "Extremo B (superior)",
+    "ine.t.empotrado": "Empotrado",
+    "ine.t.articulado": "Articulado",
+    "ine.t.nudo": "Nudo",
+    "ine.nudoAyuda": "Nudo: \u03A8 sale de las rigideces del soporte contiguo y de las vigas que llegan. Una viga en voladizo no aporta rigidez: d\xE9jala con luz 0.",
+    "ine.f.pilar": "Soporte contiguo",
+    "ine.f.viga1": "Viga 1",
+    "ine.f.viga2": "Viga 2",
+    "ine.b": "b [mm]",
+    "ine.h": "h [mm]",
+    "ine.l": "luz [mm]",
+    "ine.psi": "\u03A8",
+    // Resultados
+    "ine.cumple": "Cumple",
+    "ine.noCumple": "No cumple",
+    "ine.revisar": "Revisar",
+    "ine.aprov": "Aprovechamiento",
+    "ine.ver.sin": (l, lim) => `\u03BB = ${l} \u2264 \u03BBlim = ${lim}: se desprecian los efectos de segundo orden`,
+    "ine.ver.con": (m0, m2, med) => `M0 ${m0} + \u0394M ${m2} = M_Ed ${med}`,
+    "ine.ver.general": "Esbeltez entre 100 y 200: hace falta el m\xE9todo general (no incluido)",
+    "ine.ver.fuera": "Esbeltez mayor de 200: fuera del campo de aplicaci\xF3n",
+    "ine.ver.traccion": "Con axil de tracci\xF3n no hay pandeo",
+    "ine.pRes": "Resultados",
+    "ine.pSoporteDib": "Soporte",
+    "ine.pRotura": "Rotura",
+    "ine.diagrama": "Diagrama N\u2013M",
+    "ine.sinSegundo": "Sin segundo orden",
+    "ine.conSegundo": "Con segundo orden",
+    "ine.punto0": "Primer orden",
+    "ine.puntoEd": "C\xE1lculo",
+    "ine.nota.sin": "Sin segundo orden: la curva reducida coincide con el contorno.",
+    "ine.c.l0": "Longitud de pandeo",
+    "ine.c.alfa": "\u03B1 = l\u2080/l",
+    "ine.c.lam": "Esbeltez \u03BB",
+    "ine.c.lamLim": "Esbeltez l\xEDmite",
+    "ine.c.phiEf": "\u03C6<sub>ef</sub>",
+    "ine.c.M0": "M<sub>0</sub> equivalente",
+    "ine.c.dM": "\u0394M (2.\xBA orden)",
+    "ine.c.MEd": "M<sub>Ed</sub>",
+    "ine.c.ea": "e<sub>a</sub>",
+    "ine.c.e2": "e<sub>2</sub>",
+    "ine.c.k": "k<sub>A</sub>, k<sub>B</sub>",
+    "ine.c.psi": "\u03A8<sub>A</sub>, \u03A8<sub>B</sub>",
+    "ine.c.gamma": "\u03B3 = |OQ|/|OP|",
+    "ine.c.eMin": "e<sub>m\xEDn</sub>",
+    "ine.t.esb": "Esbeltez",
+    "ine.t.lim": "Esbeltez l\xEDmite",
+    "ine.t.flu": "Fluencia",
+    "ine.t.seg": "Segundo orden",
+    "ine.t.med": "Momento de c\xE1lculo",
+    // Avisos
+    "ine.av.eMin": (e2) => `Alg\xFAn momento extremo sube a N_Ed\xB7e_m\xEDn (e_m\xEDn = ${e2} mm).`,
+    "ine.av.general": "La esbeltez supera 100: la EHE-08 (43.5) exige el m\xE9todo general. Se muestra solo el contorno sin segundo orden.",
+    "ine.av.fuera": "La esbeltez supera 200: fuera del campo de aplicaci\xF3n.",
+    "ine.av.O10": "EC-2 2023, soportes traslacionales: la f\xF3rmula O.10 no es legible en el texto disponible; se usa la 5.16 del EC-2 2004 (por verificar).",
+    "ine.av.lim": "Esbeltez l\xEDmite de EHE-08 43.1.2 / AN 5.8.3.1: f\xF3rmula por verificar contra el BOE.",
+    "ine.av.sinArm": "Sin armadura no se puede calcular el segundo orden: pon armadura en la secci\xF3n.",
+    "ine.av.bajoMin": (a, m) => `La armadura (${a}) es menor que la m\xEDnima (${m}).`,
+    "ine.noBasta": "Ninguna armadura razonable basta; aumenta la escuadr\xEDa o reduce la esbeltez.",
+    "ine.cmdComprobar": "Inestabilidad de soportes: comprobar",
+    "ine.cmdDimensionar": "Inestabilidad de soportes: dimensionar",
+    // Trazas
+    "ine.f.esb": "\u03BB = l\u2080 / i, con i = \u221A(I/A) (secci\xF3n bruta)",
+    "ine.f.alfaEHE": "l\u2080 = \u03B1\xB7l; \u03B1 funci\xF3n de \u03A8<sub>A</sub>, \u03A8<sub>B</sub> (43.1.1)",
+    "ine.f.l0EC": "l\u2080 por (5.15) arriostrado o (5.16) traslacional, con k = \u03A8/2 o \u03A8/6 (m\xEDn. 0,1)",
+    "ine.f.limEHE": "\u03BBlim = 35\xB7\u221A(C/\u03BD)\xB7\u221A(1 + 0,24/(e\u2082/h) + 3,4\xB7(e\u2081/e\u2082 \u2212 1)\xB2)",
+    "ine.f.lim23": "\u03BBlim = 20\xB7A\xB7B\xB7C/\u221An, A = 1/(1 + 0,2\u03C6ef), B = \u221A(1 + 2\u03C9), C = 1,7 \u2212 r_m (O.12)",
+    "ine.f.flu": "\u03C6ef = \u03C6(\u221E,t\u2080)\xB7M0Eqp/M0Ed \u2248 \u03C6(\u221E,t\u2080)\xB7proporci\xF3n permanente",
+    "ine.f.fluIgn": "Se ignora (\u03C6ef = 0) si \u03C6(\u221E,t\u2080) \u2264 2, \u03BB \u2264 75 y M0Ed/NEd \u2264 h",
+    "ine.f.ea": "e<sub>a</sub> = (1 + 0,12\u03B2)(\u03B5<sub>y</sub> + 0,0035)\xB7(h + 20e<sub>e</sub>)/(h + 10e<sub>e</sub>)\xB7l\u2080\xB2/(50 i)",
+    "ine.f.ee": "e<sub>e</sub> = 0,6e\u2082 + 0,4e\u2081 \u2265 0,4e\u2082 (intraslacional); e\u2082 (traslacional)",
+    "ine.f.curv": "1/r = K<sub>r</sub>\xB7K<sub>\u03C6</sub>\xB71/r\u2080;  e\u2082 = (1/r)\xB7l\u2080\xB2/c;  M\u2082 = N<sub>Ed</sub>\xB7e\u2082",
+    "ine.f.med": "M<sub>Ed</sub> = M\u2080 + M\u2082 (\u2265 M\u2080\u2082 y \u2265 N<sub>Ed</sub>\xB7e<sub>m\xEDn</sub>)",
+    "ine.f.medEHE": "M<sub>Ed</sub> = N<sub>Ed</sub>\xB7(e<sub>e</sub> + e<sub>a</sub>)",
+    "ine.dibAria": "Alzado del soporte con sus extremos y su longitud de pandeo",
+    "ine.dib.l": "l",
+    "ine.dib.l0": "l\u2080"
+  };
+
+  // src/i18n/inestabilidad.en.js
+  var inestabilidad_en_default = {
+    "m.inestabilidad": "Column instability",
+    "ine.subtitulo": "Isolated column with second-order effects: effective length, slenderness and amplified design moment",
+    "ine.sinSec": "There are no column sections (rectangular or circular): create them in Sections.",
+    "ine.pSoporte": "Column",
+    "ine.pExtremos": "Ends",
+    "ine.gSoporte": "Column",
+    "ine.gEsfuerzos": "Design actions",
+    "ine.gFluencia": "Creep",
+    "ine.gRigidez": "Design stiffness",
+    "ine.L": "Clear height",
+    "ine.LNombre": "The clear height",
+    "ine.LAyuda": "Clear height l of the column between the faces of the restraining beams or foundations",
+    "ine.porticoEtq": "Frame",
+    "ine.intra": "Braced",
+    "ine.trasl": "Unbraced (sway)",
+    "ine.porticoAyuda": "Braced: joints do not sway. Unbraced: they do. The designer decides.",
+    "ine.nombreN": "The axial force",
+    "ine.nombreM": "The moment",
+    "ine.refM": "same sign = single curvature",
+    "ine.MAyuda": "First-order moments at ends A (bottom) and B (top). Same sign: tension on the same face (single curvature). None below N_Ed\xB7e_min.",
+    "ine.phiNombre": "The creep coefficient",
+    "ine.phiAyuda": "Final creep coefficient. Default 2.0.",
+    "ine.perm": "Permanent load",
+    "ine.permNombre": "The proportion",
+    "ine.permAyuda": "Proportion of the load that is permanent (0 to 1). \u03C6ef = \u03C6(\u221E,t0) \xB7 proportion (EC-2 5.8.4(2), 7.4.2(3)). EHE-08 covers creep within e_a.",
+    "ine.fp": "Columns",
+    "ine.fv": "Beams",
+    "ine.fpNombre": "The column fraction",
+    "ine.fvNombre": "The beam fraction",
+    "ine.fAyuda": "Fraction of the gross bending stiffness (E\xB7I) used to compute \u03A8. Default 0.70 for columns and 0.30 for beams.",
+    "ine.extremoA": "End A (bottom)",
+    "ine.extremoB": "End B (top)",
+    "ine.t.empotrado": "Fixed",
+    "ine.t.articulado": "Pinned",
+    "ine.t.nudo": "Joint",
+    "ine.f.pilar": "Adjacent column",
+    "ine.f.viga1": "Beam 1",
+    "ine.f.viga2": "Beam 2",
+    "ine.l": "span [mm]",
+    "ine.cumple": "Complies",
+    "ine.noCumple": "Does not comply",
+    "ine.revisar": "Review",
+    "ine.aprov": "Utilisation",
+    "ine.ver.sin": (l, lim) => `\u03BB = ${l} \u2264 \u03BBlim = ${lim}: second-order effects neglected`,
+    "ine.pRes": "Results",
+    "ine.pSoporteDib": "Column",
+    "ine.pRotura": "Failure",
+    "ine.diagrama": "N\u2013M diagram",
+    "ine.sinSegundo": "No second order",
+    "ine.conSegundo": "With second order",
+    "ine.c.l0": "Effective length",
+    "ine.c.lam": "Slenderness \u03BB",
+    "ine.c.lamLim": "Limit slenderness",
+    "ine.c.M0": "Equivalent M<sub>0</sub>",
+    "ine.c.dM": "\u0394M (second order)",
+    "ine.t.esb": "Slenderness",
+    "ine.t.lim": "Limit slenderness",
+    "ine.t.flu": "Creep",
+    "ine.t.seg": "Second order",
+    "ine.t.med": "Design moment",
+    "ine.av.general": "Slenderness above 100: EHE-08 (43.5) requires the general method. Only the first-order contour is shown.",
+    "ine.av.fuera": "Slenderness above 200: outside the scope.",
+    "ine.cmdComprobar": "Column instability: check",
+    "ine.cmdDimensionar": "Column instability: design"
+  };
+
   // src/ui/i18n.js
-  var DICC = { es: { ...es_default, ...anclaje_es_default, ...cortante_es_default, ...punzonamiento_es_default, ...rasante_es_default, ...flexEsviada_es_default, ...estadoTensional_es_default }, en: { ...en_default, ...anclaje_en_default, ...cortante_en_default, ...punzonamiento_en_default, ...rasante_en_default, ...flexEsviada_en_default, ...estadoTensional_en_default } };
+  var DICC = { es: { ...es_default, ...anclaje_es_default, ...cortante_es_default, ...punzonamiento_es_default, ...rasante_es_default, ...flexEsviada_es_default, ...estadoTensional_es_default, ...inestabilidad_es_default }, en: { ...en_default, ...anclaje_en_default, ...cortante_en_default, ...punzonamiento_en_default, ...rasante_en_default, ...flexEsviada_en_default, ...estadoTensional_en_default, ...inestabilidad_en_default } };
   var CLAVE2 = "prontuario-web:lengua";
   var lengua = "es";
   try {
@@ -6254,14 +6441,14 @@ tr.et-act td { font-weight: 650; }
   var par = (...hijos) => h("div", { class: "par" }, ...hijos);
   var boton = (texto, onclick, clase = "secundario") => h("button", { type: "button", class: `boton ${clase}`, onclick, html: texto });
   var aviso = (texto, tipo = "") => h("p", { class: `aviso ${tipo}`, html: texto });
-  function pestanas({ lista, activa: activa5, onCambio }) {
+  function pestanas({ lista, activa: activa6, onCambio }) {
     return h(
       "div",
       { class: "pestanas", role: "tablist" },
       ...lista.map(([k, e2, o = {}]) => h("button", {
         type: "button",
         role: "tab",
-        "aria-selected": String(k === activa5),
+        "aria-selected": String(k === activa6),
         "aria-disabled": o.deshabilitada ? "true" : void 0,
         title: o.deshabilitada ? t("pendiente") : void 0,
         html: e2,
@@ -6316,7 +6503,7 @@ tr.et-act td { font-weight: 650; }
   }
 
   // src/ui/paleta.js
-  function instalarPaleta(comandos15, avisar2) {
+  function instalarPaleta(comandos16, avisar2) {
     const pal = document.getElementById("paleta");
     const pq = document.getElementById("paleta-q");
     const pl = document.getElementById("paleta-lista");
@@ -6326,7 +6513,7 @@ tr.et-act td { font-weight: 650; }
     const texto = (c) => c.texto ?? t(c.k);
     function listar() {
       const x = pq.value.trim().toLowerCase();
-      vis = comandos15().filter((c) => !x || (plano3(texto(c)) + " " + (c.b ?? "")).toLowerCase().includes(x));
+      vis = comandos16().filter((c) => !x || (plano3(texto(c)) + " " + (c.b ?? "")).toLowerCase().includes(x));
       sel = Math.min(sel, Math.max(vis.length - 1, 0));
       pl.innerHTML = vis.map((c, i) => `<li role="option" aria-selected="${i === sel}" data-i="${i}">${texto(c)}</li>`).join("") || `<li aria-selected="false"><small>${t("p.nada")}</small></li>`;
       pl.querySelector('[aria-selected="true"]')?.scrollIntoView({ block: "nearest" });
@@ -6880,7 +7067,7 @@ tr.et-act td { font-weight: 650; }
   // src/ui/rejilla.js
   function rejilla({ id, columnas, filas, onCambio, refFila, altoMax = 260, calculada = null, numerar = false }) {
     const C = columnas.length;
-    let datos18 = filas.map((f) => columnas.map((_2, j) => String(f[j] ?? "")));
+    let datos19 = filas.map((f) => columnas.map((_2, j) => String(f[j] ?? "")));
     let act = { r: 0, c: 0 };
     let ancla = null;
     let editor = null;
@@ -6889,8 +7076,8 @@ tr.et-act td { font-weight: 650; }
     const pie = h("div", { class: "eco" });
     const vacia = (f) => f.every((x) => !x.trim());
     const errorDe = (r, c) => {
-      const v2 = datos18[r]?.[c] ?? "";
-      if (!v2.trim()) return vacia(datos18[r]) ? null : columnas[c].num ? t("rej.falta") : null;
+      const v2 = datos19[r]?.[c] ?? "";
+      if (!v2.trim()) return vacia(datos19[r]) ? null : columnas[c].num ? t("rej.falta") : null;
       if (columnas[c].num && !Number.isFinite(leerNumero(v2))) return t("rej.noNumero");
       return columnas[c].validar?.(v2) ?? null;
     };
@@ -6902,12 +7089,12 @@ tr.et-act td { font-weight: 650; }
       const R = rango();
       const cab = h("thead", {}, h("tr", {}, ...columnas.map((col2) => h("th", { scope: "col", html: col2.titulo })), ...calculada ? [h("th", { scope: "col", class: "calc", html: calculada.titulo })] : []));
       const cuerpo = h("tbody");
-      const todas = [...datos18, columnas.map(() => "")];
+      const todas = [...datos19, columnas.map(() => "")];
       let errores = 0;
       todas.forEach((f, r) => {
-        const tr = h("tr", refFila && r < datos18.length ? { "data-ref": refFila(r) } : { class: "nueva" });
+        const tr = h("tr", refFila && r < datos19.length ? { "data-ref": refFila(r) } : { class: "nueva" });
         f.forEach((v2, c) => {
-          const err2 = r < datos18.length ? errorDe(r, c) : null;
+          const err2 = r < datos19.length ? errorDe(r, c) : null;
           if (err2) errores++;
           const sel = r >= R.r1 && r <= R.r2 && c >= R.c1 && c <= R.c2;
           const td = h("td", {
@@ -6918,7 +7105,7 @@ tr.et-act td { font-weight: 650; }
           }, v2);
           tr.append(td);
         });
-        if (calculada) tr.append(h("td", { class: "num calc" }, r < datos18.length && !vacia(f) ? calculada.f(datos18, r) : ""));
+        if (calculada) tr.append(h("td", { class: "num calc" }, r < datos19.length && !vacia(f) ? calculada.f(datos19, r) : ""));
         cuerpo.append(tr);
       });
       tabla3.replaceChildren(cab, cuerpo);
@@ -6932,31 +7119,31 @@ tr.et-act td { font-weight: 650; }
       celda(act.r, act.c)?.scrollIntoView({ block: "nearest", inline: "nearest" });
     }
     function confirmar() {
-      datos18 = datos18.map((f) => f.map((v2, c) => columnas[c].num ? v2.trim().replace(/,/g, ".") : v2.trim()));
-      const limpias = datos18.filter((f) => !vacia(f));
-      const hayError = datos18.some((f, r) => f.some((_2, c) => errorDe(r, c)));
+      datos19 = datos19.map((f) => f.map((v2, c) => columnas[c].num ? v2.trim().replace(/,/g, ".") : v2.trim()));
+      const limpias = datos19.filter((f) => !vacia(f));
+      const hayError = datos19.some((f, r) => f.some((_2, c) => errorDe(r, c)));
       if (!hayError) {
-        datos18 = limpias;
-        act.r = Math.min(act.r, datos18.length);
-        onCambio(datos18.map((f) => [...f]));
+        datos19 = limpias;
+        act.r = Math.min(act.r, datos19.length);
+        onCambio(datos19.map((f) => [...f]));
       }
       pintar2();
     }
     function poner3(r, c, v2) {
-      while (datos18.length <= r) datos18.push(columnas.map(() => ""));
-      datos18[r][c] = v2;
+      while (datos19.length <= r) datos19.push(columnas.map(() => ""));
+      datos19[r][c] = v2;
     }
     function mover(dr, dc, extender = false) {
       if (extender) ancla ?? (ancla = { ...act });
       else ancla = null;
-      act = { r: Math.max(0, Math.min(datos18.length, act.r + dr)), c: Math.max(0, Math.min(C - 1, act.c + dc)) };
+      act = { r: Math.max(0, Math.min(datos19.length, act.r + dr)), c: Math.max(0, Math.min(C - 1, act.c + dc)) };
       pintar2();
       verActiva();
     }
     function editar(inicial2) {
       const td = celda(act.r, act.c);
       if (!td) return;
-      const previo = datos18[act.r]?.[act.c] ?? "";
+      const previo = datos19[act.r]?.[act.c] ?? "";
       editor = h("input", { class: "editor-rejilla", value: inicial2 ?? previo, spellcheck: "false", autocomplete: "off" });
       td.replaceChildren(editor);
       td.classList.add("editando");
@@ -6994,7 +7181,7 @@ tr.et-act td { font-weight: 650; }
     function copiar(e2) {
       const R = rango();
       const bloque = [];
-      for (let r = R.r1; r <= Math.min(R.r2, datos18.length - 1); r++) bloque.push(datos18[r].slice(R.c1, R.c2 + 1).map((v2, k) => columnas[R.c1 + k].num ? v2.replace(".", decimalAlCopiar()) : v2));
+      for (let r = R.r1; r <= Math.min(R.r2, datos19.length - 1); r++) bloque.push(datos19[r].slice(R.c1, R.c2 + 1).map((v2, k) => columnas[R.c1 + k].num ? v2.replace(".", decimalAlCopiar()) : v2));
       const esc2 = (v2) => v2.replace(/&/g, "&amp;").replace(/</g, "&lt;");
       e2.clipboardData.setData("text/plain", bloque.map((f) => f.join("	")).join("\r\n"));
       e2.clipboardData.setData("text/html", `<table>${bloque.map((f) => `<tr>${f.map((v2) => `<td>${esc2(v2)}</td>`).join("")}</tr>`).join("")}</table>`);
@@ -7038,21 +7225,21 @@ tr.et-act td { font-weight: 650; }
       }
       if (k === "Insert") {
         e2.preventDefault();
-        datos18.splice(act.r, 0, columnas.map(() => ""));
+        datos19.splice(act.r, 0, columnas.map(() => ""));
         return pintar2();
       }
       if ((k === "Delete" || k === "Backspace") && (e2.ctrlKey || e2.metaKey)) {
         e2.preventDefault();
         const R = rango();
-        datos18.splice(R.r1, R.r2 - R.r1 + 1);
+        datos19.splice(R.r1, R.r2 - R.r1 + 1);
         ancla = null;
-        act.r = Math.min(R.r1, datos18.length);
+        act.r = Math.min(R.r1, datos19.length);
         return confirmar();
       }
       if (k === "Delete" || k === "Backspace") {
         e2.preventDefault();
         const R = rango();
-        for (let r = R.r1; r <= Math.min(R.r2, datos18.length - 1); r++) for (let c = R.c1; c <= R.c2; c++) datos18[r][c] = "";
+        for (let r = R.r1; r <= Math.min(R.r2, datos19.length - 1); r++) for (let c = R.c1; c <= R.c2; c++) datos19[r][c] = "";
         return confirmar();
       }
       if (k.length === 1 && !e2.ctrlKey && !e2.metaKey && !e2.altKey) {
@@ -8332,9 +8519,9 @@ tr.et-act td { font-weight: 650; }
   var esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
   function botonCopiar(filas) {
     const b = boton(t("dur.copiar"), async () => {
-      const datos18 = filas().map((f) => f.map((c) => typeof c === "number" || /^-?\d+(\.\d+)?$/.test(String(c)) ? String(c).replace(".", decimalAlCopiar()) : plano2(c)));
-      const txt = datos18.map((f) => f.join("	")).join("\r\n");
-      const htm = `<table>${datos18.map((f, i) => `<tr>${f.map((c) => `<${i ? "td" : "th"}>${esc(c)}</${i ? "td" : "th"}>`).join("")}</tr>`).join("")}</table>`;
+      const datos19 = filas().map((f) => f.map((c) => typeof c === "number" || /^-?\d+(\.\d+)?$/.test(String(c)) ? String(c).replace(".", decimalAlCopiar()) : plano2(c)));
+      const txt = datos19.map((f) => f.join("	")).join("\r\n");
+      const htm = `<table>${datos19.map((f, i) => `<tr>${f.map((c) => `<${i ? "td" : "th"}>${esc(c)}</${i ? "td" : "th"}>`).join("")}</tr>`).join("")}</table>`;
       try {
         if (navigator.clipboard?.write && typeof ClipboardItem !== "undefined") await navigator.clipboard.write([new ClipboardItem({ "text/plain": new Blob([txt], { type: "text/plain" }), "text/html": new Blob([htm], { type: "text/html" }) })]);
         else await navigator.clipboard.writeText(txt);
@@ -9906,7 +10093,7 @@ tr.et-act td { font-weight: 650; }
     fila5.append(h("button", { type: "button", class: "mas", title: t("sec.nuevaDe", t(`forma.${est3.forma}`)), onclick: () => elegir2(ctx2, est3.forma, null) }, `+ ${t("sec.nueva")}`));
     el.append(fila5);
   }
-  function grupoSeccion(ctx2, { formas, activa: activa5, alElegir }) {
+  function grupoSeccion(ctx2, { formas, activa: activa6, alElegir }) {
     const lista = ctx2.p.secciones.filter((x) => formas.includes(x.forma));
     const varios = new Set(lista.map((x) => x.forma)).size > 1;
     return grupo(
@@ -9914,7 +10101,7 @@ tr.et-act td { font-weight: 650; }
       selector({
         id: "sel-seccion",
         etq: t("seccion"),
-        valor: activa5?.nombre,
+        valor: activa6?.nombre,
         onCambio: alElegir,
         opciones: lista.map((x) => [x.nombre, x.nombre, varios ? t(`forma.${x.forma}`) : void 0])
       })
@@ -9929,7 +10116,7 @@ tr.et-act td { font-weight: 650; }
   function modo(k) {
     est3.pestana = k;
   }
-  function listaSecciones(ctx2, f, delTipo, activa5, alElegir = (nombre) => elegir2(ctx2, f, nombre), conAlta = true) {
+  function listaSecciones(ctx2, f, delTipo, activa6, alElegir = (nombre) => elegir2(ctx2, f, nombre), conAlta = true) {
     const m = h("div", { class: "menu-sec", role: "listbox", onclick: (e2) => e2.stopPropagation() });
     const filas = h("div", { class: "filas" });
     const q2 = delTipo.length > 8 ? h("input", { class: "buscar", placeholder: t("sec.buscarEntre", delTipo.length), autocomplete: "off" }) : null;
@@ -9938,7 +10125,7 @@ tr.et-act td { font-weight: 650; }
       filas.replaceChildren(...delTipo.filter((s) => !x || s.nombre.toLowerCase().includes(x)).map((s) => h("button", {
         type: "button",
         role: "option",
-        "aria-current": s.nombre === activa5 ? "true" : void 0,
+        "aria-current": s.nombre === activa6 ? "true" : void 0,
         html: `${icono(f)}${s.nombre}<span class="nombre-sec">${resumenForma(s)}</span>`,
         onclick: () => alElegir(s.nombre)
       })));
@@ -10743,9 +10930,9 @@ tr.et-act td { font-weight: 650; }
     const p = ctx2.p;
     const D = condiciones(p);
     const cambio = (estructura) => ctx2.cambio(estructura ? { estructura: true } : void 0);
-    const set = (k, est11) => (v2) => {
+    const set = (k, est12) => (v2) => {
       D[k] = v2;
-      cambio(est11);
+      cambio(est12);
     };
     const seg = (k, lista, etq) => h(
       "div",
@@ -10784,11 +10971,11 @@ tr.et-act td { font-weight: 650; }
   }
   function chipsClases(D, grupoClases, no, onClick) {
     return h("div", { class: "chips", role: "group" }, ...grupoClases.map((c) => {
-      const activa5 = D.clasesEHE.includes(c);
+      const activa6 = D.clasesEHE.includes(c);
       return h("button", {
         type: "button",
         class: "chip-sel chip-clase",
-        "aria-pressed": String(activa5),
+        "aria-pressed": String(activa6),
         disabled: no.has(c) || void 0,
         title: no.has(c) ? t("eh.noCompatible") : t(`eh.desc.${c}`),
         html: `${c}<span class="ce">${EQUIV_CE[c]}</span>`,
@@ -10995,11 +11182,11 @@ tr.et-act td { font-weight: 650; }
   }
   function chips(D, lista, no, onClick) {
     return h("div", { class: "chips", role: "group" }, ...lista.map((c) => {
-      const activa5 = D.clasesEC.includes(c);
+      const activa6 = D.clasesEC.includes(c);
       return h("button", {
         type: "button",
         class: "chip-sel chip-clase",
-        "aria-pressed": String(activa5),
+        "aria-pressed": String(activa6),
         disabled: no.has(c) || void 0,
         title: no.has(c) ? t("eh.noCompatible") : t(`ec.desc.${c}`),
         html: `${c}<span class="ce">${t(`ec.tag.${c}`)}</span>`,
@@ -12173,9 +12360,14 @@ tr.et-act td { font-weight: 650; }
   // src/ui/vistas/flexRecta.js
   var flexRecta_exports = {};
   __export(flexRecta_exports, {
+    cifrasArmadura: () => cifrasArmadura,
     comandos: () => comandos6,
     datos: () => datos9,
+    dibujoRotura: () => dibujoRotura,
+    dibujoSeccionPeq: () => dibujoSeccionPeq,
     eMinima: () => eMinima,
+    fiComun: () => fiComun,
+    planoContorno: () => planoContorno,
     reiniciar: () => reiniciar5,
     resultados: () => resultados9
   });
@@ -14860,13 +15052,13 @@ tr.et-act td { font-weight: 650; }
     const D = estado(p);
     const ehe = p.norma === "EHE-08" || p.norma === "EHE-98";
     const cambio = (estructura) => ctx2.cambio(estructura ? { estructura: true } : void 0);
-    const seg = (k, opciones, etq, est11 = true) => h(
+    const seg = (k, opciones, etq, est12 = true) => h(
       "div",
       { class: "fu-campo" },
       h("span", { class: "etq-grupo" }, etq),
       segmentado({ opciones, valor: D[k], ancho: true, etiqueta: etq, onCambio: (v2) => {
         D[k] = v2;
-        cambio(est11);
+        cambio(est12);
       } })
     );
     poner(form, h("div", { class: "cab" }, h("h1", {}, t("m.fuego")), h("p", {}, t("fu.subtitulo"))));
@@ -15138,13 +15330,13 @@ tr.et-act td { font-weight: 650; }
       D[k] = v2;
       cambio();
     };
-    const seg = (k, opciones, etq, est11 = true) => h(
+    const seg = (k, opciones, etq, est12 = true) => h(
       "div",
       { class: "fu-campo" },
       h("span", { class: "etq-grupo" }, etq),
       segmentado({ opciones, valor: D[k], ancho: true, etiqueta: etq, onCambio: (v2) => {
         D[k] = v2;
-        cambio(est11);
+        cambio(est12);
       } })
     );
     poner(form, h("div", { class: "cab" }, h("h1", {}, t("m.anclaje")), h("p", {}, t("an.subtitulo"))));
@@ -19261,11 +19453,609 @@ tr.et-act td { font-weight: 650; }
     ];
   }
 
+  // src/ui/vistas/inestabilidad.js
+  var inestabilidad_exports = {};
+  __export(inestabilidad_exports, {
+    comandos: () => comandos14,
+    datos: () => datos17,
+    reiniciar: () => reiniciar11,
+    resultados: () => resultados17
+  });
+
+  // src/core/pandeo.js
+  var inerciaRect = (b, h2) => b * h2 ** 3 / 12;
+  function psiExtremo(ext, { Ic, L, fp, fv }) {
+    if (ext.tipo === "empotrado") return 0;
+    if (ext.tipo === "articulado") return Infinity;
+    const kc = fp * Ic / L + (ext.pilar && ext.pilar.L > 0 ? fp * inerciaRect(ext.pilar.b, ext.pilar.h) / ext.pilar.L : 0);
+    const kv = (ext.vigas ?? []).filter((v2) => v2 && v2.L > 0 && v2.b > 0 && v2.h > 0).reduce((a, v2) => a + fv * inerciaRect(v2.b, v2.h) / v2.L, 0);
+    return kv > 0 ? kc / kv : Infinity;
+  }
+  function flexibilidad(psi, traslacional) {
+    if (!Number.isFinite(psi)) return Infinity;
+    return Math.max(psi / (traslacional ? 6 : 2), 0.1);
+  }
+  function armaduraEnPlano(barras, h2) {
+    const As = barras.reduce((a, b) => a + b.A, 0);
+    if (!(As > 0)) return { As: 0, is: 0, dd: 0, yg: h2 / 2 };
+    const yg = h2 / 2;
+    const is2 = barras.reduce((a, b) => a + b.A * (b.y - yg) ** 2, 0) / As;
+    const ys = barras.map((b) => b.y);
+    return { As, is: Math.sqrt(is2), dd: Math.max(...ys) - Math.min(...ys), yg };
+  }
+
+  // src/norma/inestabilidad.js
+  var excentricidadMinima = (norma2, h2) => Math.max(h2 / (norma2 === "EHE-08" ? 20 : 30), 0.02);
+  var sgn = (x) => x < 0 ? -1 : 1;
+  function extremos(N, Ma, Mb, emin3) {
+    const lift = (M2) => Math.abs(M2) < N * emin3 - 1e-9 ? sgn(M2) * N * emin3 : M2;
+    const a = lift(Ma);
+    const b = lift(Mb);
+    const [M01, M02] = Math.abs(a) > Math.abs(b) ? [b, a] : [a, b];
+    return { M01, M02, rm: M01 / M02, subeMin: a !== Ma || b !== Mb };
+  }
+  function alfaEHE(psiA, psiB, traslacional) {
+    const big = 1e9;
+    const a = Math.min(psiA, big);
+    const b = Math.min(psiB, big);
+    const s = a + b;
+    const p = a * b;
+    if (traslacional) return Math.sqrt((7.5 + 4 * s + 1.6 * p) / (7.5 + s));
+    return (0.64 + 1.4 * s + 3 * p) / (1.28 + 2 * s + 3 * p);
+  }
+  var coeficienteC = (beta2) => beta2 <= 1.25 ? 0.24 : beta2 <= 2.5 ? 0.2 : 0.16;
+  function esbeltezLimiteEHE({ nu, C, e2h, e1e2 }) {
+    return 35 * Math.sqrt(C / nu) * Math.sqrt(1 + 0.24 / e2h + 3.4 * (e1e2 - 1) ** 2);
+  }
+  function calcularEHE(e2, b) {
+    const { N, h: h2, A, I, As, is, dd, fcd, fyd, Es, L, traslacional } = e2;
+    const i = Math.sqrt(I / A);
+    const alfa2 = alfaEHE(e2.psiA, e2.psiB, traslacional);
+    const l0 = alfa2 * L;
+    const lambda = l0 / i;
+    const nu = N / (A * fcd);
+    const omega = As * fyd / (A * fcd);
+    const beta2 = is > 0 ? dd ** 2 / (4 * is ** 2) : 1;
+    const C = coeficienteC(beta2);
+    const e22 = b.M02 / N;
+    const e1 = b.M01 / N;
+    const r1 = traslacional ? 1 : e1 / e22;
+    const lamLim = esbeltezLimiteEHE({ nu, C, e2h: Math.abs(e22) / h2, e1e2: r1 });
+    const ee = traslacional ? Math.abs(e22) : Math.max(0.6 * Math.abs(e22) + 0.4 * e1 * sgn(e22), 0.4 * Math.abs(e22));
+    const out = { l0, lambda, alfa: alfa2, lamLim, nu, omega, beta: beta2, C, ee, rExc: r1, i };
+    if (lambda > 200) return { ...out, metodo: "fuera", MEd: NaN, M0eq: NaN };
+    if (lambda > 100) return { ...out, metodo: "general", MEd: NaN, M0eq: NaN };
+    const M0eq = N * Math.max(ee, b.emin);
+    if (lambda <= lamLim) return { ...out, metodo: "ninguno", segundoOrden: false, etot: Math.max(ee, b.emin), MEd: M0eq, M0eq };
+    const epsY = fyd / Es;
+    const ea = (1 + 0.12 * beta2) * (epsY + 35e-4) * ((h2 + 20 * ee) / (h2 + 10 * ee)) * (l0 ** 2 / (50 * i));
+    const etot = Math.max(ee, b.emin) + ea;
+    return { ...out, metodo: "aproximado", segundoOrden: true, epsY, ea, etot, MEd: N * etot, M0eq };
+  }
+  function longitudEficaz(L, k1, k2, traslacional) {
+    const f = (k) => Number.isFinite(k) ? k / (1 + k) : 1;
+    if (!traslacional) {
+      const g = (k) => Number.isFinite(k) ? 1 + k / (0.45 + k) : 2;
+      return 0.5 * L * Math.sqrt(g(k1) * g(k2));
+    }
+    const prodSuma = Number.isFinite(k1) && Number.isFinite(k2) ? k1 * k2 / (k1 + k2) : Number.isFinite(k1) ? k1 : Number.isFinite(k2) ? k2 : Infinity;
+    const a = Number.isFinite(prodSuma) ? Math.sqrt(1 + 10 * prodSuma) : Infinity;
+    return L * Math.max(a, (1 + f(k1)) * (1 + f(k2)));
+  }
+  function fluenciaEficaz({ phiInf, pPerm, lambda, M0, N, h: h2 }) {
+    const ignorable = phiInf <= 2 && lambda <= 75 && Math.abs(M0) / N <= h2;
+    return { phiEf: ignorable ? 0 : phiInf * pPerm, ignorable };
+  }
+  function calcularEC2(e2, b, v2023) {
+    const { N, h: h2, A, I, As, is, dd, fcd, fyd, Es, L, traslacional, fck } = e2;
+    const i = Math.sqrt(I / A);
+    const k1 = flexibilidad(e2.psiA, traslacional);
+    const k2 = flexibilidad(e2.psiB, traslacional);
+    const l0 = longitudEficaz(L, k1, k2, traslacional);
+    const lambda = l0 / i;
+    const n = N / (A * fcd);
+    const omega = As * fyd / (A * fcd);
+    const beta2 = is > 0 ? dd ** 2 / (4 * is ** 2) : 1;
+    const C = coeficienteC(beta2);
+    const braced = !traslacional;
+    const M0 = braced ? Math.max(0.6 * b.M02 + 0.4 * b.M01, 0.4 * b.M02) : b.M02;
+    const { phiEf, ignorable } = fluenciaEficaz({ phiInf: e2.phiInf, pPerm: e2.pPerm, lambda, M0, N, h: h2 });
+    const out = { l0, lambda, k1, k2, n, omega, beta: beta2, C, phiEf, fluenciaIgnorable: ignorable, i, M0 };
+    let lamLim;
+    if (v2023) {
+      const rm = braced ? b.rm : 1;
+      const Cc = 1.7 - rm;
+      lamLim = 20 * (1 / (1 + 0.2 * phiEf)) * Math.sqrt(1 + 2 * omega) * Cc / Math.sqrt(n);
+      Object.assign(out, { rmUsado: rm, Clim: Cc });
+    } else {
+      const e23 = b.M02 / N;
+      const r1 = traslacional ? 1 : b.M01 / b.M02;
+      lamLim = esbeltezLimiteEHE({ nu: n, C, e2h: Math.abs(e23) / h2, e1e2: r1 });
+    }
+    out.lamLim = lamLim;
+    if (lambda > 200) return { ...out, metodo: "fuera", MEd: NaN, M0eq: NaN };
+    if (lambda <= lamLim) {
+      const M3 = Math.max(Math.abs(b.M02), N * b.emin);
+      return { ...out, metodo: "ninguno", segundoOrden: false, MEd: M3, M0eq: M3 };
+    }
+    const epsYd = fyd / Es;
+    const ddEf = v2023 ? e2.forma === "circular" ? 2 * is : h2 / 2 + is : null;
+    const d = h2 / 2 + is;
+    const r0 = v2023 ? 2 * epsYd / ddEf : epsYd / (0.45 * d);
+    const nu = 1 + omega;
+    const Kr = Math.min((nu - n) / (nu - 0.4), 1);
+    const betaFck = 0.35 + fck / 200 - lambda / 150;
+    const Kphi = Math.max(1 + betaFck * phiEf, 1);
+    const curv = Kr * Kphi * r0;
+    const cc = v2023 ? braced ? 8 : 10 : braced && b.rm === 1 ? 8 : 10;
+    const e22 = curv * l0 ** 2 / cc;
+    const M2 = N * e22;
+    let MEd;
+    let Cm = null;
+    if (v2023) {
+      const rm = Math.abs(b.M02) < 0.05 * N * h2 ? 1 : b.rm;
+      Cm = Math.max(0.6 + 0.4 * rm, 0.4);
+      const M0Ed = braced ? Cm * b.M02 : b.M02;
+      MEd = Math.max(M0Ed + M2, Math.abs(b.M02));
+      out.M0 = M0Ed;
+    } else {
+      MEd = Math.max(M0 + M2, Math.abs(b.M02));
+    }
+    const M0eq = Math.max(out.M0, N * b.emin);
+    return { ...out, metodo: "curvatura", segundoOrden: true, epsYd, r0, d, Kr, Kphi, betaFck, curv, c: cc, e2: e22, M2, Cm, MEd: Math.max(MEd, N * b.emin), M0eq };
+  }
+  function calcularInestabilidad(e2) {
+    const avisos4 = [];
+    if (!(e2.N > 0)) return { valido: false, motivo: "traccion", avisos: avisos4 };
+    const emin3 = excentricidadMinima(e2.norma, e2.h);
+    const b = { ...extremos(e2.N, e2.M1, e2.M2, emin3), emin: emin3 };
+    if (b.subeMin) avisos4.push({ clave: "ine.av.eMin", args: [emin3 * 1e3] });
+    const r = e2.norma === "EHE-08" ? calcularEHE(e2, b) : calcularEC2(e2, b, e2.norma === "EC2-2023");
+    if (r.metodo === "general") avisos4.push({ clave: "ine.av.general" });
+    if (r.metodo === "fuera") avisos4.push({ clave: "ine.av.fuera" });
+    if (e2.norma === "EC2-2023" && e2.traslacional) avisos4.push({ clave: "ine.av.O10" });
+    return { valido: true, norma: e2.norma, N: e2.N, ...b, ...r, avisos: avisos4 };
+  }
+  function contornoReducido(e2, rama) {
+    return rama.map((p) => {
+      if (!(p.N > 0)) return { N: p.N, M: p.M, dM: 0, ok: false };
+      const r = calcularInestabilidad({ ...e2, N: p.N });
+      if (!r.valido || !Number.isFinite(r.MEd)) return { N: p.N, M: p.M, dM: 0, ok: false };
+      const dM = Math.max(r.MEd - r.M0eq, 0);
+      return { N: p.N, M: Math.max(p.M - dM, 0), dM, ok: true };
+    });
+  }
+
+  // src/ui/vistas/inestabilidad.js
+  var FORMAS6 = ["pilar", "circular"];
+  var TOL2 = 2e-5;
+  var sub29 = (a, b) => `${a}<sub>${b}</sub>`;
+  var ind3 = (a, b) => `${a}<tspan class="ind" dy="3">${b}</tspan>`;
+  var sigla3 = (g) => g === Infinity ? "\u221E" : fmt(g, 2);
+  var est11 = { i: null, modo: "comprobar", pagina: "soporte", lado: "res", abiertos: /* @__PURE__ */ new Set() };
+  function reiniciar11() {
+    est11.i = null;
+  }
+  var VIGA = (L = 0) => ({ b: 0.3, h: 0.5, L });
+  var EXTREMO = (tipo) => ({ tipo, pilar: { b: 0.4, h: 0.4, L: 3 }, vigas: [VIGA(6), VIGA(6)] });
+  var INICIAL5 = () => ({ L: 6, trasl: false, N: 800, MA: 20, MB: 40, phiInf: 2, perm: 0.6, fp: 0.7, fv: 0.3, A: EXTREMO("empotrado"), B: EXTREMO("nudo") });
+  function datosDe3(p) {
+    var _a;
+    const D = (_a = p.calculos).inestabilidad ?? (_a.inestabilidad = {});
+    const base2 = INICIAL5();
+    for (const [k, v2] of Object.entries(base2)) if (D[k] === void 0) D[k] = v2;
+    for (const k of ["A", "B"]) D[k] = { ...base2[k], ...D[k], pilar: { ...base2[k].pilar, ...D[k].pilar }, vigas: [0, 1].map((j) => ({ ...base2[k].vigas[j], ...D[k].vigas?.[j] })) };
+    return D;
+  }
+  function activa5(p) {
+    if (!FORMAS6.includes(p.secciones[est11.i]?.forma)) est11.i = p.secciones.findIndex((x) => FORMAS6.includes(x.forma));
+    return est11.i >= 0 ? p.secciones[est11.i] : null;
+  }
+  function preparar(p, s, D) {
+    const geo = geometriaDe(p, s);
+    if (geo.errores?.length) throw new Error(geo.errores.join(" "));
+    const mats = materialesSeccion(p, s);
+    const ph = propiedadesHormigon(mats.fichaH.fck, p.norma, opcionesHormigon(mats.fichaH, p.norma));
+    const pa = propiedadesAcero(mats.fichaA.fyk, p.norma, opcionesAcero(mats.fichaA));
+    const br = bruta(geo);
+    const barras = [...geo.barras.map((b) => ({ y: b.y - geo.caja.ymin, A: b.A })), ...geo.franjas.map((f) => ({ y: f.y - geo.caja.ymin, A: f.A }))];
+    const ar = armaduraEnPlano(barras, geo.h);
+    const sec = seccionMotor(geo, mats.hormigonCalc, mats.acero);
+    const psi = (ext) => psiExtremo(ext, { Ic: br.Ix, L: D.L, fp: D.fp, fv: D.fv });
+    const entrada5 = (k = 1) => ({
+      norma: p.norma,
+      L: D.L,
+      traslacional: D.trasl,
+      psiA: psi(D.A),
+      psiB: psi(D.B),
+      forma: s.forma,
+      h: geo.h,
+      A: br.A,
+      I: br.Ix,
+      As: ar.As * k,
+      is: ar.is,
+      dd: ar.dd,
+      fck: mats.fichaH.fck,
+      fcd: ph.fcd * 1e3,
+      fyd: pa.fyd * 1e3,
+      Es: pa.Es * 1e3,
+      N: D.N,
+      M1: D.MA,
+      M2: D.MB,
+      phiInf: D.phiInf,
+      pPerm: D.perm
+    });
+    return { geo, mats, br, ar, sec, entrada: entrada5, psiA: psi(D.A), psiB: psi(D.B), emin: excentricidadMinima(p.norma, geo.h) };
+  }
+  var memo4 = { clave: "", c: null };
+  function calculo4(p, s, D) {
+    const clave = JSON.stringify([p.norma, s.geo, s.armado, s.hormigon, s.acero, sepCapas(p), D, est11.modo, serieDiametros()]);
+    if (memo4.clave === clave) return memo4.c;
+    const c0 = preparar(p, s, D);
+    const { sec, entrada: entrada5 } = c0;
+    const As0 = sec.barras.reduce((a, b) => a + b.A, 0);
+    const phi0 = fiComun(c0.geo);
+    const Ac = c0.br.A;
+    const cm = cuantiaMinima({ norma: p.norma, tipo: "pilar", h: 0, Ac, yg: 0, Ix: 0, fctm: 0, fyk: c0.mats.acero.fk, gammaS: c0.mats.acero.gamma, N: Math.max(0, D.N) });
+    const kMin = As0 > 0 ? cm.A / As0 : 0;
+    const gammaDe = (k2) => {
+      const r = calcularInestabilidad(entrada5(k2));
+      if (!r.valido || !Number.isFinite(r.MEd)) return { r, g: NaN, d: null };
+      const d = diagramaNM(escalarArmadura(sec, k2), { n: est11.modo === "dimensionar" ? 40 : 100, simetrica: true, tol: TOL2 });
+      return { r, g: coeficienteNM(d, r.N, r.MEd), d };
+    };
+    let k = 1;
+    let kEstricto = 1;
+    let phiEstricto = null;
+    let phiProp = null;
+    if (est11.modo === "dimensionar" && As0 > 0) {
+      const ok = (kk2) => {
+        const g2 = gammaDe(kk2).g;
+        return Number.isFinite(g2) && g2 >= 1;
+      };
+      if (!ok(40)) kEstricto = Infinity;
+      else if (ok(0.02)) kEstricto = 0.02;
+      else {
+        let a = 0.02;
+        let b = 40;
+        for (let i = 0; i < 16; i++) {
+          const m = (a + b) / 2;
+          if (ok(m)) b = m;
+          else a = m;
+        }
+        kEstricto = b;
+      }
+      k = Number.isFinite(kEstricto) ? Math.max(kEstricto, kMin) : kEstricto;
+      if (phi0 && Number.isFinite(k)) {
+        phiEstricto = phi0 * Math.sqrt(kEstricto);
+        phiProp = serieDiametros().find((x) => x >= phi0 * Math.sqrt(k) - 1e-9) ?? null;
+        if (phiProp) k = (phiProp / phi0) ** 2;
+      }
+    }
+    const kk = Number.isFinite(k) ? k : 1;
+    const g = gammaDe(kk);
+    const secD = escalarArmadura(sec, kk);
+    const dH = diagramaNM(soloHormigon(sec), { n: 100, simetrica: true, tol: TOL2 });
+    const reducido = g.r.valido && g.r.segundoOrden && g.d ? contornoReducido(entrada5(kk), g.d.pos) : null;
+    const c = { ...c0, As0, phi0, Amin: cm.A, k, kEstricto, phiEstricto, phiProp, gamma: g.g, r: g.r, d: g.d, dH, secD, reducido, kk };
+    memo4 = { clave, c };
+    return c;
+  }
+  function filaViga(D, ext, clave, etq, cambio) {
+    const v2 = clave === "pilar" ? ext.pilar : ext.vigas[clave];
+    const set = (k) => (x) => {
+      v2[k] = x;
+      cambio();
+    };
+    const id = `ine-${ext === D.A ? "a" : "b"}-${clave}`;
+    return h(
+      "div",
+      { class: "ine-fila" },
+      h("span", { class: "etq-grupo" }, etq),
+      filaCampos(
+        apilado(campoNum({ id: `${id}-b`, etq: t("ine.b"), valor: v2.b, mag: "long", paso: 25, min: 0, max: 5, sinUd: true, onCambio: set("b") })),
+        apilado(campoNum({ id: `${id}-h`, etq: t("ine.h"), valor: v2.h, mag: "long", paso: 25, min: 0, max: 5, sinUd: true, onCambio: set("h") })),
+        apilado(campoNum({ id: `${id}-l`, etq: t("ine.l"), valor: v2.L, mag: "long", paso: 100, min: 0, max: 100, sinUd: true, onCambio: set("L") }))
+      )
+    );
+  }
+  function grupoExtremo(ctx2, D, ext, titulo, cambio) {
+    const nudo = ext.tipo === "nudo";
+    return grupo(
+      titulo,
+      segmentado({ ancho: true, etiqueta: titulo, opciones: [["empotrado", t("ine.t.empotrado")], ["articulado", t("ine.t.articulado")], ["nudo", t("ine.t.nudo")]], valor: ext.tipo, onCambio: (v2) => {
+        ext.tipo = v2;
+        ctx2.pintar();
+        ctx2.cambio();
+      } }),
+      nudo ? [filaViga(D, ext, "pilar", t("ine.f.pilar"), cambio), filaViga(D, ext, 0, t("ine.f.viga1"), cambio), filaViga(D, ext, 1, t("ine.f.viga2"), cambio)] : null
+    );
+  }
+  function datos17(ctx2, form) {
+    const p = ctx2.p;
+    const s = activa5(p);
+    poner(form, h("div", { class: "cab" }, h("h1", {}, t("menu.inestabilidad")), h("p", {}, t("ine.subtitulo"))));
+    if (!s) return poner(form, aviso(t("ine.sinSec"), "info"));
+    const D = datosDe3(p);
+    const cambio = () => ctx2.cambio();
+    const set = (k) => (v2) => {
+      D[k] = v2;
+      cambio();
+    };
+    poner(form, grupoSeccion(ctx2, { formas: FORMAS6, activa: s, alElegir: (nombre) => {
+      const i = p.secciones.findIndex((x) => x.nombre === nombre);
+      if (i >= 0) {
+        est11.i = i;
+        ctx2.pintar();
+      }
+    } }));
+    poner(
+      form,
+      segmentado({ ancho: true, capsula: true, etiqueta: t("flex.modo"), opciones: [["comprobar", t("flex.v.comprobar")], ["dimensionar", t("flex.v.dimensionar")]], valor: est11.modo, onCambio: (m) => {
+        est11.modo = m;
+        ctx2.pintar();
+      } }),
+      pestanas({ lista: [["soporte", t("ine.pSoporte")], ["extremos", t("ine.pExtremos")]], activa: est11.pagina, onCambio: (k) => {
+        est11.pagina = k;
+        ctx2.pintar();
+      } })
+    );
+    if (est11.pagina === "soporte") {
+      poner(
+        form,
+        grupo(
+          t("ine.gSoporte"),
+          campoNum({ id: "ine-l", etq: "l", valor: D.L, mag: "long", paso: 100, min: 0.1, max: 100, nombre: t("ine.LNombre"), ayuda: t("ine.LAyuda"), onCambio: set("L") }),
+          segmentado({ ancho: true, etiqueta: t("ine.porticoEtq"), opciones: [[false, t("ine.intra")], [true, t("ine.trasl")]], valor: D.trasl, onCambio: (v2) => {
+            D.trasl = v2;
+            cambio();
+            ctx2.pintar();
+          } })
+        ),
+        grupo(
+          t("ine.gEsfuerzos"),
+          campoNum({ id: "ine-n", etq: sub29("N", "Ed"), ref: t("fcr.compPos"), valor: D.N, mag: "N", paso: 10, min: -1e6, max: 1e6, nombre: t("ine.nombreN"), onCambio: set("N") }),
+          campoNum({ id: "ine-ma", etq: t("ine.MA"), ref: t("ine.refM"), valor: D.MA, mag: "M", paso: 5, min: -1e6, max: 1e6, nombre: t("ine.nombreM"), ayuda: t("ine.MAyuda"), onCambio: set("MA") }),
+          campoNum({ id: "ine-mb", etq: t("ine.MB"), valor: D.MB, mag: "M", paso: 5, min: -1e6, max: 1e6, nombre: t("ine.nombreM"), ayuda: t("ine.MAyuda"), onCambio: set("MB") })
+        ),
+        p.norma === "EHE-08" ? null : grupo(
+          t("ine.gFluencia"),
+          campoNum({ id: "ine-phi", etq: t("ine.phi"), valor: D.phiInf, mag: "ratio", paso: 0.1, min: 0, max: 10, nombre: t("ine.phiNombre"), ayuda: t("ine.phiAyuda"), onCambio: set("phiInf") }),
+          campoNum({ id: "ine-perm", etq: t("ine.perm"), valor: D.perm, mag: "ratio", paso: 0.05, min: 0, max: 1, nombre: t("ine.permNombre"), ayuda: t("ine.permAyuda"), onCambio: set("perm") })
+        )
+      );
+    } else {
+      poner(
+        form,
+        grupo(
+          t("ine.gRigidez"),
+          h(
+            "div",
+            { class: "par2" },
+            campoNum({ id: "ine-fp", etq: t("ine.fp"), valor: D.fp, mag: "ratio", paso: 0.05, min: 0.01, max: 1, nombre: t("ine.fpNombre"), ayuda: t("ine.fAyuda"), onCambio: set("fp") }),
+            campoNum({ id: "ine-fv", etq: t("ine.fv"), valor: D.fv, mag: "ratio", paso: 0.05, min: 0.01, max: 1, nombre: t("ine.fvNombre"), ayuda: t("ine.fAyuda"), onCambio: set("fv") })
+          )
+        ),
+        grupoExtremo(ctx2, D, D.A, t("ine.extremoA"), cambio),
+        grupoExtremo(ctx2, D, D.B, t("ine.extremoB"), cambio)
+      );
+    }
+  }
+  function resultados17(ctx2, res) {
+    resultadosInestabilidad(ctx2, res);
+    rotulaSeccion(res, activa5(ctx2.p)?.nombre);
+  }
+  function resultadosInestabilidad(ctx2, res) {
+    const p = ctx2.p;
+    const s = activa5(p);
+    if (!s) return;
+    const D = datosDe3(p);
+    const c = calculo4(p, s, D);
+    const { r } = c;
+    const dim = est11.modo === "dimensionar";
+    p.calculos.inestabilidadRes = { modo: est11.modo, norma: p.norma, fecha: (/* @__PURE__ */ new Date()).toISOString().slice(0, 10), resultado: { lambda: r.lambda, lamLim: r.lamLim, MEd: r.MEd, gamma: c.gamma } };
+    if (!r.valido) res.append(veredicto("neutro", t("ine.revisar"), t("ine.aprov"), "\u2014", t("ine.ver.traccion")));
+    else if (r.metodo === "general") res.append(veredicto("atencion", t("ine.revisar"), t("ine.aprov"), "\u2014", t("ine.ver.general")));
+    else if (r.metodo === "fuera") res.append(veredicto("nocumple", t("ine.noCumple"), t("ine.aprov"), "\u2014", t("ine.ver.fuera")));
+    else if (dim && !Number.isFinite(c.k)) res.append(veredicto("nocumple", t("aumentar"), t("armaduraNec"), "\u2014", t("ine.noBasta")));
+    else if (dim) {
+      const As = c.As0 * c.k;
+      if (c.phiProp) res.append(veredicto("cumple", t("valida"), t("fcr.fiProp"), `\xF8${fmt(c.phiProp, 0)}<span class="u"> mm</span>`, t("fcr.fiArm", c.phiEstricto > 0 ? fmt(c.phiEstricto, 1) : "\u2014", q(As, "As"), q(c.As0 * c.kEstricto, "As"), "1,00")));
+      else res.append(veredicto("cumple", t("valida"), t("armaduraNec"), qh(As, "As"), t("fcr.kArm", fmt(c.k, 2), q(c.As0, "As"), "1,00")));
+    } else {
+      const ok = c.gamma >= 1 - 1e-6;
+      res.append(veredicto(
+        ok ? "cumple" : "nocumple",
+        ok ? t("ine.cumple") : t("ine.noCumple"),
+        "\u03B3 = |OQ|/|OP|",
+        sigla3(c.gamma),
+        r.segundoOrden ? t("ine.ver.con", q(r.M0eq, "M"), q(r.MEd - r.M0eq, "M"), q(r.MEd, "M")) : t("ine.ver.sin", fmt(r.lambda, 1), fmt(r.lamLim, 1)),
+        Math.min(1 / Math.max(c.gamma, 1e-9) / 1.25, 1)
+      ));
+    }
+    if (c.As0 * c.k + 1e-12 < c.Amin && c.As0 > 0) res.append(aviso(t("fcr.bajoMin", q(c.As0 * c.k, "As"), q(c.Amin, "As"))));
+    if (!(c.As0 > 0)) res.append(aviso(t("ine.av.sinArm")));
+    for (const a of r.avisos ?? []) res.append(aviso(t(a.clave, ...(a.args ?? []).map((v2) => typeof v2 === "number" ? fmt(v2, 0) : v2)), a.clave === "ine.av.eMin" ? "info" : ""));
+    if (r.valido && p.norma !== "EC2-2023" && r.metodo !== "fuera") res.append(aviso(t("ine.av.lim"), "info"));
+    const grafico = h(
+      "article",
+      { class: "panel tarjeta" },
+      h("h2", {}, `${t("ine.diagrama")} \xB7 ${s.nombre}${c.phi0 ? ` \xB7 \xF8${fmt(c.phiProp ?? c.phi0, 0)}` : ""}`),
+      h("div", { class: "fcr-graf" }, graficoNM2(ctx2, c, s), notaDiagrama(c))
+    );
+    const lado = h(
+      "article",
+      { class: "panel tarjeta fcr-lado" },
+      pestanas({ lista: [["res", t("ine.pRes")], ["sop", t("ine.pSoporteDib")], ["rot", t("ine.pRotura")]], activa: est11.lado, onCambio: (k) => {
+        est11.lado = k;
+        ctx2.cambio();
+      } }),
+      est11.lado === "sop" ? h("div", { class: "lienzo", html: dibujoSoporte(D, c, s, p) }) : est11.lado === "rot" ? rotura(c, s) : [cifras(cifrasDe3(c, D, p, dim)), h("p", { class: "sub", style: "margin:0" }, t("t.desplegar")), traza4(p, c, D)]
+    );
+    res.append(h("div", { class: "cuerpo dib-ancho fcr-diagrama" }, grafico, lado));
+  }
+  function rotura(c, s) {
+    const r = c.r;
+    if (!r.valido || !c.d || !Number.isFinite(r.MEd)) return h("div");
+    const Q = coeficienteQ(c);
+    const e2 = Q ? estadoUltimo(c.secD, -Q[0], { signo: 1, yref: c.d.yref }) : null;
+    return h("div", { class: "fcr-sec" }, h("div", { class: "lienzo", html: e2?.converge ? dibujoRotura(c.geo, s, { secD: c.secD }, e2) : dibujoSeccionPeq(c.geo, s) }));
+  }
+  function coeficienteQ(c) {
+    const g = c.gamma;
+    return Number.isFinite(g) && g > 0 && Number.isFinite(c.r.MEd) ? [g * c.r.N, g * c.r.MEd] : null;
+  }
+  function cifrasDe3(c, D, p, dim) {
+    const r = c.r;
+    if (!r.valido) return [];
+    const mm5 = (x) => `${fmt(x * 1e3, 0)}<span class="u"> mm</span>`;
+    const lista = [[t("ine.c.l0"), Number.isFinite(r.l0) ? mm5(r.l0) : "\u2014"], [t("ine.c.lam"), fmt(r.lambda, 1)], [t("ine.c.lamLim"), fmt(r.lamLim, 1)]];
+    if (p.norma === "EHE-08") lista.splice(1, 0, [t("ine.c.alfa"), fmt(r.alfa, 2)]);
+    else lista.push([t("ine.c.phiEf"), fmt(r.phiEf, 2)]);
+    lista.push([t("ine.c.psi"), `${sigla3(c.psiA)} \xB7 ${sigla3(c.psiB)}`]);
+    if (Number.isFinite(r.MEd)) {
+      lista.push([t("ine.c.M0"), qh(r.M0eq, "M")]);
+      if (r.segundoOrden) lista.push([t("ine.c.dM"), qh(r.MEd - r.M0eq, "M")]);
+      lista.push([t("ine.c.MEd"), qh(r.MEd, "M")]);
+    }
+    const arm = c.phi0 ? [["\xF8", `${fmt(c.phiProp ?? c.phi0, 0)}<span class="u"> mm</span>`], [sub29("A", "s"), qh(c.As0 * c.kk, "As")], [sub29("A", "s,m\xEDn"), qh(c.Amin, "As")]] : [[sub29("A", "s"), qh(c.As0 * c.kk, "As")]];
+    void dim;
+    const todas = [...lista, ...arm];
+    if (todas.length % 2) todas.push(["", ""]);
+    return todas;
+  }
+  function notaDiagrama(c) {
+    const d = c.d;
+    const r = c.r;
+    if (!d) return h("p", { class: "nota-diag", html: "" });
+    return h("p", { class: "nota-diag", html: [
+      `${sub29("N", "Rd")} <b>${q(d.Ncomp, "N")}</b>`,
+      `${sub29("N", "Rd,t")} <b>${q(d.Ntrac, "N")}</b>`,
+      `${sub29("e", "m\xEDn")} <b>${fmt(c.emin * 1e3, 0)}</b> mm`,
+      r.valido && r.segundoOrden ? `\u0394M <b>${q(r.MEd - r.M0eq, "M")}</b>` : t("ine.nota.sin")
+    ].join(" \xB7 ") });
+  }
+  function graficoNM2(ctx2, c, s) {
+    const d = c.d ?? c.dH;
+    const r = c.r;
+    const xy = (rama) => [...rama].reverse().map((v2) => [v2.N, v2.M]);
+    const series = [
+      { nombre: t("ine.sinSegundo"), clase: "ref", xy: xy(d.pos) }
+    ];
+    if (c.reducido) series.push({ nombre: t("ine.conSegundo"), clase: "s1", xy: [...c.reducido].reverse().map((v2) => [v2.N, v2.M]) });
+    else series[0].clase = "s1";
+    series.push({ nombre: t("fcr.hormigon"), clase: "ref", cruz: false, xy: xy(c.dH.pos) });
+    series.push({ nombre: `e m\xEDn = ${fmt(c.emin * 1e3, 0)} mm`, clase: "ref", cruz: false, xy: [[0, 0], [d.Ncomp, d.Ncomp * c.emin]] });
+    const puntos = [];
+    if (r.valido && Number.isFinite(r.MEd)) {
+      puntos.push({ x: r.N, y: r.M0eq, etq: ind3("M", "0"), marca: "neutro" });
+      if (r.segundoOrden) puntos.push({ x: r.N, y: r.MEd, etq: ind3("M", "Ed"), marca: c.gamma >= 1 - 1e-6 ? "ok" : "no" });
+      else puntos[0].marca = c.gamma >= 1 - 1e-6 ? "ok" : "no";
+    }
+    return h("div", { class: "lienzo" }, grafica({
+      series,
+      puntos,
+      detalle: null,
+      ejeX: { titulo: `N [${MAG.N.ud}], ${t("fcr.compPos")}`, d: MAG.N.d, dt: MAG.N.d },
+      ejeY: { titulo: `M [${MAG.M.ud}]`, d: MAG.M.d, dt: MAG.M.d },
+      archivo: `Inestabilidad ${s.nombre}`,
+      avisar: ctx2.avisar,
+      sinTabla: true
+    }));
+  }
+  function dibujoSoporte(D, c, s, p) {
+    const r = c.r;
+    const W2 = 380;
+    const H2 = 360;
+    const cx = 175;
+    const y0 = 50;
+    const y1 = 300;
+    const ancho = 22;
+    const out = [];
+    const tinta = "var(--tinta)";
+    const trazo = `fill="none" stroke="${tinta}" stroke-width="1.5"`;
+    const extremo = (ext, y, arriba, psi, nombre) => {
+      const g = [];
+      const dir = arriba ? -1 : 1;
+      if (ext.tipo === "empotrado") {
+        g.push(`<line x1="${cx - 40}" y1="${y}" x2="${cx + 40}" y2="${y}" stroke="${tinta}" stroke-width="2.5"/>`);
+        for (let x = cx - 40; x <= cx + 32; x += 8) g.push(`<line x1="${x}" y1="${y}" x2="${x + 8}" y2="${y - dir * 8}" stroke="${tinta}" stroke-width="1"/>`);
+      } else if (ext.tipo === "articulado") {
+        g.push(`<path d="M${cx} ${y} l-12 ${-dir * 18} h24 z" ${trazo}/>`, `<line x1="${cx - 30}" y1="${y - dir * 18}" x2="${cx + 30}" y2="${y - dir * 18}" stroke="${tinta}" stroke-width="2"/>`);
+      } else {
+        const v2 = (lado, e2) => e2.L > 0 && e2.b > 0 && e2.h > 0 ? `<rect x="${lado < 0 ? cx - ancho / 2 - 62 : cx + ancho / 2}" y="${y - 6}" width="62" height="12" fill="var(--hormigon)" stroke="var(--hormigon-borde)"/>` : "";
+        g.push(v2(-1, ext.vigas[0]), v2(1, ext.vigas[1]));
+        if (ext.pilar.L > 0) g.push(`<rect x="${cx - ancho / 2}" y="${arriba ? y - 36 : y}" width="${ancho}" height="36" fill="var(--hormigon)" stroke="var(--hormigon-borde)" stroke-dasharray="3 3"/>`);
+      }
+      g.push(`<text x="${cx + 80}" y="${y + (arriba ? -12 : 24)}" class="fuerte">${nombre}: \u03A8 = ${sigla3(psi)}</text>`);
+      return g.join("");
+    };
+    out.push(extremo(D.B, y0, true, c.psiB, "B"), extremo(D.A, y1, false, c.psiA, "A"));
+    out.push(`<rect x="${cx - ancho / 2}" y="${y0}" width="${ancho}" height="${y1 - y0}" fill="var(--hormigon)" stroke="var(--hormigon-borde)"/>`);
+    if (Number.isFinite(r.l0) && D.L > 0) {
+      const f = Math.min(r.l0 / D.L, 2.2);
+      const amp = 26;
+      const pts = [];
+      for (let i = 0; i <= 40; i++) {
+        const u = i / 40;
+        pts.push(`${cx + (D.trasl ? amp * u : amp * Math.sin(Math.PI * u)) * (f > 0.9 ? 1 : 0.7)},${y1 - u * (y1 - y0)}`);
+      }
+      out.push(`<polyline points="${pts.join(" ")}" fill="none" stroke="var(--acento)" stroke-width="1.5" stroke-dasharray="5 3"/>`);
+    }
+    const cota = (x, ya, yb, txt, lado) => `<line x1="${x}" y1="${ya}" x2="${x}" y2="${yb}" stroke="${tinta}" stroke-width="1"/><line x1="${x - 4}" y1="${ya}" x2="${x + 4}" y2="${ya}" stroke="${tinta}"/><line x1="${x - 4}" y1="${yb}" x2="${x + 4}" y2="${yb}" stroke="${tinta}"/><text x="${x + lado * 8}" y="${(ya + yb) / 2 + 4}" text-anchor="${lado < 0 ? "end" : "start"}" class="fuerte">${txt}</text>`;
+    out.push(cota(cx - 78, y0, y1, `l = ${fmt(D.L * 1e3, 0)}`, -1));
+    if (Number.isFinite(r.l0)) {
+      const mid = (y0 + y1) / 2;
+      const m = (D.L > 0 ? r.l0 / D.L * (y1 - y0) : 0) / 2;
+      out.push(cota(cx + 110, Math.max(mid - m, 10), Math.min(mid + m, H2 - 10), `l\u2080 = ${fmt(r.l0 * 1e3, 0)}`, 1));
+    }
+    if (D.trasl) out.push(`<path d="M${cx - 30} ${y0 - 36} h60 m-8 -5 l8 5 l-8 5" ${trazo}/>`);
+    return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${W2} ${H2}" role="img" aria-label="${t("ine.dibAria")}">${out.join("")}</svg>`;
+  }
+  function traza4(p, c, D) {
+    const r = c.r;
+    if (!r.valido) return h("div", { class: "traza" });
+    const fam = NORMAS[p.norma];
+    const art4 = (a, b, c3) => `<span class="art">${fam.ref} \xB7 ${p.norma === "EHE-08" ? a : p.norma === "EC2-2023" ? c3 : b}</span>`;
+    const mm5 = (x) => `${fmt(x * 1e3, 0)} mm`;
+    const ehe = p.norma === "EHE-08";
+    const filas = [
+      { id: "esb", nom: t("ine.t.esb"), val: `\u03BB = ${fmt(r.lambda, 1)}`, cuenta: `<span class="f">${t("ine.f.esb")}</span><span class="f">${t(ehe ? "ine.f.alfaEHE" : "ine.f.l0EC")}</span><span class="n">l\u2080 = ${mm5(r.l0)} \xB7 i = ${mm5(r.i)}</span>${art4("43.1.1 y 43.1.2", "5.8.3.2", "O.5")}` },
+      { id: "lim", nom: t("ine.t.lim"), val: `\u03BBlim = ${fmt(r.lamLim, 1)}`, cuenta: `<span class="f">${t(p.norma === "EC2-2023" ? "ine.f.lim23" : "ine.f.limEHE")}</span><span class="n">n = ${fmt(ehe ? r.nu : r.n, 2)} \xB7 \u03C9 = ${fmt(r.omega, 2)}${r.C && p.norma !== "EC2-2023" ? ` \xB7 C = ${fmt(r.C, 2)}` : ""}</span>${art4("43.1.2", "5.8.3.1 (AN)", "O.6")}` }
+    ];
+    if (!ehe) filas.push({ id: "flu", nom: t("ine.t.flu"), val: `\u03C6ef = ${fmt(r.phiEf, 2)}`, cuenta: `<span class="f">${t("ine.f.flu")}</span><span class="f">${t("ine.f.fluIgn")}</span><span class="n">\u03C6(\u221E,t\u2080) = ${fmt(D.phiInf, 2)} \xB7 ${fmt(D.perm, 2)}</span>${art4("", "5.8.4", "7.4.2")}` });
+    if (r.segundoOrden && ehe) filas.push({ id: "seg", nom: t("ine.t.seg"), val: `e<sub>a</sub> = ${mm5(r.ea)}`, cuenta: `<span class="f">${t("ine.f.ea")}</span><span class="f">${t("ine.f.ee")}</span><span class="n">\u03B2 = ${fmt(r.beta, 2)} \xB7 \u03B5<sub>y</sub> = ${fmt(r.epsY * 1e3, 2)} \u2030 \xB7 e<sub>e</sub> = ${mm5(r.ee)}</span>${art4("43.5.1", "", "")}` });
+    else if (r.segundoOrden) filas.push({ id: "seg", nom: t("ine.t.seg"), val: `e<sub>2</sub> = ${mm5(r.e2)}`, cuenta: `<span class="f">${t("ine.f.curv")}</span><span class="n">1/r\u2080 = ${fmt(r.r0 * 1e3, 2)} \u2030/m \xB7 K<sub>r</sub> = ${fmt(r.Kr, 2)} \xB7 K<sub>\u03C6</sub> = ${fmt(r.Kphi, 2)} \xB7 1/r = ${fmt(r.curv * 1e3, 2)} \u2030/m \xB7 c = ${fmt(r.c, 0)}</span>${art4("", "5.8.8", "O.7")}` });
+    if (Number.isFinite(r.MEd)) filas.push({ id: "med", nom: t("ine.t.med"), val: q(r.MEd, "M"), cuenta: `<span class="f">${t(ehe ? "ine.f.medEHE" : "ine.f.med")}</span><span class="n">M<sub>01</sub> = ${fmt(r.M01, 0)} \xB7 M<sub>02</sub> = ${fmt(r.M02, 0)} kN\xB7m \xB7 e<sub>m\xEDn</sub> = ${mm5(c.emin)}</span>` });
+    return h("div", { class: "traza" }, ...filas.map((f) => {
+      const det = h(
+        "details",
+        { "data-ref": f.id, open: est11.abiertos.has(f.id) },
+        h("summary", {}, h("span", { class: "nom", html: f.nom }), h("span", { class: "val", html: f.val })),
+        h("div", { class: "cuenta", html: f.cuenta })
+      );
+      det.addEventListener("toggle", () => det.open ? est11.abiertos.add(f.id) : est11.abiertos.delete(f.id));
+      return det;
+    }));
+  }
+  function comandos14(ctx2) {
+    return [
+      { k: "ine.cmdComprobar", b: "inestabilidad pandeo soportes segundo orden comprobar buckling columns second order", f: () => {
+        est11.modo = "comprobar";
+        ctx2.ir("inestabilidad");
+      } },
+      { k: "ine.cmdDimensionar", b: "inestabilidad pandeo soportes segundo orden dimensionar buckling columns design", f: () => {
+        est11.modo = "dimensionar";
+        ctx2.ir("inestabilidad");
+      } }
+    ];
+  }
+
   // src/ui/vistas/vigas.js
   var vigas_exports = {};
   __export(vigas_exports, {
-    datos: () => datos17,
-    resultados: () => resultados17
+    datos: () => datos18,
+    resultados: () => resultados18
   });
 
   // src/core/vigas.js
@@ -19636,10 +20426,10 @@ tr.et-act td { font-weight: 650; }
   // src/ui/vistas/vigas.js
   var num3 = (x) => String(+Number(x).toFixed(4));
   var nv3 = (txt) => leerNumero(txt);
-  var INICIAL5 = () => ({ L: 6, izq: "apoyo", der: "apoyo", sec: null, EI: 48e3, cargas: [{ tipo: "distribuida", a: 0, b: 6, q1: 20, q2: 20 }] });
+  var INICIAL6 = () => ({ L: 6, izq: "apoyo", der: "apoyo", sec: null, EI: 48e3, cargas: [{ tipo: "distribuida", a: 0, b: 6, q1: 20, q2: 20 }] });
   function datosVigas(p) {
     var _a;
-    (_a = p.calculos).vigas1vano ?? (_a.vigas1vano = INICIAL5());
+    (_a = p.calculos).vigas1vano ?? (_a.vigas1vano = INICIAL6());
     const D = p.calculos.vigas1vano;
     if (!(D.EI > 0) && D.Ec > 0 && D.I > 0) D.EI = Math.round(D.Ec * D.I);
     delete D.Ec;
@@ -19651,7 +20441,7 @@ tr.et-act td { font-weight: 650; }
     return Math.round(hormigon2.E * bruta(geometriaDe(p, s)).Ix);
   }
   var APOYOS = ["apoyo", "empotramiento", "libre"];
-  function datos17(ctx2, form) {
+  function datos18(ctx2, form) {
     const p = ctx2.p;
     const D = datosVigas(p);
     const cambio = () => ctx2.cambio();
@@ -19749,7 +20539,7 @@ tr.et-act td { font-weight: 650; }
     ));
   }
   var COLS = [["x", "x [m]", 3, 1], ["M", "M [kN\xB7m]", MAG.M.d, 1], ["V", "V [kN]", MAG.N.d, 1], ["flecha", "\u03B4 [mm]", 1, 1e3], ["giro", "\u03B8 [mrad]", 1, 1e3]];
-  function resultados17(ctx2, res) {
+  function resultados18(ctx2, res) {
     const p = ctx2.p;
     const D = datosVigas(p);
     const r = analizarViga({ L: D.L, EI: D.EI, izq: D.izq, der: D.der, cargas: D.cargas });
@@ -19854,7 +20644,7 @@ tr.et-act td { font-weight: 650; }
   }
 
   // src/ui/app.js
-  var EMISION = typeof __FECHA_EMISION__ !== "undefined" ? __FECHA_EMISION__ : (/* @__PURE__ */ new Date()).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "2-digit" }).replace(/\//g, ".");
+  var EMISION = true ? "01.11.26" : (/* @__PURE__ */ new Date()).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "2-digit" }).replace(/\//g, ".");
   function vistaSecciones(m, propia) {
     const fijar = (f) => (...a) => {
       modo(m);
@@ -19863,7 +20653,7 @@ tr.et-act td { font-weight: 650; }
     const v2 = { cabeza: fijar(cabeza2), datos: fijar(datos4), resultados: fijar(resultados4) };
     return propia ? { ...secciones_exports, ...v2 } : v2;
   }
-  var VISTAS = { proyecto: proyecto_exports, materiales: materiales_exports, reologicas: reologicas_exports, secciones: vistaSecciones("seccion", true), durabilidad: durabilidad_exports5, diagramas: vistaSecciones("mk", false), vigas1vano: vigas_exports, flexion: flexion_exports, flexRecta: flexRecta_exports, flexEsviada: flexEsviada_exports, estadoTensional: estadoTensional_exports, fuego: fuego_exports, anclaje: anclaje_exports, cortante: cortante_exports, punzonamiento: punzonamiento_exports, rasante: rasante_exports };
+  var VISTAS = { proyecto: proyecto_exports, materiales: materiales_exports, reologicas: reologicas_exports, secciones: vistaSecciones("seccion", true), durabilidad: durabilidad_exports5, diagramas: vistaSecciones("mk", false), vigas1vano: vigas_exports, flexion: flexion_exports, flexRecta: flexRecta_exports, flexEsviada: flexEsviada_exports, estadoTensional: estadoTensional_exports, fuego: fuego_exports, anclaje: anclaje_exports, cortante: cortante_exports, punzonamiento: punzonamiento_exports, rasante: rasante_exports, inestabilidad: inestabilidad_exports };
   var MENU = [
     { grupo: "materiales", vistas: ["materiales", "reologicas"] },
     { grupo: "secciones", vistas: ["secciones", "durabilidad", "diagramas"] },
@@ -20112,8 +20902,8 @@ tr.et-act td { font-weight: 650; }
   function pintar() {
     document.documentElement.lang = lenguaActual();
     pintarCabecera();
-    const datos18 = $("datos");
-    datos18.replaceChildren();
+    const datos19 = $("datos");
+    datos19.replaceChildren();
     const cab = $("cabeza");
     cab.replaceChildren();
     const vista = VISTAS[estado3.vista];
@@ -20127,10 +20917,10 @@ tr.et-act td { font-weight: 650; }
       }
     }
     try {
-      VISTAS[estado3.vista].datos(ctx, datos18);
+      VISTAS[estado3.vista].datos(ctx, datos19);
     } catch (e2) {
       console.error(e2);
-      datos18.append(aviso(tx(e2), "error"));
+      datos19.append(aviso(tx(e2), "error"));
     }
     pintarResultados();
   }
@@ -20146,7 +20936,7 @@ tr.et-act td { font-weight: 650; }
       if (x) foco(x.dataset.ref, false);
     });
   }
-  function comandos14() {
+  function comandos15() {
     const lista = [
       { k: "p.idioma", b: "idioma language english espa\xF1ol ingl\xE9s", f: () => {
         ponerLengua(lenguaActual() === "es" ? "en" : "es");
@@ -20229,7 +21019,7 @@ tr.et-act td { font-weight: 650; }
     document.addEventListener("fullscreenchange", pintar);
     comportamientoFormulario($("datos"));
     instalarFoco();
-    instalarPaleta(comandos14, avisar);
+    instalarPaleta(comandos15, avisar);
     document.addEventListener("keydown", (e2) => {
       if ((e2.ctrlKey || e2.metaKey) && !e2.shiftKey && e2.key.toLowerCase() === "z" && !e2.target.closest("input, textarea")) {
         e2.preventDefault();

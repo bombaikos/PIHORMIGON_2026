@@ -15,8 +15,10 @@ import estadoTensionalEs from '../i18n/estadoTensional.es.js';
 import estadoTensionalEn from '../i18n/estadoTensional.en.js';
 import rasanteEs from '../i18n/rasante.es.js';
 import rasanteEn from '../i18n/rasante.en.js';
+import inestabilidadEs from '../i18n/inestabilidad.es.js';
+import inestabilidadEn from '../i18n/inestabilidad.en.js';
 
-const DICC = { es: { ...es, ...anclajeEs, ...cortanteEs, ...punzonamientoEs, ...rasanteEs, ...flexEsviadaEs, ...estadoTensionalEs }, en: { ...en, ...anclajeEn, ...cortanteEn, ...punzonamientoEn, ...rasanteEn, ...flexEsviadaEn, ...estadoTensionalEn } };
+const DICC = { es: { ...es, ...anclajeEs, ...cortanteEs, ...punzonamientoEs, ...rasanteEs, ...flexEsviadaEs, ...estadoTensionalEs, ...inestabilidadEs }, en: { ...en, ...anclajeEn, ...cortanteEn, ...punzonamientoEn, ...rasanteEn, ...flexEsviadaEn, ...estadoTensionalEn, ...inestabilidadEn } };
 const CLAVE = 'prontuario-web:lengua';
 let lengua = 'es';
 try { lengua = localStorage.getItem(CLAVE) === 'en' ? 'en' : 'es'; } catch { /* sin almacenamiento */ }
