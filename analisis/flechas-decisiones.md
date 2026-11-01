@@ -29,8 +29,12 @@ Estado: **plan aprobado por Pepiño el 01/11/2026; sin código todavía.** Fuent
 - **EC-2 2004+AN, 7.4.2 (`ec2-2004-an/texto.txt` l.5704):** ecuaciones (7.16.a/b), K por sistema (Tabla 7.4N: 1,0 / 1,3 / 1,5 / 0,4), ρ0 = √fck·10⁻³, factor 310/σs (7.17), alas ×0,8 (b/bw > 3), 7/l y 8,5/l con tabiques frágiles. K en el AN: l.9544.
 - **EC-2 2023, 9.3.2 (`ec2-2023/texto.txt` l.6794):** tabla 9.3 con ωr = As,req/(bw·d)·fyd/fcd (0,1/0,2/0,3) y proporción sobrecarga/carga total (30/45/60 %), l/250; ×250/a para otro límite; extrapolación a otras vinculaciones por raíz cúbica del cociente de flechas elásticas. 9.3.3 (cálculo simplificado con sección bruta): fuera por ahora.
 
+## Decisiones adicionales (Pepiño, 01/11/2026)
+7. **EHE-08, inercia de referencia:** ponderación 25-50-25 (art. 50.2.2.2): vano extremo con un solo apoyo continuo Ie = 0,75·Iec + 0,25·Iee; vano interior Ie = 0,50·Iec + 0,25·Iee,izq + 0,25·Iee,der; biapoyada, centro de vano; voladizo, arranque.
+8. **EC-2 (2004+AN y 2023):** se estudia la integración de curvaturas a lo largo de la viga (ζ por sección), con pocos puntos (del orden de 10 a 51). Coste de cálculo previsto: despreciable (ms). Por confirmar al programar.
+
 ## Pendiente de decidir
 - Flecha por retracción: método exacto (EC-2 7.4.3(6), curvatura por retracción con S y I de sección fisurada y sin fisurar, ζ) y datos (humedad, espesor, cemento, εcs); ver `core/reologia.js`.
 - Qué hace Branson en las normas nuevas con tres hitos y retracción (se aplica ζ en vez de Branson o se mantiene Branson).
-- Si Ie se evalúa en cada x o en el centro de vano como el 3.1.
+- Número de puntos de integración en EC-2 (10, 21 o 51 como el 3.1).
 - Límites admisibles (L/250, L/400): ¿solo calcula o compara?
