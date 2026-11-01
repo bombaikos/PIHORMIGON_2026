@@ -21,6 +21,7 @@ import * as estadoTensional from './vistas/estadoTensional.js';
 import * as fuego from './vistas/fuego.js';
 import * as anclaje from './vistas/anclaje.js';
 import * as cortante from './vistas/cortante.js';
+import * as torsion from './vistas/torsion.js';
 import * as punzonamiento from './vistas/punzonamiento.js';
 import * as rasante from './vistas/rasante.js';
 import * as inestabilidad from './vistas/inestabilidad.js';
@@ -40,7 +41,7 @@ function vistaSecciones(m, propia) {
   const v = { cabeza: fijar(secciones.cabeza), datos: fijar(secciones.datos), resultados: fijar(secciones.resultados) };
   return propia ? { ...secciones, ...v } : v;
 }
-const VISTAS = { proyecto, materiales, reologicas, secciones: vistaSecciones('seccion', true), durabilidad, diagramas: vistaSecciones('mk', false), vigas1vano, flexion, flexRecta, flexEsviada, estadoTensional, fuego, anclaje, cortante, punzonamiento, rasante, inestabilidad };
+const VISTAS = { proyecto, materiales, reologicas, secciones: vistaSecciones('seccion', true), durabilidad, diagramas: vistaSecciones('mk', false), vigas1vano, flexion, flexRecta, flexEsviada, estadoTensional, fuego, anclaje, cortante, torsion, punzonamiento, rasante, inestabilidad };
 // Menú principal. Una entrada es un módulo suelto o un grupo con submenú; '|' separa familias dentro del
 // submenú. Lo que aún no está en VISTAS sale atenuado y sin acción, y se activa solo al migrarlo.
 const MENU = [

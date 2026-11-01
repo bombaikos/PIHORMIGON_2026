@@ -7,6 +7,8 @@ import anclajeEs from '../i18n/anclaje.es.js';
 import anclajeEn from '../i18n/anclaje.en.js';
 import cortanteEs from '../i18n/cortante.es.js';
 import cortanteEn from '../i18n/cortante.en.js';
+import torsionEs from '../i18n/torsion.es.js';
+import torsionEn from '../i18n/torsion.en.js';
 import punzonamientoEs from '../i18n/punzonamiento.es.js';
 import punzonamientoEn from '../i18n/punzonamiento.en.js';
 import flexEsviadaEs from '../i18n/flexEsviada.es.js';
@@ -18,7 +20,7 @@ import rasanteEn from '../i18n/rasante.en.js';
 import inestabilidadEs from '../i18n/inestabilidad.es.js';
 import inestabilidadEn from '../i18n/inestabilidad.en.js';
 
-const DICC = { es: { ...es, ...anclajeEs, ...cortanteEs, ...punzonamientoEs, ...rasanteEs, ...flexEsviadaEs, ...estadoTensionalEs, ...inestabilidadEs }, en: { ...en, ...anclajeEn, ...cortanteEn, ...punzonamientoEn, ...rasanteEn, ...flexEsviadaEn, ...estadoTensionalEn, ...inestabilidadEn } };
+const DICC = { es: { ...es, ...anclajeEs, ...cortanteEs, ...torsionEs, ...punzonamientoEs, ...rasanteEs, ...flexEsviadaEs, ...estadoTensionalEs, ...inestabilidadEs }, en: { ...en, ...anclajeEn, ...cortanteEn, ...torsionEn, ...punzonamientoEn, ...rasanteEn, ...flexEsviadaEn, ...estadoTensionalEn, ...inestabilidadEn } };
 const CLAVE = 'prontuario-web:lengua';
 let lengua = 'es';
 try { lengua = localStorage.getItem(CLAVE) === 'en' ? 'en' : 'es'; } catch { /* sin almacenamiento */ }
