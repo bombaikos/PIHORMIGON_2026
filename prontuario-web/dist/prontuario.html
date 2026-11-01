@@ -1177,6 +1177,23 @@ tr.et-act td { font-weight: 650; }
 /* Inestabilidad de soportes: fila de un soporte o viga de un nudo (b, h, luz) */
 .ine-fila { display: flex; flex-direction: column; gap: 2px; }
 .ine-fila .etq-grupo { font-size: var(--t-xs); color: var(--tinta-3); }
+.ine-tabla { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: var(--t-s); }
+.ine-tabla th, .ine-tabla td { padding: 2px 2px; text-align: left; vertical-align: middle; }
+.ine-tabla thead th { font-size: var(--t-xs); font-weight: 500; color: var(--tinta-3); white-space: nowrap; }
+.ine-tabla tbody th[scope="row"] { font-weight: 400; color: var(--tinta-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+:root:not([data-densidad="comoda"]) .ine-tabla .campo, .ine-tabla .campo { display: block; }
+.ine-tabla .caja .ud { display: none; }
+:root:not([data-densidad="comoda"]) .ine-tabla .campo:not(.columna) .caja, :root .ine-tabla .campo .caja { flex: 1 1 0; width: 100%; min-width: 0; margin-left: 0; }
+.ine-tabla thead th:nth-child(1) { width: 74px; }
+.ine-tabla thead th:nth-child(5) { width: 34px; text-align: center; }
+.ine-tabla .campo > label, .ine-tabla .campo .eco { display: none; }
+.ine-tabla .campo .caja input { width: 100%; min-width: 0; padding-left: 2px; padding-right: 2px; text-align: right; }
+.ine-tabla .ine-vol { text-align: center; }
+.ine-tabla .ine-vol .tick { display: inline-flex; justify-content: center; }
+.ine-tabla tr.vol td:not(.ine-vol) { opacity: .45; }
+.ine-ext th { padding-top: 8px; font-weight: 650; }
+.ine-ext-cab { display: flex; flex-direction: column; gap: 3px; font-size: var(--t-s); color: var(--tinta); }
+.ine-ext-cab .seg { align-self: stretch; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; }
 </style>
 
 <header class="barra">
@@ -5977,9 +5994,13 @@ tr.et-act td { font-weight: 650; }
     "ine.t.articulado": "Articulado",
     "ine.t.nudo": "Nudo",
     "ine.nudoAyuda": "Nudo: \u03A8 sale de las rigideces del soporte contiguo y de las vigas que llegan. Una viga en voladizo no aporta rigidez: d\xE9jala con luz 0.",
-    "ine.f.pilar": "Soporte contiguo",
+    "ine.f.pilarSup": "Pilar superior",
+    "ine.f.pilarInf": "Pilar inferior",
     "ine.f.viga1": "Viga 1",
     "ine.f.viga2": "Viga 2",
+    "ine.gExtremos": "Extremos",
+    "ine.vol": "Vol.",
+    "ine.volAyuda": "Voladizo: la viga no aporta rigidez al nudo",
     "ine.b": "b [mm]",
     "ine.h": "h [mm]",
     "ine.l": "luz [mm]",
@@ -5989,7 +6010,7 @@ tr.et-act td { font-weight: 650; }
     "ine.noCumple": "No cumple",
     "ine.revisar": "Revisar",
     "ine.aprov": "Aprovechamiento",
-    "ine.ver.sin": (l, lim) => `\u03BB = ${l} \u2264 \u03BBlim = ${lim}: se desprecian los efectos de segundo orden`,
+    "ine.ver.sin": (l, lim) => `\u03BB = ${l} \u2264 \u03BBlim = ${lim}: la norma permitir\xEDa despreciar el segundo orden; aqu\xED se calcula siempre, para que el diagrama no tenga saltos.`,
     "ine.ver.con": (m0, m2, med) => `M0 ${m0} + \u0394M ${m2} = M_Ed ${med}`,
     "ine.ver.general": "Esbeltez entre 100 y 200: hace falta el m\xE9todo general (no incluido)",
     "ine.ver.fuera": "Esbeltez mayor de 200: fuera del campo de aplicaci\xF3n",
@@ -6088,15 +6109,19 @@ tr.et-act td { font-weight: 650; }
     "ine.t.empotrado": "Fixed",
     "ine.t.articulado": "Pinned",
     "ine.t.nudo": "Joint",
-    "ine.f.pilar": "Adjacent column",
+    "ine.f.pilarSup": "Upper column",
+    "ine.f.pilarInf": "Lower column",
     "ine.f.viga1": "Beam 1",
     "ine.f.viga2": "Beam 2",
+    "ine.gExtremos": "Ends",
+    "ine.vol": "Cant.",
+    "ine.volAyuda": "Cantilever: the beam adds no stiffness to the joint",
     "ine.l": "span [mm]",
     "ine.cumple": "Complies",
     "ine.noCumple": "Does not comply",
     "ine.revisar": "Review",
     "ine.aprov": "Utilisation",
-    "ine.ver.sin": (l, lim) => `\u03BB = ${l} \u2264 \u03BBlim = ${lim}: second-order effects neglected`,
+    "ine.ver.sin": (l, lim) => `\u03BB = ${l} \u2264 \u03BBlim = ${lim}: the code would allow neglecting second order; it is always computed here so the diagram has no jumps.`,
     "ine.pRes": "Results",
     "ine.pSoporteDib": "Column",
     "ine.pRotura": "Failure",
@@ -19475,7 +19500,7 @@ tr.et-act td { font-weight: 650; }
     if (ext.tipo === "empotrado") return 0;
     if (ext.tipo === "articulado") return Infinity;
     const kc = fp * Ic / L + (ext.pilar && ext.pilar.L > 0 ? fp * inerciaRect(ext.pilar.b, ext.pilar.h) / ext.pilar.L : 0);
-    const kv = (ext.vigas ?? []).filter((v2) => v2 && v2.L > 0 && v2.b > 0 && v2.h > 0).reduce((a, v2) => a + fv * inerciaRect(v2.b, v2.h) / v2.L, 0);
+    const kv = (ext.vigas ?? []).filter((v2) => v2 && !v2.vol && v2.L > 0 && v2.b > 0 && v2.h > 0).reduce((a, v2) => a + fv * inerciaRect(v2.b, v2.h) / v2.L, 0);
     return kv > 0 ? kc / kv : Infinity;
   }
   function flexibilidad(psi, traslacional) {
@@ -19533,7 +19558,7 @@ tr.et-act td { font-weight: 650; }
     if (lambda > 200) return { ...out, metodo: "fuera", MEd: NaN, M0eq: NaN };
     if (lambda > 100) return { ...out, metodo: "general", MEd: NaN, M0eq: NaN };
     const M0eq = N * Math.max(ee, b.emin);
-    if (lambda <= lamLim) return { ...out, metodo: "ninguno", segundoOrden: false, etot: Math.max(ee, b.emin), MEd: M0eq, M0eq };
+    if (lambda <= lamLim && !e2.forzar) return { ...out, metodo: "ninguno", segundoOrden: false, etot: Math.max(ee, b.emin), MEd: M0eq, M0eq };
     const epsY = fyd / Es;
     const ea = (1 + 0.12 * beta2) * (epsY + 35e-4) * ((h2 + 20 * ee) / (h2 + 10 * ee)) * (l0 ** 2 / (50 * i));
     const etot = Math.max(ee, b.emin) + ea;
@@ -19566,7 +19591,9 @@ tr.et-act td { font-weight: 650; }
     const C = coeficienteC(beta2);
     const braced = !traslacional;
     const M0 = braced ? Math.max(0.6 * b.M02 + 0.4 * b.M01, 0.4 * b.M02) : b.M02;
-    const { phiEf, ignorable } = fluenciaEficaz({ phiInf: e2.phiInf, pPerm: e2.pPerm, lambda, M0, N, h: h2 });
+    const fl = fluenciaEficaz({ phiInf: e2.phiInf, pPerm: e2.pPerm, lambda, M0, N, h: h2 });
+    const ignorable = e2.forzar ? false : fl.ignorable;
+    const phiEf = e2.forzar ? e2.phiInf * e2.pPerm : fl.phiEf;
     const out = { l0, lambda, k1, k2, n, omega, beta: beta2, C, phiEf, fluenciaIgnorable: ignorable, i, M0 };
     let lamLim;
     if (v2023) {
@@ -19581,7 +19608,7 @@ tr.et-act td { font-weight: 650; }
     }
     out.lamLim = lamLim;
     if (lambda > 200) return { ...out, metodo: "fuera", MEd: NaN, M0eq: NaN };
-    if (lambda <= lamLim) {
+    if (lambda <= lamLim && !e2.forzar) {
       const M3 = Math.max(Math.abs(b.M02), N * b.emin);
       return { ...out, metodo: "ninguno", segundoOrden: false, MEd: M3, M0eq: M3 };
     }
@@ -19594,7 +19621,7 @@ tr.et-act td { font-weight: 650; }
     const betaFck = 0.35 + fck / 200 - lambda / 150;
     const Kphi = Math.max(1 + betaFck * phiEf, 1);
     const curv = Kr * Kphi * r0;
-    const cc = v2023 ? braced ? 8 : 10 : braced && b.rm === 1 ? 8 : 10;
+    const cc = v2023 ? braced ? 8 : 10 : braced ? 10 - 2 * Math.min(Math.max(b.rm, 0), 1) : 10;
     const e22 = curv * l0 ** 2 / cc;
     const M2 = N * e22;
     let MEd;
@@ -19690,7 +19717,8 @@ tr.et-act td { font-weight: 650; }
       M1: D.MA,
       M2: D.MB,
       phiInf: D.phiInf,
-      pPerm: D.perm
+      pPerm: D.perm,
+      forzar: true
     });
     return { geo, mats, br, ar, sec, entrada: entrada5, psiA: psi(D.A), psiB: psi(D.B), emin: excentricidadMinima(p.norma, geo.h) };
   }
@@ -19748,35 +19776,54 @@ tr.et-act td { font-weight: 650; }
     memo4 = { clave, c };
     return c;
   }
-  function filaViga(D, ext, clave, etq, cambio) {
+  function filaTabla(ext, id, clave, etq, cambio, ctx2) {
     const v2 = clave === "pilar" ? ext.pilar : ext.vigas[clave];
     const set = (k) => (x) => {
       v2[k] = x;
       cambio();
     };
-    const id = `ine-${ext === D.A ? "a" : "b"}-${clave}`;
+    const celda = (k, paso2) => h("td", {}, campoNum({ id: `${id}-${k}`, etq: k, valor: v2[k === "L" ? "L" : k], mag: "long", paso: paso2, min: 0, max: 100, sinUd: true, onCambio: set(k) }));
     return h(
-      "div",
-      { class: "ine-fila" },
-      h("span", { class: "etq-grupo" }, etq),
-      filaCampos(
-        apilado(campoNum({ id: `${id}-b`, etq: t("ine.b"), valor: v2.b, mag: "long", paso: 25, min: 0, max: 5, sinUd: true, onCambio: set("b") })),
-        apilado(campoNum({ id: `${id}-h`, etq: t("ine.h"), valor: v2.h, mag: "long", paso: 25, min: 0, max: 5, sinUd: true, onCambio: set("h") })),
-        apilado(campoNum({ id: `${id}-l`, etq: t("ine.l"), valor: v2.L, mag: "long", paso: 100, min: 0, max: 100, sinUd: true, onCambio: set("L") }))
-      )
+      "tr",
+      { class: v2.vol ? "vol" : void 0 },
+      h("th", { scope: "row" }, etq),
+      celda("b", 25),
+      celda("h", 25),
+      celda("L", 100),
+      h("td", { class: "ine-vol" }, clave === "pilar" ? null : h(
+        "label",
+        { class: "tick", title: t("ine.volAyuda") },
+        h("input", { type: "checkbox", id: `${id}-vol`, checked: !!v2.vol, "aria-label": t("ine.vol"), onchange: (e2) => {
+          v2.vol = e2.target.checked;
+          ctx2.pintar();
+          cambio();
+        } }),
+        h("span", {})
+      ))
     );
   }
-  function grupoExtremo(ctx2, D, ext, titulo, cambio) {
-    const nudo = ext.tipo === "nudo";
-    return grupo(
-      titulo,
-      segmentado({ ancho: true, etiqueta: titulo, opciones: [["empotrado", t("ine.t.empotrado")], ["articulado", t("ine.t.articulado")], ["nudo", t("ine.t.nudo")]], valor: ext.tipo, onCambio: (v2) => {
+  function bloqueExtremo(ctx2, ext, id, titulo, contiguo, cambio) {
+    const cab = h("tr", { class: "ine-ext" }, h("th", { colspan: 5, scope: "colgroup" }, h(
+      "div",
+      { class: "ine-ext-cab" },
+      h("span", {}, titulo),
+      segmentado({ etiqueta: titulo, opciones: [["empotrado", t("ine.t.empotrado")], ["articulado", t("ine.t.articulado")], ["nudo", t("ine.t.nudo")]], valor: ext.tipo, onCambio: (v2) => {
         ext.tipo = v2;
         ctx2.pintar();
         ctx2.cambio();
-      } }),
-      nudo ? [filaViga(D, ext, "pilar", t("ine.f.pilar"), cambio), filaViga(D, ext, 0, t("ine.f.viga1"), cambio), filaViga(D, ext, 1, t("ine.f.viga2"), cambio)] : null
-    );
+      } })
+    )));
+    if (ext.tipo !== "nudo") return [cab];
+    return [cab, filaTabla(ext, `${id}-p`, "pilar", contiguo, cambio, ctx2), filaTabla(ext, `${id}-v1`, 0, t("ine.f.viga1"), cambio, ctx2), filaTabla(ext, `${id}-v2`, 1, t("ine.f.viga2"), cambio, ctx2)];
+  }
+  function tablaExtremos(ctx2, D, cambio) {
+    const cab = h("thead", {}, h("tr", {}, h("th", {}), h("th", { html: "b [mm]" }), h("th", { html: "h [mm]" }), h("th", { html: t("ine.l") }), h("th", { title: t("ine.volAyuda") }, t("ine.vol"))));
+    return h("div", { class: "tabla-scroll ine-tab" }, h(
+      "table",
+      { class: "ine-tabla" },
+      cab,
+      h("tbody", {}, ...bloqueExtremo(ctx2, D.B, "ine-b", t("ine.extremoB"), t("ine.f.pilarSup"), cambio), ...bloqueExtremo(ctx2, D.A, "ine-a", t("ine.extremoA"), t("ine.f.pilarInf"), cambio))
+    ));
   }
   function datos17(ctx2, form) {
     const p = ctx2.p;
@@ -19843,8 +19890,7 @@ tr.et-act td { font-weight: 650; }
             campoNum({ id: "ine-fv", etq: t("ine.fv"), valor: D.fv, mag: "ratio", paso: 0.05, min: 0.01, max: 1, nombre: t("ine.fvNombre"), ayuda: t("ine.fAyuda"), onCambio: set("fv") })
           )
         ),
-        grupoExtremo(ctx2, D, D.A, t("ine.extremoA"), cambio),
-        grupoExtremo(ctx2, D, D.B, t("ine.extremoB"), cambio)
+        grupo(t("ine.gExtremos"), tablaExtremos(ctx2, D, cambio))
       );
     }
   }
@@ -19876,13 +19922,14 @@ tr.et-act td { font-weight: 650; }
         ok ? t("ine.cumple") : t("ine.noCumple"),
         "\u03B3 = |OQ|/|OP|",
         sigla3(c.gamma),
-        r.segundoOrden ? t("ine.ver.con", q(r.M0eq, "M"), q(r.MEd - r.M0eq, "M"), q(r.MEd, "M")) : t("ine.ver.sin", fmt(r.lambda, 1), fmt(r.lamLim, 1)),
+        t("ine.ver.con", q(r.M0eq, "M"), q(r.MEd - r.M0eq, "M"), q(r.MEd, "M")),
         Math.min(1 / Math.max(c.gamma, 1e-9) / 1.25, 1)
       ));
     }
     if (c.As0 * c.k + 1e-12 < c.Amin && c.As0 > 0) res.append(aviso(t("fcr.bajoMin", q(c.As0 * c.k, "As"), q(c.Amin, "As"))));
     if (!(c.As0 > 0)) res.append(aviso(t("ine.av.sinArm")));
     for (const a of r.avisos ?? []) res.append(aviso(t(a.clave, ...(a.args ?? []).map((v2) => typeof v2 === "number" ? fmt(v2, 0) : v2)), a.clave === "ine.av.eMin" ? "info" : ""));
+    if (r.valido && r.lambda <= r.lamLim && Number.isFinite(r.lambda)) res.append(aviso(t("ine.ver.sin", fmt(r.lambda, 1), fmt(r.lamLim, 1)), "info"));
     if (r.valido && p.norma !== "EC2-2023" && r.metodo !== "fuera") res.append(aviso(t("ine.av.lim"), "info"));
     const grafico = h(
       "article",

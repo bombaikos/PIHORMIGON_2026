@@ -61,7 +61,7 @@ function calcularEHE(e, b) {
   if (lambda > 200) return { ...out, metodo: 'fuera', MEd: NaN, M0eq: NaN };
   if (lambda > 100) return { ...out, metodo: 'general', MEd: NaN, M0eq: NaN };
   const M0eq = N * Math.max(ee, b.emin);
-  if (lambda <= lamLim) return { ...out, metodo: 'ninguno', segundoOrden: false, etot: Math.max(ee, b.emin), MEd: M0eq, M0eq };
+  if (lambda <= lamLim && !e.forzar) return { ...out, metodo: 'ninguno', segundoOrden: false, etot: Math.max(ee, b.emin), MEd: M0eq, M0eq };
   // 43.5.1: e_tot = e_e + e_a (la fluencia queda cubierta por e_a)
   const epsY = fyd / Es;
   const ea = (1 + 0.12 * beta) * (epsY + 0.0035) * ((h + 20 * ee) / (h + 10 * ee)) * (l0 ** 2 / (50 * i));
@@ -103,7 +103,10 @@ function calcularEC2(e, b, v2023) {
   const C = coeficienteC(beta);
   const braced = !traslacional;
   const M0 = braced ? Math.max(0.6 * b.M02 + 0.4 * b.M01, 0.4 * b.M02) : b.M02; // M0e (5.32); en traslacionales, el mayor
-  const { phiEf, ignorable } = fluenciaEficaz({ phiInf: e.phiInf, pPerm: e.pPerm, lambda, M0, N, h });
+  const fl = fluenciaEficaz({ phiInf: e.phiInf, pPerm: e.pPerm, lambda, M0, N, h });
+  // forzar: la curva del diagrama no salta cuando la norma permitiría despreciar la fluencia (5.8.4(4)) o el segundo orden
+  const ignorable = e.forzar ? false : fl.ignorable;
+  const phiEf = e.forzar ? e.phiInf * e.pPerm : fl.phiEf;
   const out = { l0, lambda, k1, k2, n, omega, beta, C, phiEf, fluenciaIgnorable: ignorable, i, M0 };
   let lamLim;
   if (v2023) {
@@ -119,7 +122,7 @@ function calcularEC2(e, b, v2023) {
   }
   out.lamLim = lamLim;
   if (lambda > 200) return { ...out, metodo: 'fuera', MEd: NaN, M0eq: NaN };
-  if (lambda <= lamLim) { const M = Math.max(Math.abs(b.M02), N * b.emin); return { ...out, metodo: 'ninguno', segundoOrden: false, MEd: M, M0eq: M }; }
+  if (lambda <= lamLim && !e.forzar) { const M = Math.max(Math.abs(b.M02), N * b.emin); return { ...out, metodo: 'ninguno', segundoOrden: false, MEd: M, M0eq: M }; }
   // Curvatura nominal
   const epsYd = fyd / Es;
   const ddEf = v2023 ? (e.forma === 'circular' ? 2 * is : h / 2 + is) : null; // O.20; en 5.8.8.3(2) d = h/2 + i_s
@@ -130,7 +133,8 @@ function calcularEC2(e, b, v2023) {
   const betaFck = 0.35 + fck / 200 - lambda / 150;
   const Kphi = Math.max(1 + betaFck * phiEf, 1);
   const curv = Kr * Kphi * r0;
-  const cc = v2023 ? (braced ? 8 : 10) : (braced && b.rm === 1 ? 8 : 10);
+  // c = 10, y hasta 8 si el momento de primer orden es constante (5.8.8.2(4)); se interpola con r_m para que el contorno no tenga saltos
+  const cc = v2023 ? (braced ? 8 : 10) : (braced ? 10 - 2 * Math.min(Math.max(b.rm, 0), 1) : 10);
   const e2 = (curv * l0 ** 2) / cc;
   const M2 = N * e2;
   let MEd;
@@ -161,6 +165,7 @@ function calcularEC2(e, b, v2023) {
  * @param {number} e.fck [MPa]; e.fcd, e.fyd, e.Es [kN/m²]
  * @param {number} e.N axil de cálculo [kN] (compresión positiva); e.M1, e.M2 momentos en los extremos [kN·m] con su signo
  * @param {number} e.phiInf φ(∞,t0) @param {number} e.pPerm proporción de la carga que es permanente (0–1)
+ * @param {boolean} [e.forzar] calcula siempre el segundo orden (sin el criterio de esbeltez límite ni la excepción de fluencia): el contorno reducido es continuo, como en el 3.1
  */
 export function calcularInestabilidad(e) {
   const avisos = [];

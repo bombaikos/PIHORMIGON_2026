@@ -67,7 +67,7 @@ function preparar(p, s, D) {
     norma: p.norma, L: D.L, traslacional: D.trasl, psiA: psi(D.A), psiB: psi(D.B), forma: s.forma,
     h: geo.h, A: br.A, I: br.Ix, As: ar.As * k, is: ar.is, dd: ar.dd,
     fck: mats.fichaH.fck, fcd: ph.fcd * 1000, fyd: pa.fyd * 1000, Es: pa.Es * 1000,
-    N: D.N, M1: D.MA, M2: D.MB, phiInf: D.phiInf, pPerm: D.perm,
+    N: D.N, M1: D.MA, M2: D.MB, phiInf: D.phiInf, pPerm: D.perm, forzar: true,
   });
   return { geo, mats, br, ar, sec, entrada, psiA: psi(D.A), psiB: psi(D.B), emin: excentricidadMinima(p.norma, geo.h) };
 }
@@ -119,22 +119,30 @@ function calculo(p, s, D) {
 
 /* ------------------------------------------------------------ datos */
 
-function filaViga(D, ext, clave, etq, cambio) {
+/** Fila de la tabla de un extremo: soporte contiguo o viga (b, h, luz) y, en las vigas, el tick de voladizo. */
+function filaTabla(ext, id, clave, etq, cambio, ctx) {
   const v = clave === 'pilar' ? ext.pilar : ext.vigas[clave];
   const set = (k) => (x) => { v[k] = x; cambio(); };
-  const id = `ine-${ext === D.A ? 'a' : 'b'}-${clave}`;
-  return h('div', { class: 'ine-fila' }, h('span', { class: 'etq-grupo' }, etq),
-    filaCampos(
-      apilado(campoNum({ id: `${id}-b`, etq: t('ine.b'), valor: v.b, mag: 'long', paso: 25, min: 0, max: 5, sinUd: true, onCambio: set('b') })),
-      apilado(campoNum({ id: `${id}-h`, etq: t('ine.h'), valor: v.h, mag: 'long', paso: 25, min: 0, max: 5, sinUd: true, onCambio: set('h') })),
-      apilado(campoNum({ id: `${id}-l`, etq: t('ine.l'), valor: v.L, mag: 'long', paso: 100, min: 0, max: 100, sinUd: true, onCambio: set('L') }))));
+  const celda = (k, paso) => h('td', {}, campoNum({ id: `${id}-${k}`, etq: k, valor: v[k === 'L' ? 'L' : k], mag: 'long', paso, min: 0, max: 100, sinUd: true, onCambio: set(k) }));
+  return h('tr', { class: v.vol ? 'vol' : undefined },
+    h('th', { scope: 'row' }, etq), celda('b', 25), celda('h', 25), celda('L', 100),
+    h('td', { class: 'ine-vol' }, clave === 'pilar' ? null : h('label', { class: 'tick', title: t('ine.volAyuda') },
+      h('input', { type: 'checkbox', id: `${id}-vol`, checked: !!v.vol, 'aria-label': t('ine.vol'), onchange: (e) => { v.vol = e.target.checked; ctx.pintar(); cambio(); } }), h('span', {}))));
 }
 
-function grupoExtremo(ctx, D, ext, titulo, cambio) {
-  const nudo = ext.tipo === 'nudo';
-  return grupo(titulo,
-    segmentado({ ancho: true, etiqueta: titulo, opciones: [['empotrado', t('ine.t.empotrado')], ['articulado', t('ine.t.articulado')], ['nudo', t('ine.t.nudo')]], valor: ext.tipo, onCambio: (v) => { ext.tipo = v; ctx.pintar(); ctx.cambio(); } }),
-    nudo ? [filaViga(D, ext, 'pilar', t('ine.f.pilar'), cambio), filaViga(D, ext, 0, t('ine.f.viga1'), cambio), filaViga(D, ext, 1, t('ine.f.viga2'), cambio)] : null);
+/** Bloque de un extremo en la tabla: su tipo y, si es un nudo, el soporte contiguo y las vigas que llegan. */
+function bloqueExtremo(ctx, ext, id, titulo, contiguo, cambio) {
+  const cab = h('tr', { class: 'ine-ext' }, h('th', { colspan: 5, scope: 'colgroup' }, h('div', { class: 'ine-ext-cab' }, h('span', {}, titulo),
+    segmentado({ etiqueta: titulo, opciones: [['empotrado', t('ine.t.empotrado')], ['articulado', t('ine.t.articulado')], ['nudo', t('ine.t.nudo')]], valor: ext.tipo, onCambio: (v) => { ext.tipo = v; ctx.pintar(); ctx.cambio(); } }))));
+  if (ext.tipo !== 'nudo') return [cab];
+  return [cab, filaTabla(ext, `${id}-p`, 'pilar', contiguo, cambio, ctx), filaTabla(ext, `${id}-v1`, 0, t('ine.f.viga1'), cambio, ctx), filaTabla(ext, `${id}-v2`, 1, t('ine.f.viga2'), cambio, ctx)];
+}
+
+/** Tabla de los extremos, de arriba abajo como en el alzado: extremo superior, sus vigas, extremo inferior. */
+function tablaExtremos(ctx, D, cambio) {
+  const cab = h('thead', {}, h('tr', {}, h('th', {}), h('th', { html: 'b [mm]' }), h('th', { html: 'h [mm]' }), h('th', { html: t('ine.l') }), h('th', { title: t('ine.volAyuda') }, t('ine.vol'))));
+  return h('div', { class: 'tabla-scroll ine-tab' }, h('table', { class: 'ine-tabla' }, cab,
+    h('tbody', {}, ...bloqueExtremo(ctx, D.B, 'ine-b', t('ine.extremoB'), t('ine.f.pilarSup'), cambio), ...bloqueExtremo(ctx, D.A, 'ine-a', t('ine.extremoA'), t('ine.f.pilarInf'), cambio))));
 }
 
 export function datos(ctx, form) {
@@ -167,8 +175,7 @@ export function datos(ctx, form) {
         h('div', { class: 'par2' },
           campoNum({ id: 'ine-fp', etq: t('ine.fp'), valor: D.fp, mag: 'ratio', paso: 0.05, min: 0.01, max: 1, nombre: t('ine.fpNombre'), ayuda: t('ine.fAyuda'), onCambio: set('fp') }),
           campoNum({ id: 'ine-fv', etq: t('ine.fv'), valor: D.fv, mag: 'ratio', paso: 0.05, min: 0.01, max: 1, nombre: t('ine.fvNombre'), ayuda: t('ine.fAyuda'), onCambio: set('fv') }))),
-      grupoExtremo(ctx, D, D.A, t('ine.extremoA'), cambio),
-      grupoExtremo(ctx, D, D.B, t('ine.extremoB'), cambio));
+      grupo(t('ine.gExtremos'), tablaExtremos(ctx, D, cambio)));
   }
 }
 
@@ -201,11 +208,12 @@ function resultadosInestabilidad(ctx, res) {
   } else {
     const ok = c.gamma >= 1 - 1e-6;
     res.append(veredicto(ok ? 'cumple' : 'nocumple', ok ? t('ine.cumple') : t('ine.noCumple'), 'γ = |OQ|/|OP|', sigla(c.gamma),
-      r.segundoOrden ? t('ine.ver.con', q(r.M0eq, 'M'), q(r.MEd - r.M0eq, 'M'), q(r.MEd, 'M')) : t('ine.ver.sin', fmt(r.lambda, 1), fmt(r.lamLim, 1)), Math.min(1 / Math.max(c.gamma, 1e-9) / 1.25, 1)));
+      t('ine.ver.con', q(r.M0eq, 'M'), q(r.MEd - r.M0eq, 'M'), q(r.MEd, 'M')), Math.min(1 / Math.max(c.gamma, 1e-9) / 1.25, 1)));
   }
   if (c.As0 * c.k + 1e-12 < c.Amin && c.As0 > 0) res.append(aviso(t('fcr.bajoMin', q(c.As0 * c.k, 'As'), q(c.Amin, 'As'))));
   if (!(c.As0 > 0)) res.append(aviso(t('ine.av.sinArm')));
   for (const a of r.avisos ?? []) res.append(aviso(t(a.clave, ...(a.args ?? []).map((v) => (typeof v === 'number' ? fmt(v, 0) : v))), a.clave === 'ine.av.eMin' ? 'info' : ''));
+  if (r.valido && r.lambda <= r.lamLim && Number.isFinite(r.lambda)) res.append(aviso(t('ine.ver.sin', fmt(r.lambda, 1), fmt(r.lamLim, 1)), 'info'));
   if (r.valido && p.norma !== 'EC2-2023' && r.metodo !== 'fuera') res.append(aviso(t('ine.av.lim'), 'info'));
 
   // Gráfico N-M con el segundo orden como reducción del contorno

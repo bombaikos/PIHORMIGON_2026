@@ -8,7 +8,7 @@ export const inerciaRect = (b, h) => (b * h ** 3) / 12;
  * Relación de rigideces Ψ en un extremo del soporte (EHE-08 43.1.2):
  *   Ψ = Σ(fp·E·I/L)_soportes / Σ(fv·E·I/L)_vigas
  * con la inercia bruta multiplicada por la fracción fp (soportes) o fv (vigas). El módulo E es el mismo y se simplifica.
- * Los voladizos no aportan rigidez: no se pasan.
+ * Los voladizos (v.vol) no aportan rigidez.
  *  - 'empotrado' → Ψ = 0; 'articulado' → Ψ = ∞.
  *  - 'nudo': soporte propio (Ic, L) + soporte contiguo opcional (b, h, L) frente a las vigas (b, h, L) que concurren.
  *    Sin vigas, el nudo no coacciona el giro (Ψ = ∞).
@@ -19,7 +19,7 @@ export function psiExtremo(ext, { Ic, L, fp, fv }) {
   if (ext.tipo === 'empotrado') return 0;
   if (ext.tipo === 'articulado') return Infinity;
   const kc = (fp * Ic) / L + (ext.pilar && ext.pilar.L > 0 ? (fp * inerciaRect(ext.pilar.b, ext.pilar.h)) / ext.pilar.L : 0);
-  const kv = (ext.vigas ?? []).filter((v) => v && v.L > 0 && v.b > 0 && v.h > 0).reduce((a, v) => a + (fv * inerciaRect(v.b, v.h)) / v.L, 0);
+  const kv = (ext.vigas ?? []).filter((v) => v && !v.vol && v.L > 0 && v.b > 0 && v.h > 0).reduce((a, v) => a + (fv * inerciaRect(v.b, v.h)) / v.L, 0);
   return kv > 0 ? kc / kv : Infinity;
 }
 

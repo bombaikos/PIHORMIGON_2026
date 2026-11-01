@@ -93,7 +93,7 @@ test('EC-2 2004: curvatura nominal con los valores de la norma', () => {
   cerca(r.phiEf, phiEf, 1e-12);
   const Kphi = Math.max(1 + (0.35 + 30 / 200 - r.lambda / 150) * phiEf, 1);
   cerca(r.Kphi, Kphi, 1e-12);
-  const e2 = (Kr * Kphi * r0 * l0 ** 2) / 10;
+  const e2 = (Kr * Kphi * r0 * l0 ** 2) / (10 - 2 * 0.4); // c = 10 − 2·r_m con r_m = 16/40
   cerca(r.e2, e2, 1e-12);
   const M0e = Math.max(0.6 * 40 + 0.4 * 16, 0.4 * 40);
   cerca(r.MEd, Math.max(M0e + 800 * e2, 40), 1e-9);
@@ -172,4 +172,25 @@ test('Contorno reducido: M0eq + ΔM = M_Ed y sin segundo orden no hay reducción
   const [t] = contornoReducido(e, [{ N: -50, M: 100 }]);
   assert.equal(t.M, 100);
   assert.equal(t.ok, false);
+});
+
+test('Voladizo: la viga marcada como voladizo no aporta rigidez', () => {
+  const Ic = (0.3 * 0.3 ** 3) / 12;
+  const v = { b: 0.3, h: 0.5, L: 6 };
+  const a = psiExtremo({ tipo: 'nudo', vigas: [v, { ...v, vol: true }] }, { Ic, L: 3, fp: 0.7, fv: 0.3 });
+  const b = psiExtremo({ tipo: 'nudo', vigas: [v] }, { Ic, L: 3, fp: 0.7, fv: 0.3 });
+  assert.equal(a, b);
+});
+
+test('Forzar el segundo orden: el contorno reducido es continuo (sin saltos por la esbeltez límite ni la fluencia)', async () => {
+  const { contornoReducido } = await import('../src/norma/inestabilidad.js');
+  for (const norma of ['EC2-2004', 'EC2-2023', 'EHE-08']) {
+    const e = base({ norma, L: 10, forzar: true });
+    const rama = Array.from({ length: 60 }, (_, i) => ({ N: 20 * (i + 1), M: 200 }));
+    const red = contornoReducido(e, rama);
+    for (let i = 1; i < red.length; i++) assert.ok(Math.abs(red[i].dM - red[i - 1].dM) < 25, `${norma} salto en N=${red[i].N}: ${red[i - 1].dM} → ${red[i].dM}`);
+  }
+  const sin = calcularInestabilidad(base({ L: 3, forzar: true }));
+  assert.equal(sin.segundoOrden, true, 'con forzar, aunque λ ≤ λlim se calcula el segundo orden');
+  assert.ok(sin.MEd >= calcularInestabilidad(base({ L: 3 })).MEd);
 });
