@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Maqueta · ELS · Fisuración</title>
+<style>
+:root{--suelo:oklch(96.4% .005 240);--hoja:oklch(99.6% .002 240);--campo:#fff;--campo-borde:oklch(78% .05 252);--nota:oklch(94.8% .014 78);--nota-borde:oklch(85.5% .024 75);
+--tinta:oklch(24% .02 248);--tinta-2:oklch(44% .02 248);--tinta-3:oklch(57% .016 248);--linea:oklch(90% .008 240);--linea-fuerte:oklch(80% .012 240);
+--acento:oklch(47% .13 252);--acento-suave:oklch(93.5% .03 252);--hormigon:oklch(90% .006 85);--hormigon-borde:oklch(60% .01 85);--compr:oklch(62% .09 252);
+--traccion:oklch(66% .008 250);--acero:oklch(30% .012 250);--ok:oklch(46% .11 152);--ok-fondo:oklch(95% .035 152);--no:oklch(50% .17 27);--no-fondo:oklch(95.5% .03 27);--atencion:oklch(50% .1 70);--atencion-fondo:oklch(96% .04 85);
+--f:system-ui,'Segoe UI Variable Text','Segoe UI',Roboto,Arial,sans-serif;--s:14px;--m:16px}
+*{box-sizing:border-box}html,body{margin:0;height:100%;overflow:hidden}
+body{background:var(--suelo);color:var(--tinta);font:var(--s)/1.35 var(--f);font-variant-numeric:tabular-nums;display:flex;flex-direction:column}
+.barra{height:52px;flex:none;display:flex;align-items:center;gap:20px;padding:0 16px;background:var(--hoja);border-bottom:1px solid var(--linea)}
+.barra b{font-size:var(--m)}.menu{display:flex;gap:6px;font-size:var(--m);color:var(--tinta-2)}
+.menu span{padding:5px 10px;border-radius:6px}.menu .on{background:var(--acento-suave);color:var(--acento);font-weight:600}.menu .off{opacity:.45}
+.norma{margin-left:auto;border:1px solid var(--linea-fuerte);border-radius:4px;padding:3px 8px;cursor:pointer;background:var(--hoja);font:inherit}
+.norma.rojo{color:var(--no);border-color:var(--no)}
+main{flex:1;min-height:0;display:grid;grid-template-columns:285px 1fr 365px;gap:10px;padding:10px}
+.panel{background:var(--hoja);border:1px solid var(--linea);border-radius:10px;padding:12px;min-height:0;overflow:hidden;display:flex;flex-direction:column;gap:7px}
+h1{font-size:var(--s);margin:0;font-weight:700}
+.fila{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:28px}.fila label{color:var(--tinta-2)}
+.caja{width:120px;height:28px;border:1px solid var(--campo-borde);background:var(--campo);border-radius:6px;padding:0 8px;font:inherit;text-align:right;color:var(--tinta)}
+.caja:disabled{background:oklch(95.2% .006 240);border-color:var(--linea);color:var(--tinta-3);cursor:not-allowed}
+select.caja{text-align:left;padding:0 4px}
+.u{color:var(--tinta-3)}
+.capsula{display:flex;padding:2px;gap:2px;border:1px solid var(--linea-fuerte);border-radius:999px;background:var(--hoja)}
+.capsula button{flex:1 1 auto;min-width:0;border:0;background:none;font:inherit;font-size:12px;min-height:26px;padding:0 4px;border-radius:999px;cursor:pointer;color:var(--tinta-2);white-space:nowrap}
+.capsula button.on{background:var(--acento-suave);color:var(--acento);font-weight:600;box-shadow:inset 0 0 0 1px var(--acento)}
+.sep{border-top:1px solid var(--linea);margin:2px 0}.rot{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--tinta-3)}
+.regleta{display:grid;grid-template-columns:50px 1fr 100px;align-items:center;gap:8px;width:80%}.regleta .n{text-align:right}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:20px;background:transparent;margin:0}
+input[type=range]::-webkit-slider-runnable-track{height:8px;border-radius:4px;background:var(--acento-suave);border:1px solid var(--campo-borde)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--acento);margin-top:-5px;border:2px solid #fff;box-shadow:0 0 0 1px var(--acento)}
+.centro{align-items:center}.dib{width:100%;flex:1;min-height:0}
+.pastilla{display:flex;align-items:center;gap:12px;border:1px solid var(--linea-fuerte);border-radius:10px;padding:8px 12px}
+.pastilla .nom{font-size:24px;font-weight:700;line-height:1}.pastilla .rr{font-size:10px;text-transform:uppercase;color:var(--tinta-3);letter-spacing:.04em}
+.pastilla .gr{margin-left:auto;text-align:right}.pastilla .gr b{font-size:28px;line-height:1;font-weight:700}
+.sello{display:inline-block;border-radius:4px;padding:1px 8px;font-weight:700}.sello.ok{background:var(--ok-fondo);color:var(--ok)}.sello.no{background:var(--no-fondo);color:var(--no)}.sello.in{background:var(--atencion-fondo);color:var(--atencion)}
+table{border-collapse:collapse;width:100%}th{font-weight:600;color:var(--tinta-3);text-align:right;padding:2px 4px;font-size:12px;border-bottom:1px solid var(--linea)}
+td{padding:2px 4px;text-align:right}th:first-child,td:first-child{text-align:left}td:first-child{color:var(--tinta-2)}
+th.act,td.act{background:var(--acento-suave)}th.nov{color:var(--no)}
+tr.sg td{border-top:1px solid var(--linea)}
+.aviso{background:var(--atencion-fondo);border:1px solid oklch(80% .08 80);border-radius:6px;padding:6px 8px;color:var(--atencion)}
+.btn{align-self:flex-end;border:1px solid var(--linea-fuerte);background:var(--hoja);border-radius:6px;padding:3px 10px;font:inherit;color:var(--tinta-2)}
+.nota{background:var(--nota);border:1px solid var(--nota-borde);border-radius:6px;padding:6px 8px;color:var(--tinta-2);font-size:12px}
+sub{font-size:.75em}svg text{font-family:var(--f);font-variant-numeric:tabular-nums}
+</style></head><body>
+<div class="barra"><b>Prontuario del hormigón</b><div class="menu"><span class="off">Materiales</span><span class="off">Secciones</span><span class="off">ELU</span><span class="on">ELS ▾</span><span class="off">Fuego</span></div>
+<span class="u">ELS ▸ Estado tensional | Flechas | <b style="color:var(--acento)">Fisuración</b></span><button class="norma" id="norma"></button></div>
+<main>
+<section class="panel" id="datos"></section>
+<section class="panel centro" id="centro"></section>
+<section class="panel" id="res"></section>
+</main>
+<script>
+// ---------- MAQUETA: cifras ilustrativas con fórmulas de los textos (EHE-08 49.2.4; EC-2 2004 7.3.4; EC-2 2023 9.2.3). Sin pretensado ni tension stiffening. ----------
+const NORMAS=[{id:'EHE',n:'EHE-08',rojo:true},{id:'EC2',n:'EC-2 2004+AN',rojo:false},{id:'EC23',n:'EC-2 2023',rojo:true}];
+const EXPO=[{ec:'X0, XC1',ehe:'I',w:.4},{ec:'XC2, XC3, XC4, XF1',ehe:'IIa, IIb, H',w:.3},{ec:'XD, XS1, XS2, XF2',ehe:'IIIa, IIIb, IV, F',w:.2},{ec:'XS3, XA2',ehe:'IIIc, Qb, Qc',w:.1}];
+const S={norma:1,modo:'comp',M:80,N:0,b:300,h:500,c:30,n1:3,f1:20,n2:2,f2:12,expo:1,dur:'larga',accion:'directa',adh:'buena',fck:30,fyk:500};
+const Es=200000,fmt=(x,d)=>(Math.abs(x)<.5*10**-d?0:x).toFixed(d).replace('-','−');
+const mat=()=>{const fctm=.3*Math.pow(S.fck,2/3),Ecm=22000*Math.pow((S.fck+8)/10,.3);return{fctm,Ecm,fctfl:Math.max((1.6-S.h/1000)*fctm,fctm),ae:Es/Ecm}};
+const A=f=>Math.PI*f*f/4;
+function armado(n1=S.n1,f1=S.f1){return{As1:n1*A(f1),d:S.h-S.c-f1/2,As2:S.n2*A(S.f2),d2:S.c+S.f2/2}}
+// sección fisurada elástica: x (desde cara superior), κ (‰/m→1/mm), σs, σc. Compresión +. M en kN·m, N en kN.
+function fisurada(M,N,ar){const m=mat(),{b,h}=S,Ec=m.Ecm,{As1,d,As2,d2}=ar;
+ const f1=x=>{const Fc=Ec*b*x*x/2,F1=-Es*As1*(d-x),F2=Es*As2*(x-d2);const N1=Fc+F1+F2;const M1=Fc*(h/2-x/3)+F1*(h/2-d)+F2*(h/2-d2);return[N1,M1]};
+ const g=x=>{const[N1,M1]=f1(x);return M*1e6*N1-N*1e3*M1};
+ let lo=1e-3,hi=h*.999;if(g(lo)*g(hi)>0)return null;for(let i=0;i<80;i++){const mid=(lo+hi)/2;(g(lo)*g(mid)<=0)?hi=mid:lo=mid}
+ const x=(lo+hi)/2,[N1,M1]=f1(x);const k=Math.abs(M1)>1e-6?M*1e6/M1:N*1e3/N1;
+ return{x,k,ss:Es*k*(d-x),sc:Ec*k*x,es:k*(d-x),ec:k*x,e1:k*(S.h-x)}}
+function Mfis(){const m=mat();return S.b*S.h*S.h/6*(m.fctfl+S.N*1e3/(S.b*S.h))/1e6}
+// ---- wk por norma ----
+function calcula(nid,M,n1=S.n1,f1=S.f1){const m=mat(),{b,h,c}=S,ar=armado(n1,f1),fi=f1,Mf=Mfis();
+ const r={norma:nid};if(M<=Mf){r.sinfis=true;r.wk=0;r.Mfis=Mf;return r}
+ const F=fisurada(M,S.N,ar);if(!F){r.err='Hipótesis fuera de modelo';return r}
+ const Fr=fisurada(Mf,S.N,ar),ss=F.ss,ssr=Fr?Fr.ss:ss,x=F.x,long=S.dur==='larga',kt=long?.4:.6;
+ Object.assign(r,{x,ss,ssr,sc:F.sc,es:F.es,ec:F.ec,e1:F.e1,Mfis:Mf,ar});
+ const ay=c+fi/2,s=S.n1>1?(b-2*ay)/(n1-1):b;r.s=s;
+ if(nid==='EHE'){const hef=Math.min(h/2,ay+7.5*fi),Acef=hef*b;const k1=(F.e1+0)/(8*F.e1),k2=long?.5:1,beta=S.accion==='directa'?1.7:1.3;
+   const sm=2*c+.2*Math.min(s,15*fi)+.4*k1*fi*Acef/ar.As1;let esm=ss/Es*(1-k2*(ssr/ss)**2);esm=Math.max(esm,.4*ss/Es);
+   Object.assign(r,{hef,Acef,rho:ar.As1/Acef,sm,esm,k:k1,wk:beta*sm*esm});r.sr=sm}
+ if(nid==='EC2'){const hef=Math.min(2.5*(h-ar.d),(h-x)/3,h/2),Acef=hef*b,rho=ar.As1/Acef;
+   const sr=s>5*(c+fi/2)?1.3*(h-x):3.4*c+.8*.5*.425*fi/rho;let d=(ss-kt*m.fctm/rho*(1+m.ae*rho))/Es;d=Math.max(d,.6*ss/Es);
+   Object.assign(r,{hef,Acef,rho,sr,esm:d,wk:sr*d})}
+ if(nid==='EC23'){const hef=Math.min(ay+5*fi,10*fi,3.5*ay,h-x,h/2),Acef=hef*b,rho=ar.As1/Acef,kb=S.adh==='buena'?.9:1.2,kfl=(h-hef)/h,kw=1.7;
+   const sr=Math.min(1.5*c+kfl*kb/7.2*fi/rho,1.3/kw*(h-x));let d=(ss-kt*m.fctm/rho*(1+m.ae*rho))/Es;d=Math.max(d,(1-kt)*ss/Es);const k1r=(h-x)/(h-ay-x);
+   Object.assign(r,{hef,Acef,rho,sr,esm:d,k1r,wk:kw*k1r*sr*d})}
+ return r}
+const wmax=()=>EXPO[S.expo].w;
+// ---- UI ----
+const $=id=>document.getElementById(id);
+const cj=(l,id,v,u,dis,tip)=>`<div class="fila"${tip?` title="${tip}"`:''}><label>${l}${u?` <span class="u">[${u}]</span>`:''}</label><input class="caja" id="${id}" value="${v}"${dis?' disabled':''}></div>`;
+function datos(){const ne=NORMAS[S.norma].id;
+ $('datos').innerHTML=`<h1>Fisuración</h1>
+ <div class="fila"><label>Sección</label><select class="caja"><optgroup label="Rec viga"><option>V-1 · 300×500 mm</option></optgroup><optgroup label="En T"><option>T-1 · 1000×500 mm</option></optgroup></select></div>
+ <div class="capsula" id="modos"><button data-m="comp" class="${S.modo=='comp'?'on':''}">Comprobación</button><button data-m="dim" class="${S.modo=='dim'?'on':''}">Dimensionamiento</button><button data-m="dia" class="${S.modo=='dia'?'on':''}">Diagrama</button></div>
+ <div class="rot">Solicitación de servicio</div>
+ ${cj('M<sub>k</sub>','M',S.M,'kN·m',false,'Combinación cuasipermanente (hormigón armado)')}${cj('N<sub>k</sub>','N',S.N,'kN',false,'Compresión positiva')}
+ <div class="fila"><label>Duración</label><select class="caja" id="dur"><option value="larga"${S.dur=='larga'?' selected':''}>Larga</option><option value="corta"${S.dur=='corta'?' selected':''}>Corta</option></select></div>
+ <div class="sep"></div><div class="rot">Armado (de la sección)</div>
+ ${cj('A. inferior','arm','3D20','',true,'Se edita en Secciones')}${cj('A. superior','arm2','2D12','',true,'Se edita en Secciones')}${cj('c','c',S.c,'mm',true,'Recubrimiento de la sección')}
+ <div class="sep"></div><div class="rot">Límite</div>
+ <div class="fila"><label>Exposición</label><select class="caja" id="expo">${EXPO.map((e,i)=>`<option value="${i}"${i==S.expo?' selected':''}>${ne=='EHE'?e.ehe:e.ec}</option>`).join('')}</select></div>
+ ${cj('w<sub>máx</sub>','wm',fmt(wmax(),1),'mm',true,'Tabla 5.1.1.2 (EHE-08) / Tabla AN/9 (EC-2) según la clase; cuasipermanente')}
+ <div class="fila" title="Solo EHE-08: β = 1,7 acciones directas, 1,3 solo indirectas"><label>Acción (β)</label><select class="caja" id="acc"${ne!='EHE'?' disabled':''}><option value="directa">Directa · 1.7</option><option value="indirecta"${S.accion=='indirecta'?' selected':''}>Indirecta · 1.3</option></select></div>
+ <div class="fila" title="Solo EC-2 2023: k<sub>b</sub> = 0,9 buena, 1,2 mala"><label>Adherencia (k<sub>b</sub>)</label><select class="caja" id="adh"${ne!='EC23'?' disabled':''}><option value="buena">Buena · 0.9</option><option value="mala"${S.adh=='mala'?' selected':''}>Mala · 1.2</option></select></div>
+ <div class="aviso" style="display:none" id="avi"></div>`;
+ $('datos').querySelectorAll('#modos button').forEach(b=>b.onclick=()=>{S.modo=b.dataset.m;todo()});
+ for(const id of['M','N'])$(id).onchange=e=>{S[id]=parseFloat(e.target.value.replace(',','.'))||0;todo()};
+ $('dur').onchange=e=>{S.dur=e.target.value;todo()};$('expo').onchange=e=>{S.expo=+e.target.value;todo()};$('acc').onchange=e=>{S.accion=e.target.value;todo()};$('adh').onchange=e=>{S.adh=e.target.value;todo()};
+ document.querySelectorAll('#datos input:not(:disabled)').forEach(i=>i.onfocus=()=>i.select())}
+function veredicto(r){return r.err?{c:'in',t:'Fuera de modelo'}:r.sinfis?{c:'ok',t:'Sin fisurar'}:r.wk<=wmax()?{c:'ok',t:'Cumple'}:{c:'no',t:'No cumple'}}
+function resultados(){const act=NORMAS[S.norma].id,R=Object.fromEntries(NORMAS.map(n=>[n.id,calcula(n.id,S.M)])),ra=R[act],v=veredicto(ra);
+ let h=`<div class="pastilla"><div><div class="rr">Sección</div><div class="nom">V-1</div></div><div class="gr"><div class="rr">w<sub>k</sub> / w<sub>máx</sub> ${NORMAS[S.norma].n}</div><b>${ra.err?'—':fmt(ra.wk,2)}</b> <span class="u">mm</span> <span class="u">/ ${fmt(wmax(),1)}</span></div></div>
+ <div><span class="sello ${v.c}">${v.t}</span> ${ra.sinfis?`<span class="u">M<sub>k</sub> ≤ M<sub>fis</sub> = ${fmt(ra.Mfis,0)} kN·m: no hace falta calcular w<sub>k</sub></span>`:''}</div>`;
+ if(S.modo=='dim')h=dimRes(R);else{
+  const cols=NORMAS.map(n=>`<th class="${n.id==act?'act':''} ${n.rojo?'nov':''}">${n.n}</th>`).join('');
+  const row=(l,f)=>`<tr><td>${l}</td>${NORMAS.map(n=>`<td class="${n.id==act?'act':''}">${R[n.id].sinfis||R[n.id].err?'—':f(R[n.id])}</td>`).join('')}</tr>`;
+  h+=`<table><tr><th></th>${cols}</tr>
+  ${row('σ<sub>s</sub> [MPa]',r=>fmt(r.ss,1))}${row('σ<sub>sr</sub> [MPa]',r=>r.norma=='EHE'?fmt(r.ssr,1):'—')}${row('x [mm]',r=>fmt(r.x,0))}
+  ${row('h<sub>c,ef</sub> [mm]',r=>fmt(r.hef,0))}${row('A<sub>c,ef</sub> [mm²]',r=>fmt(r.Acef,0))}${row('ρ<sub>ef</sub> [‰]',r=>fmt(r.rho*1000,1))}
+  ${row('s<sub>m</sub> / s<sub>r,máx</sub> [mm]',r=>fmt(r.sr,0))}${row('ε<sub>sm</sub>−ε<sub>cm</sub> [‰]',r=>fmt(r.esm*1000,2))}
+  ${row('k<sub>1/r</sub> [—]',r=>r.k1r?fmt(r.k1r,2):'—')}
+  <tr class="sg"><td><b>w<sub>k</sub> [mm]</b></td>${NORMAS.map(n=>`<td class="${n.id==act?'act':''}"><b>${R[n.id].sinfis?'0.00':R[n.id].err?'—':fmt(R[n.id].wk,2)}</b></td>`).join('')}</tr>
+  <tr><td>w<sub>k</sub>/w<sub>máx</sub> [—]</td>${NORMAS.map(n=>`<td class="${n.id==act?'act':''}">${R[n.id].sinfis||R[n.id].err?'—':fmt(R[n.id].wk/wmax(),2)}</td>`).join('')}</tr></table>
+  <div class="nota">EHE-08 49.2.4 · EC-2 2004 7.3.4 · EC-2 2023 9.2.3: w<sub>k</sub> medida en la superficie (k<sub>1/r</sub>). Las filas se despliegan con la fórmula y el artículo.</div>
+  <button class="btn">Copiar tabla</button>`}
+ $('res').innerHTML=h}
+function dimRes(R){const act=NORMAS[S.norma].id,out=[];
+ for(const f of[12,16,20,25,32]){let sol=null;for(let n=2;n<=10;n++){if((S.b-2*(S.c+f/2))/(n-1)<Math.max(f,20)&&n>2)break;const r=calcula(act,S.M,n,f);if(r.sinfis||(!r.err&&r.wk<=wmax())){sol={n,r};break}}out.push({f,sol})}
+ const best=out.filter(o=>o.sol).sort((a,b)=>a.sol.n*A(a.f)-b.sol.n*A(b.f))[0];
+ let h=`<div class="pastilla"><div><div class="rr">Sección</div><div class="nom">V-1</div></div><div class="gr"><div class="rr">Armado mínimo · ${NORMAS[S.norma].n}</div><b>${best?best.sol.n+'D'+best.f:'—'}</b> <span class="u">${best?fmt(best.sol.n*A(best.f),0)+' mm²':''}</span></div></div>
+ <div class="rot">Una capa inferior: mínimo de barras de cada diámetro para w<sub>k</sub> ≤ w<sub>máx</sub> = ${fmt(wmax(),1)} mm</div>
+ <table><tr><th>φ [mm]</th><th>n</th><th>A<sub>s</sub> [mm²]</th><th>σ<sub>s</sub> [MPa]</th><th>w<sub>k</sub> [mm]</th></tr>
+ ${out.map(o=>o.sol?`<tr class="${best&&o.f==best.f?'act':''}"><td class="${best&&o.f==best.f?'act':''}">${o.f}</td><td>${o.sol.n}</td><td>${fmt(o.sol.n*A(o.f),0)}</td><td>${o.sol.r.sinfis?'—':fmt(o.sol.r.ss,0)}</td><td>${fmt(o.sol.r.wk,2)}</td></tr>`:`<tr><td>${o.f}</td><td colspan="4" class="u">no cabe en una capa</td></tr>`).join('')}</table>
+ <div class="nota">Dimensiona solo por fisuración: la armadura de ELU y la mínima se comprueban aparte. Alternativa: M<sub>máx</sub> que admite el armado actual (3D20): ${fmt(mMax(act),0)} kN·m.</div>`;return h}
+function mMax(nid){let lo=0,hi=400;for(let i=0;i<40;i++){const m=(lo+hi)/2,r=calcula(nid,m);(r.sinfis||(!r.err&&r.wk<=wmax()))?lo=m:hi=m}return lo}
+// ---- dibujos ----
+function centro(){if(S.modo=='dia'){diagrama();return}
+ $('centro').innerHTML=`<svg class="dib" id="svg" viewBox="0 0 700 500" preserveAspectRatio="xMinYMin meet"></svg><div class="regleta"><span>M<sub>k</sub></span><input type="range" id="rM" min="0" max="250" step="1" value="${S.M}"><span class="n">${S.M} <span class="u">kN·m</span></span></div>`;
+ $('rM').oninput=e=>{S.M=+e.target.value;todo()};
+ const act=NORMAS[S.norma].id,r=calcula(act,S.M),{b,h,c}=S,ar=armado(),k=Math.min(300/h,300/b),W=b*k,Hh=h*k,x0=60,y0=50;let g=`<g font-size="12" fill="var(--tinta-2)">`;
+ g+=`<rect x="${x0}" y="${y0}" width="${W}" height="${Hh}" fill="var(--hormigon)" stroke="var(--hormigon-borde)"/>`;
+ if(!r.err&&!r.sinfis){g+=`<rect x="${x0}" y="${y0+(h-r.hef)*k}" width="${W}" height="${r.hef*k}" fill="oklch(66% .008 250 / .35)" stroke="var(--acento)" stroke-dasharray="3 3"/>`;
+  g+=`<path d="M${x0-8} ${y0+r.x*k}H${x0+W+120}" stroke="var(--tinta-2)" stroke-dasharray="6 4"/><text x="${x0+W+14}" y="${y0+r.x*k-5}">fibra neutra  x = ${fmt(r.x,0)} mm</text>`;
+  g+=`<text x="${x0+W+14}" y="${y0+(h-r.hef/2)*k+4}" fill="var(--acento)">A<tspan baseline-shift="sub" font-size="9">c,ef</tspan> (h<tspan baseline-shift="sub" font-size="9">c,ef</tspan> = ${fmt(r.hef,0)} mm)</text>`}
+ g+=`<rect x="${x0+c*k*.6}" y="${y0+c*k*.6}" width="${W-c*k*1.2}" height="${Hh-c*k*1.2}" fill="none" stroke="var(--acero)" stroke-width="1"/>`;
+ for(let i=0;i<S.n1;i++){const cx=x0+(c+S.f1/2)*k+i*(W-2*(c+S.f1/2)*k)/(S.n1-1);g+=`<circle cx="${cx}" cy="${y0+(h-c-S.f1/2)*k}" r="${S.f1/2*k}" fill="var(--acero)"/>`}
+ for(let i=0;i<S.n2;i++){const cx=x0+(c+S.f2/2)*k+i*(W-2*(c+S.f2/2)*k)/(S.n2-1);g+=`<circle cx="${cx}" cy="${y0+(c+S.f2/2)*k}" r="${S.f2/2*k}" fill="var(--acero)" opacity=".7"/>`}
+ g+=`<text x="${x0+W/2}" y="${y0+Hh+22}" text-anchor="middle">b = ${b}</text><text x="${x0-12}" y="${y0+Hh/2}" text-anchor="middle" transform="rotate(-90 ${x0-12} ${y0+Hh/2})">h = ${h}</text>
+ <text x="${x0+W/2}" y="${y0-12}" text-anchor="middle" font-weight="600" fill="var(--tinta)">Sección fisurada</text>`;
+ // plano de deformaciones a la derecha
+ if(!r.err&&!r.sinfis){const px=x0+W+270,sc=70/Math.max(r.ec*1000,r.e1*1000),xc=px,xe=px-r.ec*1000*sc;const xb=px+r.e1*1000*sc;
+  g+=`<text x="${px-50}" y="${y0-12}" font-weight="600" fill="var(--tinta)">Plano de deformaciones</text><path d="M${px} ${y0}V${y0+Hh}" stroke="var(--tinta-3)"/>
+  <path d="M${px} ${y0}L${px-r.ec*1000*sc} ${y0}L${px+r.e1*1000*sc} ${y0+Hh}L${px} ${y0+Hh}Z" fill="oklch(62% .09 252 / .25)" stroke="var(--compr)"/>
+  <text x="${px-r.ec*1000*sc-4}" y="${y0+12}" text-anchor="end">ε<tspan baseline-shift="sub" font-size="9">c</tspan> ${fmt(r.ec*1000,2)} ‰</text>
+  <text x="${px+r.e1*1000*sc+4}" y="${y0+Hh}">ε<tspan baseline-shift="sub" font-size="9">1</tspan> ${fmt(r.e1*1000,2)} ‰</text>
+  <text x="${px+60}" y="${y0+(h-c-S.f1/2)*k+4}" fill="var(--tinta)">σ<tspan baseline-shift="sub" font-size="9">s</tspan> = ${fmt(r.ss,0)} MPa</text>`}
+ else if(r.sinfis)g+=`<text x="${x0+W+30}" y="${y0+Hh/2}" font-size="14" fill="var(--ok)">Sección sin fisurar (M<tspan baseline-shift="sub" font-size="9">k</tspan> ≤ M<tspan baseline-shift="sub" font-size="9">fis</tspan> = ${fmt(r.Mfis,0)} kN·m)</text>`;
+ $('svg').innerHTML=g+`</g>`}
+function diagrama(){$('centro').innerHTML=`<svg class="dib" id="svg" viewBox="0 0 760 520" preserveAspectRatio="xMinYMin meet"></svg><div class="regleta"><span>M<sub>k</sub></span><input type="range" id="rM" min="0" max="250" step="1" value="${S.M}"><span class="n">${S.M} <span class="u">kN·m</span></span></div><div style="display:flex;gap:8px;align-self:flex-start"><button class="btn" style="align-self:auto">Gráfico</button><button class="btn" style="align-self:auto;opacity:.6">Tabla</button></div>`;
+ $('rM').oninput=e=>{S.M=+e.target.value;todo()};
+ const X0=60,Y0=30,Wd=660,Hd=400,Mx=250,Wx=.8,wx=v=>Y0+Hd-v/Wx*Hd,mx=m=>X0+m/Mx*Wd;let g=`<g font-size="12" fill="var(--tinta-2)">`;
+ for(let m=0;m<=250;m+=50)g+=`<path d="M${mx(m)} ${Y0+Hd}v5" stroke="var(--tinta-3)"/><text x="${mx(m)}" y="${Y0+Hd+20}" text-anchor="middle">${m}</text>`;
+ for(let w=0;w<=.8;w+=.2)g+=`<path d="M${X0-5} ${wx(w)}h5" stroke="var(--tinta-3)"/><text x="${X0-9}" y="${wx(w)+4}" text-anchor="end">${fmt(w,1)}</text>`;
+ g+=`<path d="M${X0} ${Y0}V${Y0+Hd}H${X0+Wd}" fill="none" stroke="var(--linea-fuerte)"/><text x="${X0+Wd/2}" y="${Y0+Hd+40}" text-anchor="middle">M<tspan baseline-shift="sub" font-size="9">k</tspan> [kN·m]</text><text x="${X0}" y="${Y0-10}" fill="var(--tinta)" font-weight="600">w<tspan baseline-shift="sub" font-size="9">k</tspan> [mm]</text>`;
+ const Mf=Mfis();g+=`<path d="M${mx(Mf)} ${Y0}V${Y0+Hd}" stroke="var(--tinta-3)" stroke-dasharray="2 3"/><text x="${mx(Mf)+4}" y="${Y0+14}">M<tspan baseline-shift="sub" font-size="9">fis</tspan> = ${fmt(Mf,0)}</text>`;
+ g+=`<path d="M${X0} ${wx(wmax())}H${X0+Wd}" stroke="var(--no)" stroke-width="1.5"/><text x="${X0+Wd-4}" y="${wx(wmax())-6}" text-anchor="end" fill="var(--no)">w<tspan baseline-shift="sub" font-size="9">máx</tspan> = ${fmt(wmax(),1)} mm</text>`;
+ const trazo={EHE:'',EC2:'9 5',EC23:'2 4'};
+ for(const n of NORMAS){let p='';for(let m=0;m<=Mx;m+=2){const r=calcula(n.id,m);const w=r.err?null:Math.min(r.wk,Wx);if(w===null)continue;p+=(p?'L':'M')+mx(m)+' '+wx(w)}
+  g+=`<path d="${p}" fill="none" stroke="${n.id==NORMAS[S.norma].id?'var(--acento)':'var(--tinta-2)'}" stroke-width="${n.id==NORMAS[S.norma].id?2.4:2}" stroke-dasharray="${trazo[n.id]}" stroke-linecap="round"/>`;
+  const mm=Mx*({EHE:.9,EC23:.62,EC2:.85}[n.id]),rr=calcula(n.id,mm);g+=`<text x="${mx(mm)-6}" y="${wx(Math.min(rr.wk,Wx))+(n.id=='EC2'?18:-6)}" text-anchor="end" fill="var(--tinta)">${n.n}</text>`}
+ const rc=calcula(NORMAS[S.norma].id,S.M);g+=`<circle cx="${mx(S.M)}" cy="${wx(rc.sinfis||rc.err?0:Math.min(rc.wk,Wx))}" r="5" fill="#fff" stroke="var(--acento)" stroke-width="2"/>`;
+ $('svg').innerHTML=g+`</g>`}
+function norma(){const n=NORMAS[S.norma];$('norma').textContent=n.n;$('norma').className='norma'+(n.rojo?' rojo':'')}
+$('norma').onclick=()=>{S.norma=(S.norma+1)%3;todo()};
+function todo(){norma();datos();centro();resultados()}
+todo();
+</script></body></html>
