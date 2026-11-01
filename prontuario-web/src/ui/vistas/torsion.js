@@ -43,8 +43,12 @@ const parejas = (campos) => {
 const apaga = (c, motivo) => {
   for (const el of c.querySelectorAll('input, select')) el.disabled = true;
   c.classList.add('no-aplica');
-  c.title = motivo;
-  c.insertBefore(h('span', { class: 'info-i izq', tabindex: 0, role: 'img', 'aria-label': motivo, 'data-tip': motivo }, 'i'), c.querySelector('.caja'));
+  return conInfo(c, motivo);
+};
+/** Añade la (i) junto a la etiqueta con una aclaración corta. */
+const conInfo = (c, texto) => {
+  c.title = texto;
+  c.insertBefore(h('span', { class: 'info-i izq', tabindex: 0, role: 'img', 'aria-label': texto, 'data-tip': texto }, 'i'), c.querySelector('.caja'));
   return c;
 };
 const calculado = (c, v) => { const i = c.querySelector('input'); i.disabled = true; i.tabIndex = -1; i.value = v; c.classList.add('calculado'); return c; };
@@ -130,7 +134,7 @@ export function datos(ctx, form) {
         const id = c.dataset.c;
         if (!comp && ['t-fi', 't-s', 't-al'].includes(id)) return apaga(c, t('tor.soloComp'));
         if (id === 't-alfa' && tn !== 'ehe') return apaga(c, t('tor.soloEHE'));
-        return c;
+        return id === 't-alfa' ? conInfo(c, t('tor.alfaAyuda')) : c;
       })),
       gauge));
 }

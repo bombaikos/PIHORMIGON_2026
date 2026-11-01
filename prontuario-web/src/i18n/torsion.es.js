@@ -16,7 +16,7 @@ export default {
   'tor.armadura': 'Armadura', 'tor.acero': 'Acero', 'tor.fi': 'ø', 'tor.s': 's', 'tor.Al': sub('A', 'l'),
   'tor.AlAyuda': 'Armadura longitudinal de torsión (sin la de flexión). Reparte en el perímetro de la línea media',
   'tor.alfa': 'α', 'tor.alfaExt': 'Perímetro (α = 0,60)', 'tor.alfaAmb': 'Ambas caras (α = 0,75)',
-  'tor.alfaAyuda': 'EHE-08, 45.2.2.1: 0,60 con cercos solo en el perímetro exterior; 0,75 con cercos cerrados en ambas caras de la pared',
+  'tor.alfaAyuda': '0,60 con cercos solo en el perímetro; 0,75 con cercos cerrados en ambas caras de la pared (EHE-08, 45.2.2.1)',
   'tor.theta': 'θ',
   'tor.cotAyuda': 'Debe coincidir con el θ de Cortante. Rango: 26,6° a 63,4°',
   'tor.cotAyudaEC': 'Debe coincidir con el θ de Cortante. Rango: 26,6° a 63,4°',

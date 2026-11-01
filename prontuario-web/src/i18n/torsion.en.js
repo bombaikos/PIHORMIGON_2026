@@ -16,7 +16,7 @@ export default {
   'tor.armadura': 'Reinforcement', 'tor.acero': 'Steel', 'tor.fi': 'ø', 'tor.s': 's', 'tor.Al': sub('A', 'l'),
   'tor.AlAyuda': 'Longitudinal torsion steel (without flexural steel). Distributed along the centre-line perimeter',
   'tor.alfa': 'α', 'tor.alfaExt': 'Perimeter (α = 0.60)', 'tor.alfaAmb': 'Both faces (α = 0.75)',
-  'tor.alfaAyuda': 'EHE-08, 45.2.2.1: 0.60 with stirrups only along the outer perimeter; 0.75 with closed stirrups on both faces of the wall',
+  'tor.alfaAyuda': '0.60 with stirrups only along the perimeter; 0.75 with closed stirrups on both wall faces (EHE-08, 45.2.2.1)',
   'tor.theta': 'θ',
   'tor.cotAyuda': 'Must match the θ in Shear. Range: 26.6° to 63.4°',
   'tor.cotAyudaEC': 'Must match the θ in Shear. Range: 26.6° to 63.4°',

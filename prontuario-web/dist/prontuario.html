@@ -5021,7 +5021,7 @@ tr.et-act td { font-weight: 650; }
     "tor.alfa": "\u03B1",
     "tor.alfaExt": "Per\xEDmetro (\u03B1 = 0,60)",
     "tor.alfaAmb": "Ambas caras (\u03B1 = 0,75)",
-    "tor.alfaAyuda": "EHE-08, 45.2.2.1: 0,60 con cercos solo en el per\xEDmetro exterior; 0,75 con cercos cerrados en ambas caras de la pared",
+    "tor.alfaAyuda": "0,60 con cercos solo en el per\xEDmetro; 0,75 con cercos cerrados en ambas caras de la pared (EHE-08, 45.2.2.1)",
     "tor.theta": "\u03B8",
     "tor.cotAyuda": "Debe coincidir con el \u03B8 de Cortante. Rango: 26,6\xB0 a 63,4\xB0",
     "tor.cotAyudaEC": "Debe coincidir con el \u03B8 de Cortante. Rango: 26,6\xB0 a 63,4\xB0",
@@ -5141,7 +5141,7 @@ tr.et-act td { font-weight: 650; }
     "tor.alfa": "\u03B1",
     "tor.alfaExt": "Perimeter (\u03B1 = 0.60)",
     "tor.alfaAmb": "Both faces (\u03B1 = 0.75)",
-    "tor.alfaAyuda": "EHE-08, 45.2.2.1: 0.60 with stirrups only along the outer perimeter; 0.75 with closed stirrups on both faces of the wall",
+    "tor.alfaAyuda": "0.60 with stirrups only along the perimeter; 0.75 with closed stirrups on both wall faces (EHE-08, 45.2.2.1)",
     "tor.theta": "\u03B8",
     "tor.cotAyuda": "Must match the \u03B8 in Shear. Range: 26.6\xB0 to 63.4\xB0",
     "tor.cotAyudaEC": "Must match the \u03B8 in Shear. Range: 26.6\xB0 to 63.4\xB0",
@@ -17214,8 +17214,11 @@ tr.et-act td { font-weight: 650; }
   var apaga = (c, motivo) => {
     for (const el of c.querySelectorAll("input, select")) el.disabled = true;
     c.classList.add("no-aplica");
-    c.title = motivo;
-    c.insertBefore(h("span", { class: "info-i izq", tabindex: 0, role: "img", "aria-label": motivo, "data-tip": motivo }, "i"), c.querySelector(".caja"));
+    return conInfo(c, motivo);
+  };
+  var conInfo = (c, texto) => {
+    c.title = texto;
+    c.insertBefore(h("span", { class: "info-i izq", tabindex: 0, role: "img", "aria-label": texto, "data-tip": texto }, "i"), c.querySelector(".caja"));
     return c;
   };
   function activa5(p) {
@@ -17371,7 +17374,7 @@ tr.et-act td { font-weight: 650; }
           const id = c.dataset.c;
           if (!comp && ["t-fi", "t-s", "t-al"].includes(id)) return apaga(c, t("tor.soloComp"));
           if (id === "t-alfa" && tn !== "ehe") return apaga(c, t("tor.soloEHE"));
-          return c;
+          return id === "t-alfa" ? conInfo(c, t("tor.alfaAyuda")) : c;
         })),
         gauge
       )
