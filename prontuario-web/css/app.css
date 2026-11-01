@@ -1164,3 +1164,7 @@ tr.et-act td { font-weight: 650; }
 .dib .et-fr.t { fill: var(--traccion); }
 .dib .et-pt { fill: var(--acero); }
 .et-nota { margin: 0; color: var(--tinta-3); font-size: var(--t-s); }
+/* Torsión: pared eficaz en dos grises (relleno claro, contorno oscuro), distinta de la trama de compresión; controles que no proceden */
+.dib .pared-tor { fill: color-mix(in oklch, var(--tinta-3) 30%, var(--hoja)); stroke: var(--tinta-2); stroke-width: 1.5; }
+.campo.no-aplica .caja { background: var(--hundido); border-color: var(--linea); }
+.campo.no-aplica label, .campo.no-aplica input, .campo.no-aplica select, .campo.no-aplica .ud { color: var(--tinta-3); cursor: not-allowed; }
