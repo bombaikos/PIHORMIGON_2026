@@ -209,8 +209,14 @@ function dibujo(c, r) {
   const yTop = cy - S * smax;
   const yBot = cy - S * smin;
   const tr = Math.max(0, -r.eInf);
-  const escE = (W * 0.27) / Math.max(Math.abs(r.eSup), Math.abs(r.eInf), 5e-4);
-  const x0 = cx + S * lmax + 50 + tr * escE;
+  // Escala del plano: lo traccionado va a la izquierda de la línea base y lo comprimido a la derecha; las etiquetas
+  // (ε a la derecha, «fibra neutra» a 200 px de la base) tienen que caber en el dibujo, así que la escala se limita
+  const base0 = cx + S * lmax + 50;
+  const comp = Math.max(0, r.eSup, r.eInf);
+  const escE = Math.min((W * 0.27) / Math.max(Math.abs(r.eSup), Math.abs(r.eInf), 5e-4),
+    (W - base0 - 130) / Math.max(tr + comp, 1e-9),
+    (W - base0 - 205) / Math.max(tr, 1e-9));
+  const x0 = base0 + tr * escE;
   const aT = [x0 + r.eSup * escE, yTop];
   const aB = [x0 + r.eInf * escE, yBot];
   out.push(`<text class="tit" x="${x0}" y="${yTop - 22}" text-anchor="middle">${t('est.planoDef')}</text>`);
@@ -235,11 +241,18 @@ function dibujo(c, r) {
   }
   // Armadura con su tensión (con más de 10 puntos, solo se escriben los extremos de cada signo)
   const ver = visibles(filasArmadura(r));
+  const puestas = [];
   for (const [ib, b] of r.barras.entries()) {
     const q = T([b.x, b.y]);
     const rr = Math.max(3.5, S * Math.sqrt(b.A / Math.PI));
     out.push(`<circle class="et-ba ${b.sigma >= 0 ? 'c' : 't'}" cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="${rr.toFixed(1)}"/>`);
-    if (ver.has(ib)) out.push(`<text x="${q[0].toFixed(1)}" y="${(q[1] + rr + 12).toFixed(1)}" text-anchor="middle">${fmt(b.sigma, 0)}</text>`);
+    if (ver.has(ib)) {
+      // Barras muy juntas: las etiquetas se escalonan en alturas distintas para que no se pisen
+      let fila = 0;
+      while (puestas.some((o) => o.fila === fila && Math.abs(o.x - q[0]) < 46 && Math.abs(o.y - q[1]) < 30)) fila++;
+      puestas.push({ x: q[0], y: q[1], fila });
+      out.push(`<text x="${q[0].toFixed(1)}" y="${(q[1] + rr + 12 + fila * 12).toFixed(1)}" text-anchor="middle">${fmt(b.sigma, 0)}</text>`);
+    }
   }
   // Franjas (armadura por área): rectángulo con su espesor equivalente y la tensión en sus dos extremos
   for (const [jf, f] of r.franjas.entries()) {

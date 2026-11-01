@@ -14726,8 +14726,14 @@ tr.et-act td { font-weight: 650; }
     const yTop = cy - S * smax;
     const yBot = cy - S * smin;
     const tr = Math.max(0, -r.eInf);
-    const escE = W * 0.27 / Math.max(Math.abs(r.eSup), Math.abs(r.eInf), 5e-4);
-    const x0 = cx + S * lmax + 50 + tr * escE;
+    const base0 = cx + S * lmax + 50;
+    const comp = Math.max(0, r.eSup, r.eInf);
+    const escE = Math.min(
+      W * 0.27 / Math.max(Math.abs(r.eSup), Math.abs(r.eInf), 5e-4),
+      (W - base0 - 130) / Math.max(tr + comp, 1e-9),
+      (W - base0 - 205) / Math.max(tr, 1e-9)
+    );
+    const x0 = base0 + tr * escE;
     const aT = [x0 + r.eSup * escE, yTop];
     const aB = [x0 + r.eInf * escE, yBot];
     out.push(`<text class="tit" x="${x0}" y="${yTop - 22}" text-anchor="middle">${t("est.planoDef")}</text>`);
@@ -14749,11 +14755,17 @@ tr.et-act td { font-weight: 650; }
       out.push(`<text class="fuerte" x="${x0 + 40}" y="${(yTop + yBot) / 2}">x = \u221E</text>`);
     }
     const ver = visibles(filasArmadura(r));
+    const puestas = [];
     for (const [ib, b] of r.barras.entries()) {
       const q2 = T([b.x, b.y]);
       const rr = Math.max(3.5, S * Math.sqrt(b.A / Math.PI));
       out.push(`<circle class="et-ba ${b.sigma >= 0 ? "c" : "t"}" cx="${q2[0].toFixed(1)}" cy="${q2[1].toFixed(1)}" r="${rr.toFixed(1)}"/>`);
-      if (ver.has(ib)) out.push(`<text x="${q2[0].toFixed(1)}" y="${(q2[1] + rr + 12).toFixed(1)}" text-anchor="middle">${fmt(b.sigma, 0)}</text>`);
+      if (ver.has(ib)) {
+        let fila6 = 0;
+        while (puestas.some((o) => o.fila === fila6 && Math.abs(o.x - q2[0]) < 46 && Math.abs(o.y - q2[1]) < 30)) fila6++;
+        puestas.push({ x: q2[0], y: q2[1], fila: fila6 });
+        out.push(`<text x="${q2[0].toFixed(1)}" y="${(q2[1] + rr + 12 + fila6 * 12).toFixed(1)}" text-anchor="middle">${fmt(b.sigma, 0)}</text>`);
+      }
     }
     for (const [jf, f] of r.franjas.entries()) {
       const th = Math.max(5, S * f.A / (f.x2 - f.x1) / 2) / S;
