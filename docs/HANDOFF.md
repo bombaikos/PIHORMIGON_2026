@@ -19,6 +19,8 @@ Actualizado: 31/10/2026. **Actualiza este archivo al cerrar cada tarea.** El est
 
 - **ELS ▸ Estado tensional** (rama `els-estado-tensional`, sin PR): motor hecho (`src/core/estadoTensional.js`, 10 tests); falta vista, menú, i18n y test de pantalla. Maqueta aprobada en concepto en `analisis/maqueta/estado-tensional.html`; decisiones en `analisis/estado-tensional-decisiones.md`.
 
+- **ELS ▸ Flechas** (rama `flechas-plan`, solo documentación, sin código): plan aprobado por Pepiño el 01/11 en `analisis/flechas-decisiones.md` (EHE-08 como el 3.1; EC-2 con retracción; tres hitos; canto mínimo en pestaña, una por norma).
+
 ## A medias / pendiente conocido
 - **Cápsula de modo** (Comprobación | Dimensionamiento | Diagrama): José Luis la extenderá a todos los módulos.
 - **Durabilidad**: tablas propias de EHE-08 y EC-2 2004 (hoy cmin,dur manual en parte).
