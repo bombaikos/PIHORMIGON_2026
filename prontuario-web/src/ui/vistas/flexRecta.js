@@ -58,7 +58,7 @@ const pares = () => (est.modo !== 'diagrama'
   .map((x) => (x.N > 0 && x.M < x.N * emin - 1e-9 ? { ...x, M: x.N * emin, subeM: true } : x));
 
 /** Diámetro común [mm] de las barras de la sección, o null si hay franjas por área o diámetros distintos. */
-function fiComun(geo) {
+export function fiComun(geo) {
   if (!geo.barras.length || geo.franjas.length) return null;
   const f = geo.barras.map((b) => b.fi);
   return f.every((x) => Math.abs(x - f[0]) < 1e-9) ? f[0] : null;
@@ -206,7 +206,7 @@ function resultadosFlexRecta(ctx, res) {
 }
 
 /** Sección pequeña, solo contorno y barras con sus cotas. */
-function dibujoSeccionPeq(geo, s) {
+export function dibujoSeccionPeq(geo, s) {
   const e = encuadre(geo, 150, 150, { completa: true });
   const x0 = 46;
   const y0 = 10;
@@ -223,7 +223,7 @@ function tablaEsfuerzos(gam) {
 
 /** Contorno N-M (x = N, y = M) con la envolvente del hormigón solo y los esfuerzos: verde dentro, rojo fuera. */
 /** Columnas de la tabla del diagrama: estado de rotura (x, κ, ε sup, ε inf) de cada punto del contorno, en el orden de la curva. */
-function planoContorno(rama) {
+export function planoContorno(rama) {
   const pts = [...rama].reverse();
   const f = (v, dd = 2) => (Number.isFinite(v) ? fmt(v, dd) : '—');
   return {
@@ -298,7 +298,7 @@ function resultadoUnico(ctx, res, { s, c, gam, gmin, dim }) {
 }
 
 /** Sección, deformaciones y tensiones en rotura, a la misma escala vertical (como Flexión simple). */
-function dibujoRotura(geo, s, c, e) {
+export function dibujoRotura(geo, s, c, e) {
   const sec = c.secD;
   const matH = sec.trapecios[0].mat;
   const matA = sec.barras[0]?.mat;
@@ -356,7 +356,7 @@ function dibujoRotura(geo, s, c, e) {
 }
 
 /** Cifras de la armadura: ø de cálculo, o en Dimensionar ø estricto y propuesto con sus áreas. */
-function cifrasArmadura(c, dim) {
+export function cifrasArmadura(c, dim) {
   const mm = (x, dd) => `${fmt(x, dd)}<span class="u"> mm</span>`;
   if (dim && c.phiProp) {
     return [[`ø ${t('fcr.estricto')}`, c.phiEstricto > 0 ? mm(c.phiEstricto, 1) : '—'], [`ø ${t('fcr.propuesto')}`, mm(c.phiProp, 0)],

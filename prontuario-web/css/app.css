@@ -1168,3 +1168,24 @@ tr.et-act td { font-weight: 650; }
 .dib .pared-tor { fill: color-mix(in oklch, var(--tinta-3) 30%, var(--hoja)); stroke: var(--tinta-2); stroke-width: 1.5; }
 .campo.no-aplica .caja { background: var(--hundido); border-color: var(--linea); }
 .campo.no-aplica label, .campo.no-aplica input, .campo.no-aplica select, .campo.no-aplica .ud { color: var(--tinta-3); cursor: not-allowed; }
+
+/* Inestabilidad de soportes: fila de un soporte o viga de un nudo (b, h, luz) */
+.ine-fila { display: flex; flex-direction: column; gap: 2px; }
+.ine-fila .etq-grupo { font-size: var(--t-xs); color: var(--tinta-3); }
+.ine-tabla { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: var(--t-s); }
+.ine-tabla th, .ine-tabla td { padding: 2px 2px; text-align: left; vertical-align: middle; }
+.ine-tabla thead th { font-size: var(--t-xs); font-weight: 500; color: var(--tinta-3); white-space: nowrap; }
+.ine-tabla tbody th[scope="row"] { font-weight: 400; color: var(--tinta-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+:root:not([data-densidad="comoda"]) .ine-tabla .campo, .ine-tabla .campo { display: block; }
+.ine-tabla .caja .ud { display: none; }
+:root:not([data-densidad="comoda"]) .ine-tabla .campo:not(.columna) .caja, :root .ine-tabla .campo .caja { flex: 1 1 0; width: 100%; min-width: 0; margin-left: 0; }
+.ine-tabla thead th:nth-child(1) { width: 74px; }
+.ine-tabla thead th:nth-child(5) { width: 34px; text-align: center; }
+.ine-tabla .campo > label, .ine-tabla .campo .eco { display: none; }
+.ine-tabla .campo .caja input { width: 100%; min-width: 0; padding-left: 2px; padding-right: 2px; text-align: right; }
+.ine-tabla .ine-vol { text-align: center; }
+.ine-tabla .ine-vol .tick { display: inline-flex; justify-content: center; }
+.ine-tabla tr.vol td:not(.ine-vol) { opacity: .45; }
+.ine-ext th { padding-top: 8px; font-weight: 650; }
+.ine-ext-cab { display: flex; flex-direction: column; gap: 3px; font-size: var(--t-s); color: var(--tinta); }
+.ine-ext-cab .seg { align-self: stretch; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; }

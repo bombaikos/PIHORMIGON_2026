@@ -69,3 +69,7 @@ Resumen de lo decidido por José Luis (fechas de 2026). Cada módulo tiene su de
 
 ## Flexión compuesta esviada (Pepiño, 31/10)
 - Primero igualar el 3.1: Rec pilar (ø como dato de cálculo) y genéricas; diagrama Mx–My a axil constante con el axil en una regleta; **tracción en rosa** (`--rosa`), compresión en azul. Detalle en `analisis/flexion-esviada-decisiones.md`.
+
+## Inestabilidad de soportes (Pepiño y José Luis, 31/10)
+- Es la Flexión compuesta recta más el segundo orden: curvatura nominal en EC-2 2004+AN y EC-2 2023, método aproximado (43.5.1) en EHE-08. Solo flexión recta. Diagrama N–M con el segundo orden como **reducción** del contorno sin segundo orden (como el 3.1).
+- Extremos por rigidez (empotrado, articulado o nudo con pilar y vigas; fracciones 0,70 y 0,30; voladizos sin rigidez), sin momentos de viga; el usuario decide traslacional o intraslacional. Esfuerzos: N y momentos extremos del soporte (≥ N·e_mín). Fluencia: φ(∞,t0) = 2 y proporción de carga permanente. Detalle y pendientes: `analisis/inestabilidad-decisiones.md`.
