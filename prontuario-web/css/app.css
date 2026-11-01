@@ -1189,3 +1189,5 @@ tr.et-act td { font-weight: 650; }
 .ine-ext th { padding-top: 8px; font-weight: 650; }
 .ine-ext-cab { display: flex; flex-direction: column; gap: 3px; font-size: var(--t-s); color: var(--tinta); }
 .ine-ext-cab .seg { align-self: stretch; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; }
+.dib .et-ba.foco, .dib .et-pt.foco { stroke: var(--acento); stroke-width: 3; }
+.dib .et-fr.foco { stroke: var(--acento); stroke-width: 2.5; }

@@ -1198,6 +1198,8 @@ tr.et-act td { font-weight: 650; }
 .ine-ext th { padding-top: 8px; font-weight: 650; }
 .ine-ext-cab { display: flex; flex-direction: column; gap: 3px; font-size: var(--t-s); color: var(--tinta); }
 .ine-ext-cab .seg { align-self: stretch; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; }
+.dib .et-ba.foco, .dib .et-pt.foco { stroke: var(--acento); stroke-width: 3; }
+.dib .et-fr.foco { stroke: var(--acento); stroke-width: 2.5; }
 </style>
 
 <header class="barra">
@@ -14551,8 +14553,9 @@ tr.et-act td { font-weight: 650; }
         N: [Math.round(-0.8 * fyk * As * 1e3 / 10) * 10 || -100, Math.round(0.6 * fck * Ac * 1e3 / 10) * 10],
         Mx: Math.ceil(0.6 * fck * 1e3 * (Ac * hy) / 6 / 10) * 10 || 100,
         My: Math.ceil(0.6 * fck * 1e3 * (Ac * bx) / 6 / 10) * 10 || 100,
-        kx: 8 / hy,
-        ky: 8 / bx
+        kx: 8e-3 / hy,
+        ky: 8e-3 / bx
+        // 8 ‰ de deformación a lo largo del canto, no más
       },
       lector: leyDe(mats.hormigon, est7.lineal)
     };
@@ -14701,7 +14704,7 @@ tr.et-act td { font-weight: 650; }
     const xc = mod.xc;
     const yc = mod.yc;
     const diag = Math.hypot(c.bx, c.hy);
-    const S = (H - 130) / diag;
+    const S = Math.min((H - 130) / diag, SECCION_MAX / Math.max(c.bx, c.hy));
     const cx = W * 0.36;
     const cy = H / 2 + 14;
     const T = (p) => {
@@ -14755,17 +14758,20 @@ tr.et-act td { font-weight: 650; }
       out.push(`<text class="fuerte" x="${x0 + 40}" y="${(yTop + yBot) / 2}">x = \u221E</text>`);
     }
     const ver = visibles(filasArmadura(r));
-    const puestas = [];
+    const etiquetas2 = [];
     for (const [ib, b] of r.barras.entries()) {
       const q2 = T([b.x, b.y]);
       const rr = Math.max(3.5, S * Math.sqrt(b.A / Math.PI));
-      out.push(`<circle class="et-ba ${b.sigma >= 0 ? "c" : "t"}" cx="${q2[0].toFixed(1)}" cy="${q2[1].toFixed(1)}" r="${rr.toFixed(1)}"/>`);
-      if (ver.has(ib)) {
-        let fila6 = 0;
-        while (puestas.some((o) => o.fila === fila6 && Math.abs(o.x - q2[0]) < 46 && Math.abs(o.y - q2[1]) < 30)) fila6++;
-        puestas.push({ x: q2[0], y: q2[1], fila: fila6 });
-        out.push(`<text x="${q2[0].toFixed(1)}" y="${(q2[1] + rr + 12 + fila6 * 12).toFixed(1)}" text-anchor="middle">${fmt(b.sigma, 0)}</text>`);
-      }
+      out.push(`<circle class="et-ba ${b.sigma >= 0 ? "c" : "t"}" data-ref="b${ib}" cx="${q2[0].toFixed(1)}" cy="${q2[1].toFixed(1)}" r="${rr.toFixed(1)}"/>`);
+      if (ver.has(ib)) etiquetas2.push({ ib, q: q2, rr, s: b.sigma });
+    }
+    const puestas = [];
+    for (const e2 of etiquetas2.sort((p, q2) => Math.abs(q2.s) - Math.abs(p.s))) {
+      const x = e2.q[0];
+      const y = e2.q[1] + e2.rr + 12;
+      if (puestas.some((o) => Math.abs(o.x - x) < 80 && Math.abs(o.y - y) < 16)) continue;
+      puestas.push({ x, y });
+      out.push(`<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle">${fmt(e2.s, MAG.tension.d)}</text>`);
     }
     for (const [jf, f] of r.franjas.entries()) {
       const th = Math.max(5, S * f.A / (f.x2 - f.x1) / 2) / S;
@@ -14774,7 +14780,7 @@ tr.et-act td { font-weight: 650; }
       for (const [ie, [xe, se, lado]] of [[f.x1, f.s1, -1], [f.x2, f.s2, 1]].entries()) {
         const q2 = T([xe, f.y]);
         const eti = ver.has(r.barras.length + 2 * jf + ie);
-        out.push(`<circle class="et-pt" cx="${q2[0].toFixed(1)}" cy="${q2[1].toFixed(1)}" r="3"/>${eti ? `<text x="${(q2[0] + lado * 8).toFixed(1)}" y="${(q2[1] + 4).toFixed(1)}" text-anchor="${lado > 0 ? "start" : "end"}">${fmt(se, 0)}</text>` : ""}`);
+        out.push(`<circle class="et-pt" data-ref="f${jf}-${ie}" cx="${q2[0].toFixed(1)}" cy="${q2[1].toFixed(1)}" r="3"/>${eti ? `<text x="${(q2[0] + lado * 8).toFixed(1)}" y="${(q2[1] + 4).toFixed(1)}" text-anchor="${lado > 0 ? "start" : "end"}">${fmt(se, MAG.tension.d)}</text>` : ""}`);
       }
     }
     const c0 = T([xc, yc]);
@@ -14790,7 +14796,7 @@ tr.et-act td { font-weight: 650; }
       out.push(`<line class="en" x1="${ix}" y1="${iy}" x2="${ix + u[0] * 50}" y2="${iy + u[1] * 50}"/>`);
       out.push(`<path class="cota" d="M${ix + 26} ${iy}A26 26 0 ${r.beta > Math.PI ? 1 : 0} 0 ${ix + 26 * u[0]} ${iy + 26 * u[1]}"/><text x="${ix + 30}" y="${iy - 6}">\u03B2</text>`);
     }
-    return `<svg class="dib et-svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${W} ${H}" role="img" aria-label="${t("est.dibujoAria")}">${out.join("")}</svg>`;
+    return `<svg class="dib et-svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${W} ${H}"${topeEscala(W, H)} role="img" aria-label="${t("est.dibujoAria")}">${out.join("")}</svg>`;
   }
   var mm2 = (x) => fmt(x * 1e3, 0);
   var grados = (b) => b === null ? "\u2014" : fmt(b / RAD, 1);
@@ -14811,10 +14817,10 @@ tr.et-act td { font-weight: 650; }
     ], { cabecera: ["", "\u03B5 [\u2030]", "\u03C3 [MPa]"] });
   }
   function filasArmadura(r) {
-    const b = r.barras.map((q2, i) => ({ id: String(i + 1), x: q2.x, y: q2.y, e: q2.eps, s: q2.sigma }));
+    const b = r.barras.map((q2, i) => ({ ref: `b${i}`, id: String(i + 1), x: q2.x, y: q2.y, e: q2.eps, s: q2.sigma }));
     const f = r.franjas.flatMap((q2, i) => [
-      { id: `F${i + 1}\xB7${t("est.izq")}`, x: q2.x1, y: q2.y, e: q2.e1, s: q2.s1 },
-      { id: `F${i + 1}\xB7${t("est.der")}`, x: q2.x2, y: q2.y, e: q2.e2, s: q2.s2 }
+      { ref: `f${i}-0`, id: `F${i + 1}\xB7${t("est.izq")}`, x: q2.x1, y: q2.y, e: q2.e1, s: q2.s1 },
+      { ref: `f${i}-1`, id: `F${i + 1}\xB7${t("est.der")}`, x: q2.x2, y: q2.y, e: q2.e2, s: q2.s2 }
     ]);
     return [...b, ...f];
   }
@@ -14850,6 +14856,7 @@ tr.et-act td { font-weight: 650; }
     };
     const ver = visibles(todas);
     const marcadas = filas.map((f, i) => {
+      f.ref = todas[i].ref;
       if (todas[i].s === smax || todas[i].s === smin) f[4] = `<b>${f[4]}</b>`;
       return f;
     }).filter((_2, i) => ver.has(i));

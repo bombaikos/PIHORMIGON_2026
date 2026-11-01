@@ -12,6 +12,7 @@ import { t } from '../i18n.js';
 import { fmt, qh, MAG, decimalAlCopiar } from '../formato.js';
 import { grupoSeccion, rotulaSeccion } from './secciones.js';
 import { veredicto } from './flexion.js';
+import { SECCION_MAX, topeEscala } from '../dibujoSeccion.js';
 import { h, poner, campoNum, segmentado, grupo, aviso, regleta, tabla } from '../campos.js';
 
 const FORMAS = ['rectangular', 'pilar', 'T', 'circular', 'generica'];
@@ -61,7 +62,7 @@ function calculo(p, s) {
       N: [Math.round(-0.8 * fyk * As * 1000 / 10) * 10 || -100, Math.round((0.6 * fck * Ac * 1000) / 10) * 10],
       Mx: Math.ceil((0.6 * fck * 1000 * (Ac * hy) / 6) / 10) * 10 || 100,
       My: Math.ceil((0.6 * fck * 1000 * (Ac * bx) / 6) / 10) * 10 || 100,
-      kx: 8 / hy, ky: 8 / bx,
+      kx: 0.008 / hy, ky: 0.008 / bx, // 8 ‰ de deformación a lo largo del canto, no más
     },
     lector: leyDe(mats.hormigon, est.lineal),
   };
@@ -186,7 +187,7 @@ function dibujo(c, r) {
   const xc = mod.xc;
   const yc = mod.yc;
   const diag = Math.hypot(c.bx, c.hy);
-  const S = (H - 130) / diag; // px por m; no cambia al girar
+  const S = Math.min((H - 130) / diag, SECCION_MAX / Math.max(c.bx, c.hy)); // px por m; no cambia al girar; lado mayor ≤ 300 px (guía § 8)
   const cx = W * 0.36;
   const cy = H / 2 + 14;
   const T = (p) => { const dx = p[0] - xc; const dy = p[1] - yc; return [cx + S * (dx * v[0] + dy * v[1]), cy - S * (dx * u[0] + dy * u[1])]; };
@@ -241,18 +242,21 @@ function dibujo(c, r) {
   }
   // Armadura con su tensión (con más de 10 puntos, solo se escriben los extremos de cada signo)
   const ver = visibles(filasArmadura(r));
-  const puestas = [];
+  const etiquetas = [];
   for (const [ib, b] of r.barras.entries()) {
     const q = T([b.x, b.y]);
     const rr = Math.max(3.5, S * Math.sqrt(b.A / Math.PI));
-    out.push(`<circle class="et-ba ${b.sigma >= 0 ? 'c' : 't'}" cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="${rr.toFixed(1)}"/>`);
-    if (ver.has(ib)) {
-      // Barras muy juntas: las etiquetas se escalonan en alturas distintas para que no se pisen
-      let fila = 0;
-      while (puestas.some((o) => o.fila === fila && Math.abs(o.x - q[0]) < 46 && Math.abs(o.y - q[1]) < 30)) fila++;
-      puestas.push({ x: q[0], y: q[1], fila });
-      out.push(`<text x="${q[0].toFixed(1)}" y="${(q[1] + rr + 12 + fila * 12).toFixed(1)}" text-anchor="middle">${fmt(b.sigma, 0)}</text>`);
-    }
+    out.push(`<circle class="et-ba ${b.sigma >= 0 ? 'c' : 't'}" data-ref="b${ib}" cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="${rr.toFixed(1)}"/>`);
+    if (ver.has(ib)) etiquetas.push({ ib, q, rr, s: b.sigma });
+  }
+  // Etiquetas de σ de las barras: las de mayor |σ| primero; se omiten las que quedarían pisando a otra ya puesta (guía § 15); la tabla las da todas
+  const puestas = [];
+  for (const e of etiquetas.sort((p, q) => Math.abs(q.s) - Math.abs(p.s))) {
+    const x = e.q[0];
+    const y = e.q[1] + e.rr + 12;
+    if (puestas.some((o) => Math.abs(o.x - x) < 80 && Math.abs(o.y - y) < 16)) continue;
+    puestas.push({ x, y });
+    out.push(`<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle">${fmt(e.s, MAG.tension.d)}</text>`);
   }
   // Franjas (armadura por área): rectángulo con su espesor equivalente y la tensión en sus dos extremos
   for (const [jf, f] of r.franjas.entries()) {
@@ -262,7 +266,7 @@ function dibujo(c, r) {
     for (const [ie, [xe, se, lado]] of [[f.x1, f.s1, -1], [f.x2, f.s2, 1]].entries()) {
       const q = T([xe, f.y]);
       const eti = ver.has(r.barras.length + 2 * jf + ie);
-      out.push(`<circle class="et-pt" cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="3"/>${eti ? `<text x="${(q[0] + lado * 8).toFixed(1)}" y="${(q[1] + 4).toFixed(1)}" text-anchor="${lado > 0 ? 'start' : 'end'}">${fmt(se, 0)}</text>` : ''}`);
+      out.push(`<circle class="et-pt" data-ref="f${jf}-${ie}" cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="3"/>${eti ? `<text x="${(q[0] + lado * 8).toFixed(1)}" y="${(q[1] + 4).toFixed(1)}" text-anchor="${lado > 0 ? 'start' : 'end'}">${fmt(se, MAG.tension.d)}</text>` : ''}`);
     }
   }
   // c.d.g.
@@ -280,7 +284,7 @@ function dibujo(c, r) {
     out.push(`<line class="en" x1="${ix}" y1="${iy}" x2="${ix + u[0] * 50}" y2="${iy + u[1] * 50}"/>`);
     out.push(`<path class="cota" d="M${ix + 26} ${iy}A26 26 0 ${r.beta > Math.PI ? 1 : 0} 0 ${ix + 26 * u[0]} ${iy + 26 * u[1]}"/><text x="${ix + 30}" y="${iy - 6}">β</text>`);
   }
-  return `<svg class="dib et-svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${W} ${H}" role="img" aria-label="${t('est.dibujoAria')}">${out.join('')}</svg>`;
+  return `<svg class="dib et-svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${W} ${H}"${topeEscala(W, H)} role="img" aria-label="${t('est.dibujoAria')}">${out.join('')}</svg>`;
 }
 
 // ---------------------------------------------------------------- resultados
@@ -308,10 +312,10 @@ function tablaFibras(r) {
 
 /** Filas de la armadura: cada barra y, de cada franja (armadura por área), sus dos extremos. */
 function filasArmadura(r) {
-  const b = r.barras.map((q, i) => ({ id: String(i + 1), x: q.x, y: q.y, e: q.eps, s: q.sigma }));
+  const b = r.barras.map((q, i) => ({ ref: `b${i}`, id: String(i + 1), x: q.x, y: q.y, e: q.eps, s: q.sigma }));
   const f = r.franjas.flatMap((q, i) => [
-    { id: `F${i + 1}·${t('est.izq')}`, x: q.x1, y: q.y, e: q.e1, s: q.s1 },
-    { id: `F${i + 1}·${t('est.der')}`, x: q.x2, y: q.y, e: q.e2, s: q.s2 },
+    { ref: `f${i}-0`, id: `F${i + 1}·${t('est.izq')}`, x: q.x1, y: q.y, e: q.e1, s: q.s1 },
+    { ref: `f${i}-1`, id: `F${i + 1}·${t('est.der')}`, x: q.x2, y: q.y, e: q.e2, s: q.s2 },
   ]);
   return [...b, ...f];
 }
@@ -347,7 +351,7 @@ function tablaBarras(ctx, r) {
   };
   // Las tensiones extremas (mayor compresión y mayor tracción de la armadura) van en negrita, sin color
   const ver = visibles(todas);
-  const marcadas = filas.map((f, i) => { if (todas[i].s === smax || todas[i].s === smin) f[4] = `<b>${f[4]}</b>`; return f; }).filter((_, i) => ver.has(i));
+  const marcadas = filas.map((f, i) => { f.ref = todas[i].ref; if (todas[i].s === smax || todas[i].s === smin) f[4] = `<b>${f[4]}</b>`; return f; }).filter((_, i) => ver.has(i));
   return h('div', { class: 'et-barras' },
     h('div', { class: 'et-cab-barras' }, h('h3', {}, t('est.tBarras')), marcadas.length > 4 || filas.length > marcadas.length ? h('button', { type: 'button', class: 'tecla', title: t('graf.copiarTablaTit'), onclick: copiar }, t('est.copiarTabla')) : null),
     tabla(marcadas, { cabecera: cab, clase: 'rejilla' }),

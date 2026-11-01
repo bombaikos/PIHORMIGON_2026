@@ -31,3 +31,8 @@ Código: `src/core/estadoTensional.js` (motor), tests en `tests/estadoTensional.
 - Datos: desplegable de sección (todos los tipos), cápsula de modo, campos del modo, γC, αcc, φ, casilla «Ley lineal (Ecm)» y Ec,eff / n derivados. Al cambiar de modo se conserva el estado.
 - Resultados: pastilla con el nombre de la sección, σc máx. y «Sección fisurada / sin fisurar» (pardo / neutro); avisos pardos (PR, ley lineal, ε_sup por encima de εcu); dibujo con regletas al 80 %; tablas de los tres modos, fibras extremas y armadura (con «Copiar tabla» si hay más de 4 barras y scroll interno).
 - x = ∞ se escribe como 100 000 mm o más; la regleta de x es no lineal y acaba en ∞.
+
+## Revisión de cálculo y auditoría de la guía (1/11/2026)
+- **Cálculo**: el motor es correcto (equilibrio y compatibilidad verificados por los 11 tests propios). El ε de 947 ‰ salía de la regleta de κ, cuyo recorrido era 1000 veces mayor de lo debido (`8 / hy` en 1/m en vez de 0,008 / hy). Ahora el máximo es 8 ‰ de deformación a lo largo del canto. Los números enormes de σ_s (151 541 MPa) eran coherentes con el acero elástico lineal sin límite: el módulo solo calcula y avisa («pasa de la deformación última»).
+- **Guía**: las etiquetas de σ del dibujo pasan a 1 decimal (§ 1, tabla de precisiones); la sección dibujada no pasa de 300 px y el SVG no se amplía (§ 8, `SECCION_MAX`, `topeEscala`); se resalta a la vez barra y fila de la tabla al pasar el ratón (§ 8); las etiquetas de σ que se pisarían se omiten, la tabla las da todas (§ 15).
+- Pendiente de decidir: el color de las barras (hoy azul si comprimen y gris si traccionan; la guía § 4 dice acero en gris oscuro) y un aviso cuando σ_s supere f_yk.
