@@ -29,7 +29,21 @@ export function cuantiaMinima({ norma, tipo, h, Ac, yg, Ix, fctm, fyk, gammaS, N
     return { tipo, fct, f, z: 0.8 * h, inf: { W: Ix / (h - yg), A: A(Ix / (h - yg)) }, sup: { W: Ix / yg, A: A(Ix / yg) } };
   }
   const Nd = Math.max(N, 0);
-  const mec = (0.1 * Nd) / fyd;
+  // EHE-08 42.3.3: fyc,d = fyd pero no mayor que 400 N/mm² (con B 500 S, 400 y no 434,8)
+  const fycd = norma === 'EHE-08' ? Math.min(fyd, 400000) : fyd;
+  const mec = (0.1 * Nd) / fycd;
   const geo = (norma === 'EHE-08' ? 0.004 : 0.002) * Ac;
   return { tipo, mec, geo, A: Math.max(mec, geo), fyd, Nd };
+}
+
+/**
+ * Armadura longitudinal máxima de un pilar (no admite más aunque el cálculo la pida):
+ * EHE-08 42.3.3: A's·fyc,d ≤ Ac·fcd (fyc,d = fyd ≤ 400 MPa); EC-2 2004+AN 9.5.2(3): 0,04·Ac (valor recomendado; 0,08·Ac en solapes).
+ * EC-2 2023: no se ha localizado un máximo equivalente en el texto (Tabla 12.3): devuelve null.
+ * @returns {number|null} [m²]
+ */
+export function cuantiaMaxima({ norma, Ac, fcd, fyk, gammaS }) {
+  if (norma === 'EHE-08') return (Ac * fcd) / Math.min(fyk / gammaS, 400000);
+  if (norma === 'EC2-2004') return 0.04 * Ac;
+  return null;
 }

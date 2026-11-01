@@ -683,7 +683,7 @@ function cuantiaMinimaUI(ctx, s, geo, props, mats, tot) {
   } else {
     filas = [fila(t('cmin.total'), tot, r.A)];
     const art2 = p.norma === 'EHE-08' ? '42.3.3 y tabla 42.3.5' : p.norma === 'EC2-2004' ? '9.5.2(2)' : 'tabla 12.3';
-    cuentas = [`<span class="f">${sub('A', 's,min')} = máx{0,10·N/${sub('f', 'yd')}; ${p.norma === 'EHE-08' ? '4‰' : '2‰'}·${sub('A', 'c')}}</span><span class="n">N = ${fmt(r.Nd, 0)} kN (${t('cmin.nPilar')}) → 0,10·N/${sub('f', 'yd')} = ${v(r.mec, 'As')} · ${v(r.geo, 'As')} → ${v(r.A, 'As')}</span><span class="art">${ref} · ${art2}</span>`];
+    cuentas = [`<span class="f">${sub('A', 's,min')} = máx{0,10·N/${p.norma === 'EHE-08' ? sub('f', 'yc,d') : sub('f', 'yd')}; ${p.norma === 'EHE-08' ? '4‰' : '2‰'}·${sub('A', 'c')}}</span><span class="n">N = ${fmt(r.Nd, 0)} kN (${t('cmin.nPilar')}) → 0,10·N/${p.norma === 'EHE-08' ? sub('f', 'yc,d') : sub('f', 'yd')} = ${v(r.mec, 'As')} · ${v(r.geo, 'As')} → ${v(r.A, 'As')}</span><span class="art">${ref} · ${art2}</span>`];
   }
   return [h('h3', {}, t('cmin.titulo')),
     plegables(tabla(filas, { cabecera: ['', t('cmin.dispuesta') + U('As'), `${sub('A', 's,min')}` + U('As')] }), cuentas)];
