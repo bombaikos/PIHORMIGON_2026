@@ -14,15 +14,15 @@ body{background:var(--suelo);color:var(--tinta);font:var(--s)/1.35 var(--f);font
 .menu span{padding:5px 10px;border-radius:6px}.menu .on{background:var(--acento-suave);color:var(--acento);font-weight:600}.menu .off{opacity:.45}
 .norma{margin-left:auto;border:1px solid var(--linea-fuerte);border-radius:4px;padding:3px 8px;cursor:pointer;background:var(--hoja);font:inherit}
 .norma.rojo{color:var(--no);border-color:var(--no)}
-main{flex:1;min-height:0;display:grid;grid-template-columns:310px 1fr 410px;gap:10px;padding:10px}
+main{flex:1;min-height:0;display:grid;grid-template-columns:285px 1fr 365px;gap:10px;padding:10px}
 .panel{background:var(--hoja);border:1px solid var(--linea);border-radius:10px;padding:12px;min-height:0;overflow:hidden;display:flex;flex-direction:column;gap:7px}
 h1{font-size:var(--s);margin:0;font-weight:700}
 .fila{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:28px}.fila label{color:var(--tinta-2)}
-.caja{width:130px;height:28px;border:1px solid var(--campo-borde);background:var(--campo);border-radius:6px;padding:0 8px;font:inherit;text-align:right;color:var(--tinta)}
+.caja{width:120px;height:28px;border:1px solid var(--campo-borde);background:var(--campo);border-radius:6px;padding:0 8px;font:inherit;text-align:right;color:var(--tinta)}
 .caja:disabled{background:oklch(95.2% .006 240);border-color:var(--linea);color:var(--tinta-3);cursor:not-allowed}
 select.caja{text-align:left;padding:0 4px}
 .u{color:var(--tinta-3)}
-.capsula{display:flex}.capsula button{flex:1;min-width:0;font-size:12px;padding-left:0;padding-right:0;white-space:nowrap;border:1px solid var(--linea-fuerte);background:var(--hoja);font:inherit;padding:5px 2px;cursor:pointer;color:var(--tinta-2);margin-left:-1px}
+.capsula{display:flex}.capsula button{flex:1 1 auto;min-width:0;font-size:12px;padding-left:0;padding-right:0;white-space:nowrap;border:1px solid var(--linea-fuerte);background:var(--hoja);font:inherit;padding:5px 2px;cursor:pointer;color:var(--tinta-2);margin-left:-1px}
 .capsula button:first-child{border-radius:6px 0 0 6px;margin:0}.capsula button:last-child{border-radius:0 6px 6px 0}
 .capsula button.on{background:var(--acento-suave);color:var(--acento);border-bottom:2px solid var(--acento);font-weight:600}
 .sep{border-top:1px solid var(--linea);margin:2px 0}.rot{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--tinta-3)}
@@ -53,7 +53,7 @@ sub{font-size:.75em}svg text{font-family:var(--f);font-variant-numeric:tabular-n
 </main>
 <script>
 // ---------- MAQUETA: cifras ilustrativas con fórmulas de los textos (EHE-08 49.2.4; EC-2 2004 7.3.4; EC-2 2023 9.2.3). Sin pretensado ni tension stiffening. ----------
-const NORMAS=[{id:'EHE',n:'EHE-08',rojo:true},{id:'EC2',n:'EC-2 2004 + AN',rojo:false},{id:'EC23',n:'EC-2 2023',rojo:true}];
+const NORMAS=[{id:'EHE',n:'EHE-08',rojo:true},{id:'EC2',n:'EC-2 2004+AN',rojo:false},{id:'EC23',n:'EC-2 2023',rojo:true}];
 const EXPO=[{ec:'X0, XC1',ehe:'I',w:.4},{ec:'XC2, XC3, XC4, XF1',ehe:'IIa, IIb, H',w:.3},{ec:'XD, XS1, XS2, XF2',ehe:'IIIa, IIIb, IV, F',w:.2},{ec:'XS3, XA2',ehe:'IIIc, Qb, Qc',w:.1}];
 const S={norma:1,modo:'comp',M:80,N:0,b:300,h:500,c:30,n1:3,f1:20,n2:2,f2:12,expo:1,dur:'larga',accion:'directa',adh:'buena',fck:30,fyk:500};
 const Es=200000,fmt=(x,d)=>(Math.abs(x)<.5*10**-d?0:x).toFixed(d).replace('-','−');
