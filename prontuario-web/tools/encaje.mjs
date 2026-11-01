@@ -87,6 +87,8 @@ const PANTALLAS = [
   ['Inestabilidad · dimensionar', 'inestabilidad', [(p) => p.click('.datos .seg >> nth=0 >> button >> nth=1')]],
   ['Inestabilidad · soporte', 'inestabilidad', [(p) => p.click('.fcr-lado .pestanas button:nth-child(2)')]],
   ['Inestabilidad · rotura', 'inestabilidad', [(p) => p.click('.fcr-lado .pestanas button:nth-child(3)')]],
+  ['Inestabilidad · diagrama', 'inestabilidad', [(p) => p.click('.datos .seg >> nth=0 >> button >> nth=2')]],
+  ['Inestabilidad · diagrama tabla', 'inestabilidad', [(p) => p.click('.datos .seg >> nth=0 >> button >> nth=2'), (p) => p.click('.graf-modo .seg button:nth-child(2)')]],
   ['Inestabilidad · EHE-08', 'inestabilidad', [norma(2)]],
   ['Inestabilidad · EC-2 2023', 'inestabilidad', [norma(3)]],
   ['Inestabilidad · circular', 'inestabilidad', [SEC('Circular')]],

@@ -12,6 +12,7 @@ import { estadoUltimo } from '../../core/seccion.js';
 import { seccionMotor } from '../../core/geometria.js';
 import { bruta } from '../../core/propiedades.js';
 import { propiedadesHormigon, propiedadesAcero, opcionesHormigon, opcionesAcero } from '../../core/materiales.js';
+import { leerNumero } from '../../core/armado.js';
 import { psiExtremo, armaduraEnPlano } from '../../core/pandeo.js';
 import { calcularInestabilidad, contornoReducido, excentricidadMinima } from '../../norma/inestabilidad.js';
 import { NORMAS } from '../../norma/normas.js';
@@ -23,14 +24,16 @@ import { h, poner, campoNum, segmentado, grupo, aviso, cifras, pestanas, apilado
 import { grafica } from '../grafica.js';
 import { capasSeccion, encuadre, DEFS, topeEscala } from '../dibujoSeccion.js';
 import { veredicto } from './flexion.js';
-import { dibujoRotura, dibujoSeccionPeq, fiComun } from './flexRecta.js';
+import { dibujoRotura, dibujoSeccionPeq, fiComun, planoContorno } from './flexRecta.js';
+import { rejilla } from '../rejilla.js';
 
 const FORMAS = ['pilar', 'circular'];
 const TOL = 2e-5;
 const sub = (a, b) => `${a}<sub>${b}</sub>`;
 const ind = (a, b) => `${a}<tspan class="ind" dy="3">${b}</tspan>`;
 const sigla = (g) => (g === Infinity ? '∞' : fmt(g, 2));
-const est = { i: null, modo: 'comprobar', pagina: 'soporte', lado: 'res', abiertos: new Set() };
+const est = { i: null, modo: 'comprobar', pagina: 'soporte', lado: 'res', abiertos: new Set(), filas: [['800', '20', '40'], ['1500', '30', '60'], ['300', '10', '20'], ['2500', '50', '100']] };
+const nv = (x) => leerNumero(x);
 export function reiniciar() { est.i = null; }
 
 const VIGA = (L = 0.0) => ({ b: 0.3, h: 0.5, L });
@@ -63,31 +66,40 @@ function preparar(p, s, D) {
   const ar = armaduraEnPlano(barras, geo.h);
   const sec = seccionMotor(geo, mats.hormigonCalc, mats.acero);
   const psi = (ext) => psiExtremo(ext, { Ic: br.Ix, L: D.L, fp: D.fp, fv: D.fv });
-  const entrada = (k = 1) => ({
+  const entrada = (k = 1, o = {}) => ({
     norma: p.norma, L: D.L, traslacional: D.trasl, psiA: psi(D.A), psiB: psi(D.B), forma: s.forma,
     h: geo.h, A: br.A, I: br.Ix, As: ar.As * k, is: ar.is, dd: ar.dd,
     fck: mats.fichaH.fck, fcd: ph.fcd * 1000, fyd: pa.fyd * 1000, Es: pa.Es * 1000,
-    N: D.N, M1: D.MA, M2: D.MB, phiInf: D.phiInf, pPerm: D.perm, forzar: true,
+    N: o.N ?? D.N, M1: o.M1 ?? D.MA, M2: o.M2 ?? D.MB, phiInf: D.phiInf, pPerm: D.perm, forzar: true,
   });
   return { geo, mats, br, ar, sec, entrada, psiA: psi(D.A), psiB: psi(D.B), emin: excentricidadMinima(p.norma, geo.h) };
+}
+
+/** Casos de esfuerzos: el de los datos o, en Diagrama, las filas válidas de la tabla (N, M_A, M_B). */
+function casosDe(D) {
+  if (est.modo !== 'diagrama') return [{ N: D.N, MA: D.MA, MB: D.MB }];
+  const l = est.filas.map((f) => ({ N: nv(f[0]), MA: nv(f[1]), MB: nv(f[2]) })).filter((x) => Number.isFinite(x.N) && Number.isFinite(x.MA) && Number.isFinite(x.MB));
+  return l.length ? l : [{ N: D.N, MA: D.MA, MB: D.MB }];
 }
 
 let memo = { clave: '', c: null };
 /** Contornos y resultados del soporte (la armadura de Secciones, o en Dimensionar la escalada para γ ≥ 1). */
 function calculo(p, s, D) {
-  const clave = JSON.stringify([p.norma, s.geo, s.armado, s.hormigon, s.acero, sepCapas(p), D, est.modo, serieDiametros()]);
+  const casos = casosDe(D);
+  const clave = JSON.stringify([p.norma, s.geo, s.armado, s.hormigon, s.acero, sepCapas(p), D, est.modo, serieDiametros(), est.modo === 'diagrama' ? est.filas : 0]);
   if (memo.clave === clave) return memo.c;
   const c0 = preparar(p, s, D);
   const { sec, entrada } = c0;
   const As0 = sec.barras.reduce((a, b) => a + b.A, 0);
   const phi0 = fiComun(c0.geo);
   const Ac = c0.br.A;
-  const cm = cuantiaMinima({ norma: p.norma, tipo: 'pilar', h: 0, Ac, yg: 0, Ix: 0, fctm: 0, fyk: c0.mats.acero.fk, gammaS: c0.mats.acero.gamma, N: Math.max(0, D.N) });
+  const cm = cuantiaMinima({ norma: p.norma, tipo: 'pilar', h: 0, Ac, yg: 0, Ix: 0, fctm: 0, fyk: c0.mats.acero.fk, gammaS: c0.mats.acero.gamma, N: Math.max(0, ...casos.map((x) => x.N)) });
   const kMin = As0 > 0 ? cm.A / As0 : 0;
-  const gammaDe = (k) => {
-    const r = calcularInestabilidad(entrada(k));
-    if (!r.valido || !Number.isFinite(r.MEd)) return { r, g: NaN, d: null };
-    const d = diagramaNM(escalarArmadura(sec, k), { n: est.modo === 'dimensionar' ? 40 : 100, simetrica: true, tol: TOL });
+  const entradaCaso = (k, cs) => entrada(k, { N: cs.N, M1: cs.MA, M2: cs.MB });
+  const gammaDe = (k, cs = casos[0], dado = null) => {
+    const r = calcularInestabilidad(entradaCaso(k, cs));
+    if (!r.valido || !Number.isFinite(r.MEd)) return { r, g: NaN, d: dado };
+    const d = dado ?? diagramaNM(escalarArmadura(sec, k), { n: est.modo === 'dimensionar' ? 40 : 100, simetrica: true, tol: TOL });
     return { r, g: coeficienteNM(d, r.N, r.MEd), d };
   };
   let k = 1;
@@ -109,12 +121,24 @@ function calculo(p, s, D) {
   }
   const kk = Number.isFinite(k) ? k : 1;
   const g = gammaDe(kk);
+  // Todos los casos (en Diagrama, las filas de la tabla de esfuerzos) sobre el mismo contorno
+  const dBase = g.d ?? diagramaNM(escalarArmadura(sec, kk), { n: 100, simetrica: true, tol: TOL });
+  const res = casos.map((cs, i) => ({ i, ...cs, ...gammaDe(kk, cs, dBase) }));
   const secD = escalarArmadura(sec, kk);
   const dH = diagramaNM(soloHormigon(sec), { n: 100, simetrica: true, tol: TOL });
-  const reducido = g.r.valido && g.r.segundoOrden && g.d ? contornoReducido(entrada(kk), g.d.pos) : null;
-  const c = { ...c0, As0, phi0, Amin: cm.A, k, kEstricto, phiEstricto, phiProp, gamma: g.g, r: g.r, d: g.d, dH, secD, reducido, kk };
+  const reducido = g.r.valido && g.r.segundoOrden && dBase ? contornoReducido(entradaCaso(kk, casos[0]), dBase.pos) : null;
+  const c = { ...c0, As0, phi0, Amin: cm.A, k, kEstricto, phiEstricto, phiProp, gamma: g.g, r: g.r, d: dBase, dH, secD, reducido, kk, res };
   memo = { clave, c };
   return c;
+}
+
+/** γ de una fila de la tabla de esfuerzos (columna calculada de la rejilla). */
+function memoCoef(p, s, D, fila) {
+  try {
+    const c = calculo(p, s, D);
+    const r = calcularInestabilidad({ ...c.entrada(c.kk, { N: nv(fila[0]), M1: nv(fila[1]), M2: nv(fila[2]) }) });
+    return r.valido && Number.isFinite(r.MEd) ? sigla(coeficienteNM(c.d, r.N, r.MEd)) : '';
+  } catch { return ''; }
 }
 
 /* ------------------------------------------------------------ datos */
@@ -155,14 +179,17 @@ export function datos(ctx, form) {
   const set = (k) => (v) => { D[k] = v; cambio(); };
   poner(form, grupoSeccion(ctx, { formas: FORMAS, activa: s, alElegir: (nombre) => { const i = p.secciones.findIndex((x) => x.nombre === nombre); if (i >= 0) { est.i = i; ctx.pintar(); } } }));
   poner(form,
-    segmentado({ ancho: true, capsula: true, etiqueta: t('flex.modo'), opciones: [['comprobar', t('flex.v.comprobar')], ['dimensionar', t('flex.v.dimensionar')]], valor: est.modo, onCambio: (m) => { est.modo = m; ctx.pintar(); } }),
+    segmentado({ ancho: true, capsula: true, etiqueta: t('flex.modo'), opciones: [['comprobar', t('flex.v.comprobar')], ['dimensionar', t('flex.v.dimensionar')], ['diagrama', t('fcr.modoDiagrama')]], valor: est.modo, onCambio: (m) => { est.modo = m; ctx.pintar(); } }),
     pestanas({ lista: [['soporte', t('ine.pSoporte')], ['extremos', t('ine.pExtremos')]], activa: est.pagina, onCambio: (k) => { est.pagina = k; ctx.pintar(); } }));
   if (est.pagina === 'soporte') {
     poner(form,
       grupo(t('ine.gSoporte'),
         campoNum({ id: 'ine-l', etq: 'l', valor: D.L, mag: 'long', paso: 100, min: 0.1, max: 100, nombre: t('ine.LNombre'), ayuda: t('ine.LAyuda'), onCambio: set('L') }),
         segmentado({ ancho: true, etiqueta: t('ine.porticoEtq'), opciones: [[false, t('ine.intra')], [true, t('ine.trasl')]], valor: D.trasl, onCambio: (v) => { D.trasl = v; cambio(); ctx.pintar(); } })),
-      grupo(t('ine.gEsfuerzos'),
+      est.modo === 'diagrama' ? grupo(t('fcr.esfuerzos'), rejilla({ id: 'ine-esf', altoMax: 170,
+        columnas: [{ titulo: `${sub('N', 'Ed')} [kN]`, num: true }, { titulo: `${sub('M', 'A')} [kN·m]`, num: true }, { titulo: `${sub('M', 'B')} [kN·m]`, num: true }],
+        filas: est.filas, calculada: { titulo: 'γ', f: (dt, r) => { const c = memoCoef(p, s, D, dt[r]); return c; } },
+        onCambio: (f) => { est.filas = f.map((r) => [r[0], r[1], r[2]]); cambio(); } })) : grupo(t('ine.gEsfuerzos'),
         campoNum({ id: 'ine-n', etq: sub('N', 'Ed'), ref: t('fcr.compPos'), valor: D.N, mag: 'N', paso: 10, min: -1e6, max: 1e6, nombre: t('ine.nombreN'), onCambio: set('N') }),
         campoNum({ id: 'ine-ma', etq: t('ine.MA'), ref: t('ine.refM'), valor: D.MA, mag: 'M', paso: 5, min: -1e6, max: 1e6, nombre: t('ine.nombreM'), ayuda: t('ine.MAyuda'), onCambio: set('MA') }),
         campoNum({ id: 'ine-mb', etq: t('ine.MB'), valor: D.MB, mag: 'M', paso: 5, min: -1e6, max: 1e6, nombre: t('ine.nombreM'), ayuda: t('ine.MAyuda'), onCambio: set('MB') })),
@@ -205,6 +232,12 @@ function resultadosInestabilidad(ctx, res) {
     const As = c.As0 * c.k;
     if (c.phiProp) res.append(veredicto('cumple', t('valida'), t('fcr.fiProp'), `ø${fmt(c.phiProp, 0)}<span class="u"> mm</span>`, t('fcr.fiArm', c.phiEstricto > 0 ? fmt(c.phiEstricto, 1) : '—', q(As, 'As'), q(c.As0 * c.kEstricto, 'As'), '1,00')));
     else res.append(veredicto('cumple', t('valida'), t('armaduraNec'), qh(As, 'As'), t('fcr.kArm', fmt(c.k, 2), q(c.As0, 'As'), '1,00')));
+  } else if (est.modo === 'diagrama') {
+    const validos = c.res.filter((x) => Number.isFinite(x.g));
+    const gmin = validos.length ? Math.min(...validos.map((x) => x.g)) : NaN;
+    const ok = validos.length > 0 && gmin >= 1 - 1e-6;
+    res.append(veredicto(ok ? 'cumple' : 'nocumple', ok ? t('ine.cumple') : t('ine.noCumple'), 'γ = |OQ|/|OP|', Number.isFinite(gmin) ? sigla(gmin) : '—',
+      `${t('fcr.puntos')} <b>${validos.filter((x) => x.g >= 1 - 1e-6).length}</b> / ${c.res.length} ${t('fcr.dentro')}`, Math.min(1 / Math.max(gmin, 1e-9) / 1.25, 1)));
   } else {
     const ok = c.gamma >= 1 - 1e-6;
     res.append(veredicto(ok ? 'cumple' : 'nocumple', ok ? t('ine.cumple') : t('ine.noCumple'), 'γ = |OQ|/|OP|', sigla(c.gamma),
@@ -219,12 +252,23 @@ function resultadosInestabilidad(ctx, res) {
   // Gráfico N-M con el segundo orden como reducción del contorno
   const grafico = h('article', { class: 'panel tarjeta' }, h('h2', {}, `${t('ine.diagrama')} · ${s.nombre}${c.phi0 ? ` · ø${fmt(c.phiProp ?? c.phi0, 0)}` : ''}`),
     h('div', { class: 'fcr-graf' }, graficoNM(ctx, c, s), notaDiagrama(c)));
-  const lado = h('article', { class: 'panel tarjeta fcr-lado' },
+  const diag = est.modo === 'diagrama';
+  const lado = diag ? h('article', { class: 'panel tarjeta fcr-lado' }, h('div', { class: 'fcr-sec', html: dibujoSeccionPeq(c.geo, s) }), tablaResultados(c, p))
+    : h('article', { class: 'panel tarjeta fcr-lado' },
     pestanas({ lista: [['res', t('ine.pRes')], ['sop', t('ine.pSoporteDib')], ['rot', t('ine.pRotura')]], activa: est.lado, onCambio: (k) => { est.lado = k; ctx.cambio(); } }),
     est.lado === 'sop' ? h('div', { class: 'lienzo', html: dibujoSoporte(D, c, s, p) })
       : est.lado === 'rot' ? rotura(c, s)
         : [cifras(cifrasDe(c, D, p, dim)), h('p', { class: 'sub', style: 'margin:0' }, t('t.desplegar')), traza(p, c, D)]);
   res.append(h('div', { class: 'cuerpo dib-ancho fcr-diagrama' }, grafico, lado));
+}
+
+/** Tabla de resultados del Diagrama: una fila por caso de esfuerzos; en rojo los que quedan fuera del contorno. */
+function tablaResultados(c, p) {
+  const ehe = p.norma === 'EHE-08';
+  const cab = ['#', 'N<sub>Ed</sub> [kN]', 'M<sub>0</sub> [kN·m]', ehe ? 'ΔM [kN·m]' : 'ΔM [kN·m]', 'M<sub>Ed</sub> [kN·m]', 'γ'];
+  const f = (x, d = 0) => (Number.isFinite(x) ? fmt(x, d) : '—');
+  const filas = c.res.map((x) => [String(x.i + 1), f(x.N, MAG.N.d), f(x.r.M0eq, MAG.M.d), f(x.r.valido ? x.r.MEd - x.r.M0eq : NaN, MAG.M.d), f(x.r.MEd, MAG.M.d), Number.isFinite(x.g) ? sigla(x.g) : '—']);
+  return h('div', { class: 'fcr-tabla' }, h('table', { class: 'tabla', html: `<thead><tr>${cab.map((x) => `<th>${x}</th>`).join('')}</tr></thead><tbody>${filas.map((r, i) => `<tr${Number.isFinite(c.res[i].g) && c.res[i].g >= 1 - 1e-6 ? '' : ' class="fuera"'}>${r.map((x) => `<td>${x}</td>`).join('')}</tr>`).join('')}</tbody>` }));
 }
 
 function rotura(c, s) {
@@ -266,7 +310,7 @@ function notaDiagrama(c) {
   const r = c.r;
   if (!d) return h('p', { class: 'nota-diag', html: '' });
   return h('p', { class: 'nota-diag', html: [`${sub('N', 'Rd')} <b>${q(d.Ncomp, 'N')}</b>`, `${sub('N', 'Rd,t')} <b>${q(d.Ntrac, 'N')}</b>`,
-    `${sub('e', 'mín')} <b>${fmt(c.emin * 1000, 0)}</b> mm`, r.valido && r.segundoOrden ? `ΔM <b>${q(r.MEd - r.M0eq, 'M')}</b>` : t('ine.nota.sin')].join(' · ') });
+    `${sub('e', 'mín')} <b>${fmt(c.emin * 1000, 0)}</b> mm`, r.valido && r.segundoOrden ? `${est.modo === 'diagrama' ? t('ine.reducidoFila1') : `ΔM <b>${q(r.MEd - r.M0eq, 'M')}</b>`}` : t('ine.nota.sin')].join(' · ') });
 }
 
 function graficoNM(ctx, c, s) {
@@ -281,16 +325,21 @@ function graficoNM(ctx, c, s) {
   series.push({ nombre: t('fcr.hormigon'), clase: 'ref', cruz: false, xy: xy(c.dH.pos) });
   series.push({ nombre: `e mín = ${fmt(c.emin * 1000, 0)} mm`, clase: 'ref', cruz: false, xy: [[0, 0], [d.Ncomp, d.Ncomp * c.emin]] });
   const puntos = [];
-  if (r.valido && Number.isFinite(r.MEd)) {
+  if (est.modo === 'diagrama') {
+    for (const x of c.res) {
+      if (!x.r.valido || !Number.isFinite(x.r.MEd)) continue;
+      puntos.push({ x: x.N, y: x.r.MEd, etq: String(x.i + 1), marca: x.g >= 1 - 1e-6 ? 'ok' : 'no' });
+    }
+  } else if (r.valido && Number.isFinite(r.MEd)) {
     puntos.push({ x: r.N, y: r.M0eq, etq: ind('M', '0'), marca: 'neutro' });
     if (r.segundoOrden) puntos.push({ x: r.N, y: r.MEd, etq: ind('M', 'Ed'), marca: c.gamma >= 1 - 1e-6 ? 'ok' : 'no' });
     else puntos[0].marca = c.gamma >= 1 - 1e-6 ? 'ok' : 'no';
   }
   return h('div', { class: 'lienzo' }, grafica({
-    series, puntos, detalle: null,
+    series, puntos, detalle: c.d ? planoContorno(c.d.pos) : null,
     ejeX: { titulo: `N [${MAG.N.ud}], ${t('fcr.compPos')}`, d: MAG.N.d, dt: MAG.N.d },
     ejeY: { titulo: `M [${MAG.M.ud}]`, d: MAG.M.d, dt: MAG.M.d },
-    archivo: `Inestabilidad ${s.nombre}`, avisar: ctx.avisar, sinTabla: true,
+    archivo: `Inestabilidad ${s.nombre}`, avisar: ctx.avisar,
   }));
 }
 

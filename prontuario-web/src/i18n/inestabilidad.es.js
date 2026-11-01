@@ -61,6 +61,7 @@ export default {
   'ine.f.curv': '1/r = K<sub>r</sub>·K<sub>φ</sub>·1/r₀;  e₂ = (1/r)·l₀²/c;  M₂ = N<sub>Ed</sub>·e₂',
   'ine.f.med': 'M<sub>Ed</sub> = M₀ + M₂ (≥ M₀₂ y ≥ N<sub>Ed</sub>·e<sub>mín</sub>)',
   'ine.f.medEHE': 'M<sub>Ed</sub> = N<sub>Ed</sub>·(e<sub>e</sub> + e<sub>a</sub>)',
+  'ine.reducidoFila1': 'contorno reducido con los momentos de la fila 1',
   'ine.dibAria': 'Alzado del soporte con sus extremos y su longitud de pandeo',
   'ine.dib.l': 'l', 'ine.dib.l0': 'l₀',
 };
