@@ -45,3 +45,8 @@ Código: `src/core/estadoTensional.js` (motor), tests en `tests/estadoTensional.
 - **Regla**: nunca se sustituye en silencio la ley de un material. El acero lineal elástico sin plastificación era una sustitución mía y se retira.
 - El acero usa la ley bilineal de su material, con **γS como dato editable** (por defecto el del material; 1,00 da la meseta en f_yk, como γC y αcc en el hormigón). La rigidez elástica no cambia con γS.
 - Avisos pardos: «La armadura ha llegado a la meseta de su ley (plastifica)» y «supera la deformación última de su ley (la tensión es nula)»: el estado no es de servicio.
+
+## Tensiones del hormigón, x a la izquierda y regleta de N rosa (4/11/2026, Pepiño)
+- A la derecha del plano de deformaciones se dibuja el **diagrama de tensiones del hormigón** («Tensiones»), con la ley en uso (sin fisurar: con su rama de tracción; fisurada: sin ella), σc máxima arriba y σ de tracción abajo si la hay, en MPa con un decimal.
+- La **x se acota a la izquierda** del plano; se quita el rótulo «fibra neutra» (la línea discontinua se queda).
+- La **regleta de N se pone rosa** (clase `trac`, la misma de Flexión esviada) cuando N < 0 (tracción).

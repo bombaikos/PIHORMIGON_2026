@@ -6,7 +6,7 @@
 // My > 0 comprime la cara derecha. Decisiones: analisis/estado-tensional-decisiones.md.
 
 import { modeloTensional, estadoTensional } from '../../core/estadoTensional.js';
-import { propiedadesHormigon, opcionesHormigon } from '../../core/materiales.js';
+import { propiedadesHormigon, opcionesHormigon, sigma } from '../../core/materiales.js';
 import { geometriaDe, materialesSeccion } from '../../io/proyecto.js';
 import { t } from '../i18n.js';
 import { fmt, qh, MAG, decimalAlCopiar } from '../formato.js';
@@ -179,7 +179,7 @@ function recorta(pts, f) {
   return out;
 }
 
-const W = 800;
+const W = 900;
 const H = 500;
 const pts2 = (a) => a.map((q) => `${q[0].toFixed(1)},${q[1].toFixed(1)}`).join(' ');
 const svgSub = (b, s) => `${b}<tspan baseline-shift="sub" font-size="75%">${s}</tspan>`;
@@ -194,7 +194,7 @@ function dibujo(c, r) {
   const yc = mod.yc;
   const diag = Math.hypot(c.bx, c.hy);
   const S = Math.min((H - 130) / diag, SECCION_MAX / Math.max(c.bx, c.hy)); // px por m; no cambia al girar; lado mayor ≤ 300 px (guía § 8)
-  const cx = W * 0.36;
+  const cx = W * 0.30;
   const cy = H / 2 + 14;
   const T = (p) => { const dx = p[0] - xc; const dy = p[1] - yc; return [cx + S * (dx * v[0] + dy * v[1]), cy - S * (dx * u[0] + dy * u[1])]; };
   const prof = (p) => (p[0] - xc) * u[0] + (p[1] - yc) * u[1]; // u·(p − c): crece hacia la fibra más comprimida
@@ -219,14 +219,16 @@ function dibujo(c, r) {
   // Escala del plano: lo traccionado va a la izquierda de la línea base y lo comprimido a la derecha; las etiquetas
   // (ε a la derecha, «fibra neutra» a 200 px de la base) tienen que caber en el dibujo, así que la escala se limita
   const base0 = cx + S * lmax + 50;
+  const SIG_W = 80; // anchura máxima del diagrama de tensiones del hormigón [px]
   const comp = Math.max(0, r.eSup, r.eInf);
-  const escE = Math.min((W * 0.27) / Math.max(Math.abs(r.eSup), Math.abs(r.eInf), 5e-4),
-    (W - base0 - 130) / Math.max(tr + comp, 1e-9),
-    (W - base0 - 205) / Math.max(tr, 1e-9));
+  // A la derecha del plano va el diagrama de tensiones del hormigón: etiqueta de ε (120), diagrama (80) y su etiqueta (115)
+  const escE = Math.min((W * 0.2) / Math.max(Math.abs(r.eSup), Math.abs(r.eInf), 5e-4),
+    (W - 8 - SIG_W - 115 - 120 - base0) / Math.max(tr + comp, 1e-9));
   const x0 = base0 + tr * escE;
+  const x1 = x0 + comp * escE + 120; // línea base de las tensiones
   const aT = [x0 + r.eSup * escE, yTop];
   const aB = [x0 + r.eInf * escE, yBot];
-  out.push(`<text class="tit" x="${x0}" y="${yTop - 22}" text-anchor="middle">${t('est.planoDef')}</text>`);
+  out.push(`<text class="tit" x="${x1 - 20}" y="${yTop - 22}" text-anchor="end">${t('est.planoDef')}</text>`);
   out.push(`<line class="eje" x1="${x0}" y1="${yTop}" x2="${x0}" y2="${yBot}"/>`);
   // Parte comprimida (ε > 0) y parte traccionada (ε < 0) del plano, con su estilo
   const yCero = r.eSup === r.eInf ? yTop : yTop + ((yBot - yTop) * r.eSup) / (r.eSup - r.eInf);
@@ -235,16 +237,33 @@ function dibujo(c, r) {
   } else out.push(`<polygon class="${r.eSup >= 0 && r.eInf >= 0 ? 'eps-c' : 'eps-t'}" points="${pts2([[x0, yTop], aT, aB, [x0, yBot]])}"/>`);
   const etq = (q, nombre, e, arriba) => `<text x="${q[0] + (e >= 0 ? 6 : -6)}" y="${q[1] + (arriba ? 4 : 4)}" text-anchor="${e >= 0 ? 'start' : 'end'}">${svgSub('ε', nombre)} ${fmt(e * 1000, 2)} ‰</text>`;
   out.push(etq(aT, 'sup', r.eSup, true), etq(aB, 'inf', r.eInf, false));
-  // Fibra neutra y x
+  // Diagrama de tensiones del hormigón (con la ley en uso: sin fisurar, con su rama de tracción; fisurada, sin ella)
+  const ley = r.fisurada ? mod.ley.fisurada : mod.ley.integra;
+  const sH = (e) => -sigma(ley, -e) / 1000; // MPa, compresión +
+  const NS = 48;
+  const mu = Array.from({ length: NS + 1 }, (_, i) => { const tt = i / NS; const e = r.eSup + (r.eInf - r.eSup) * tt; return { y: yTop + (yBot - yTop) * tt, s: sH(e) }; });
+  const sTop = mu[0].s;
+  const sBot = mu[NS].s;
+  const sEsc = SIG_W / Math.max(Math.abs(sTop), Math.abs(sBot), 1e-6);
+  out.push(`<text class="tit" x="${x1 - 8}" y="${yTop - 22}">${t('est.tensiones')}</text>`);
+  out.push(`<line class="eje" x1="${x1}" y1="${yTop}" x2="${x1}" y2="${yBot}"/>`);
+  const cP = mu.filter((q) => q.s > 1e-9);
+  const tP = mu.filter((q) => q.s < -1e-9);
+  const yCeroS = cP.length && tP.length ? (cP[cP.length - 1].y + tP[0].y) / 2 : null;
+  if (cP.length) out.push(`<polygon class="eps-c" points="${pts2([[x1, cP[0].y], ...cP.map((q) => [x1 + q.s * sEsc, q.y]), [x1, yCeroS ?? cP[cP.length - 1].y]])}"/>`);
+  if (tP.length) out.push(`<polygon class="eps-t" points="${pts2([[x1, yCeroS ?? tP[0].y], ...tP.map((q) => [x1 + q.s * sEsc, q.y]), [x1, tP[tP.length - 1].y]])}"/>`);
+  if (sTop > 1e-9) out.push(`<text x="${(x1 + sTop * sEsc + 6).toFixed(1)}" y="${yTop + 4}">${svgSub('σ', 'c')} ${fmt(sTop, MAG.tension.d)} MPa</text>`);
+  if (sBot < -1e-9) out.push(`<text x="${(x1 + 6).toFixed(1)}" y="${yBot + 4}">${svgSub('σ', 'ct')} ${fmt(sBot, MAG.tension.d)} MPa</text>`);
+  // Fibra neutra (sin rótulo) y x, acotada a la izquierda del plano
   if (r.beta !== null && Number.isFinite(r.x) && r.x !== 0) {
     const yN = yTop + S * r.x;
     if (yN > yTop - 30 && yN < yBot + 30) {
-      out.push(`<line class="en" x1="${cx - S * diag / 2 - 10}" y1="${yN}" x2="${x0 + 108}" y2="${yN}"/>`);
-      out.push(`<text x="${x0 + 112}" y="${yN + 4}">${t('est.fibraNeutra')}</text>`);
-      out.push(`<line class="cota" x1="${x0 + 40}" y1="${yTop}" x2="${x0 + 40}" y2="${yN}" marker-start="url(#tic)" marker-end="url(#tic)"/><text class="fuerte" x="${x0 + 46}" y="${(yTop + yN) / 2}">x = ${fmt(r.x * 1000, 0)} mm</text>`);
+      out.push(`<line class="en" x1="${cx - S * diag / 2 - 10}" y1="${yN}" x2="${x1 + SIG_W}" y2="${yN}"/>`);
+      const xc2 = x0 - 26;
+      out.push(`<line class="cota" x1="${xc2}" y1="${yTop}" x2="${xc2}" y2="${yN}" marker-start="url(#tic)" marker-end="url(#tic)"/><text class="fuerte" text-anchor="end" style="paint-order:stroke;stroke:var(--hoja);stroke-width:4px" x="${xc2 - 6}" y="${(yTop + yN) / 2 + 4}">x = ${fmt(r.x * 1000, 0)} mm</text>`);
     }
   } else if (r.beta === null || !Number.isFinite(r.x)) {
-    out.push(`<text class="fuerte" x="${x0 + 40}" y="${(yTop + yBot) / 2}">x = ∞</text>`);
+    out.push(`<text class="fuerte" x="${x0 - 30}" y="${(yTop + yBot) / 2}" text-anchor="end">x = ∞</text>`);
   }
   // Armadura con su tensión (con más de 10 puntos, solo se escriben los extremos de cada signo)
   const ver = visibles(filasArmadura(r));
@@ -409,8 +428,9 @@ export function resultados(ctx, res) {
   };
   const sincro = (id, mag, v) => { const el = document.getElementById(`et-${id}`); if (el) el.value = mag === 'ang1' ? String(+v.toFixed(1)) : String(+(v * MAG[mag].f).toFixed(MAG[mag].d ?? 0)); };
   const reg = (id, etq, k, mag, min, max, step, texto, aVar = (v) => v, deVar = (v) => v) => regleta({
+    clase: k === 'N' && est.N < 0 ? 'trac' : '',
     etq, min, max, step, valor: deVar(est[k]), reinicio: 0, etiqueta: etq.replace(/<[^>]+>/g, ''), texto,
-    onInput: (v) => { est[k] = aVar(v); sincro(id, mag, est[k]); refresca(); },
+    onInput: (v) => { est[k] = aVar(v); sincro(id, mag, est[k]); if (k === 'N') document.querySelector('.et-reglas .regleta')?.classList.toggle('trac', est.N < 0); refresca(); },
     onChange: (v) => { est[k] = aVar(v); ctx.cambio(); },
   });
   const unidad = (mag, d = MAG[mag].d) => (v) => `${fmt(v, d)} ${MAG[mag].ud}`;

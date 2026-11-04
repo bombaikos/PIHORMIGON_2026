@@ -11,6 +11,7 @@ export default {
   'est.nombreESup': 'Deformación de la fibra más comprimida', 'est.nombreBeta': 'Ángulo de la fibra neutra', 'est.nombreX': 'Profundidad de la fibra neutra',
   'est.infoSup': 'ε_sup es la deformación de la fibra más comprimida, β el ángulo (antihorario desde +x) de la fibra neutra (β = 0: neutra horizontal, comprime la cara superior) y x la profundidad de la fibra neutra medida desde ella. x = ∞ es compresión uniforme. Si toda la sección está en tracción, x sale negativa y ε_sup también.',
   'est.refX': '≥ 100 000 mm: compresión uniforme',
+  'est.tensiones': 'TENSIONES',
   'est.gHormigon': 'Hormigón en servicio', 'est.gAcero': 'Acero en servicio',
   'est.gammaS': 'γ<sub>S</sub> [—]',
   'est.infoGammaS': 'Acero: se usa la ley de su material (bilineal), con su γS. Con γS = 1,00 la meseta es f_yk; con el de cálculo, f_yk/γS. Se parte del γS del material de la sección.',

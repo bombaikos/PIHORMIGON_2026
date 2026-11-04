@@ -10,6 +10,7 @@ export default {
   'est.nombreESup': 'Strain of the most compressed fibre', 'est.nombreBeta': 'Neutral axis angle', 'est.nombreX': 'Neutral axis depth',
   'est.infoSup': 'ε_sup is the strain of the most compressed fibre, β the angle (counter-clockwise from +x) of the neutral axis (β = 0: horizontal neutral axis, top face compressed) and x the neutral axis depth measured from it. x = ∞ is uniform compression. If the whole section is in tension, x and ε_sup are negative.',
   'est.refX': '≥ 100 000 mm: uniform compression',
+  'est.tensiones': 'STRESSES',
   'est.gHormigon': 'Concrete in service', 'est.gAcero': 'Steel in service',
   'est.gammaS': 'γ<sub>S</sub> [—]',
   'est.infoGammaS': 'Steel: the law of its material (bilinear) is used, with its γS. With γS = 1.00 the plateau is f_yk; with the design value, f_yk/γS. It starts from the γS of the section material.',
