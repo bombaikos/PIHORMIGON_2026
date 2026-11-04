@@ -123,7 +123,7 @@ export function datos(ctx, form) {
 
   // Ángulo de las bielas: campo en grados y deslizador (el cotg θ queda dentro del cálculo)
   const refrescarGauge = () => { gauge.querySelector('input').value = thetaDe(est.cot); gauge.refrescar(); };
-  const gauge = regleta({ etq: t('cor.theta'), min: LT.min, max: LT.max, step: 0.1, valor: thetaDe(est.cot), texto: (v) => `${fmt(v, 1)}°`,
+  const gauge = regleta({ etq: t('cor.theta'), min: LT.min, max: LT.max, step: 0.1, valor: thetaDe(est.cot), texto: (v) => `${fmt(v, 1)}°`, clase: 'rg-cor',
     onInput: (v) => {
       est.cot = 1 / Math.tan(v * RAD);
     const c = document.getElementById('c-theta');
