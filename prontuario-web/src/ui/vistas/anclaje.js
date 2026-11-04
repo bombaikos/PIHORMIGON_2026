@@ -11,7 +11,7 @@ import { dibujoAnclaje } from '../dibujoAnclaje.js';
 
 const sub = (a, b) => `${a}<sub>${b}</sub>`;
 
-const INICIAL = () => ({ hormigon: null, acero: null, esfuerzo: 'traccion', r: 100, cd: 25, pct: 100, lejos: false, via: 'viga' });
+const INICIAL = () => ({ hormigon: null, acero: null, esfuerzo: 'traccion', r: 100, pct: 100, lejos: false, via: 'viga' });
 
 function estado(p) {
   p.calculos.anclaje ??= INICIAL();
@@ -54,9 +54,7 @@ export function datos(ctx, form) {
       selector({ id: 'an-ace', etq: t('an.acero'), opciones: p.aceros.map((m) => [m.nombre, m.nombre]), valor: D.acero, onCambio: (v) => { D.acero = v; cambio(true); } }))),
     grupo(t('an.armado'),
       seg('esfuerzo', [['traccion', t('an.traccion')], ['compresion', t('an.compresion')]], t('an.esfuerzo'), true),
-      par(
-        campoNum({ id: 'an-r', etq: t('an.r'), valor: D.r, mag: 'pct', paso: 5, min: 1, max: 100, ayuda: t('an.rAyuda'), onCambio: set('r') }),
-        campoNum({ id: 'an-cd', etq: t('an.cd'), valor: D.cd, mag: 'diam', paso: 5, min: 0, max: 200, ayuda: t('an.cdAyuda'), onCambio: set('cd') })),
+      campoNum({ id: 'an-r', etq: t('an.r'), valor: D.r, mag: 'pct', paso: 5, min: 1, max: 100, ayuda: t('an.rAyuda'), onCambio: set('r') }),
       seg('via', [['viga', t('an.viaViga')], ['corrugas', t('an.viaCorr')]], t('an.via'), true, noEHE)),
     grupo(t('an.solapo'),
       inactivo(campoNum({ id: 'an-pct', etq: t('an.pct'), valor: D.pct, mag: 'pct', paso: 5, min: 1, max: 100, ayuda: t('an.pctAyuda'), onCambio: set('pct') }), noPct),
@@ -66,11 +64,13 @@ export function datos(ctx, form) {
 /** Entrada común del núcleo para un diámetro y una posición. */
 function base(p, D, fck, fyk) {
   return {
-    norma: idNorma(p), via: D.via, fck, fyk, esfuerzo: D.esfuerzo, r: D.r / 100, cd: D.cd > 0 ? D.cd : null,
+    norma: idNorma(p), via: D.via, fck, fyk, esfuerzo: D.esfuerzo, r: D.r / 100,
     pct: D.pct, lejos: !!D.lejos,
   };
 }
 
+/** Recubrimiento de cálculo cd que se usa en todas las filas: máx(25 mm; ø) (mínimo por adherencia ø, EC-2 4.4.1.2(3) Tabla 4.2; EHE-08 37.2.4.1). */
+const cdDe = (phi) => Math.max(25, phi);
 const sobre5 = (x) => Math.ceil(x / 5 - 1e-9) * 5;
 
 /** Todas las casillas de la tabla (y del contraste con el CE). */
@@ -83,12 +83,12 @@ function calcular(p, D) {
   const ehe = b.norma === 'EHE-08';
   const filas = serieDiametros().map((phi) => {
     const celda = (adh, forma) => {
-      const a = anclaje({ ...b, phi, adherencia: adh, forma, recPerp: b.cd });
+      const a = anclaje({ ...b, phi, cd: cdDe(phi), adherencia: adh, forma, recPerp: cdDe(phi) });
       return { v: sobre5(a.lbd), min: a.lbd <= a.lbMin + 1e-6 };
     };
     const sol = (adh) => {
       if (ehe && phi > 32) return { v: null, est: true };
-      const s = solape({ ...b, phi, adherencia: adh });
+      const s = solape({ ...b, phi, cd: cdDe(phi), adherencia: adh });
       return { v: sobre5(s.ls), min: s.lsMin != null ? s.ls <= s.lsMin + 1e-6 : false, g: !ehe && phi > 32 };
     };
     return {
@@ -104,8 +104,8 @@ function calcular(p, D) {
     const bc = { ...b, norma: 'EHE-08', via: 'viga', lejos: false };
     ce = serieDiametros().map((phi, i) => {
       const f = filas[i];
-      const l = (adh) => sobre5(anclaje({ ...bc, phi, adherencia: adh, forma: 'recta' }).lbd);
-      const s = (adh) => (phi > 32 ? null : sobre5(solape({ ...bc, phi, adherencia: adh }).ls));
+      const l = (adh) => sobre5(anclaje({ ...bc, phi, cd: cdDe(phi), adherencia: adh, forma: 'recta' }).lbd);
+      const s = (adh) => (phi > 32 ? null : sobre5(solape({ ...bc, phi, cd: cdDe(phi), adherencia: adh }).ls));
       const x = { phi, lI: l('buena'), lII: l('deficiente'), sI: s('buena'), sII: s('deficiente') };
       x.maI = x.lI > f.I[0].v; x.maII = x.lII > f.II[0].v;
       x.msI = x.sI != null && f.sI.v != null && x.sI > f.sI.v; x.msII = x.sII != null && f.sII.v != null && x.sII > f.sII.v;
@@ -149,6 +149,7 @@ export function resultados(ctx, res) {
   const nA = comp ? 1 : 2; // columnas de anclaje por posición
   const th = (html, o = {}) => h('th', { ...o, html });
   const fila1 = h('tr', {}, th(`${t('an.col.d')}${ESP}<span class="u u-cab">[mm]</span>`, { rowspan: comp ? '2' : '3' }),
+    th(`c<sub>d</sub>${ESP}<span class="u u-cab">[mm]</span>`, { rowspan: comp ? '2' : '3' }),
     th(t('an.col.anclaje', esf.toLowerCase()), { colspan: String(2 * nA), class: 'niv' }), g2(th(t('an.col.solapo', esf.toLowerCase()), { colspan: '2', class: 'niv' })));
   const fila2 = h('tr', {},
     th(posC('I'), comp ? { rowspan: '2' } : { colspan: '2' }), g2(th(posC('II'), comp ? { rowspan: '2' } : { colspan: '2' })),
@@ -157,14 +158,14 @@ export function resultados(ctx, res) {
   const cab = h('thead', {}, fila1, fila2, fila3);
   const cuerpo = h('tbody', {}, ...r.filas.map((f) => {
     const cel = comp ? [f.I[0], f.II[0], f.sI, f.sII] : [f.I[0], f.I[1], f.II[0], f.II[1], f.sI, f.sII];
-    const tr = h('tr', {}, h('th', { scope: 'row' }, String(f.phi)), ...cel.map((c) => h('td', {}, num(c))));
-    (comp ? [2, 3] : [3, 5]).forEach((i) => tr.cells[i].classList.add('g2'));
+    const tr = h('tr', {}, h('th', { scope: 'row' }, String(f.phi)), h('td', { class: 'an-cd' }, String(cdDe(f.phi))), ...cel.map((c) => h('td', {}, num(c))));
+    (comp ? [3, 4] : [4, 6]).forEach((i) => tr.cells[i].classList.add('g2'));
     return tr;
   }));
   const txt = (x) => x.replace(/<[^>]+>/g, '');
   const extraA = ehe ? (D.lejos ? t('an.aLejos') : t('an.aCerca')) : '';
-  const ficha = t('an.ficha', r.hor.nombre, r.ace.nombre, esf.toLowerCase(), fmt(D.r, 0), D.cd > 0 ? t('an.cdVal', fmt(D.cd, 0)) : t('an.cdSin'), fmt(D.pct, 0), extraA);
-  const hdr = [`${t('an.col.d')} [mm]`, ...(() => {
+  const ficha = t('an.ficha', r.hor.nombre, r.ace.nombre, esf.toLowerCase(), fmt(D.r, 0), t('an.cdFicha'), fmt(D.pct, 0), extraA);
+  const hdr = [`${t('an.col.d')} [mm]`, 'c_d [mm]', ...(() => {
     const an = txt(t('an.col.anclaje', esf.toLowerCase())), so = txt(t('an.col.solapo', esf.toLowerCase()));
     const pI = t('an.col.I'), pII = t('an.col.II');
     return comp ? [`${an} · ${pI}`, `${an} · ${pII}`, `${so} · ${pI}`, `${so} · ${pII}`]
@@ -194,7 +195,7 @@ export function resultados(ctx, res) {
   const pos = n === 'EHE-08' ? 'an.pos.ehe' : n === 'EC2-2004' ? 'an.pos.ec2' : 'an.pos.ec23';
   const mn = n === 'EHE-08' ? 'an.min.ehe' : n === 'EC2-2004' ? 'an.min.ec2' : 'an.min.ec23';
   const tv = n === 'EHE-08' ? 'an.transv.ehe' : n === 'EC2-2004' ? 'an.transv.ec2' : 'an.transv.ec23';
-  const claves = [['an.n.pos', pos], ['an.n.min', mn], ['an.n.transv', tv], ['an.n.falta', 'an.falta']];
+  const claves = [['an.n.pos', pos], ['an.n.min', mn], ['an.n.transv', tv], ['an.n.cd', 'an.cdTxt'], ['an.n.falta', 'an.falta']];
   const tbNotas = tabla(claves.map(([k]) => [t(k)]));
   filasPlegables(tbNotas, claves.map(([, v]) => `<span>${t(v)}</span>`));
   poner(dcha, h('div', { class: 'an-dib', html: dibujoAnclaje({ esfuerzo: D.esfuerzo }) }), h('h3', {}, t('an.notas')), tbNotas);

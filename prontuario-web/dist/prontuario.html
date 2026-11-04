@@ -1207,6 +1207,7 @@ tr.et-act td { font-weight: 650; }
 .tabla-an th.niv { border-bottom: 1px solid var(--linea-fuerte); }
 .tabla-an .g2 { border-left: 1px solid var(--linea-fuerte); }
 .tabla-an thead th b { white-space: nowrap; }
+.tabla-an td.an-cd { color: var(--tinta-3); }
 </style>
 
 <header class="barra">
@@ -4500,8 +4501,6 @@ tr.et-act td { font-weight: 650; }
     "an.armado": "Armado y recubrimiento",
     "an.r": `${sub3("A", "s,nec")} / ${sub3("A", "s,disp")}`,
     "an.rAyuda": "Armadura necesaria por c\xE1lculo entre la dispuesta en la secci\xF3n de la que se ancla (100 % si est\xE1 agotada)",
-    "an.cd": "Recubrimiento c<sub>d</sub>",
-    "an.cdAyuda": "Recubrimiento de c\xE1lculo (EC-2: menor de a/2, recubrimiento lateral e inferior). 0 = no se reduce la longitud",
     "an.via": "Adherencia certificada por",
     "an.viaViga": "Ensayo de la viga",
     "an.viaCorr": "Geometr\xEDa de corrugas",
@@ -4526,8 +4525,7 @@ tr.et-act td { font-weight: 650; }
     "an.desfavorable": "desfavorable",
     "an.leyenda": "patilla = patilla, gancho o U \xB7 * manda el m\xEDnimo normativo \xB7 est. = solo con estudio especial \xB7 \u2020 \xF8 > 32 mm: reglas adicionales (EC-2 8.8)",
     "an.ficha": (h2, a, e2, r, cd, pct, extra) => `${h2} \xB7 ${a} \xB7 ${e2} \xB7 A<sub>s,nec</sub>/A<sub>s,disp</sub> = ${r} % \xB7 ${cd} \xB7 ${pct} % de barras solapadas${extra}`,
-    "an.cdSin": "sin reducci\xF3n por c<sub>d</sub>",
-    "an.cdVal": (v2) => `c<sub>d</sub> = ${v2} mm`,
+    "an.cdFicha": "c<sub>d</sub> = m\xE1x(25 mm; \xF8)",
     "an.aCerca": " \xB7 a \u2264 10 \xF8",
     "an.aLejos": " \xB7 a > 10 \xF8",
     "an.fichaTit": "Ficha para planos",
@@ -4563,6 +4561,8 @@ tr.et-act td { font-weight: 650; }
     "an.no.dist": "No se aplica en esta norma: en EC-2 la separaci\xF3n entra por c<sub>d</sub>.",
     "an.no.pct23": "No se aplica en esta norma: l<sub>s</sub> = 1,2\xB7l<sub>b</sub> (11.5.2).",
     "an.no.comp": "No se aplica en compresi\xF3n (\u03B1 = 1).",
+    "an.n.cd": "Recubrimiento c<sub>d</sub>",
+    "an.cdTxt": "En todas las filas c<sub>d</sub> = m\xE1x(25 mm; \xF8) (columna c<sub>d</sub>): el m\xEDnimo por adherencia es \xF8 (EC-2 4.4.1.2(3), Tabla 4.2; EHE-08 37.2.4.1) y 25 mm es un valor corriente. En EC-2 c<sub>d</sub> es el menor de a/2, el recubrimiento lateral y el inferior (con tope 3,75 \xF8 en la 2023). Un c<sub>d</sub> mayor acorta el anclaje: en EC-2 2004 hasta 3 \xF8 (\u03B1<sub>2</sub>; \u03B1<sub>1</sub> = 0,7 en patilla si c<sub>d</sub> &gt; 3 \xF8) y en EC-2 2023 hasta 3,75 \xF8; en la EHE-08 (ensayo de la viga) solo la patilla con recubrimiento &gt; 3 \xF8.",
     "an.sinAcero": "No hay acero en el proyecto"
   };
 
@@ -4579,8 +4579,6 @@ tr.et-act td { font-weight: 650; }
     "an.compresion": "Compression",
     "an.armado": "Reinforcement and cover",
     "an.rAyuda": "Required reinforcement divided by the provided one at the section the bar is anchored from (100 % if fully used)",
-    "an.cd": "Cover c<sub>d</sub>",
-    "an.cdAyuda": "Design cover (EC-2: smaller of a/2, side and bottom cover). 0 = no length reduction",
     "an.via": "Bond certified by",
     "an.viaViga": "Beam test",
     "an.viaCorr": "Rib geometry",
@@ -4602,8 +4600,7 @@ tr.et-act td { font-weight: 650; }
     "an.desfavorable": "poor bond",
     "an.leyenda": "* code minimum governs \xB7 est. = only with a special study \xB7 \u2020 \xF8 > 32 mm: additional rules (EC-2 8.8)",
     "an.ficha": (h2, a, e2, r, cd, pct, extra) => `${h2} \xB7 ${a} \xB7 ${e2} \xB7 A<sub>s,req</sub>/A<sub>s,prov</sub> = ${r} % \xB7 ${cd} \xB7 ${pct} % of bars lapped${extra}`,
-    "an.cdSin": "no reduction for c<sub>d</sub>",
-    "an.cdVal": (v2) => `c<sub>d</sub> = ${v2} mm`,
+    "an.cdFicha": "c<sub>d</sub> = max(25 mm; \xF8)",
     "an.fichaTit": "Note for drawings",
     "an.dib.aria": "Sketch of straight anchorage, hooked anchorage and lap splice",
     "an.dib.anclaje": "Anchorage",
@@ -4620,6 +4617,8 @@ tr.et-act td { font-weight: 650; }
     "an.no.dist": "Not applicable in this code: in EC-2 the spacing enters through c<sub>d</sub>.",
     "an.no.pct23": "Not applicable in this code: l<sub>s</sub> = 1.2\xB7l<sub>b</sub> (11.5.2).",
     "an.no.comp": "Not applicable in compression (\u03B1 = 1).",
+    "an.n.cd": "Cover c<sub>d</sub>",
+    "an.cdTxt": "All rows use c<sub>d</sub> = max(25 mm; \xF8) (column c<sub>d</sub>): the minimum cover for bond is \xF8 (EC-2 4.4.1.2(3), Table 4.2; EHE-08 37.2.4.1). In EC-2 c<sub>d</sub> is the smaller of a/2, side and bottom cover (capped at 3.75 \xF8 in the 2023 edition). A larger c<sub>d</sub> shortens the anchorage: up to 3 \xF8 in EC-2 2004 (\u03B1<sub>2</sub>; \u03B1<sub>1</sub> = 0.7 for hooks if c<sub>d</sub> &gt; 3 \xF8), up to 3.75 \xF8 in EC-2 2023; in EHE-08 (beam test) only hooks with cover &gt; 3 \xF8.",
     "an.sinAcero": "There is no steel in the project"
   };
 
@@ -15679,7 +15678,7 @@ tr.et-act td { font-weight: 650; }
 
   // src/ui/vistas/anclaje.js
   var sub27 = (a, b) => `${a}<sub>${b}</sub>`;
-  var INICIAL2 = () => ({ hormigon: null, acero: null, esfuerzo: "traccion", r: 100, cd: 25, pct: 100, lejos: false, via: "viga" });
+  var INICIAL2 = () => ({ hormigon: null, acero: null, esfuerzo: "traccion", r: 100, pct: 100, lejos: false, via: "viga" });
   function estado2(p) {
     var _a;
     (_a = p.calculos).anclaje ?? (_a.anclaje = INICIAL2());
@@ -15740,10 +15739,7 @@ tr.et-act td { font-weight: 650; }
       grupo(
         t("an.armado"),
         seg("esfuerzo", [["traccion", t("an.traccion")], ["compresion", t("an.compresion")]], t("an.esfuerzo"), true),
-        par(
-          campoNum({ id: "an-r", etq: t("an.r"), valor: D.r, mag: "pct", paso: 5, min: 1, max: 100, ayuda: t("an.rAyuda"), onCambio: set("r") }),
-          campoNum({ id: "an-cd", etq: t("an.cd"), valor: D.cd, mag: "diam", paso: 5, min: 0, max: 200, ayuda: t("an.cdAyuda"), onCambio: set("cd") })
-        ),
+        campoNum({ id: "an-r", etq: t("an.r"), valor: D.r, mag: "pct", paso: 5, min: 1, max: 100, ayuda: t("an.rAyuda"), onCambio: set("r") }),
         seg("via", [["viga", t("an.viaViga")], ["corrugas", t("an.viaCorr")]], t("an.via"), true, noEHE)
       ),
       grupo(
@@ -15761,11 +15757,11 @@ tr.et-act td { font-weight: 650; }
       fyk,
       esfuerzo: D.esfuerzo,
       r: D.r / 100,
-      cd: D.cd > 0 ? D.cd : null,
       pct: D.pct,
       lejos: !!D.lejos
     };
   }
+  var cdDe = (phi) => Math.max(25, phi);
   var sobre5 = (x) => Math.ceil(x / 5 - 1e-9) * 5;
   function calcular5(p, D) {
     const hor = p.hormigones.find((m) => m.nombre === D.hormigon);
@@ -15776,12 +15772,12 @@ tr.et-act td { font-weight: 650; }
     const ehe = b.norma === "EHE-08";
     const filas = serieDiametros().map((phi) => {
       const celda = (adh, forma) => {
-        const a = anclaje({ ...b, phi, adherencia: adh, forma, recPerp: b.cd });
+        const a = anclaje({ ...b, phi, cd: cdDe(phi), adherencia: adh, forma, recPerp: cdDe(phi) });
         return { v: sobre5(a.lbd), min: a.lbd <= a.lbMin + 1e-6 };
       };
       const sol = (adh) => {
         if (ehe && phi > 32) return { v: null, est: true };
-        const s = solape({ ...b, phi, adherencia: adh });
+        const s = solape({ ...b, phi, cd: cdDe(phi), adherencia: adh });
         return { v: sobre5(s.ls), min: s.lsMin != null ? s.ls <= s.lsMin + 1e-6 : false, g: !ehe && phi > 32 };
       };
       return {
@@ -15797,8 +15793,8 @@ tr.et-act td { font-weight: 650; }
       const bc = { ...b, norma: "EHE-08", via: "viga", lejos: false };
       ce = serieDiametros().map((phi, i) => {
         const f = filas[i];
-        const l = (adh) => sobre5(anclaje({ ...bc, phi, adherencia: adh, forma: "recta" }).lbd);
-        const s = (adh) => phi > 32 ? null : sobre5(solape({ ...bc, phi, adherencia: adh }).ls);
+        const l = (adh) => sobre5(anclaje({ ...bc, phi, cd: cdDe(phi), adherencia: adh, forma: "recta" }).lbd);
+        const s = (adh) => phi > 32 ? null : sobre5(solape({ ...bc, phi, cd: cdDe(phi), adherencia: adh }).ls);
         const x = { phi, lI: l("buena"), lII: l("deficiente"), sI: s("buena"), sII: s("deficiente") };
         x.maI = x.lI > f.I[0].v;
         x.maII = x.lII > f.II[0].v;
@@ -15846,6 +15842,7 @@ tr.et-act td { font-weight: 650; }
       "tr",
       {},
       th(`${t("an.col.d")}${ESP}<span class="u u-cab">[mm]</span>`, { rowspan: comp ? "2" : "3" }),
+      th(`c<sub>d</sub>${ESP}<span class="u u-cab">[mm]</span>`, { rowspan: comp ? "2" : "3" }),
       th(t("an.col.anclaje", esf.toLowerCase()), { colspan: String(2 * nA), class: "niv" }),
       g2(th(t("an.col.solapo", esf.toLowerCase()), { colspan: "2", class: "niv" }))
     );
@@ -15861,14 +15858,14 @@ tr.et-act td { font-weight: 650; }
     const cab = h("thead", {}, fila1, fila22, fila32);
     const cuerpo = h("tbody", {}, ...r.filas.map((f) => {
       const cel = comp ? [f.I[0], f.II[0], f.sI, f.sII] : [f.I[0], f.I[1], f.II[0], f.II[1], f.sI, f.sII];
-      const tr = h("tr", {}, h("th", { scope: "row" }, String(f.phi)), ...cel.map((c) => h("td", {}, num2(c))));
-      (comp ? [2, 3] : [3, 5]).forEach((i) => tr.cells[i].classList.add("g2"));
+      const tr = h("tr", {}, h("th", { scope: "row" }, String(f.phi)), h("td", { class: "an-cd" }, String(cdDe(f.phi))), ...cel.map((c) => h("td", {}, num2(c))));
+      (comp ? [3, 4] : [4, 6]).forEach((i) => tr.cells[i].classList.add("g2"));
       return tr;
     }));
     const txt = (x) => x.replace(/<[^>]+>/g, "");
     const extraA = ehe ? D.lejos ? t("an.aLejos") : t("an.aCerca") : "";
-    const ficha = t("an.ficha", r.hor.nombre, r.ace.nombre, esf.toLowerCase(), fmt(D.r, 0), D.cd > 0 ? t("an.cdVal", fmt(D.cd, 0)) : t("an.cdSin"), fmt(D.pct, 0), extraA);
-    const hdr = [`${t("an.col.d")} [mm]`, ...(() => {
+    const ficha = t("an.ficha", r.hor.nombre, r.ace.nombre, esf.toLowerCase(), fmt(D.r, 0), t("an.cdFicha"), fmt(D.pct, 0), extraA);
+    const hdr = [`${t("an.col.d")} [mm]`, "c_d [mm]", ...(() => {
       const an = txt(t("an.col.anclaje", esf.toLowerCase())), so = txt(t("an.col.solapo", esf.toLowerCase()));
       const pI = t("an.col.I"), pII = t("an.col.II");
       return comp ? [`${an} \xB7 ${pI}`, `${an} \xB7 ${pII}`, `${so} \xB7 ${pI}`, `${so} \xB7 ${pII}`] : [`${an} \xB7 ${pI} \xB7 ${t("an.col.l3r")}`, `${an} \xB7 ${pI} \xB7 ${t("an.col.l3p")}`, `${an} \xB7 ${pII} \xB7 ${t("an.col.l3r")}`, `${an} \xB7 ${pII} \xB7 ${t("an.col.l3p")}`, `${so} \xB7 ${pI}`, `${so} \xB7 ${pII}`];
@@ -15911,7 +15908,7 @@ tr.et-act td { font-weight: 650; }
     const pos = n === "EHE-08" ? "an.pos.ehe" : n === "EC2-2004" ? "an.pos.ec2" : "an.pos.ec23";
     const mn = n === "EHE-08" ? "an.min.ehe" : n === "EC2-2004" ? "an.min.ec2" : "an.min.ec23";
     const tv = n === "EHE-08" ? "an.transv.ehe" : n === "EC2-2004" ? "an.transv.ec2" : "an.transv.ec23";
-    const claves = [["an.n.pos", pos], ["an.n.min", mn], ["an.n.transv", tv], ["an.n.falta", "an.falta"]];
+    const claves = [["an.n.pos", pos], ["an.n.min", mn], ["an.n.transv", tv], ["an.n.cd", "an.cdTxt"], ["an.n.falta", "an.falta"]];
     const tbNotas = tabla(claves.map(([k]) => [t(k)]));
     filasPlegables(tbNotas, claves.map(([, v2]) => `<span>${t(v2)}</span>`));
     poner(dcha, h("div", { class: "an-dib", html: dibujoAnclaje({ esfuerzo: D.esfuerzo }) }), h("h3", {}, t("an.notas")), tbNotas);

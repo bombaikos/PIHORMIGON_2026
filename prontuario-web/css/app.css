@@ -1198,3 +1198,4 @@ tr.et-act td { font-weight: 650; }
 .tabla-an th.niv { border-bottom: 1px solid var(--linea-fuerte); }
 .tabla-an .g2 { border-left: 1px solid var(--linea-fuerte); }
 .tabla-an thead th b { white-space: nowrap; }
+.tabla-an td.an-cd { color: var(--tinta-3); }
