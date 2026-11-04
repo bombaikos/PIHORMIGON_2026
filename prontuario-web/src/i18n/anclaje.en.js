@@ -14,6 +14,7 @@ export default {
   'an.dist': 'Distance a between laps',
   'an.titulo': 'Lengths in mm', 'an.sub': (art) => `${art}. Rounded up to 5 mm.`,
   'an.col.anclaje': (e) => `Anchorage ${sub('l', 'bd')} (${e})`, 'an.col.solapo': (e) => `Lap ${sub('l', 's')} (${e})`,
+  'an.col.l3r': 'Straight', 'an.col.l3p': 'Hook',
   'an.col.I': 'Position I', 'an.col.II': 'Position II', 'an.col.recta': 'straight', 'an.col.patilla': 'hook, bend or U',
   'an.favorable': 'good bond', 'an.desfavorable': 'poor bond',
   'an.leyenda': '* code minimum governs · est. = only with a special study · † ø > 32 mm: additional rules (EC-2 8.8)',

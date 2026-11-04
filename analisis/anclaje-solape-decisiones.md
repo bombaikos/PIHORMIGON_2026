@@ -87,3 +87,9 @@ Hecho: núcleo `anclaje()`/`solape()` para las tres normas (vía viga y corrugas
 4. **Compresión con EC-2 2004**: la norma no distingue en α6; se aplica α6 también en compresión (literal, conservador). Alternativa: α6 = 1.
 5. **Patilla en EC-2 2004**: `lb,eq = α1·lb,rqd` (simplificado, como la guía DGC) frente a `α1·α2` (fórmula completa, menor). Propuesta: simplificado.
 6. **Rango de φ**: 6-40 mm. Con φ > 32 el solape se marca «estudio especial» (EHE-08/CE) o se aplican las reglas de 8.8 (EC-2).
+
+## Decisiones 4/11/2026 (José Luis)
+- Tabla en tres niveles: 1) Anclaje | Solapo, 2) Posición I y II, 3) Prolongación recta y Patilla (solo el anclaje).
+- Una patilla nunca da más longitud que la prolongación recta (`anclaje()` toma el menor). La guía de la DGC (Tabla 10) da el valor de la fórmula lb,eq = α1·lb,rqd aunque supere a la recta cuando 1 < cd/ø < 3; el test conserva ese valor en `coef.lbdPatilla`. En EC-2 2004 la patilla solo mejora a la recta con cd > 3ø (α1 = 0,7).
+- ø32, HA-40, B 500, tracción, buena adherencia, recta: EC-2 2004 = 944 mm; EC-2 2023 = 1478 mm con cd ≥ 1,5ø (= 46ø, Tabla 11.1) y 2048 mm con cd = 25 mm (factor (1,5ø/cd)^½ = 1,39). La diferencia es real (fórmula 11.3, comprobada con la Tabla 11.1) más el efecto de un cd = 25 mm menor que ø en 2023; en EC-2 2004 un cd < ø no penaliza (α2 = 1).
+- Los mismos campos de datos con cualquier norma; los que no se aplican se desactivan con hint.

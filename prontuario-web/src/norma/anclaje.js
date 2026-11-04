@@ -54,6 +54,15 @@ const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
  * @returns {{lb:number, lbd:number, lbMin:number, rige:string, coef:object, ref:string}}
  */
 export function anclaje(p) {
+  const pat = calcular(p);
+  if (p.forma !== 'patilla' || p.esfuerzo === 'compresion') return pat;
+  // Una patilla nunca empeora el anclaje: si su fórmula da más que la prolongación recta (p. ej. EC-2 8.4.4(2) con
+  // 1 < cd/φ < 3, donde la recta aprovecha α2 y la patilla no), vale la longitud recta.
+  const rec = calcular({ ...p, forma: 'recta' });
+  return pat.lbd <= rec.lbd ? pat : { ...rec, coef: { ...rec.coef, comoRecta: true, lbdPatilla: pat.lbd } };
+}
+
+function calcular(p) {
   if (!NORMAS.includes(p.norma)) throw new Error(`Norma desconocida: ${p.norma}`);
   const { fck, fyk, phi } = p;
   const bueno = p.adherencia !== 'deficiente';

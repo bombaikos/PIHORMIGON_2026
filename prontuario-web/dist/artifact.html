@@ -796,7 +796,7 @@ svg.vl { display: block; width: 100%; height: 100%; }
 .dib-anclaje { width: 100%; min-width: 0; max-width: 360px; max-height: 250px; }
 .dib .barra-lin { fill: none; stroke: var(--acero); stroke-width: 4; }
 .tabla-an th, .tabla-an td { text-align: right; font-variant-numeric: tabular-nums; }
-.tabla-an thead th { text-align: right; }
+.tabla-an thead th { text-align: center; }
 .tabla-an thead th[colspan] { text-align: center; }
 .tabla-an tbody th { text-align: right; }
 .an-ficha { user-select: all; }
@@ -1196,8 +1196,10 @@ tr.et-act td { font-weight: 650; }
 .fu-campo.inactivo, .campo.inactivo { opacity: .55; }
 .fu-campo.inactivo .seg button, .campo.inactivo input { cursor: not-allowed; }
 .an-hint { font-size: 10px; line-height: 1.3; color: var(--tinta-3); }
-.tabla-an th.pos { border-bottom: 1px solid var(--linea-fuerte); }
+.tabla-an thead th { vertical-align: bottom; }
+.tabla-an th.niv { border-bottom: 1px solid var(--linea-fuerte); }
 .tabla-an .g2 { border-left: 1px solid var(--linea-fuerte); }
+.tabla-an thead th b { white-space: nowrap; }
 </style>
 
 <header class="barra">
@@ -4507,6 +4509,8 @@ tr.et-act td { font-weight: 650; }
     "an.col.d": "\xF8",
     "an.col.anclaje": (e2) => `Anclaje ${sub3("l", "bd")} (${e2})`,
     "an.col.solapo": (e2) => `Solapo ${sub3("l", "s")} (${e2})`,
+    "an.col.l3r": "Prolongaci\xF3n recta",
+    "an.col.l3p": "Patilla",
     "an.col.I": "Posici\xF3n I",
     "an.col.II": "Posici\xF3n II",
     "an.col.recta": "recta",
@@ -4534,7 +4538,7 @@ tr.et-act td { font-weight: 650; }
     "an.pos.ec2": "Adherencia buena: barras a 45\xB0-90\xB0; o a menos de 45\xB0 con h \u2264 250 mm; con 250 < h \u2264 600 mm en los 250 mm inferiores; con h > 600 mm en la mitad inferior o a 300 mm o m\xE1s de la cara superior. El resto, deficiente. UNE-EN 1992-1-1, 8.4.2 y fig. 8.2.",
     "an.pos.ec23": "Adherencia buena: barras a 45\xB0-90\xB0; o a menos de 45\xB0 a no m\xE1s de 300 mm del fondo del encofrado o a 300 mm o m\xE1s de la superficie libre. El resto, deficiente (k<sub>cp</sub> = 1,2). EN 1992-1-1:2023, 11.4.2(4).",
     "an.min.ehe": "Longitud neta de anclaje \u2265 m\xE1x(10 \xF8; 150 mm; l<sub>b</sub>/3 en tracci\xF3n o 2 l<sub>b</sub>/3 en compresi\xF3n). EHE-08, 69.5.1.1. La longitud b\xE1sica no baja de f<sub>yk</sub>/20\xB7\xF8 en posici\xF3n I ni f<sub>yk</sub>/14\xB7\xF8 en II (69.5.1.2).",
-    "an.min.ec2": "Anclaje \u2265 m\xE1x(0,3 l<sub>b,rqd</sub>; 10 \xF8; 100 mm) en tracci\xF3n y m\xE1x(0,6 l<sub>b,rqd</sub>; 10 \xF8; 100 mm) en compresi\xF3n (8.4.4, ec. 8.6 y 8.7). Solapo \u2265 m\xE1x(0,3 \u03B1<sub>6</sub> l<sub>b,rqd</sub>; 15 \xF8; 200 mm) (8.7.3, ec. 8.11). Con patilla se usa l<sub>b,eq</sub> = \u03B1<sub>1</sub> l<sub>b,rqd</sub> (8.4.4(2)), como la gu\xEDa de la DGC; con recubrimientos grandes puede dar m\xE1s que la barra recta (no aprovecha \u03B1<sub>2</sub>) y entonces vale la recta.",
+    "an.min.ec2": "Anclaje \u2265 m\xE1x(0,3 l<sub>b,rqd</sub>; 10 \xF8; 100 mm) en tracci\xF3n y m\xE1x(0,6 l<sub>b,rqd</sub>; 10 \xF8; 100 mm) en compresi\xF3n (8.4.4, ec. 8.6 y 8.7). Solapo \u2265 m\xE1x(0,3 \u03B1<sub>6</sub> l<sub>b,rqd</sub>; 15 \xF8; 200 mm) (8.7.3, ec. 8.11). Con patilla se usa l<sub>b,eq</sub> = \u03B1<sub>1</sub> l<sub>b,rqd</sub> (8.4.4(2)), como la gu\xEDa de la DGC; esa f\xF3rmula no aprovecha \u03B1<sub>2</sub> y con 1 &lt; c<sub>d</sub>/\xF8 &lt; 3 puede superar a la recta (la gu\xEDa de la DGC da ese valor): en la tabla la patilla nunca supera a la prolongaci\xF3n recta, porque no puede empeorarla.",
     "an.min.ec23": "Anclaje \u2265 10 \xF8 (11.4.2(3)); con patilla o gancho normalizado, l<sub>bd</sub> se reduce 15 \xF8 (11.4.4(1)). Solapo l<sub>sd</sub> = 1,2\xB7l<sub>bd</sub> \u2265 15 \xF8 (11.5.2(2), tabla 11.3); el % de barras solapadas no cambia la longitud, salvo en r\xF3tulas pl\xE1sticas (11.5.2(4)-(5), no incluido).",
     "an.transv.ehe": "En la zona de solapo, armadura transversal de secci\xF3n igual o superior a la de la mayor barra solapada. Los empalmes de barras en tracci\xF3n se distancian l<sub>b</sub> (69.5.2.1). M\xE1s de \xF8 32 mm: solo con estudio especial (69.5.2.2).",
     "an.transv.ec2": "Hace falta armadura transversal en el solapo si \xF8 \u2265 20 mm o si se solapa el 25 % o m\xE1s: \u03A3A<sub>st</sub> \u2265 A<sub>s</sub> de una barra (8.7.4.1). Solapes contiguos separados al menos 0,3 l<sub>0</sub>, y barras solapadas con separaci\xF3n libre \u2264 4 \xF8 o 50 mm (8.7.2(3)). 100 % solapado solo en una capa; en varias, 50 % (8.7.2(4)).",
@@ -4581,6 +4585,8 @@ tr.et-act td { font-weight: 650; }
     "an.sub": (art5) => `${art5}. Rounded up to 5 mm.`,
     "an.col.anclaje": (e2) => `Anchorage ${sub4("l", "bd")} (${e2})`,
     "an.col.solapo": (e2) => `Lap ${sub4("l", "s")} (${e2})`,
+    "an.col.l3r": "Straight",
+    "an.col.l3p": "Hook",
     "an.col.I": "Position I",
     "an.col.II": "Position II",
     "an.col.recta": "straight",
@@ -15564,6 +15570,12 @@ tr.et-act td { font-weight: 650; }
   }
   var clamp = (x, a, b) => Math.min(b, Math.max(a, x));
   function anclaje(p) {
+    const pat = calcular4(p);
+    if (p.forma !== "patilla" || p.esfuerzo === "compresion") return pat;
+    const rec = calcular4({ ...p, forma: "recta" });
+    return pat.lbd <= rec.lbd ? pat : { ...rec, coef: { ...rec.coef, comoRecta: true, lbdPatilla: pat.lbd } };
+  }
+  function calcular4(p) {
     if (!NORMAS2.includes(p.norma)) throw new Error(`Norma desconocida: ${p.norma}`);
     const { fck, fyk, phi } = p;
     const bueno = p.adherencia !== "deficiente";
@@ -15748,7 +15760,7 @@ tr.et-act td { font-weight: 650; }
     };
   }
   var sobre5 = (x) => Math.ceil(x / 5 - 1e-9) * 5;
-  function calcular4(p, D) {
+  function calcular5(p, D) {
     const hor = p.hormigones.find((m) => m.nombre === D.hormigon);
     const ace = p.aceros.find((m) => m.nombre === D.acero);
     if (!hor || !ace) return null;
@@ -15805,7 +15817,7 @@ tr.et-act td { font-weight: 650; }
     const p = ctx2.p;
     const D = estado2(p);
     const comp = D.esfuerzo === "compresion";
-    const r = calcular4(p, D);
+    const r = calcular5(p, D);
     const centro = h("article", { class: "panel tarjeta" });
     const dcha = h("article", { class: "panel tarjeta" });
     if (!r) {
@@ -15817,30 +15829,43 @@ tr.et-act td { font-weight: 650; }
     const ehe = idNorma(p) === "EHE-08";
     const esf = comp ? t("an.compresion") : t("an.traccion");
     const posC = (c) => `<b>${t("an.col." + c)}</b><br><span class="u u-cab">${t(c === "I" ? "an.favorable" : "an.desfavorable")}</span>`;
-    const sub210 = comp ? [`l<sub>bd</sub>`, `l<sub>s</sub>`] : [`l<sub>bd</sub> ${t("an.col.recta")}`, `l<sub>bd</sub> ${t("an.col.patilla")}`, `l<sub>s</sub>`];
-    const nc = sub210.length;
-    const cab = h(
-      "thead",
-      {},
-      h(
-        "tr",
-        {},
-        h("th", { rowspan: "2", html: `${t("an.col.d")}${ESP}<span class="u u-cab">[mm]</span>` }),
-        h("th", { colspan: String(nc), class: "pos", html: posC("I") }),
-        h("th", { colspan: String(nc), class: "pos", html: posC("II") })
-      ),
-      h("tr", {}, ...[...sub210, ...sub210].map((c) => h("th", { html: c })))
-    );
-    const cuerpo = h("tbody", {}, ...r.filas.map((f) => h(
+    const g2 = (cel) => {
+      cel.classList.add("g2");
+      return cel;
+    };
+    const nA = comp ? 1 : 2;
+    const th = (html3, o = {}) => h("th", { ...o, html: html3 });
+    const fila1 = h(
       "tr",
       {},
-      h("th", { scope: "row" }, String(f.phi)),
-      ...comp ? [h("td", {}, num2(f.I[0])), h("td", {}, num2(f.sI)), h("td", {}, num2(f.II[0])), h("td", {}, num2(f.sII))] : [h("td", {}, num2(f.I[0])), h("td", {}, num2(f.I[1])), h("td", {}, num2(f.sI)), h("td", {}, num2(f.II[0])), h("td", {}, num2(f.II[1])), h("td", {}, num2(f.sII))]
-    )));
+      th(`${t("an.col.d")}${ESP}<span class="u u-cab">[mm]</span>`, { rowspan: comp ? "2" : "3" }),
+      th(t("an.col.anclaje", esf.toLowerCase()), { colspan: String(2 * nA), class: "niv" }),
+      g2(th(t("an.col.solapo", esf.toLowerCase()), { colspan: "2", class: "niv" }))
+    );
+    const fila22 = h(
+      "tr",
+      {},
+      th(posC("I"), comp ? { rowspan: "2" } : { colspan: "2" }),
+      g2(th(posC("II"), comp ? { rowspan: "2" } : { colspan: "2" })),
+      g2(th(posC("I"), { rowspan: comp ? "2" : "2" })),
+      th(posC("II"), { rowspan: "2" })
+    );
+    const fila32 = comp ? null : h("tr", {}, th(t("an.col.l3r")), th(t("an.col.l3p")), g2(th(t("an.col.l3r"))), th(t("an.col.l3p")));
+    const cab = h("thead", {}, fila1, fila22, fila32);
+    const cuerpo = h("tbody", {}, ...r.filas.map((f) => {
+      const cel = comp ? [f.I[0], f.II[0], f.sI, f.sII] : [f.I[0], f.I[1], f.II[0], f.II[1], f.sI, f.sII];
+      const tr = h("tr", {}, h("th", { scope: "row" }, String(f.phi)), ...cel.map((c) => h("td", {}, num2(c))));
+      (comp ? [2, 3] : [3, 5]).forEach((i) => tr.cells[i].classList.add("g2"));
+      return tr;
+    }));
+    const txt = (x) => x.replace(/<[^>]+>/g, "");
     const extraA = ehe ? D.lejos ? t("an.aLejos") : t("an.aCerca") : "";
     const ficha = t("an.ficha", r.hor.nombre, r.ace.nombre, esf.toLowerCase(), fmt(D.r, 0), D.cd > 0 ? t("an.cdVal", fmt(D.cd, 0)) : t("an.cdSin"), fmt(D.pct, 0), extraA);
-    const txt = (x) => x.replace(/<[^>]+>/g, "");
-    const hdr = [`${t("an.col.d")} [mm]`, ...["I", "II"].flatMap((c) => sub210.map((x) => `${t("an.col." + c)} \xB7 ${txt(x)}`))];
+    const hdr = [`${t("an.col.d")} [mm]`, ...(() => {
+      const an = txt(t("an.col.anclaje", esf.toLowerCase())), so = txt(t("an.col.solapo", esf.toLowerCase()));
+      const pI = t("an.col.I"), pII = t("an.col.II");
+      return comp ? [`${an} \xB7 ${pI}`, `${an} \xB7 ${pII}`, `${so} \xB7 ${pI}`, `${so} \xB7 ${pII}`] : [`${an} \xB7 ${pI} \xB7 ${t("an.col.l3r")}`, `${an} \xB7 ${pI} \xB7 ${t("an.col.l3p")}`, `${an} \xB7 ${pII} \xB7 ${t("an.col.l3r")}`, `${an} \xB7 ${pII} \xB7 ${t("an.col.l3p")}`, `${so} \xB7 ${pI}`, `${so} \xB7 ${pII}`];
+    })()];
     const texto = () => [
       ficha.replace(/<[^>]+>/g, "").replace(/ /g, " "),
       hdr.join("	"),
@@ -15857,9 +15882,6 @@ tr.et-act td { font-weight: 650; }
       }
     };
     const tablaEl = h("table", { class: "tabla-dur tabla-an", id: "an-tabla" }, cab, cuerpo);
-    [...cuerpo.rows].forEach((tr) => tr.cells[1 + nc].classList.add("g2"));
-    cab.rows[0].cells[2].classList.add("g2");
-    cab.rows[1].cells[nc].classList.add("g2");
     tablaEl.addEventListener("copy", (e2) => {
       e2.preventDefault();
       e2.clipboardData.setData("text/plain", texto());

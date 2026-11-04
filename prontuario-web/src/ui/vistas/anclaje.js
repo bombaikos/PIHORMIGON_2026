@@ -142,26 +142,34 @@ export function resultados(ctx, res) {
   }
   const art = articulo(p, D);
   const ehe = idNorma(p) === 'EHE-08';
-  // Cabecera con dos filas: grupos (anclaje, solapo) y posiciones
+  // Cabecera en tres niveles: 1) Anclaje | Solapo, 2) Posición I y II, 3) prolongación recta y patilla (solo el anclaje)
   const esf = comp ? t('an.compresion') : t('an.traccion');
   const posC = (c) => `<b>${t('an.col.' + c)}</b><br><span class="u u-cab">${t(c === 'I' ? 'an.favorable' : 'an.desfavorable')}</span>`;
-  const sub2 = comp
-    ? [`l<sub>bd</sub>`, `l<sub>s</sub>`]
-    : [`l<sub>bd</sub> ${t('an.col.recta')}`, `l<sub>bd</sub> ${t('an.col.patilla')}`, `l<sub>s</sub>`];
-  const nc = sub2.length;
-  // Dos filas: la posición (I, II) es una celda compartida de la que cuelgan anclaje recto, anclaje con patilla y solapo
-  const cab = h('thead', {},
-    h('tr', {}, h('th', { rowspan: '2', html: `${t('an.col.d')}${ESP}<span class="u u-cab">[mm]</span>` }),
-      h('th', { colspan: String(nc), class: 'pos', html: posC('I') }), h('th', { colspan: String(nc), class: 'pos', html: posC('II') })),
-    h('tr', {}, ...[...sub2, ...sub2].map((c) => h('th', { html: c }))));
-  const cuerpo = h('tbody', {}, ...r.filas.map((f) => h('tr', {},
-    h('th', { scope: 'row' }, String(f.phi)),
-    ...(comp ? [h('td', {}, num(f.I[0])), h('td', {}, num(f.sI)), h('td', {}, num(f.II[0])), h('td', {}, num(f.sII))]
-      : [h('td', {}, num(f.I[0])), h('td', {}, num(f.I[1])), h('td', {}, num(f.sI)), h('td', {}, num(f.II[0])), h('td', {}, num(f.II[1])), h('td', {}, num(f.sII))]))));
+  const g2 = (cel) => { cel.classList.add('g2'); return cel; };
+  const nA = comp ? 1 : 2; // columnas de anclaje por posición
+  const th = (html, o = {}) => h('th', { ...o, html });
+  const fila1 = h('tr', {}, th(`${t('an.col.d')}${ESP}<span class="u u-cab">[mm]</span>`, { rowspan: comp ? '2' : '3' }),
+    th(t('an.col.anclaje', esf.toLowerCase()), { colspan: String(2 * nA), class: 'niv' }), g2(th(t('an.col.solapo', esf.toLowerCase()), { colspan: '2', class: 'niv' })));
+  const fila2 = h('tr', {},
+    th(posC('I'), comp ? { rowspan: '2' } : { colspan: '2' }), g2(th(posC('II'), comp ? { rowspan: '2' } : { colspan: '2' })),
+    g2(th(posC('I'), { rowspan: comp ? '2' : '2' })), th(posC('II'), { rowspan: '2' }));
+  const fila3 = comp ? null : h('tr', {}, th(t('an.col.l3r')), th(t('an.col.l3p')), g2(th(t('an.col.l3r'))), th(t('an.col.l3p')));
+  const cab = h('thead', {}, fila1, fila2, fila3);
+  const cuerpo = h('tbody', {}, ...r.filas.map((f) => {
+    const cel = comp ? [f.I[0], f.II[0], f.sI, f.sII] : [f.I[0], f.I[1], f.II[0], f.II[1], f.sI, f.sII];
+    const tr = h('tr', {}, h('th', { scope: 'row' }, String(f.phi)), ...cel.map((c) => h('td', {}, num(c))));
+    (comp ? [2, 3] : [3, 5]).forEach((i) => tr.cells[i].classList.add('g2'));
+    return tr;
+  }));
+  const txt = (x) => x.replace(/<[^>]+>/g, '');
   const extraA = ehe ? (D.lejos ? t('an.aLejos') : t('an.aCerca')) : '';
   const ficha = t('an.ficha', r.hor.nombre, r.ace.nombre, esf.toLowerCase(), fmt(D.r, 0), D.cd > 0 ? t('an.cdVal', fmt(D.cd, 0)) : t('an.cdSin'), fmt(D.pct, 0), extraA);
-  const txt = (x) => x.replace(/<[^>]+>/g, '');
-  const hdr = [`${t('an.col.d')} [mm]`, ...['I', 'II'].flatMap((c) => sub2.map((x) => `${t('an.col.' + c)} · ${txt(x)}`))];
+  const hdr = [`${t('an.col.d')} [mm]`, ...(() => {
+    const an = txt(t('an.col.anclaje', esf.toLowerCase())), so = txt(t('an.col.solapo', esf.toLowerCase()));
+    const pI = t('an.col.I'), pII = t('an.col.II');
+    return comp ? [`${an} · ${pI}`, `${an} · ${pII}`, `${so} · ${pI}`, `${so} · ${pII}`]
+      : [`${an} · ${pI} · ${t('an.col.l3r')}`, `${an} · ${pI} · ${t('an.col.l3p')}`, `${an} · ${pII} · ${t('an.col.l3r')}`, `${an} · ${pII} · ${t('an.col.l3p')}`, `${so} · ${pI}`, `${so} · ${pII}`];
+  })()];
   const texto = () => [ficha.replace(/<[^>]+>/g, '').replace(/ /g, ' '), hdr.join('\t'),
     ...[...cuerpo.rows].map((tr) => [...tr.cells].map((c) => c.textContent).join('\t'))].join('\r\n');
   const html = () => `<table><caption>${ficha}</caption><thead><tr>${hdr.map((c) => `<th>${c}</th>`).join('')}</tr></thead><tbody>${cuerpo.innerHTML}</tbody></table>`;
@@ -173,8 +181,6 @@ export function resultados(ctx, res) {
     } catch { ctx.avisar(t('graf.error')); }
   };
   const tablaEl = h('table', { class: 'tabla-dur tabla-an', id: 'an-tabla' }, cab, cuerpo);
-  [...cuerpo.rows].forEach((tr) => tr.cells[1 + nc].classList.add('g2'));
-  cab.rows[0].cells[2].classList.add('g2'); cab.rows[1].cells[nc].classList.add('g2');
   tablaEl.addEventListener('copy', (e) => { e.preventDefault(); e.clipboardData.setData('text/plain', texto()); e.clipboardData.setData('text/html', html()); });
   poner(centro,
     h('div', { class: 'an-tit' }, h('h2', { class: 'an-h', html: `${t('m.anclaje')} <span class="an-mat">${r.hor.nombre} ${r.ace.nombre}</span>` }),
