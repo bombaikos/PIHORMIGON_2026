@@ -668,7 +668,7 @@ span.bien { color: var(--ok); font-weight: 600; }
 .datos .campo .ver-axil { margin: 0 6px 0 0; accent-color: var(--acento); flex-shrink: 0; }
 .leyenda-nota { font-weight: 400; color: var(--tinta-3); font-size: var(--t-xs); margin-left: 6px; }
 .lienzo.mini { display: flex; justify-content: center; flex: 0 0 auto !important; overflow: hidden; margin-bottom: var(--e2); order: 0 !important; }
-.lienzo.mini svg { min-width: 0 !important; width: auto; max-width: 100%; max-height: 250px; }
+.lienzo.mini svg { min-width: 0 !important; width: auto; max-width: 100%; max-height: 41vh !important; }
 /* Carga de DXF en la genérica */
 .zona-dxf { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 5px 8px; border: 1px dashed var(--linea-fuerte); border-radius: var(--r-campo); color: var(--tinta-2); font-size: var(--t-s); cursor: pointer; background: var(--hundido); }
 .zona-dxf:hover, .zona-dxf:focus-visible, .zona-dxf.encima { border-color: var(--acento); background: var(--acento-suave); color: var(--tinta); outline: none; }
