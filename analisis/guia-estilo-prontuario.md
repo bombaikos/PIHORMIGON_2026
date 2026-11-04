@@ -20,6 +20,7 @@ Esta guía recoge las decisiones de José Luis (8 de octubre de 2026) y las reco
 | Tensiones | MPa | 1 |
 | Deformaciones | ‰ | 2 |
 | Aprovechamiento | — | 2 |
+| Abertura de fisura w<sub>k</sub> y límite w<sub>máx</sub> | mm | 2 (Pepiño, 04/11/2026; `MAG.wk`) |
 
 ## 2. Notación
 - **Notación de EC2 en toda la app**, sea cual sea la norma de cálculo: M<sub>Ed</sub>, M<sub>Rd</sub>, N<sub>Ed</sub>, A<sub>s1</sub>, A<sub>s2</sub>, d, d<sub>1</sub>, d<sub>2</sub>, x, z, F<sub>c</sub>, F<sub>s1</sub>, F<sub>s2</sub>, f<sub>ck</sub>, f<sub>cd</sub>, f<sub>yk</sub>, f<sub>yd</sub>, γ<sub>C</sub>, γ<sub>S</sub>, ε<sub>c</sub>, ε<sub>cu</sub>, ε<sub>s1</sub>, σ<sub>s1</sub>, A<sub>s,min</sub> y A<sub>s1,req</sub>.

@@ -13,7 +13,7 @@ Hecha leyendo `analisis/guia-estilo-prontuario.md` punto por punto contra `anali
 - Series del Diagrama por trazo (continuo, rayas, puntos), sin marcadores, rótulo escrito junto a la curva (§ 9). Notas plegadas con fondo chocolate (§ 14.9). Tabla con «Copiar tabla» (§ 12).
 
 ## Incumple (corregir en la app real; los marcados * también en la maqueta)
-1. **\* Rojo para la línea de wmáx** en el Diagrama. El rojo es solo para «No cumple» y errores (§ 4) y no se usa como serie (§ 9). Proponer: línea continua en tinta fuerte con rótulo «wmáx = 0.3 mm», o ámbar descartado; decidir.
+1. ~~Rojo para la línea de wmáx en el Diagrama~~ **Resuelto 04/11**: línea continua en tinta fuerte (`--tinta`) con rótulo «wmáx = 0.30 mm» (Pepiño). Maqueta corregida.
 2. **\* Rótulos en mayúsculas con símbolos**: `.rot` y `.pastilla .rr` usan `text-transform: uppercase` y salen «WK / WMÁX» (rompe la notación, § 2). Quitar las mayúsculas en los rótulos que llevan símbolos.
 3. **\* Selectores con la etiqueta a la izquierda** (Duración, Exposición, Acción, Adherencia): la norma general de § 16 pide la etiqueta arriba (2 px) y el control a todo el ancho; solo las cajas de valor numérico van con la etiqueta a la izquierda.
 4. **\* Desplegable «Sección» con etiqueta visible**: según § 14.10 es lo primero de los datos, sin etiqueta visible (solo accesible) y sin texto debajo. Usar `grupoSeccion()` y `rotulaSeccion()`.
@@ -30,7 +30,7 @@ Hecha leyendo `analisis/guia-estilo-prontuario.md` punto por punto contra `anali
 15. **Nombre de norma**: «EC-2 2004+AN» (maqueta) frente a «EC-2 2004 + AN» (chip). Un solo nombre en toda la app.
 
 ## Vacío de la guía
-§ 1 no fija la precisión de la **abertura de fisura wk** (mm) ni de **wmáx**. Propuesta: wk con 2 decimales y wmáx con 1, en la tabla `MAG` de `formato.js` (hoy la maqueta formatea a mano; en la app lo impide `tests/formatoUnidades.test.js`). Pendiente de visto bueno.
+~~§ 1 no fijaba la precisión de wk ni de wmáx.~~ **Resuelto 04/11** (Pepiño): ambos con **2 decimales**; añadido a la tabla de § 1 y ya está en `MAG.wk` de `formato.js` (la app usa `MAG`, lo impone `tests/formatoUnidades.test.js`). Maqueta corregida.
 
 ## Pendiente de comprobar en la app
 `npm run test:pantalla` con la entrada de Fisuración en `tools/encaje.mjs` (serie 12/14/16) a 1536×730 y 1366×657, claro y oscuro, español e inglés, y `prefers-contrast` / `forced-colors`.

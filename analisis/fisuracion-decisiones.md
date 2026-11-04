@@ -7,6 +7,8 @@ Detalle del estudio y del plan: `analisis/fisuracion-plan.md`. Maqueta: `analisi
 - Cápsula estándar Comprobación | Dimensionamiento | Diagrama. Diagrama: wk frente a M (N constante) con wmáx, Mfis y las tres normas superpuestas.
 - EC-2 2023: wk en superficie (k1/r) incluido, sin aviso extra de «no vigente» (ya sale en rojo al elegir la norma). MC90 descartado.
 
+- 04/11/2026: wk y wmáx con **2 decimales** (guía § 1, `MAG.wk`). Línea de wmáx en el Diagrama en **tinta fuerte**, no en rojo.
+
 ## Motor (rama `fisuracion-motor`)
 - `src/core/fisuracion.js` (sección rectangular fisurada, una capa inferior y opcional superior; wk de las tres normas; dimensionamiento por diámetros) y `src/norma/fisuracion/limites.js` (wmáx por clase).
 - `tests/fisuracion.test.js`: caso de referencia con cálculo independiente en forma cerrada (V-1 300×500, 3Ø20, M = 80 kN·m): wk = 0,214 (EHE-08), 0,165 (EC-2 2004 + AN), 0,169 (EC-2 2023); equilibrio con axil; monotonía; β; kb; 7.14; límites; dimensionamiento.
