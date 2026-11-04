@@ -41,5 +41,9 @@ export default {
   'an.ce.igual': 'El CE 49.5 no supera al EC-2 en ningún caso con estos datos.',
   'an.ce.cab': 'ø', 'an.ce.l': 'l<sub>bd</sub>', 'an.ce.ls': 'l<sub>s</sub>',
   'an.aviso.ehe08': 'EHE-08 (no vigente): ver art. 69.5; el CE 49.5 es la misma vía del ensayo de la viga.',
+  'an.no.ehe': 'No se aplica en esta norma (solo EHE-08).',
+  'an.no.dist': 'No se aplica en esta norma: en EC-2 la separación entra por c<sub>d</sub>.',
+  'an.no.pct23': 'No se aplica en esta norma: l<sub>s</sub> = 1,2·l<sub>b</sub> (11.5.2).',
+  'an.no.comp': 'No se aplica en compresión (α = 1).',
   'an.sinAcero': 'No hay acero en el proyecto',
 };

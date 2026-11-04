@@ -26,5 +26,9 @@ export default {
   'an.n.pos': 'Bond position I and II', 'an.n.min': 'Minimum values applied', 'an.n.transv': 'Transverse reinforcement and staggering', 'an.n.falta': 'Not included',
   'an.ce.tit': 'Check against the Spanish Structural Code (art. 49.5)',
   'an.ce.igual': 'CE 49.5 never exceeds EC-2 with these data.',
+  'an.no.ehe': 'Not applicable in this code (EHE-08 only).',
+  'an.no.dist': 'Not applicable in this code: in EC-2 the spacing enters through c<sub>d</sub>.',
+  'an.no.pct23': 'Not applicable in this code: l<sub>s</sub> = 1.2·l<sub>b</sub> (11.5.2).',
+  'an.no.comp': 'Not applicable in compression (α = 1).',
   'an.sinAcero': 'There is no steel in the project',
 };
