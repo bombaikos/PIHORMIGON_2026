@@ -1071,6 +1071,7 @@ input[type="checkbox"]:disabled:checked::after { border-color: var(--tinta-3); }
 input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline-offset: 2px; }
 /* Regleta: deslizador común (guía §9.4). Ancho: 80 % del gráfico al que acompaña, centrada. */
 .regleta { display: grid; grid-template-columns: max-content minmax(0, 1fr) 9ch; align-items: center; gap: var(--e3); width: 80%; margin: 4px auto; flex-shrink: 0; font-size: var(--t-s); color: var(--tinta-2); }
+.regleta.rg-cor { margin: 2px auto; } /* Cortante: el panel de datos de la EC-2 2023 no cabe a 1536×730 con 4 px */
 .regleta.sin-etq { grid-template-columns: minmax(0, 1fr) 9ch; }
 .regleta .rg-et { white-space: nowrap; }
 .regleta .rg-v { text-align: right; font-weight: 600; color: var(--tinta); font-variant-numeric: tabular-nums; white-space: nowrap; }
