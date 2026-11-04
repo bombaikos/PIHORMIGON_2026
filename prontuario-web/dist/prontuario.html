@@ -3092,6 +3092,7 @@ tr.et-act td { font-weight: 650; }
     "fcr.bajoMin": (a, m) => `Armadura dispuesta ${a} menor que la cuant\xEDa m\xEDnima ${m}: aunque cumpla el c\xE1lculo, no cumple el m\xEDnimo.`,
     "fcr.mandaMin": (m) => `Manda la cuant\xEDa m\xEDnima (${m}), no la resistencia.`,
     "fcr.subeEmin": (e2) => `* M elevado a N\xB7e<sub>m\xEDn</sub> (e<sub>m\xEDn</sub> = ${e2} mm).`,
+    "fcr.sobreMax": (a, m) => `Armadura ${a} mayor que la m\xE1xima ${m}: el c\xE1lculo la pide, pero no es ejecutable; aumenta la secci\xF3n o el hormig\xF3n.`,
     "fcr.subtitulo": "Diagrama de interacci\xF3n N-M en rotura",
     "fcr.sinSec": "Crea una secci\xF3n en el m\xF3dulo Secciones.",
     "fcr.compPos": "compresi\xF3n +",
@@ -4123,6 +4124,7 @@ tr.et-act td { font-weight: 650; }
     "fcr.bajoMin": (a, m) => `Provided reinforcement ${a} is below the minimum ${m}: it passes the calculation but not the minimum.`,
     "fcr.mandaMin": (m) => `The minimum reinforcement (${m}) governs, not strength.`,
     "fcr.subeEmin": (e2) => `* M raised to N\xB7e<sub>min</sub> (e<sub>min</sub> = ${e2} mm).`,
+    "fcr.sobreMax": (a, m) => `Reinforcement ${a} exceeds the maximum ${m}: the calculation asks for it but it cannot be built; enlarge the section or the concrete.`,
     "fcr.subtitulo": "N-M interaction diagram at ultimate",
     "fcr.sinSec": "Create a section in the Sections module.",
     "fcr.compPos": "compression +",
@@ -9434,9 +9436,15 @@ tr.et-act td { font-weight: 650; }
       return { tipo, fct, f, z: 0.8 * h2, inf: { W: Ix / (h2 - yg), A: A(Ix / (h2 - yg)) }, sup: { W: Ix / yg, A: A(Ix / yg) } };
     }
     const Nd = Math.max(N, 0);
-    const mec = 0.1 * Nd / fyd;
+    const fycd = norma2 === "EHE-08" ? Math.min(fyd, 4e5) : fyd;
+    const mec = 0.1 * Nd / fycd;
     const geo = (norma2 === "EHE-08" ? 4e-3 : 2e-3) * Ac;
     return { tipo, mec, geo, A: Math.max(mec, geo), fyd, Nd };
+  }
+  function cuantiaMaxima({ norma: norma2, Ac, fcd, fyk, gammaS }) {
+    if (norma2 === "EHE-08") return Ac * fcd / Math.min(fyk / gammaS, 4e5);
+    if (norma2 === "EC2-2004") return 0.04 * Ac;
+    return null;
   }
 
   // src/norma/ehe98/durabilidad.js
@@ -10930,7 +10938,7 @@ tr.et-act td { font-weight: 650; }
     } else {
       filas = [fila6(t("cmin.total"), tot, r.A)];
       const art22 = p.norma === "EHE-08" ? "42.3.3 y tabla 42.3.5" : p.norma === "EC2-2004" ? "9.5.2(2)" : "tabla 12.3";
-      cuentas = [`<span class="f">${sub16("A", "s,min")} = m\xE1x{0,10\xB7N/${sub16("f", "yd")}; ${p.norma === "EHE-08" ? "4\u2030" : "2\u2030"}\xB7${sub16("A", "c")}}</span><span class="n">N = ${fmt(r.Nd, 0)} kN (${t("cmin.nPilar")}) \u2192 0,10\xB7N/${sub16("f", "yd")} = ${v(r.mec, "As")} \xB7 ${v(r.geo, "As")} \u2192 ${v(r.A, "As")}</span><span class="art">${ref3} \xB7 ${art22}</span>`];
+      cuentas = [`<span class="f">${sub16("A", "s,min")} = m\xE1x{0,10\xB7N/${p.norma === "EHE-08" ? sub16("f", "yc,d") : sub16("f", "yd")}; ${p.norma === "EHE-08" ? "4\u2030" : "2\u2030"}\xB7${sub16("A", "c")}}</span><span class="n">N = ${fmt(r.Nd, 0)} kN (${t("cmin.nPilar")}) \u2192 0,10\xB7N/${p.norma === "EHE-08" ? sub16("f", "yc,d") : sub16("f", "yd")} = ${v(r.mec, "As")} \xB7 ${v(r.geo, "As")} \u2192 ${v(r.A, "As")}</span><span class="art">${ref3} \xB7 ${art22}</span>`];
     }
     return [
       h("h3", {}, t("cmin.titulo")),
@@ -12815,6 +12823,8 @@ tr.et-act td { font-weight: 650; }
     const Ac = sec.trapecios.reduce((a, t2) => a + (t2.b1 + t2.b2) / 2 * (t2.y2 - t2.y1), 0);
     const cm = cuantiaMinima({ norma: p.norma, tipo: "pilar", h: 0, Ac, yg: 0, Ix: 0, fctm: 0, fyk: mats.acero.fk, gammaS: mats.acero.gamma, N: Math.max(0, ...ps.map((x) => x.N)) });
     const Amin = cm.A;
+    const fcdH = Math.max(...sec.trapecios[0].mat.comp.map((v2) => -v2[1]), 1);
+    const Amax = cuantiaMaxima({ norma: p.norma, Ac, fcd: fcdH, fyk: mats.acero.fk, gammaS: mats.acero.gamma });
     const kMin = As0 > 0 ? Amin / As0 : 0;
     let k = 1;
     let kEstricto = 1;
@@ -12831,7 +12841,7 @@ tr.et-act td { font-weight: 650; }
       }
     } else if (phi0 && est5.fi > 0) k = (est5.fi / phi0) ** 2;
     const dibujada = Number.isFinite(k) ? escalarArmadura(sec, k) : escalarArmadura(sec, 1);
-    const c = { geo, sec, secD: dibujada, As0, Amin, cm, k, kEstricto, phi0, phiEstricto, phiProp, d: diagramaNM(dibujada, { n: 100, simetrica: true, tol: TOL }), dH: diagramaNM(soloHormigon(sec), { n: 100, simetrica: true, tol: TOL }) };
+    const c = { geo, sec, secD: dibujada, As0, Amin, Amax, cm, k, kEstricto, phi0, phiEstricto, phiProp, d: diagramaNM(dibujada, { n: 100, simetrica: true, tol: TOL }), dH: diagramaNM(soloHormigon(sec), { n: 100, simetrica: true, tol: TOL }) };
     memo = { clave, c };
     return c;
   }
@@ -12928,18 +12938,19 @@ tr.et-act td { font-weight: 650; }
       res.append(veredicto("nocumple", t("aumentar"), t("armaduraNec"), "\u2014", t("fcr.noBasta")));
     } else if (dim) {
       const As = c.As0 * c.k;
+      const sobra = c.Amax != null && As > c.Amax + 1e-12;
       if (c.phiProp) {
         res.append(veredicto(
-          "cumple",
-          t("valida"),
+          sobra ? "nocumple" : "cumple",
+          sobra ? t("aumentar") : t("valida"),
           t("fcr.fiProp"),
           `\xF8${fmt(c.phiProp, 0)}<span class="u"> mm</span>`,
           t("fcr.fiArm", c.phiEstricto > 0 ? fmt(c.phiEstricto, 1) : "\u2014", q(As, "As"), q(c.As0 * c.kEstricto, "As"), "1,00")
         ));
       } else {
         res.append(veredicto(
-          c.k === 0 ? "atencion" : "cumple",
-          c.k === 0 ? t("fcr.sinArm") : t("valida"),
+          c.k === 0 ? "atencion" : sobra ? "nocumple" : "cumple",
+          c.k === 0 ? t("fcr.sinArm") : sobra ? t("aumentar") : t("valida"),
           t("armaduraNec"),
           qh(As, "As"),
           t("fcr.kArm", fmt(c.k, 2), q(c.As0, "As"), "1,00")
@@ -12959,6 +12970,9 @@ tr.et-act td { font-weight: 650; }
     const Asd = c.As0 * c.k;
     if (Asd + 1e-12 < c.Amin) res.append(aviso(t("fcr.bajoMin", q(Asd, "As"), q(c.Amin, "As"))));
     else if (dim && c.As0 * c.kEstricto + 1e-12 < c.Amin) res.append(aviso(t("fcr.mandaMin", q(c.Amin, "As")), "info"));
+    if (c.Amax != null && Asd > c.Amax + 1e-12) res.append(aviso(t("fcr.sobreMax", q(Asd, "As"), q(c.Amax, "As"))));
+    const fuera = gam.find((x) => x.N > d.Ncomp || x.N < d.Ntrac);
+    if (fuera) res.append(aviso(t("fcr.fueraAxil", q(fuera.N > d.Ncomp ? d.Ncomp : d.Ntrac, "N")), "info"));
     if (gam.some((x) => x.subeM)) res.append(aviso(t("fcr.subeEmin", fmt(emin * 1e3, 0)), "info"));
     if (unico) return resultadoUnico(ctx2, res, { s, c, gam: gam[0], gmin, dim });
     const Mmax = (rama) => rama.reduce((a, b) => Math.abs(b.M) > Math.abs(a.M) ? b : a);
