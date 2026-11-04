@@ -18,11 +18,15 @@ import { h, poner, campoNum, segmentado, grupo, aviso, regleta, tabla } from '..
 const FORMAS = ['rectangular', 'pilar', 'T', 'circular', 'generica'];
 const X_INF = 100; // m (100 000 mm): a partir de aquí se toma deformación uniforme (x = ∞)
 const RAD = Math.PI / 180;
+// β de pantalla: ángulo (antihorario desde +x) de la fibra neutra, de modo que β = 0 es la sección en su posición normal
+// (Mx > 0 comprime la cara superior, neutra horizontal). El motor usa el ángulo de la dirección hacia la fibra más comprimida: 90° más.
+const aMotor = (b) => (b + 90) * RAD;
+const deMotor = (rad) => (((rad / RAD - 90) % 360) + 360) % 360;
 const est = {
   i: null, para: null, modo: 'NM',
   N: 0, Mx: 0, My: 0, // kN, kN·m
   e0: 0, kx: 0, ky: 0, // absoluta, 1/m
-  eSup: 0, beta: 90, x: Infinity, // absoluta, grados, m
+  eSup: 0, beta: 0, x: Infinity, // absoluta, grados (de la fibra neutra), m
   gammaC: null, alfaCC: null, phi: 0, lineal: false,
   ultimo: null,
 };
@@ -76,7 +80,7 @@ const leyDe = (mat, lineal) => (lineal ? 'lineal' : mat.diag === 'EC2' ? 'sargin
 function dato() {
   if (est.modo === 'NM') return { tipo: 'NM', N: est.N, Mx: est.Mx, My: est.My };
   if (est.modo === 'eK') return { tipo: 'eK', e0: est.e0, kx: est.kx, ky: est.ky };
-  return { tipo: 'sup', eSup: est.eSup, beta: est.beta * RAD, x: est.x };
+  return { tipo: 'sup', eSup: est.eSup, beta: aMotor(est.beta), x: est.x };
 }
 
 /** Pasa el estado calculado a las variables de los tres modos, para que al cambiar de modo no se pierda. */
@@ -84,7 +88,7 @@ function guarda(r) {
   est.N = r.N; est.Mx = r.Mx; est.My = r.My;
   est.e0 = r.e0; est.kx = r.kx; est.ky = r.ky;
   est.eSup = r.eSup;
-  if (r.beta !== null) est.beta = r.beta / RAD;
+  if (r.beta !== null) est.beta = deMotor(r.beta);
   est.x = Number.isFinite(r.x) ? r.x : (r.x > 0 ? Infinity : -Infinity);
   est.ultimo = r;
 }
@@ -281,8 +285,11 @@ function dibujo(c, r) {
   for (const k of geo.contornos.filter((q) => q.signo > 0)) out.push(`<polygon class="hor" points="${pts2(k.pts.map(Ti))}"/>`);
   out.push(`<path class="ref" d="M${ix - 52} ${iy}H${ix + 56}M${ix} ${iy - 52}V${iy + 56}"/><text x="${ix + 58}" y="${iy + 4}">x</text><text x="${ix + 5}" y="${iy + 68}">y</text>`);
   if (r.beta !== null) {
-    out.push(`<line class="en" x1="${ix}" y1="${iy}" x2="${ix + u[0] * 50}" y2="${iy + u[1] * 50}"/>`);
-    out.push(`<path class="cota" d="M${ix + 26} ${iy}A26 26 0 ${r.beta > Math.PI ? 1 : 0} 0 ${ix + 26 * u[0]} ${iy + 26 * u[1]}"/><text x="${ix + 30}" y="${iy - 6}">β</text>`);
+    // Fibra neutra (β desde +x, antihorario) y arco de β
+    const bn = (((r.beta - Math.PI / 2) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+    const w = [Math.cos(bn), -Math.sin(bn)];
+    out.push(`<line class="en" x1="${ix - w[0] * 50}" y1="${iy - w[1] * 50}" x2="${ix + w[0] * 50}" y2="${iy + w[1] * 50}"/>`);
+    out.push(`<path class="cota" d="M${ix + 26} ${iy}A26 26 0 ${bn > Math.PI ? 1 : 0} 0 ${ix + 26 * w[0]} ${iy + 26 * w[1]}"/><text x="${ix + 30}" y="${iy - 6}">β</text>`);
   }
   return `<svg class="dib et-svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${W} ${H}"${topeEscala(W, H)} role="img" aria-label="${t('est.dibujoAria')}">${out.join('')}</svg>`;
 }
@@ -290,7 +297,7 @@ function dibujo(c, r) {
 // ---------------------------------------------------------------- resultados
 
 const mm = (x) => fmt(x * 1000, 0);
-const grados = (b) => (b === null ? '—' : fmt(b / RAD, 1));
+const grados = (b) => (b === null ? '—' : fmt(deMotor(b), 1));
 const xTxt = (x) => (Number.isFinite(x) ? mm(x) : '∞');
 
 function tablaEstado(r) {
@@ -398,7 +405,7 @@ export function resultados(ctx, res) {
   };
   const sincro = (id, mag, v) => { const el = document.getElementById(`et-${id}`); if (el) el.value = mag === 'ang1' ? String(+v.toFixed(1)) : String(+(v * MAG[mag].f).toFixed(MAG[mag].d ?? 0)); };
   const reg = (id, etq, k, mag, min, max, step, texto, aVar = (v) => v, deVar = (v) => v) => regleta({
-    etq, min, max, step, valor: deVar(est[k]), etiqueta: etq.replace(/<[^>]+>/g, ''), texto,
+    etq, min, max, step, valor: deVar(est[k]), reinicio: 0, etiqueta: etq.replace(/<[^>]+>/g, ''), texto,
     onInput: (v) => { est[k] = aVar(v); sincro(id, mag, est[k]); refresca(); },
     onChange: (v) => { est[k] = aVar(v); ctx.cambio(); },
   });
@@ -420,7 +427,7 @@ export function resultados(ctx, res) {
     const XM = 600;
     const aX = (q) => { const m = q >= 0.999 ? Infinity : (X0 + (XM * q) / (1 - q)) / 1000; return est.eSup < 0 ? -m : m; };
     const deX = (x) => (Number.isFinite(x) && Math.abs(x) < X_INF ? (() => { const m = Math.abs(x) * 1000 - X0; return Math.max(0, m / (m + XM)); })() : 1);
-    regs.push(regleta({ etq: 'x', min: 0, max: 1, step: 0.001, valor: deX(est.x), etiqueta: t('est.nombreX'), texto: (q) => (q >= 0.999 ? '∞' : `${fmt((X0 + (XM * q) / (1 - q)), 0)} mm`),
+    regs.push(regleta({ etq: 'x', min: 0, max: 1, step: 0.001, valor: deX(est.x), etiqueta: t('est.nombreX'), reinicio: 1, texto: (q) => (q >= 0.999 ? '∞' : `${fmt((X0 + (XM * q) / (1 - q)), 0)} mm`),
       onInput: (q) => { est.x = aX(q); sincro('x', 'long', Number.isFinite(est.x) ? est.x : X_INF); refresca(); },
       onChange: (q) => { est.x = aX(q); ctx.cambio(); } }));
   }
