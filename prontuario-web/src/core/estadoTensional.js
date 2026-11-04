@@ -15,7 +15,7 @@
 //
 // Internamente los materiales siguen la convención de materiales.js (compresión negativa, kN/m²).
 
-import { sigma, quiebros } from './materiales.js';
+import { sigma, quiebros, caracteristico } from './materiales.js';
 import { modeloEsviada, esfuerzosPlano } from './esviada.js';
 
 /** Fuera de este rango de deformación la rama de compresión se mantiene plana (la ley de servicio no cae a 0 de golpe). */
@@ -65,10 +65,14 @@ export function leyServicio(mat, { gammaC, alfaCC, phi = 0, lineal = false, fctm
   };
 }
 
-/** Acero de servicio: elástico lineal con su módulo (sin plastificación: si σs supera fyk, el resultado lo dice el que lo lee). */
-export function aceroServicio(mat) {
-  const E = mat.E;
-  return { tipo: 'acero', nombre: mat.nombre, E, fk: mat.fk, gamma: 1, alfa: 1, comp: [[0, 0], [-1, -E]], tracc: [[0, 0], [1, E]], roturaComp: false, roturaTracc: false };
+/**
+ * Acero de servicio: la ley del propio material de la sección (bilineal, con su γS y su εud), con γS como dato.
+ * Por defecto el γS del material; con γS = 1 el diagrama es el característico (fyk). Nunca se sustituye la ley en silencio.
+ */
+export function aceroServicio(mat, gammaS) {
+  const g = gammaS ?? mat.gamma ?? 1;
+  const car = caracteristico(mat); // sin γ: fyk
+  return g === 1 ? car : caracteristico({ ...car, gamma: 1 / g, alfa: 1 }); // de cálculo con el γS pedido: σ/γS
 }
 
 // ---------------------------------------------------------------- modelo
@@ -77,11 +81,11 @@ export function aceroServicio(mat) {
  * @param {Object} geo  geometría del proyecto (contornos, barras, franjas), como en modeloEsviada
  * @param {Object} hormigonMat  hormigón de materiales.js
  * @param {Object} aceroMat  acero de materiales.js
- * @param {{gammaC:number, alfaCC:number, phi?:number, lineal?:boolean, fctm:number}} o
+ * @param {{gammaC:number, alfaCC:number, gammaS?:number, phi?:number, lineal?:boolean, fctm:number}} o
  */
 export function modeloTensional(geo, hormigonMat, aceroMat, o) {
   const ley = leyServicio(hormigonMat, o);
-  const ac = aceroServicio(aceroMat);
+  const ac = aceroServicio(aceroMat, o.gammaS);
   const mI = modeloEsviada(geo, ley.integra, ac);
   const mF = modeloEsviada(geo, ley.fisurada, ac);
   const pts = geo.contornos.flatMap((c) => (c.signo > 0 ? c.pts : []));
@@ -245,6 +249,12 @@ function compone(mod, m, pl, fisurada) {
     return { y: f.y, x1: f.x1, x2: f.x2, A: f.A, e1, e2, s1: sAc(e1), s2: sAc(e2) };
   });
   const avisos = [...mod.ley.avisos];
+  // Acero: plastificado (meseta de su ley) o más allá de su deformación última (la ley da 0): el estado no es de servicio
+  const fyd = mod.acero.tracc[1][1] / 1000;
+  const eud = mod.acero.tracc[mod.acero.tracc.length - 1][0];
+  const todas = [...barras.map((q) => [q.eps, q.sigma]), ...franjas.flatMap((q) => [[q.e1, q.s1], [q.e2, q.s2]])];
+  if (todas.some(([e]) => Math.abs(e) > eud + 1e-12)) avisos.push('acero-eud');
+  else if (todas.some(([, sg]) => Math.abs(sg) >= fyd - 1e-6)) avisos.push('acero-plast');
   if (eSup > 0.0035 * (1 + mod.ley.phi)) avisos.push('eps-cu');
   return {
     ok: true, plano: pl, e0: pl.e0, kx: pl.kx, ky: pl.ky, N: fz.N, Mx: fz.Mx, My: fz.My,
