@@ -1191,6 +1191,13 @@ tr.et-act td { font-weight: 650; }
 .ine-ext th { padding-top: 8px; font-weight: 650; }
 .ine-ext-cab { display: flex; flex-direction: column; gap: 3px; font-size: var(--t-s); color: var(--tinta); }
 .ine-ext-cab .seg { align-self: stretch; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; }
+.dib .et-ba.foco, .dib .et-pt.foco { stroke: var(--acento); stroke-width: 3; }
+.dib .et-fr.foco { stroke: var(--acento); stroke-width: 2.5; }
+.fu-campo.inactivo, .campo.inactivo { opacity: .55; }
+.fu-campo.inactivo .seg button, .campo.inactivo input { cursor: not-allowed; }
+.an-hint { font-size: 10px; line-height: 1.3; color: var(--tinta-3); }
+.tabla-an th.pos { border-bottom: 1px solid var(--linea-fuerte); }
+.tabla-an .g2 { border-left: 1px solid var(--linea-fuerte); }
 </style>
 
 <header class="barra">
@@ -2629,6 +2636,7 @@ tr.et-act td { font-weight: 650; }
     norma: "Norma",
     pie: "Prontuario web, versi\xF3n de prueba. Atajos: Ctrl K comandos \xB7 Ctrl Z deshacer fuera de un campo \xB7 Alt 1\u20264 m\xF3dulos.",
     pendiente: "Pendiente de migrar del Prontuario 3.1",
+    "rg.cero": "Doble clic: llevar a cero",
     "m.proyecto": "Datos de proyecto",
     "m.materiales": "Materiales",
     "m.secciones": "Secciones",
@@ -3082,6 +3090,7 @@ tr.et-act td { font-weight: 650; }
     "fcr.bajoMin": (a, m) => `Armadura dispuesta ${a} menor que la cuant\xEDa m\xEDnima ${m}: aunque cumpla el c\xE1lculo, no cumple el m\xEDnimo.`,
     "fcr.mandaMin": (m) => `Manda la cuant\xEDa m\xEDnima (${m}), no la resistencia.`,
     "fcr.subeEmin": (e2) => `* M elevado a N\xB7e<sub>m\xEDn</sub> (e<sub>m\xEDn</sub> = ${e2} mm).`,
+    "fcr.sobreMax": (a, m) => `Armadura ${a} mayor que la m\xE1xima ${m}: el c\xE1lculo la pide, pero no es ejecutable; aumenta la secci\xF3n o el hormig\xF3n.`,
     "fcr.subtitulo": "Diagrama de interacci\xF3n N-M en rotura",
     "fcr.sinSec": "Crea una secci\xF3n en el m\xF3dulo Secciones.",
     "fcr.compPos": "compresi\xF3n +",
@@ -3668,6 +3677,7 @@ tr.et-act td { font-weight: 650; }
     norma: "Code",
     pie: "Web handbook, test version. Shortcuts: Ctrl K commands \xB7 Ctrl Z undo outside a field \xB7 Alt 1\u20264 modules.",
     pendiente: "Not yet ported from Prontuario 3.1",
+    "rg.cero": "Double-click: reset to zero",
     "m.proyecto": "Project data",
     "m.materiales": "Materials",
     "m.secciones": "Sections",
@@ -4112,6 +4122,7 @@ tr.et-act td { font-weight: 650; }
     "fcr.bajoMin": (a, m) => `Provided reinforcement ${a} is below the minimum ${m}: it passes the calculation but not the minimum.`,
     "fcr.mandaMin": (m) => `The minimum reinforcement (${m}) governs, not strength.`,
     "fcr.subeEmin": (e2) => `* M raised to N\xB7e<sub>min</sub> (e<sub>min</sub> = ${e2} mm).`,
+    "fcr.sobreMax": (a, m) => `Reinforcement ${a} exceeds the maximum ${m}: the calculation asks for it but it cannot be built; enlarge the section or the concrete.`,
     "fcr.subtitulo": "N-M interaction diagram at ultimate",
     "fcr.sinSec": "Create a section in the Sections module.",
     "fcr.compPos": "compression +",
@@ -4537,6 +4548,10 @@ tr.et-act td { font-weight: 650; }
     "an.ce.l": "l<sub>bd</sub>",
     "an.ce.ls": "l<sub>s</sub>",
     "an.aviso.ehe08": "EHE-08 (no vigente): ver art. 69.5; el CE 49.5 es la misma v\xEDa del ensayo de la viga.",
+    "an.no.ehe": "No se aplica en esta norma (solo EHE-08).",
+    "an.no.dist": "No se aplica en esta norma: en EC-2 la separaci\xF3n entra por c<sub>d</sub>.",
+    "an.no.pct23": "No se aplica en esta norma: l<sub>s</sub> = 1,2\xB7l<sub>b</sub> (11.5.2).",
+    "an.no.comp": "No se aplica en compresi\xF3n (\u03B1 = 1).",
     "an.sinAcero": "No hay acero en el proyecto"
   };
 
@@ -4588,6 +4603,10 @@ tr.et-act td { font-weight: 650; }
     "an.n.falta": "Not included",
     "an.ce.tit": "Check against the Spanish Structural Code (art. 49.5)",
     "an.ce.igual": "CE 49.5 never exceeds EC-2 with these data.",
+    "an.no.ehe": "Not applicable in this code (EHE-08 only).",
+    "an.no.dist": "Not applicable in this code: in EC-2 the spacing enters through c<sub>d</sub>.",
+    "an.no.pct23": "Not applicable in this code: l<sub>s</sub> = 1.2\xB7l<sub>b</sub> (11.5.2).",
+    "an.no.comp": "Not applicable in compression (\u03B1 = 1).",
     "an.sinAcero": "There is no steel in the project"
   };
 
@@ -5782,11 +5801,16 @@ tr.et-act td { font-weight: 650; }
     "est.nombreKx": "Curvatura respecto al eje horizontal",
     "est.nombreKy": "Curvatura respecto al eje vertical",
     "est.nombreESup": "Deformaci\xF3n de la fibra m\xE1s comprimida",
-    "est.nombreBeta": "\xC1ngulo de la fibra m\xE1s comprimida",
+    "est.nombreBeta": "\xC1ngulo de la fibra neutra",
     "est.nombreX": "Profundidad de la fibra neutra",
-    "est.infoSup": "\u03B5_sup es la deformaci\xF3n de la fibra m\xE1s comprimida, \u03B2 el \xE1ngulo (antihorario desde +x) de la direcci\xF3n hacia esa fibra y x la profundidad de la fibra neutra medida desde ella. x = \u221E es compresi\xF3n uniforme. Si toda la secci\xF3n est\xE1 en tracci\xF3n, x sale negativa y \u03B5_sup tambi\xE9n.",
+    "est.infoSup": "\u03B5_sup es la deformaci\xF3n de la fibra m\xE1s comprimida, \u03B2 el \xE1ngulo (antihorario desde +x) de la fibra neutra (\u03B2 = 0: neutra horizontal, comprime la cara superior) y x la profundidad de la fibra neutra medida desde ella. x = \u221E es compresi\xF3n uniforme. Si toda la secci\xF3n est\xE1 en tracci\xF3n, x sale negativa y \u03B5_sup tambi\xE9n.",
     "est.refX": "\u2265 100 000 mm: compresi\xF3n uniforme",
     "est.gHormigon": "Hormig\xF3n en servicio",
+    "est.gAcero": "Acero en servicio",
+    "est.gammaS": "\u03B3<sub>S</sub> [\u2014]",
+    "est.infoGammaS": "Acero: se usa la ley de su material (bilineal), con su \u03B3S. Con \u03B3S = 1,00 la meseta es f_yk; con el de c\xE1lculo, f_yk/\u03B3S. Se parte del \u03B3S del material de la secci\xF3n.",
+    "est.avPlast": "La armadura ha llegado a la meseta de su ley (plastifica): el estado no es de servicio.",
+    "est.avEud": "La armadura supera la deformaci\xF3n \xFAltima de su ley (ah\xED la tensi\xF3n es nula): el estado no es de servicio.",
     "est.gammaC": "\u03B3<sub>C</sub> [\u2014]",
     "est.alfaCC": "\u03B1<sub>cc</sub> [\u2014]",
     "est.phi": "\u03C6(t,t<sub>0</sub>) [\u2014]",
@@ -5853,11 +5877,16 @@ tr.et-act td { font-weight: 650; }
     "est.nombreKx": "Curvature about the horizontal axis",
     "est.nombreKy": "Curvature about the vertical axis",
     "est.nombreESup": "Strain of the most compressed fibre",
-    "est.nombreBeta": "Angle of the most compressed fibre",
+    "est.nombreBeta": "Neutral axis angle",
     "est.nombreX": "Neutral axis depth",
-    "est.infoSup": "\u03B5_sup is the strain of the most compressed fibre, \u03B2 the angle (counter-clockwise from +x) of the direction towards that fibre and x the neutral axis depth measured from it. x = \u221E is uniform compression. If the whole section is in tension, x and \u03B5_sup are negative.",
+    "est.infoSup": "\u03B5_sup is the strain of the most compressed fibre, \u03B2 the angle (counter-clockwise from +x) of the neutral axis (\u03B2 = 0: horizontal neutral axis, top face compressed) and x the neutral axis depth measured from it. x = \u221E is uniform compression. If the whole section is in tension, x and \u03B5_sup are negative.",
     "est.refX": "\u2265 100 000 mm: uniform compression",
     "est.gHormigon": "Concrete in service",
+    "est.gAcero": "Steel in service",
+    "est.gammaS": "\u03B3<sub>S</sub> [\u2014]",
+    "est.infoGammaS": "Steel: the law of its material (bilinear) is used, with its \u03B3S. With \u03B3S = 1.00 the plateau is f_yk; with the design value, f_yk/\u03B3S. It starts from the \u03B3S of the section material.",
+    "est.avPlast": "The reinforcement has reached the plateau of its law (it yields): this is not a service state.",
+    "est.avEud": "The reinforcement exceeds the ultimate strain of its law (stress is zero there): this is not a service state.",
     "est.infoGamma": "Concrete properties: with \u03B3C = 1.00 and \u03B1cc = 1.00 characteristic values are used; with design values, reduced ones. They start from those of the section material.",
     "est.infoPhi": "Creep coefficient that stretches the strain axis of the diagram (effective modulus method). 0 = instantaneous load.",
     "est.lineal": "Linear law (E<sub>cm</sub>)",
@@ -6678,7 +6707,7 @@ tr.et-act td { font-weight: 650; }
       )
     );
   }
-  function regleta({ etq, min, max, step = 1, valor, texto, etiqueta, onInput, onChange, clase = "" }) {
+  function regleta({ etq, min, max, step = 1, valor, texto, etiqueta, onInput, onChange, clase = "", reinicio }) {
     const input = h("input", { type: "range", min: String(min), max: String(max), step: String(step), value: String(valor), "aria-label": etiqueta ?? etq ?? "" });
     const out = h("output", { class: "rg-v" });
     const pinta = () => {
@@ -6691,6 +6720,15 @@ tr.et-act td { font-weight: 650; }
       onInput?.(Number(input.value));
     });
     if (onChange) input.addEventListener("change", () => onChange(Number(input.value)));
+    if (reinicio !== void 0) {
+      input.title = t("rg.cero");
+      input.addEventListener("dblclick", () => {
+        input.value = String(reinicio);
+        pinta();
+        onInput?.(Number(input.value));
+        onChange?.(Number(input.value));
+      });
+    }
     pinta();
     const el = h("div", { class: `regleta ${clase}`.trim() }, etq ? h("span", { class: "rg-et", html: etq }) : null, input, out);
     if (!etq) el.classList.add("sin-etq");
@@ -9414,9 +9452,15 @@ tr.et-act td { font-weight: 650; }
       return { tipo, fct, f, z: 0.8 * h2, inf: { W: Ix / (h2 - yg), A: A(Ix / (h2 - yg)) }, sup: { W: Ix / yg, A: A(Ix / yg) } };
     }
     const Nd = Math.max(N, 0);
-    const mec = 0.1 * Nd / fyd;
+    const fycd = norma2 === "EHE-08" ? Math.min(fyd, 4e5) : fyd;
+    const mec = 0.1 * Nd / fycd;
     const geo = (norma2 === "EHE-08" ? 4e-3 : 2e-3) * Ac;
     return { tipo, mec, geo, A: Math.max(mec, geo), fyd, Nd };
+  }
+  function cuantiaMaxima({ norma: norma2, Ac, fcd, fyk, gammaS }) {
+    if (norma2 === "EHE-08") return Ac * fcd / Math.min(fyk / gammaS, 4e5);
+    if (norma2 === "EC2-2004") return 0.04 * Ac;
+    return null;
   }
 
   // src/norma/ehe98/durabilidad.js
@@ -10910,7 +10954,7 @@ tr.et-act td { font-weight: 650; }
     } else {
       filas = [fila6(t("cmin.total"), tot, r.A)];
       const art22 = p.norma === "EHE-08" ? "42.3.3 y tabla 42.3.5" : p.norma === "EC2-2004" ? "9.5.2(2)" : "tabla 12.3";
-      cuentas = [`<span class="f">${sub16("A", "s,min")} = m\xE1x{0,10\xB7N/${sub16("f", "yd")}; ${p.norma === "EHE-08" ? "4\u2030" : "2\u2030"}\xB7${sub16("A", "c")}}</span><span class="n">N = ${fmt(r.Nd, 0)} kN (${t("cmin.nPilar")}) \u2192 0,10\xB7N/${sub16("f", "yd")} = ${v(r.mec, "As")} \xB7 ${v(r.geo, "As")} \u2192 ${v(r.A, "As")}</span><span class="art">${ref3} \xB7 ${art22}</span>`];
+      cuentas = [`<span class="f">${sub16("A", "s,min")} = m\xE1x{0,10\xB7N/${p.norma === "EHE-08" ? sub16("f", "yc,d") : sub16("f", "yd")}; ${p.norma === "EHE-08" ? "4\u2030" : "2\u2030"}\xB7${sub16("A", "c")}}</span><span class="n">N = ${fmt(r.Nd, 0)} kN (${t("cmin.nPilar")}) \u2192 0,10\xB7N/${p.norma === "EHE-08" ? sub16("f", "yc,d") : sub16("f", "yd")} = ${v(r.mec, "As")} \xB7 ${v(r.geo, "As")} \u2192 ${v(r.A, "As")}</span><span class="art">${ref3} \xB7 ${art22}</span>`];
     }
     return [
       h("h3", {}, t("cmin.titulo")),
@@ -12795,6 +12839,8 @@ tr.et-act td { font-weight: 650; }
     const Ac = sec.trapecios.reduce((a, t2) => a + (t2.b1 + t2.b2) / 2 * (t2.y2 - t2.y1), 0);
     const cm = cuantiaMinima({ norma: p.norma, tipo: "pilar", h: 0, Ac, yg: 0, Ix: 0, fctm: 0, fyk: mats.acero.fk, gammaS: mats.acero.gamma, N: Math.max(0, ...ps.map((x) => x.N)) });
     const Amin = cm.A;
+    const fcdH = Math.max(...sec.trapecios[0].mat.comp.map((v2) => -v2[1]), 1);
+    const Amax = cuantiaMaxima({ norma: p.norma, Ac, fcd: fcdH, fyk: mats.acero.fk, gammaS: mats.acero.gamma });
     const kMin = As0 > 0 ? Amin / As0 : 0;
     let k = 1;
     let kEstricto = 1;
@@ -12811,7 +12857,7 @@ tr.et-act td { font-weight: 650; }
       }
     } else if (phi0 && est5.fi > 0) k = (est5.fi / phi0) ** 2;
     const dibujada = Number.isFinite(k) ? escalarArmadura(sec, k) : escalarArmadura(sec, 1);
-    const c = { geo, sec, secD: dibujada, As0, Amin, cm, k, kEstricto, phi0, phiEstricto, phiProp, d: diagramaNM(dibujada, { n: 100, simetrica: true, tol: TOL }), dH: diagramaNM(soloHormigon(sec), { n: 100, simetrica: true, tol: TOL }) };
+    const c = { geo, sec, secD: dibujada, As0, Amin, Amax, cm, k, kEstricto, phi0, phiEstricto, phiProp, d: diagramaNM(dibujada, { n: 100, simetrica: true, tol: TOL }), dH: diagramaNM(soloHormigon(sec), { n: 100, simetrica: true, tol: TOL }) };
     memo = { clave, c };
     return c;
   }
@@ -12908,18 +12954,19 @@ tr.et-act td { font-weight: 650; }
       res.append(veredicto("nocumple", t("aumentar"), t("armaduraNec"), "\u2014", t("fcr.noBasta")));
     } else if (dim) {
       const As = c.As0 * c.k;
+      const sobra = c.Amax != null && As > c.Amax + 1e-12;
       if (c.phiProp) {
         res.append(veredicto(
-          "cumple",
-          t("valida"),
+          sobra ? "nocumple" : "cumple",
+          sobra ? t("aumentar") : t("valida"),
           t("fcr.fiProp"),
           `\xF8${fmt(c.phiProp, 0)}<span class="u"> mm</span>`,
           t("fcr.fiArm", c.phiEstricto > 0 ? fmt(c.phiEstricto, 1) : "\u2014", q(As, "As"), q(c.As0 * c.kEstricto, "As"), "1,00")
         ));
       } else {
         res.append(veredicto(
-          c.k === 0 ? "atencion" : "cumple",
-          c.k === 0 ? t("fcr.sinArm") : t("valida"),
+          c.k === 0 ? "atencion" : sobra ? "nocumple" : "cumple",
+          c.k === 0 ? t("fcr.sinArm") : sobra ? t("aumentar") : t("valida"),
           t("armaduraNec"),
           qh(As, "As"),
           t("fcr.kArm", fmt(c.k, 2), q(c.As0, "As"), "1,00")
@@ -12939,6 +12986,9 @@ tr.et-act td { font-weight: 650; }
     const Asd = c.As0 * c.k;
     if (Asd + 1e-12 < c.Amin) res.append(aviso(t("fcr.bajoMin", q(Asd, "As"), q(c.Amin, "As"))));
     else if (dim && c.As0 * c.kEstricto + 1e-12 < c.Amin) res.append(aviso(t("fcr.mandaMin", q(c.Amin, "As")), "info"));
+    if (c.Amax != null && Asd > c.Amax + 1e-12) res.append(aviso(t("fcr.sobreMax", q(Asd, "As"), q(c.Amax, "As"))));
+    const fuera = gam.find((x) => x.N > d.Ncomp || x.N < d.Ntrac);
+    if (fuera) res.append(aviso(t("fcr.fueraAxil", q(fuera.N > d.Ncomp ? d.Ncomp : d.Ntrac, "N")), "info"));
     if (gam.some((x) => x.subeM)) res.append(aviso(t("fcr.subeEmin", fmt(emin * 1e3, 0)), "info"));
     if (unico) return resultadoUnico(ctx2, res, { s, c, gam: gam[0], gmin, dim });
     const Mmax = (rama) => rama.reduce((a, b) => Math.abs(b.M) > Math.abs(a.M) ? b : a);
@@ -14315,13 +14365,14 @@ tr.et-act td { font-weight: 650; }
       avisos: avisos4
     };
   }
-  function aceroServicio(mat) {
-    const E = mat.E;
-    return { tipo: "acero", nombre: mat.nombre, E, fk: mat.fk, gamma: 1, alfa: 1, comp: [[0, 0], [-1, -E]], tracc: [[0, 0], [1, E]], roturaComp: false, roturaTracc: false };
+  function aceroServicio(mat, gammaS) {
+    const g = gammaS ?? mat.gamma ?? 1;
+    const car = caracteristico(mat);
+    return g === 1 ? car : caracteristico({ ...car, gamma: 1 / g, alfa: 1 });
   }
   function modeloTensional(geo, hormigonMat, aceroMat, o) {
     const ley = leyServicio(hormigonMat, o);
-    const ac = aceroServicio(aceroMat);
+    const ac = aceroServicio(aceroMat, o.gammaS);
     const mI = modeloEsviada(geo, ley.integra, ac);
     const mF = modeloEsviada(geo, ley.fisurada, ac);
     const pts = geo.contornos.flatMap((c) => c.signo > 0 ? c.pts : []);
@@ -14451,6 +14502,11 @@ tr.et-act td { font-weight: 650; }
       return { y: f.y, x1: f.x1, x2: f.x2, A: f.A, e1, e2, s1: sAc(e1), s2: sAc(e2) };
     });
     const avisos4 = [...mod.ley.avisos];
+    const fyd = mod.acero.tracc[1][1] / 1e3;
+    const eud = mod.acero.tracc[mod.acero.tracc.length - 1][0];
+    const todas = [...barras.map((q2) => [q2.eps, q2.sigma]), ...franjas.flatMap((q2) => [[q2.e1, q2.s1], [q2.e2, q2.s2]])];
+    if (todas.some(([e2]) => Math.abs(e2) > eud + 1e-12)) avisos4.push("acero-eud");
+    else if (todas.some(([, sg]) => Math.abs(sg) >= fyd - 1e-6)) avisos4.push("acero-plast");
     if (eSup > 35e-4 * (1 + mod.ley.phi)) avisos4.push("eps-cu");
     return {
       ok: true,
@@ -14479,6 +14535,8 @@ tr.et-act td { font-weight: 650; }
   var FORMAS4 = ["rectangular", "pilar", "T", "circular", "generica"];
   var X_INF = 100;
   var RAD = Math.PI / 180;
+  var aMotor = (b) => (b + 90) * RAD;
+  var deMotor = (rad5) => ((rad5 / RAD - 90) % 360 + 360) % 360;
   var est7 = {
     i: null,
     para: null,
@@ -14492,11 +14550,12 @@ tr.et-act td { font-weight: 650; }
     ky: 0,
     // absoluta, 1/m
     eSup: 0,
-    beta: 90,
+    beta: 0,
     x: Infinity,
-    // absoluta, grados, m
+    // absoluta, grados (de la fibra neutra), m
     gammaC: null,
     alfaCC: null,
+    gammaS: null,
     phi: 0,
     lineal: false,
     ultimo: null
@@ -14520,9 +14579,10 @@ tr.et-act td { font-weight: 650; }
     const prop = propiedadesHormigon(fck, p.norma, opcionesHormigon(mats.fichaH, p.norma));
     const gammaC = est7.gammaC ?? prop.gammaC;
     const alfaCC = est7.alfaCC ?? prop.alfa;
-    const clave = JSON.stringify([p.norma, s.geo, s.armado, s.hormigon, s.acero, gammaC, alfaCC, est7.phi, est7.lineal]);
+    const gammaS = est7.gammaS ?? mats.acero.gamma;
+    const clave = JSON.stringify([p.norma, s.geo, s.armado, s.hormigon, s.acero, gammaC, alfaCC, gammaS, est7.phi, est7.lineal]);
     if (memo3.clave === clave) return memo3.c;
-    const mod = modeloTensional(geo, mats.hormigon, mats.acero, { gammaC, alfaCC, phi: est7.phi, lineal: est7.lineal, fctm: prop.fctm });
+    const mod = modeloTensional(geo, mats.hormigon, mats.acero, { gammaC, alfaCC, gammaS, phi: est7.phi, lineal: est7.lineal, fctm: prop.fctm });
     const caja = geo.caja;
     const bx = caja.xmax - caja.xmin;
     const hy = caja.ymax - caja.ymin;
@@ -14536,6 +14596,7 @@ tr.et-act td { font-weight: 650; }
       prop,
       gammaC,
       alfaCC,
+      gammaS,
       fck,
       bx,
       hy,
@@ -14544,8 +14605,9 @@ tr.et-act td { font-weight: 650; }
         N: [Math.round(-0.8 * fyk * As * 1e3 / 10) * 10 || -100, Math.round(0.6 * fck * Ac * 1e3 / 10) * 10],
         Mx: Math.ceil(0.6 * fck * 1e3 * (Ac * hy) / 6 / 10) * 10 || 100,
         My: Math.ceil(0.6 * fck * 1e3 * (Ac * bx) / 6 / 10) * 10 || 100,
-        kx: 8 / hy,
-        ky: 8 / bx
+        kx: 8e-3 / hy,
+        ky: 8e-3 / bx
+        // 8 ‰ de deformación a lo largo del canto, no más
       },
       lector: leyDe(mats.hormigon, est7.lineal)
     };
@@ -14556,7 +14618,7 @@ tr.et-act td { font-weight: 650; }
   function dato() {
     if (est7.modo === "NM") return { tipo: "NM", N: est7.N, Mx: est7.Mx, My: est7.My };
     if (est7.modo === "eK") return { tipo: "eK", e0: est7.e0, kx: est7.kx, ky: est7.ky };
-    return { tipo: "sup", eSup: est7.eSup, beta: est7.beta * RAD, x: est7.x };
+    return { tipo: "sup", eSup: est7.eSup, beta: aMotor(est7.beta), x: est7.x };
   }
   function guarda(r) {
     est7.N = r.N;
@@ -14566,7 +14628,7 @@ tr.et-act td { font-weight: 650; }
     est7.kx = r.kx;
     est7.ky = r.ky;
     est7.eSup = r.eSup;
-    if (r.beta !== null) est7.beta = r.beta / RAD;
+    if (r.beta !== null) est7.beta = deMotor(r.beta);
     est7.x = Number.isFinite(r.x) ? r.x : r.x > 0 ? Infinity : -Infinity;
     est7.ultimo = r;
   }
@@ -14635,7 +14697,7 @@ tr.et-act td { font-weight: 650; }
         num4("x", "x", "x", "long", { paso: 0.01, nombre: t("est.nombreX"), ref: t("est.refX") })
       ]
     };
-    const gamma = (id, etq, k, defecto) => campoNum({ id: `et-${id}`, etq, valor: fmt(est7[k] ?? defecto, 2), mag: null, paso: 0.05, min: 0.01, max: 10, sinUd: true, nombre: etq.replace(/<[^>]+>/g, ""), info: id === "gc" ? t("est.infoGamma") : void 0, onCambio: (v2) => {
+    const gamma = (id, etq, k, defecto) => campoNum({ id: `et-${id}`, etq, valor: fmt(est7[k] ?? defecto, 2), mag: null, paso: 0.05, min: 0.01, max: 10, sinUd: true, nombre: etq.replace(/<[^>]+>/g, ""), info: id === "gc" ? t("est.infoGamma") : id === "gs" ? t("est.infoGammaS") : void 0, onCambio: (v2) => {
       est7[k] = v2;
       ctx2.pintar();
     } });
@@ -14664,7 +14726,8 @@ tr.et-act td { font-weight: 650; }
           h("span", {}, "E", h("sub", {}, "c,eff"), ` ${fmt(c.mod.ley.pendiente / 1e3, 0)} MPa`),
           h("span", {}, `n = ${fmt(c.mod.acero.E / c.mod.ley.pendiente, 1)}`)
         ) : null
-      )
+      ),
+      grupo(t("est.gAcero"), c ? gamma("gs", t("est.gammaS"), "gammaS", c.gammaS) : null)
     );
   }
   function recorta(pts, f) {
@@ -14694,7 +14757,7 @@ tr.et-act td { font-weight: 650; }
     const xc = mod.xc;
     const yc = mod.yc;
     const diag = Math.hypot(c.bx, c.hy);
-    const S = (H - 130) / diag;
+    const S = Math.min((H - 130) / diag, SECCION_MAX / Math.max(c.bx, c.hy));
     const cx = W * 0.36;
     const cy = H / 2 + 14;
     const T = (p) => {
@@ -14748,17 +14811,20 @@ tr.et-act td { font-weight: 650; }
       out.push(`<text class="fuerte" x="${x0 + 40}" y="${(yTop + yBot) / 2}">x = \u221E</text>`);
     }
     const ver = visibles(filasArmadura(r));
-    const puestas = [];
+    const etiquetas2 = [];
     for (const [ib, b] of r.barras.entries()) {
       const q2 = T([b.x, b.y]);
       const rr = Math.max(3.5, S * Math.sqrt(b.A / Math.PI));
-      out.push(`<circle class="et-ba ${b.sigma >= 0 ? "c" : "t"}" cx="${q2[0].toFixed(1)}" cy="${q2[1].toFixed(1)}" r="${rr.toFixed(1)}"/>`);
-      if (ver.has(ib)) {
-        let fila6 = 0;
-        while (puestas.some((o) => o.fila === fila6 && Math.abs(o.x - q2[0]) < 46 && Math.abs(o.y - q2[1]) < 30)) fila6++;
-        puestas.push({ x: q2[0], y: q2[1], fila: fila6 });
-        out.push(`<text x="${q2[0].toFixed(1)}" y="${(q2[1] + rr + 12 + fila6 * 12).toFixed(1)}" text-anchor="middle">${fmt(b.sigma, 0)}</text>`);
-      }
+      out.push(`<circle class="et-ba ${b.sigma >= 0 ? "c" : "t"}" data-ref="b${ib}" cx="${q2[0].toFixed(1)}" cy="${q2[1].toFixed(1)}" r="${rr.toFixed(1)}"/>`);
+      if (ver.has(ib)) etiquetas2.push({ ib, q: q2, rr, s: b.sigma });
+    }
+    const puestas = [];
+    for (const e2 of etiquetas2.sort((p, q2) => Math.abs(q2.s) - Math.abs(p.s))) {
+      const x = e2.q[0];
+      const y = e2.q[1] + e2.rr + 12;
+      if (puestas.some((o) => Math.abs(o.x - x) < 80 && Math.abs(o.y - y) < 16)) continue;
+      puestas.push({ x, y });
+      out.push(`<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle">${fmt(e2.s, MAG.tension.d)}</text>`);
     }
     for (const [jf, f] of r.franjas.entries()) {
       const th = Math.max(5, S * f.A / (f.x2 - f.x1) / 2) / S;
@@ -14767,7 +14833,7 @@ tr.et-act td { font-weight: 650; }
       for (const [ie, [xe, se, lado]] of [[f.x1, f.s1, -1], [f.x2, f.s2, 1]].entries()) {
         const q2 = T([xe, f.y]);
         const eti = ver.has(r.barras.length + 2 * jf + ie);
-        out.push(`<circle class="et-pt" cx="${q2[0].toFixed(1)}" cy="${q2[1].toFixed(1)}" r="3"/>${eti ? `<text x="${(q2[0] + lado * 8).toFixed(1)}" y="${(q2[1] + 4).toFixed(1)}" text-anchor="${lado > 0 ? "start" : "end"}">${fmt(se, 0)}</text>` : ""}`);
+        out.push(`<circle class="et-pt" data-ref="f${jf}-${ie}" cx="${q2[0].toFixed(1)}" cy="${q2[1].toFixed(1)}" r="3"/>${eti ? `<text x="${(q2[0] + lado * 8).toFixed(1)}" y="${(q2[1] + 4).toFixed(1)}" text-anchor="${lado > 0 ? "start" : "end"}">${fmt(se, MAG.tension.d)}</text>` : ""}`);
       }
     }
     const c0 = T([xc, yc]);
@@ -14780,13 +14846,15 @@ tr.et-act td { font-weight: 650; }
     for (const k of geo.contornos.filter((q2) => q2.signo > 0)) out.push(`<polygon class="hor" points="${pts2(k.pts.map(Ti))}"/>`);
     out.push(`<path class="ref" d="M${ix - 52} ${iy}H${ix + 56}M${ix} ${iy - 52}V${iy + 56}"/><text x="${ix + 58}" y="${iy + 4}">x</text><text x="${ix + 5}" y="${iy + 68}">y</text>`);
     if (r.beta !== null) {
-      out.push(`<line class="en" x1="${ix}" y1="${iy}" x2="${ix + u[0] * 50}" y2="${iy + u[1] * 50}"/>`);
-      out.push(`<path class="cota" d="M${ix + 26} ${iy}A26 26 0 ${r.beta > Math.PI ? 1 : 0} 0 ${ix + 26 * u[0]} ${iy + 26 * u[1]}"/><text x="${ix + 30}" y="${iy - 6}">\u03B2</text>`);
+      const bn = ((r.beta - Math.PI / 2) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+      const w = [Math.cos(bn), -Math.sin(bn)];
+      out.push(`<line class="en" x1="${ix - w[0] * 50}" y1="${iy - w[1] * 50}" x2="${ix + w[0] * 50}" y2="${iy + w[1] * 50}"/>`);
+      out.push(`<path class="cota" d="M${ix + 26} ${iy}A26 26 0 ${bn > Math.PI ? 1 : 0} 0 ${ix + 26 * w[0]} ${iy + 26 * w[1]}"/><text x="${ix + 30}" y="${iy - 6}">\u03B2</text>`);
     }
-    return `<svg class="dib et-svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${W} ${H}" role="img" aria-label="${t("est.dibujoAria")}">${out.join("")}</svg>`;
+    return `<svg class="dib et-svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${W} ${H}"${topeEscala(W, H)} role="img" aria-label="${t("est.dibujoAria")}">${out.join("")}</svg>`;
   }
   var mm2 = (x) => fmt(x * 1e3, 0);
-  var grados = (b) => b === null ? "\u2014" : fmt(b / RAD, 1);
+  var grados = (b) => b === null ? "\u2014" : fmt(deMotor(b), 1);
   var xTxt = (x) => Number.isFinite(x) ? mm2(x) : "\u221E";
   function tablaEstado(r) {
     const fila6 = (k, etq, a, b, c) => Object.assign([etq, a, b, c], { clase: est7.modo === k ? "et-act" : "" });
@@ -14804,10 +14872,10 @@ tr.et-act td { font-weight: 650; }
     ], { cabecera: ["", "\u03B5 [\u2030]", "\u03C3 [MPa]"] });
   }
   function filasArmadura(r) {
-    const b = r.barras.map((q2, i) => ({ id: String(i + 1), x: q2.x, y: q2.y, e: q2.eps, s: q2.sigma }));
+    const b = r.barras.map((q2, i) => ({ ref: `b${i}`, id: String(i + 1), x: q2.x, y: q2.y, e: q2.eps, s: q2.sigma }));
     const f = r.franjas.flatMap((q2, i) => [
-      { id: `F${i + 1}\xB7${t("est.izq")}`, x: q2.x1, y: q2.y, e: q2.e1, s: q2.s1 },
-      { id: `F${i + 1}\xB7${t("est.der")}`, x: q2.x2, y: q2.y, e: q2.e2, s: q2.s2 }
+      { ref: `f${i}-0`, id: `F${i + 1}\xB7${t("est.izq")}`, x: q2.x1, y: q2.y, e: q2.e1, s: q2.s1 },
+      { ref: `f${i}-1`, id: `F${i + 1}\xB7${t("est.der")}`, x: q2.x2, y: q2.y, e: q2.e2, s: q2.s2 }
     ]);
     return [...b, ...f];
   }
@@ -14843,6 +14911,7 @@ tr.et-act td { font-weight: 650; }
     };
     const ver = visibles(todas);
     const marcadas = filas.map((f, i) => {
+      f.ref = todas[i].ref;
       if (todas[i].s === smax || todas[i].s === smin) f[4] = `<b>${f[4]}</b>`;
       return f;
     }).filter((_2, i) => ver.has(i));
@@ -14873,6 +14942,8 @@ tr.et-act td { font-weight: 650; }
     if (c.mod.ley.avisos.includes("PR")) res.append(aviso(t("est.avPR")));
     if (c.mod.ley.avisos.includes("lineal")) res.append(aviso(t("est.avLineal")));
     if (r.avisos.includes("eps-cu")) res.append(aviso(t("est.avEpsCu")));
+    if (r.avisos.includes("acero-plast")) res.append(aviso(t("est.avPlast")));
+    if (r.avisos.includes("acero-eud")) res.append(aviso(t("est.avEud")));
     const lienzo = h("div", { class: "lienzo et-lienzo", html: dibujo(c, r) });
     const derecha = h("article", { class: "panel tarjeta et-der-card" });
     const llena = (rr) => derecha.replaceChildren(tablaEstado(rr), h("h3", {}, t("est.tFibras")), tablaFibras(rr), tablaBarras(ctx2, rr));
@@ -14898,6 +14969,7 @@ tr.et-act td { font-weight: 650; }
       max,
       step,
       valor: deVar(est7[k]),
+      reinicio: 0,
       etiqueta: etq.replace(/<[^>]+>/g, ""),
       texto,
       onInput: (v2) => {
@@ -14940,6 +15012,7 @@ tr.et-act td { font-weight: 650; }
         step: 1e-3,
         valor: deX(est7.x),
         etiqueta: t("est.nombreX"),
+        reinicio: 1,
         texto: (q2) => q2 >= 0.999 ? "\u221E" : `${fmt(X02 + XM2 * q2 / (1 - q2), 0)} mm`,
         onInput: (q2) => {
           est7.x = aX(q2);
@@ -15607,15 +15680,31 @@ tr.et-act td { font-weight: 650; }
       D[k] = v2;
       cambio();
     };
-    const seg = (k, opciones, etq, est13 = true) => h(
+    const comp = D.esfuerzo === "compresion";
+    const n = idNorma(p);
+    const inactivo = (c, motivo) => {
+      if (!motivo) return c;
+      c.classList.add("inactivo");
+      c.title = motivo;
+      c.querySelectorAll("input,button").forEach((e2) => {
+        e2.disabled = true;
+        e2.title = motivo;
+      });
+      c.append(h("span", { class: "an-hint", html: motivo }));
+      return c;
+    };
+    const seg = (k, opciones, etq, est13 = true, motivo = null) => inactivo(h(
       "div",
       { class: "fu-campo" },
-      h("span", { class: "etq-grupo" }, etq),
-      segmentado({ opciones, valor: D[k], ancho: true, etiqueta: etq, onCambio: (v2) => {
+      h("span", { class: "etq-grupo", html: etq }),
+      segmentado({ opciones, valor: motivo ? null : D[k], ancho: true, etiqueta: etq, onCambio: (v2) => {
         D[k] = v2;
         cambio(est13);
       } })
-    );
+    ), motivo);
+    const noEHE = ehe ? null : t("an.no.ehe");
+    const noDist = ehe ? comp ? t("an.no.comp") : null : t("an.no.dist");
+    const noPct = n === "EC2-2023" ? t("an.no.pct23") : ehe && comp ? t("an.no.comp") : null;
     poner(form, h("div", { class: "cab" }, h("h1", {}, t("m.anclaje")), h("p", {}, t("an.subtitulo"))));
     poner(
       form,
@@ -15636,12 +15725,12 @@ tr.et-act td { font-weight: 650; }
           campoNum({ id: "an-r", etq: t("an.r"), valor: D.r, mag: "pct", paso: 5, min: 1, max: 100, ayuda: t("an.rAyuda"), onCambio: set("r") }),
           campoNum({ id: "an-cd", etq: t("an.cd"), valor: D.cd, mag: "diam", paso: 5, min: 0, max: 200, ayuda: t("an.cdAyuda"), onCambio: set("cd") })
         ),
-        ehe ? seg("via", [["viga", t("an.viaViga")], ["corrugas", t("an.viaCorr")]], t("an.via")) : null
+        seg("via", [["viga", t("an.viaViga")], ["corrugas", t("an.viaCorr")]], t("an.via"), true, noEHE)
       ),
       grupo(
         t("an.solapo"),
-        campoNum({ id: "an-pct", etq: t("an.pct"), valor: D.pct, mag: "pct", paso: 5, min: 1, max: 100, ayuda: t("an.pctAyuda"), onCambio: set("pct") }),
-        ehe ? seg("lejos", [[false, t("an.cerca")], [true, t("an.lejos")]], t("an.dist")) : null
+        inactivo(campoNum({ id: "an-pct", etq: t("an.pct"), valor: D.pct, mag: "pct", paso: 5, min: 1, max: 100, ayuda: t("an.pctAyuda"), onCambio: set("pct") }), noPct),
+        seg("lejos", [[false, t("an.cerca")], [true, t("an.lejos")]], t("an.dist"), true, noDist)
       )
     );
   }
@@ -15727,6 +15816,9 @@ tr.et-act td { font-weight: 650; }
     const art5 = articulo(p, D);
     const ehe = idNorma(p) === "EHE-08";
     const esf = comp ? t("an.compresion") : t("an.traccion");
+    const posC = (c) => `<b>${t("an.col." + c)}</b><br><span class="u u-cab">${t(c === "I" ? "an.favorable" : "an.desfavorable")}</span>`;
+    const sub210 = comp ? [`l<sub>bd</sub>`, `l<sub>s</sub>`] : [`l<sub>bd</sub> ${t("an.col.recta")}`, `l<sub>bd</sub> ${t("an.col.patilla")}`, `l<sub>s</sub>`];
+    const nc = sub210.length;
     const cab = h(
       "thead",
       {},
@@ -15734,33 +15826,21 @@ tr.et-act td { font-weight: 650; }
         "tr",
         {},
         h("th", { rowspan: "2", html: `${t("an.col.d")}${ESP}<span class="u u-cab">[mm]</span>` }),
-        h("th", { colspan: comp ? "2" : "4", html: t("an.col.anclaje", esf.toLowerCase()) }),
-        h("th", { colspan: "2", html: t("an.col.solapo", esf.toLowerCase()) })
+        h("th", { colspan: String(nc), class: "pos", html: posC("I") }),
+        h("th", { colspan: String(nc), class: "pos", html: posC("II") })
       ),
-      h(
-        "tr",
-        {},
-        ...comp ? [h("th", { html: `${t("an.col.I")}<br><span class="u u-cab">${t("an.favorable")}</span>` }), h("th", { html: `${t("an.col.II")}<br><span class="u u-cab">${t("an.desfavorable")}</span>` })] : [h("th", { html: `I ${t("an.col.recta")}` }), h("th", { html: `I ${t("an.col.patilla")}` }), h("th", { html: `II ${t("an.col.recta")}` }), h("th", { html: `II ${t("an.col.patilla")}` })],
-        h("th", { html: `${t("an.col.I")}<br><span class="u u-cab">${t("an.favorable")}</span>` }),
-        h("th", { html: `${t("an.col.II")}<br><span class="u u-cab">${t("an.desfavorable")}</span>` })
-      )
+      h("tr", {}, ...[...sub210, ...sub210].map((c) => h("th", { html: c })))
     );
     const cuerpo = h("tbody", {}, ...r.filas.map((f) => h(
       "tr",
       {},
       h("th", { scope: "row" }, String(f.phi)),
-      ...comp ? [h("td", {}, num2(f.I[0])), h("td", {}, num2(f.II[0]))] : [h("td", {}, num2(f.I[0])), h("td", {}, num2(f.I[1])), h("td", {}, num2(f.II[0])), h("td", {}, num2(f.II[1]))],
-      h("td", {}, num2(f.sI)),
-      h("td", {}, num2(f.sII))
+      ...comp ? [h("td", {}, num2(f.I[0])), h("td", {}, num2(f.sI)), h("td", {}, num2(f.II[0])), h("td", {}, num2(f.sII))] : [h("td", {}, num2(f.I[0])), h("td", {}, num2(f.I[1])), h("td", {}, num2(f.sI)), h("td", {}, num2(f.II[0])), h("td", {}, num2(f.II[1])), h("td", {}, num2(f.sII))]
     )));
     const extraA = ehe ? D.lejos ? t("an.aLejos") : t("an.aCerca") : "";
     const ficha = t("an.ficha", r.hor.nombre, r.ace.nombre, esf.toLowerCase(), fmt(D.r, 0), D.cd > 0 ? t("an.cdVal", fmt(D.cd, 0)) : t("an.cdSin"), fmt(D.pct, 0), extraA);
-    const hdr = [
-      `${t("an.col.d")} [mm]`,
-      ...comp ? [`${t("an.col.anclaje", esf.toLowerCase()).replace(/<[^>]+>/g, "")} ${t("an.col.I")}`, `${t("an.col.anclaje", esf.toLowerCase()).replace(/<[^>]+>/g, "")} ${t("an.col.II")}`] : ["I recta", "I patilla", "II recta", "II patilla"].map((c) => `${t("an.col.anclaje", esf.toLowerCase()).replace(/<[^>]+>/g, "")} ${c}`),
-      `${t("an.col.solapo", esf.toLowerCase()).replace(/<[^>]+>/g, "")} I`,
-      `${t("an.col.solapo", esf.toLowerCase()).replace(/<[^>]+>/g, "")} II`
-    ];
+    const txt = (x) => x.replace(/<[^>]+>/g, "");
+    const hdr = [`${t("an.col.d")} [mm]`, ...["I", "II"].flatMap((c) => sub210.map((x) => `${t("an.col." + c)} \xB7 ${txt(x)}`))];
     const texto = () => [
       ficha.replace(/<[^>]+>/g, "").replace(/ /g, " "),
       hdr.join("	"),
@@ -15777,6 +15857,9 @@ tr.et-act td { font-weight: 650; }
       }
     };
     const tablaEl = h("table", { class: "tabla-dur tabla-an", id: "an-tabla" }, cab, cuerpo);
+    [...cuerpo.rows].forEach((tr) => tr.cells[1 + nc].classList.add("g2"));
+    cab.rows[0].cells[2].classList.add("g2");
+    cab.rows[1].cells[nc].classList.add("g2");
     tablaEl.addEventListener("copy", (e2) => {
       e2.preventDefault();
       e2.clipboardData.setData("text/plain", texto());
@@ -21535,7 +21618,7 @@ tr.et-act td { font-weight: 650; }
   }
 
   // src/ui/app.js
-  var EMISION = true ? "01.11.26" : (/* @__PURE__ */ new Date()).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "2-digit" }).replace(/\//g, ".");
+  var EMISION = true ? "04.11.26" : (/* @__PURE__ */ new Date()).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "2-digit" }).replace(/\//g, ".");
   function vistaSecciones(m, propia) {
     const fijar = (f) => (...a) => {
       modo(m);

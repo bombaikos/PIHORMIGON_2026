@@ -31,8 +31,22 @@ export function datos(ctx, form) {
   const ehe = normaEHE(p);
   const cambio = (estructura) => ctx.cambio(estructura ? { estructura: true } : undefined);
   const set = (k) => (v) => { D[k] = v; cambio(); };
-  const seg = (k, opciones, etq, est = true) => h('div', { class: 'fu-campo' }, h('span', { class: 'etq-grupo' }, etq),
-    segmentado({ opciones, valor: D[k], ancho: true, etiqueta: etq, onCambio: (v) => { D[k] = v; cambio(est); } }));
+  const comp = D.esfuerzo === 'compresion';
+  const n = idNorma(p);
+  // Los mismos campos con cualquier norma: los que no se aplican se desactivan y dicen por qué (hint y línea bajo el campo)
+  const inactivo = (c, motivo) => {
+    if (!motivo) return c;
+    c.classList.add('inactivo');
+    c.title = motivo;
+    c.querySelectorAll('input,button').forEach((e) => { e.disabled = true; e.title = motivo; });
+    c.append(h('span', { class: 'an-hint', html: motivo }));
+    return c;
+  };
+  const seg = (k, opciones, etq, est = true, motivo = null) => inactivo(h('div', { class: 'fu-campo' }, h('span', { class: 'etq-grupo', html: etq }),
+    segmentado({ opciones, valor: motivo ? null : D[k], ancho: true, etiqueta: etq, onCambio: (v) => { D[k] = v; cambio(est); } })), motivo);
+  const noEHE = ehe ? null : t('an.no.ehe');
+  const noDist = ehe ? (comp ? t('an.no.comp') : null) : t('an.no.dist');
+  const noPct = n === 'EC2-2023' ? t('an.no.pct23') : ehe && comp ? t('an.no.comp') : null;
   poner(form, h('div', { class: 'cab' }, h('h1', {}, t('m.anclaje')), h('p', {}, t('an.subtitulo'))));
   poner(form,
     grupo(t('an.materiales'), par(
@@ -43,10 +57,10 @@ export function datos(ctx, form) {
       par(
         campoNum({ id: 'an-r', etq: t('an.r'), valor: D.r, mag: 'pct', paso: 5, min: 1, max: 100, ayuda: t('an.rAyuda'), onCambio: set('r') }),
         campoNum({ id: 'an-cd', etq: t('an.cd'), valor: D.cd, mag: 'diam', paso: 5, min: 0, max: 200, ayuda: t('an.cdAyuda'), onCambio: set('cd') })),
-      ehe ? seg('via', [['viga', t('an.viaViga')], ['corrugas', t('an.viaCorr')]], t('an.via')) : null),
+      seg('via', [['viga', t('an.viaViga')], ['corrugas', t('an.viaCorr')]], t('an.via'), true, noEHE)),
     grupo(t('an.solapo'),
-      campoNum({ id: 'an-pct', etq: t('an.pct'), valor: D.pct, mag: 'pct', paso: 5, min: 1, max: 100, ayuda: t('an.pctAyuda'), onCambio: set('pct') }),
-      ehe ? seg('lejos', [[false, t('an.cerca')], [true, t('an.lejos')]], t('an.dist')) : null));
+      inactivo(campoNum({ id: 'an-pct', etq: t('an.pct'), valor: D.pct, mag: 'pct', paso: 5, min: 1, max: 100, ayuda: t('an.pctAyuda'), onCambio: set('pct') }), noPct),
+      seg('lejos', [[false, t('an.cerca')], [true, t('an.lejos')]], t('an.dist'), true, noDist)));
 }
 
 /** Entrada común del núcleo para un diámetro y una posición. */
@@ -130,24 +144,24 @@ export function resultados(ctx, res) {
   const ehe = idNorma(p) === 'EHE-08';
   // Cabecera con dos filas: grupos (anclaje, solapo) y posiciones
   const esf = comp ? t('an.compresion') : t('an.traccion');
+  const posC = (c) => `<b>${t('an.col.' + c)}</b><br><span class="u u-cab">${t(c === 'I' ? 'an.favorable' : 'an.desfavorable')}</span>`;
+  const sub2 = comp
+    ? [`l<sub>bd</sub>`, `l<sub>s</sub>`]
+    : [`l<sub>bd</sub> ${t('an.col.recta')}`, `l<sub>bd</sub> ${t('an.col.patilla')}`, `l<sub>s</sub>`];
+  const nc = sub2.length;
+  // Dos filas: la posición (I, II) es una celda compartida de la que cuelgan anclaje recto, anclaje con patilla y solapo
   const cab = h('thead', {},
     h('tr', {}, h('th', { rowspan: '2', html: `${t('an.col.d')}${ESP}<span class="u u-cab">[mm]</span>` }),
-      h('th', { colspan: comp ? '2' : '4', html: t('an.col.anclaje', esf.toLowerCase()) }),
-      h('th', { colspan: '2', html: t('an.col.solapo', esf.toLowerCase()) })),
-    h('tr', {}, ...(comp
-      ? [h('th', { html: `${t('an.col.I')}<br><span class="u u-cab">${t('an.favorable')}</span>` }), h('th', { html: `${t('an.col.II')}<br><span class="u u-cab">${t('an.desfavorable')}</span>` })]
-      : [h('th', { html: `I ${t('an.col.recta')}` }), h('th', { html: `I ${t('an.col.patilla')}` }), h('th', { html: `II ${t('an.col.recta')}` }), h('th', { html: `II ${t('an.col.patilla')}` })]),
-    h('th', { html: `${t('an.col.I')}<br><span class="u u-cab">${t('an.favorable')}</span>` }), h('th', { html: `${t('an.col.II')}<br><span class="u u-cab">${t('an.desfavorable')}</span>` })));
+      h('th', { colspan: String(nc), class: 'pos', html: posC('I') }), h('th', { colspan: String(nc), class: 'pos', html: posC('II') })),
+    h('tr', {}, ...[...sub2, ...sub2].map((c) => h('th', { html: c }))));
   const cuerpo = h('tbody', {}, ...r.filas.map((f) => h('tr', {},
     h('th', { scope: 'row' }, String(f.phi)),
-    ...(comp ? [h('td', {}, num(f.I[0])), h('td', {}, num(f.II[0]))]
-      : [h('td', {}, num(f.I[0])), h('td', {}, num(f.I[1])), h('td', {}, num(f.II[0])), h('td', {}, num(f.II[1]))]),
-    h('td', {}, num(f.sI)), h('td', {}, num(f.sII)))));
+    ...(comp ? [h('td', {}, num(f.I[0])), h('td', {}, num(f.sI)), h('td', {}, num(f.II[0])), h('td', {}, num(f.sII))]
+      : [h('td', {}, num(f.I[0])), h('td', {}, num(f.I[1])), h('td', {}, num(f.sI)), h('td', {}, num(f.II[0])), h('td', {}, num(f.II[1])), h('td', {}, num(f.sII))]))));
   const extraA = ehe ? (D.lejos ? t('an.aLejos') : t('an.aCerca')) : '';
   const ficha = t('an.ficha', r.hor.nombre, r.ace.nombre, esf.toLowerCase(), fmt(D.r, 0), D.cd > 0 ? t('an.cdVal', fmt(D.cd, 0)) : t('an.cdSin'), fmt(D.pct, 0), extraA);
-  const hdr = [`${t('an.col.d')} [mm]`, ...(comp ? [`${t('an.col.anclaje', esf.toLowerCase()).replace(/<[^>]+>/g, '')} ${t('an.col.I')}`, `${t('an.col.anclaje', esf.toLowerCase()).replace(/<[^>]+>/g, '')} ${t('an.col.II')}`]
-    : ['I recta', 'I patilla', 'II recta', 'II patilla'].map((c) => `${t('an.col.anclaje', esf.toLowerCase()).replace(/<[^>]+>/g, '')} ${c}`)),
-    `${t('an.col.solapo', esf.toLowerCase()).replace(/<[^>]+>/g, '')} I`, `${t('an.col.solapo', esf.toLowerCase()).replace(/<[^>]+>/g, '')} II`];
+  const txt = (x) => x.replace(/<[^>]+>/g, '');
+  const hdr = [`${t('an.col.d')} [mm]`, ...['I', 'II'].flatMap((c) => sub2.map((x) => `${t('an.col.' + c)} · ${txt(x)}`))];
   const texto = () => [ficha.replace(/<[^>]+>/g, '').replace(/ /g, ' '), hdr.join('\t'),
     ...[...cuerpo.rows].map((tr) => [...tr.cells].map((c) => c.textContent).join('\t'))].join('\r\n');
   const html = () => `<table><caption>${ficha}</caption><thead><tr>${hdr.map((c) => `<th>${c}</th>`).join('')}</tr></thead><tbody>${cuerpo.innerHTML}</tbody></table>`;
@@ -159,6 +173,8 @@ export function resultados(ctx, res) {
     } catch { ctx.avisar(t('graf.error')); }
   };
   const tablaEl = h('table', { class: 'tabla-dur tabla-an', id: 'an-tabla' }, cab, cuerpo);
+  [...cuerpo.rows].forEach((tr) => tr.cells[1 + nc].classList.add('g2'));
+  cab.rows[0].cells[2].classList.add('g2'); cab.rows[1].cells[nc].classList.add('g2');
   tablaEl.addEventListener('copy', (e) => { e.preventDefault(); e.clipboardData.setData('text/plain', texto()); e.clipboardData.setData('text/html', html()); });
   poner(centro,
     h('div', { class: 'an-tit' }, h('h2', { class: 'an-h', html: `${t('m.anclaje')} <span class="an-mat">${r.hor.nombre} ${r.ace.nombre}</span>` }),

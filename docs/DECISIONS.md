@@ -73,3 +73,6 @@ Resumen de lo decidido por José Luis (fechas de 2026). Cada módulo tiene su de
 ## Inestabilidad de soportes (Pepiño y José Luis, 31/10)
 - Es la Flexión compuesta recta más el segundo orden: curvatura nominal en EC-2 2004+AN y EC-2 2023, método aproximado (43.5.1) en EHE-08. Solo flexión recta. Diagrama N–M con el segundo orden como **reducción** del contorno sin segundo orden (como el 3.1).
 - Extremos por rigidez (empotrado, articulado o nudo con pilar y vigas; fracciones 0,70 y 0,30; voladizos sin rigidez), sin momentos de viga; el usuario decide traslacional o intraslacional. Esfuerzos: N y momentos extremos del soporte (≥ N·e_mín). Fluencia: φ(∞,t0) = 2 y proporción de carga permanente. Detalle y pendientes: `analisis/inestabilidad-decisiones.md`.
+
+## Flexión compuesta recta (Pepiño, 4/11)
+- El hormigón se integra **bruto**: no se descuentan los huecos de las barras en el motor seccional (como el 3.1). Sobreestima N_Rd en A_s·f_cd (≈ 0,8 % en el ejemplo de 400×400 con 8ø16). Detalle y demás resultados de la auditoría: `analisis/auditoria-flexion-recta-2026-11-01.md`.

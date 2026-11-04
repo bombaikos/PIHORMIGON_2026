@@ -12,17 +12,22 @@ import { t } from '../i18n.js';
 import { fmt, qh, MAG, decimalAlCopiar } from '../formato.js';
 import { grupoSeccion, rotulaSeccion } from './secciones.js';
 import { veredicto } from './flexion.js';
+import { SECCION_MAX, topeEscala } from '../dibujoSeccion.js';
 import { h, poner, campoNum, segmentado, grupo, aviso, regleta, tabla } from '../campos.js';
 
 const FORMAS = ['rectangular', 'pilar', 'T', 'circular', 'generica'];
 const X_INF = 100; // m (100 000 mm): a partir de aquí se toma deformación uniforme (x = ∞)
 const RAD = Math.PI / 180;
+// β de pantalla: ángulo (antihorario desde +x) de la fibra neutra, de modo que β = 0 es la sección en su posición normal
+// (Mx > 0 comprime la cara superior, neutra horizontal). El motor usa el ángulo de la dirección hacia la fibra más comprimida: 90° más.
+const aMotor = (b) => (b + 90) * RAD;
+const deMotor = (rad) => (((rad / RAD - 90) % 360) + 360) % 360;
 const est = {
   i: null, para: null, modo: 'NM',
   N: 0, Mx: 0, My: 0, // kN, kN·m
   e0: 0, kx: 0, ky: 0, // absoluta, 1/m
-  eSup: 0, beta: 90, x: Infinity, // absoluta, grados, m
-  gammaC: null, alfaCC: null, phi: 0, lineal: false,
+  eSup: 0, beta: 0, x: Infinity, // absoluta, grados (de la fibra neutra), m
+  gammaC: null, alfaCC: null, gammaS: null, phi: 0, lineal: false,
   ultimo: null,
 };
 export function reiniciar() { est.i = null; est.para = null; est.ultimo = null; }
@@ -45,9 +50,10 @@ function calculo(p, s) {
   const prop = propiedadesHormigon(fck, p.norma, opcionesHormigon(mats.fichaH, p.norma));
   const gammaC = est.gammaC ?? prop.gammaC;
   const alfaCC = est.alfaCC ?? prop.alfa;
-  const clave = JSON.stringify([p.norma, s.geo, s.armado, s.hormigon, s.acero, gammaC, alfaCC, est.phi, est.lineal]);
+  const gammaS = est.gammaS ?? mats.acero.gamma; // el del material de la sección, salvo que se cambie aquí
+  const clave = JSON.stringify([p.norma, s.geo, s.armado, s.hormigon, s.acero, gammaC, alfaCC, gammaS, est.phi, est.lineal]);
   if (memo.clave === clave) return memo.c;
-  const mod = modeloTensional(geo, mats.hormigon, mats.acero, { gammaC, alfaCC, phi: est.phi, lineal: est.lineal, fctm: prop.fctm });
+  const mod = modeloTensional(geo, mats.hormigon, mats.acero, { gammaC, alfaCC, gammaS, phi: est.phi, lineal: est.lineal, fctm: prop.fctm });
   const caja = geo.caja;
   const bx = caja.xmax - caja.xmin;
   const hy = caja.ymax - caja.ymin;
@@ -55,13 +61,13 @@ function calculo(p, s) {
   const As = mod.puntos.reduce((a, b) => a + b.A, 0);
   const fyk = mats.acero.fk / 1000;
   const c = {
-    geo, mats, mod, prop, gammaC, alfaCC, fck, bx, hy,
+    geo, mats, mod, prop, gammaC, alfaCC, gammaS, fck, bx, hy,
     // Recorrido de las regletas: del orden de lo que resiste la sección en servicio (0,6·fck; 0,8·fyk)
     rg: {
       N: [Math.round(-0.8 * fyk * As * 1000 / 10) * 10 || -100, Math.round((0.6 * fck * Ac * 1000) / 10) * 10],
       Mx: Math.ceil((0.6 * fck * 1000 * (Ac * hy) / 6) / 10) * 10 || 100,
       My: Math.ceil((0.6 * fck * 1000 * (Ac * bx) / 6) / 10) * 10 || 100,
-      kx: 8 / hy, ky: 8 / bx,
+      kx: 0.008 / hy, ky: 0.008 / bx, // 8 ‰ de deformación a lo largo del canto, no más
     },
     lector: leyDe(mats.hormigon, est.lineal),
   };
@@ -75,7 +81,7 @@ const leyDe = (mat, lineal) => (lineal ? 'lineal' : mat.diag === 'EC2' ? 'sargin
 function dato() {
   if (est.modo === 'NM') return { tipo: 'NM', N: est.N, Mx: est.Mx, My: est.My };
   if (est.modo === 'eK') return { tipo: 'eK', e0: est.e0, kx: est.kx, ky: est.ky };
-  return { tipo: 'sup', eSup: est.eSup, beta: est.beta * RAD, x: est.x };
+  return { tipo: 'sup', eSup: est.eSup, beta: aMotor(est.beta), x: est.x };
 }
 
 /** Pasa el estado calculado a las variables de los tres modos, para que al cambiar de modo no se pierda. */
@@ -83,7 +89,7 @@ function guarda(r) {
   est.N = r.N; est.Mx = r.Mx; est.My = r.My;
   est.e0 = r.e0; est.kx = r.kx; est.ky = r.ky;
   est.eSup = r.eSup;
-  if (r.beta !== null) est.beta = r.beta / RAD;
+  if (r.beta !== null) est.beta = deMotor(r.beta);
   est.x = Number.isFinite(r.x) ? r.x : (r.x > 0 ? Infinity : -Infinity);
   est.ultimo = r;
 }
@@ -142,7 +148,7 @@ export function datos(ctx, form) {
       num('x', 'x', 'x', 'long', { paso: 10e-3, nombre: t('est.nombreX'), ref: t('est.refX') }),
     ],
   };
-  const gamma = (id, etq, k, defecto) => campoNum({ id: `et-${id}`, etq, valor: fmt(est[k] ?? defecto, 2), mag: null, paso: 0.05, min: 0.01, max: 10, sinUd: true, nombre: etq.replace(/<[^>]+>/g, ''), info: id === 'gc' ? t('est.infoGamma') : undefined, onCambio: (v) => { est[k] = v; ctx.pintar(); } });
+  const gamma = (id, etq, k, defecto) => campoNum({ id: `et-${id}`, etq, valor: fmt(est[k] ?? defecto, 2), mag: null, paso: 0.05, min: 0.01, max: 10, sinUd: true, nombre: etq.replace(/<[^>]+>/g, ''), info: id === 'gc' ? t('est.infoGamma') : id === 'gs' ? t('est.infoGammaS') : undefined, onCambio: (v) => { est[k] = v; ctx.pintar(); } });
   poner(form,
     segmentado({ ancho: true, capsula: true, etiqueta: t('est.modo'), opciones: [['NM', t('est.m.NM')], ['eK', t('est.m.eK')], ['sup', t('est.m.sup')]], valor: est.modo, onCambio: (m) => { est.modo = m; ctx.pintar(); } }),
     grupo(est.modo === 'NM' ? t('est.gEsfuerzos') : t('est.gPlano'), ...campos[est.modo]),
@@ -153,7 +159,8 @@ export function datos(ctx, form) {
       h('label', { class: 'tick' }, h('input', { type: 'checkbox', id: 'et-lineal', checked: est.lineal, onchange: (e) => { est.lineal = e.target.checked; ctx.pintar(); } }), h('span', { html: t('est.lineal') })),
       c ? h('div', { class: 'et-der' },
         h('span', {}, 'E', h('sub', {}, 'c,eff'), ` ${fmt(c.mod.ley.pendiente / 1000, 0)} MPa`),
-        h('span', {}, `n = ${fmt(c.mod.acero.E / c.mod.ley.pendiente, 1)}`)) : null));
+        h('span', {}, `n = ${fmt(c.mod.acero.E / c.mod.ley.pendiente, 1)}`)) : null),
+    grupo(t('est.gAcero'), c ? gamma('gs', t('est.gammaS'), 'gammaS', c.gammaS) : null));
 }
 
 // ---------------------------------------------------------------- dibujo
@@ -186,7 +193,7 @@ function dibujo(c, r) {
   const xc = mod.xc;
   const yc = mod.yc;
   const diag = Math.hypot(c.bx, c.hy);
-  const S = (H - 130) / diag; // px por m; no cambia al girar
+  const S = Math.min((H - 130) / diag, SECCION_MAX / Math.max(c.bx, c.hy)); // px por m; no cambia al girar; lado mayor ≤ 300 px (guía § 8)
   const cx = W * 0.36;
   const cy = H / 2 + 14;
   const T = (p) => { const dx = p[0] - xc; const dy = p[1] - yc; return [cx + S * (dx * v[0] + dy * v[1]), cy - S * (dx * u[0] + dy * u[1])]; };
@@ -241,18 +248,21 @@ function dibujo(c, r) {
   }
   // Armadura con su tensión (con más de 10 puntos, solo se escriben los extremos de cada signo)
   const ver = visibles(filasArmadura(r));
-  const puestas = [];
+  const etiquetas = [];
   for (const [ib, b] of r.barras.entries()) {
     const q = T([b.x, b.y]);
     const rr = Math.max(3.5, S * Math.sqrt(b.A / Math.PI));
-    out.push(`<circle class="et-ba ${b.sigma >= 0 ? 'c' : 't'}" cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="${rr.toFixed(1)}"/>`);
-    if (ver.has(ib)) {
-      // Barras muy juntas: las etiquetas se escalonan en alturas distintas para que no se pisen
-      let fila = 0;
-      while (puestas.some((o) => o.fila === fila && Math.abs(o.x - q[0]) < 46 && Math.abs(o.y - q[1]) < 30)) fila++;
-      puestas.push({ x: q[0], y: q[1], fila });
-      out.push(`<text x="${q[0].toFixed(1)}" y="${(q[1] + rr + 12 + fila * 12).toFixed(1)}" text-anchor="middle">${fmt(b.sigma, 0)}</text>`);
-    }
+    out.push(`<circle class="et-ba ${b.sigma >= 0 ? 'c' : 't'}" data-ref="b${ib}" cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="${rr.toFixed(1)}"/>`);
+    if (ver.has(ib)) etiquetas.push({ ib, q, rr, s: b.sigma });
+  }
+  // Etiquetas de σ de las barras: las de mayor |σ| primero; se omiten las que quedarían pisando a otra ya puesta (guía § 15); la tabla las da todas
+  const puestas = [];
+  for (const e of etiquetas.sort((p, q) => Math.abs(q.s) - Math.abs(p.s))) {
+    const x = e.q[0];
+    const y = e.q[1] + e.rr + 12;
+    if (puestas.some((o) => Math.abs(o.x - x) < 80 && Math.abs(o.y - y) < 16)) continue;
+    puestas.push({ x, y });
+    out.push(`<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle">${fmt(e.s, MAG.tension.d)}</text>`);
   }
   // Franjas (armadura por área): rectángulo con su espesor equivalente y la tensión en sus dos extremos
   for (const [jf, f] of r.franjas.entries()) {
@@ -262,7 +272,7 @@ function dibujo(c, r) {
     for (const [ie, [xe, se, lado]] of [[f.x1, f.s1, -1], [f.x2, f.s2, 1]].entries()) {
       const q = T([xe, f.y]);
       const eti = ver.has(r.barras.length + 2 * jf + ie);
-      out.push(`<circle class="et-pt" cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="3"/>${eti ? `<text x="${(q[0] + lado * 8).toFixed(1)}" y="${(q[1] + 4).toFixed(1)}" text-anchor="${lado > 0 ? 'start' : 'end'}">${fmt(se, 0)}</text>` : ''}`);
+      out.push(`<circle class="et-pt" data-ref="f${jf}-${ie}" cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="3"/>${eti ? `<text x="${(q[0] + lado * 8).toFixed(1)}" y="${(q[1] + 4).toFixed(1)}" text-anchor="${lado > 0 ? 'start' : 'end'}">${fmt(se, MAG.tension.d)}</text>` : ''}`);
     }
   }
   // c.d.g.
@@ -277,16 +287,19 @@ function dibujo(c, r) {
   for (const k of geo.contornos.filter((q) => q.signo > 0)) out.push(`<polygon class="hor" points="${pts2(k.pts.map(Ti))}"/>`);
   out.push(`<path class="ref" d="M${ix - 52} ${iy}H${ix + 56}M${ix} ${iy - 52}V${iy + 56}"/><text x="${ix + 58}" y="${iy + 4}">x</text><text x="${ix + 5}" y="${iy + 68}">y</text>`);
   if (r.beta !== null) {
-    out.push(`<line class="en" x1="${ix}" y1="${iy}" x2="${ix + u[0] * 50}" y2="${iy + u[1] * 50}"/>`);
-    out.push(`<path class="cota" d="M${ix + 26} ${iy}A26 26 0 ${r.beta > Math.PI ? 1 : 0} 0 ${ix + 26 * u[0]} ${iy + 26 * u[1]}"/><text x="${ix + 30}" y="${iy - 6}">β</text>`);
+    // Fibra neutra (β desde +x, antihorario) y arco de β
+    const bn = (((r.beta - Math.PI / 2) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+    const w = [Math.cos(bn), -Math.sin(bn)];
+    out.push(`<line class="en" x1="${ix - w[0] * 50}" y1="${iy - w[1] * 50}" x2="${ix + w[0] * 50}" y2="${iy + w[1] * 50}"/>`);
+    out.push(`<path class="cota" d="M${ix + 26} ${iy}A26 26 0 ${bn > Math.PI ? 1 : 0} 0 ${ix + 26 * w[0]} ${iy + 26 * w[1]}"/><text x="${ix + 30}" y="${iy - 6}">β</text>`);
   }
-  return `<svg class="dib et-svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${W} ${H}" role="img" aria-label="${t('est.dibujoAria')}">${out.join('')}</svg>`;
+  return `<svg class="dib et-svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${W} ${H}"${topeEscala(W, H)} role="img" aria-label="${t('est.dibujoAria')}">${out.join('')}</svg>`;
 }
 
 // ---------------------------------------------------------------- resultados
 
 const mm = (x) => fmt(x * 1000, 0);
-const grados = (b) => (b === null ? '—' : fmt(b / RAD, 1));
+const grados = (b) => (b === null ? '—' : fmt(deMotor(b), 1));
 const xTxt = (x) => (Number.isFinite(x) ? mm(x) : '∞');
 
 function tablaEstado(r) {
@@ -308,10 +321,10 @@ function tablaFibras(r) {
 
 /** Filas de la armadura: cada barra y, de cada franja (armadura por área), sus dos extremos. */
 function filasArmadura(r) {
-  const b = r.barras.map((q, i) => ({ id: String(i + 1), x: q.x, y: q.y, e: q.eps, s: q.sigma }));
+  const b = r.barras.map((q, i) => ({ ref: `b${i}`, id: String(i + 1), x: q.x, y: q.y, e: q.eps, s: q.sigma }));
   const f = r.franjas.flatMap((q, i) => [
-    { id: `F${i + 1}·${t('est.izq')}`, x: q.x1, y: q.y, e: q.e1, s: q.s1 },
-    { id: `F${i + 1}·${t('est.der')}`, x: q.x2, y: q.y, e: q.e2, s: q.s2 },
+    { ref: `f${i}-0`, id: `F${i + 1}·${t('est.izq')}`, x: q.x1, y: q.y, e: q.e1, s: q.s1 },
+    { ref: `f${i}-1`, id: `F${i + 1}·${t('est.der')}`, x: q.x2, y: q.y, e: q.e2, s: q.s2 },
   ]);
   return [...b, ...f];
 }
@@ -347,7 +360,7 @@ function tablaBarras(ctx, r) {
   };
   // Las tensiones extremas (mayor compresión y mayor tracción de la armadura) van en negrita, sin color
   const ver = visibles(todas);
-  const marcadas = filas.map((f, i) => { if (todas[i].s === smax || todas[i].s === smin) f[4] = `<b>${f[4]}</b>`; return f; }).filter((_, i) => ver.has(i));
+  const marcadas = filas.map((f, i) => { f.ref = todas[i].ref; if (todas[i].s === smax || todas[i].s === smin) f[4] = `<b>${f[4]}</b>`; return f; }).filter((_, i) => ver.has(i));
   return h('div', { class: 'et-barras' },
     h('div', { class: 'et-cab-barras' }, h('h3', {}, t('est.tBarras')), marcadas.length > 4 || filas.length > marcadas.length ? h('button', { type: 'button', class: 'tecla', title: t('graf.copiarTablaTit'), onclick: copiar }, t('est.copiarTabla')) : null),
     tabla(marcadas, { cabecera: cab, clase: 'rejilla' }),
@@ -374,6 +387,8 @@ export function resultados(ctx, res) {
   if (c.mod.ley.avisos.includes('PR')) res.append(aviso(t('est.avPR')));
   if (c.mod.ley.avisos.includes('lineal')) res.append(aviso(t('est.avLineal')));
   if (r.avisos.includes('eps-cu')) res.append(aviso(t('est.avEpsCu')));
+  if (r.avisos.includes('acero-plast')) res.append(aviso(t('est.avPlast')));
+  if (r.avisos.includes('acero-eud')) res.append(aviso(t('est.avEud')));
 
   const lienzo = h('div', { class: 'lienzo et-lienzo', html: dibujo(c, r) });
   const derecha = h('article', { class: 'panel tarjeta et-der-card' });
@@ -394,7 +409,7 @@ export function resultados(ctx, res) {
   };
   const sincro = (id, mag, v) => { const el = document.getElementById(`et-${id}`); if (el) el.value = mag === 'ang1' ? String(+v.toFixed(1)) : String(+(v * MAG[mag].f).toFixed(MAG[mag].d ?? 0)); };
   const reg = (id, etq, k, mag, min, max, step, texto, aVar = (v) => v, deVar = (v) => v) => regleta({
-    etq, min, max, step, valor: deVar(est[k]), etiqueta: etq.replace(/<[^>]+>/g, ''), texto,
+    etq, min, max, step, valor: deVar(est[k]), reinicio: 0, etiqueta: etq.replace(/<[^>]+>/g, ''), texto,
     onInput: (v) => { est[k] = aVar(v); sincro(id, mag, est[k]); refresca(); },
     onChange: (v) => { est[k] = aVar(v); ctx.cambio(); },
   });
@@ -416,7 +431,7 @@ export function resultados(ctx, res) {
     const XM = 600;
     const aX = (q) => { const m = q >= 0.999 ? Infinity : (X0 + (XM * q) / (1 - q)) / 1000; return est.eSup < 0 ? -m : m; };
     const deX = (x) => (Number.isFinite(x) && Math.abs(x) < X_INF ? (() => { const m = Math.abs(x) * 1000 - X0; return Math.max(0, m / (m + XM)); })() : 1);
-    regs.push(regleta({ etq: 'x', min: 0, max: 1, step: 0.001, valor: deX(est.x), etiqueta: t('est.nombreX'), texto: (q) => (q >= 0.999 ? '∞' : `${fmt((X0 + (XM * q) / (1 - q)), 0)} mm`),
+    regs.push(regleta({ etq: 'x', min: 0, max: 1, step: 0.001, valor: deX(est.x), etiqueta: t('est.nombreX'), reinicio: 1, texto: (q) => (q >= 0.999 ? '∞' : `${fmt((X0 + (XM * q) / (1 - q)), 0)} mm`),
       onInput: (q) => { est.x = aX(q); sincro('x', 'long', Number.isFinite(est.x) ? est.x : X_INF); refresca(); },
       onChange: (q) => { est.x = aX(q); ctx.cambio(); } }));
   }

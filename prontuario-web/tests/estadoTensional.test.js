@@ -181,3 +181,23 @@ test('franjas (armadura por área): se dan σ y ε en sus dos extremos y el equi
   // tensión del extremo = Es · ε del plano en ese punto
   rel(f.s1, (200000 * (r.e0 + r.ky * (0.05 - 0.2) - r.kx * (0.55 - 0.3))), 1e-9);
 });
+
+test('acero: usa la ley de su material (σs no pasa de fyd) y γS es un dato; con γS = 1 la meseta es fyk', () => {
+  // Plano muy deformado: la armadura plastifica. Con γS del material (1,15) la meseta es fyk/1,15; con γS = 1, fyk
+  const pl = { tipo: 'eK', e0: 0.0005, kx: 0.012, ky: 0 };
+  const m115 = modeloTensional(viga, H, A, lin);
+  const r115 = estadoTensional(m115, pl);
+  assert.ok(r115.ok);
+  const sMax115 = Math.max(...r115.barras.map((b) => Math.abs(b.sigma)));
+  cerca(sMax115, 500 / 1.15, 1e-6, 'meseta con γS del material');
+  assert.ok(r115.avisos.includes('acero-plast'));
+  const m1 = modeloTensional(viga, H, A, { ...lin, gammaS: 1 });
+  const r1 = estadoTensional(m1, pl);
+  cerca(Math.max(...r1.barras.map((b) => Math.abs(b.sigma))), 500, 1e-6, 'meseta con γS = 1');
+  // En régimen elástico el γS no cambia la rigidez: mismo σs
+  const el = { tipo: 'eK', e0: 0, kx: 0.002, ky: 0 };
+  const a = estadoTensional(m115, el);
+  const b = estadoTensional(m1, el);
+  cerca(a.barras[0].sigma, b.barras[0].sigma, 1e-9, 'σs elástico');
+  assert.ok(!a.avisos.includes('acero-plast'));
+});

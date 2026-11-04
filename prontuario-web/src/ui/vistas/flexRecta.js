@@ -6,7 +6,7 @@
 // Dimensionar mantiene la disposición de la armadura de Secciones y busca el factor que da γ ≥ γ requerido.
 // Compresión positiva; M > 0 comprime la cara superior. Motor: src/core/interaccion.js.
 
-import { cuantiaMinima } from '../../core/cuantiaMinima.js';
+import { cuantiaMinima, cuantiaMaxima } from '../../core/cuantiaMinima.js';
 import { diagramaNM, coeficienteNM, comprobarNM, momentoEn, dimensionarNM, escalarArmadura, soloHormigon } from '../../core/interaccion.js';
 import { estadoUltimo } from '../../core/seccion.js';
 import { sigma } from '../../core/materiales.js';
@@ -81,6 +81,8 @@ function calculo(p, s) {
   const Ac = sec.trapecios.reduce((a, t) => a + ((t.b1 + t.b2) / 2) * (t.y2 - t.y1), 0);
   const cm = cuantiaMinima({ norma: p.norma, tipo: 'pilar', h: 0, Ac, yg: 0, Ix: 0, fctm: 0, fyk: mats.acero.fk, gammaS: mats.acero.gamma, N: Math.max(0, ...ps.map((x) => x.N)) });
   const Amin = cm.A;
+  const fcdH = Math.max(...sec.trapecios[0].mat.comp.map((v) => -v[1]), 1);
+  const Amax = cuantiaMaxima({ norma: p.norma, Ac, fcd: fcdH, fyk: mats.acero.fk, gammaS: mats.acero.gamma });
   const kMin = As0 > 0 ? Amin / As0 : 0;
   let k = 1;
   let kEstricto = 1;
@@ -98,7 +100,7 @@ function calculo(p, s) {
     }
   } else if (phi0 && est.fi > 0) k = (est.fi / phi0) ** 2; // el ø de cálculo no tiene por qué ser el de la sección
   const dibujada = Number.isFinite(k) ? escalarArmadura(sec, k) : escalarArmadura(sec, 1);
-  const c = { geo, sec, secD: dibujada, As0, Amin, cm, k, kEstricto, phi0, phiEstricto, phiProp, d: diagramaNM(dibujada, { n: 100, simetrica: true, tol: TOL }), dH: diagramaNM(soloHormigon(sec), { n: 100, simetrica: true, tol: TOL }) };
+  const c = { geo, sec, secD: dibujada, As0, Amin, Amax, cm, k, kEstricto, phi0, phiEstricto, phiProp, d: diagramaNM(dibujada, { n: 100, simetrica: true, tol: TOL }), dH: diagramaNM(soloHormigon(sec), { n: 100, simetrica: true, tol: TOL }) };
   memo = { clave, c };
   return c;
 }
@@ -170,11 +172,12 @@ function resultadosFlexRecta(ctx, res) {
     res.append(veredicto('nocumple', t('aumentar'), t('armaduraNec'), '—', t('fcr.noBasta')));
   } else if (dim) {
     const As = c.As0 * c.k;
+    const sobra = c.Amax != null && As > c.Amax + 1e-12; // la armadura pedida no cabe en la sección
     if (c.phiProp) {
-      res.append(veredicto('cumple', t('valida'), t('fcr.fiProp'), `ø${fmt(c.phiProp, 0)}<span class="u"> mm</span>`,
+      res.append(veredicto(sobra ? 'nocumple' : 'cumple', sobra ? t('aumentar') : t('valida'), t('fcr.fiProp'), `ø${fmt(c.phiProp, 0)}<span class="u"> mm</span>`,
         t('fcr.fiArm', c.phiEstricto > 0 ? fmt(c.phiEstricto, 1) : '—', q(As, 'As'), q(c.As0 * c.kEstricto, 'As'), '1,00')));
     } else {
-      res.append(veredicto(c.k === 0 ? 'atencion' : 'cumple', c.k === 0 ? t('fcr.sinArm') : t('valida'), t('armaduraNec'), qh(As, 'As'),
+      res.append(veredicto(c.k === 0 ? 'atencion' : sobra ? 'nocumple' : 'cumple', c.k === 0 ? t('fcr.sinArm') : sobra ? t('aumentar') : t('valida'), t('armaduraNec'), qh(As, 'As'),
         t('fcr.kArm', fmt(c.k, 2), q(c.As0, 'As'), '1,00')));
     }
   } else {
@@ -186,6 +189,9 @@ function resultadosFlexRecta(ctx, res) {
   const Asd = c.As0 * c.k;
   if (Asd + 1e-12 < c.Amin) res.append(aviso(t('fcr.bajoMin', q(Asd, 'As'), q(c.Amin, 'As'))));
   else if (dim && c.As0 * c.kEstricto + 1e-12 < c.Amin) res.append(aviso(t('fcr.mandaMin', q(c.Amin, 'As')), 'info'));
+  if (c.Amax != null && Asd > c.Amax + 1e-12) res.append(aviso(t('fcr.sobreMax', q(Asd, 'As'), q(c.Amax, 'As'))));
+  const fuera = gam.find((x) => x.N > d.Ncomp || x.N < d.Ntrac);
+  if (fuera) res.append(aviso(t('fcr.fueraAxil', q(fuera.N > d.Ncomp ? d.Ncomp : d.Ntrac, 'N')), 'info'));
   if (gam.some((x) => x.subeM)) res.append(aviso(t('fcr.subeEmin', fmt(emin * 1000, 0)), 'info'));
   if (unico) return resultadoUnico(ctx, res, { s, c, gam: gam[0], gmin, dim });
   const Mmax = (rama) => rama.reduce((a, b) => (Math.abs(b.M) > Math.abs(a.M) ? b : a));
