@@ -27,7 +27,7 @@ const est = {
   N: 0, Mx: 0, My: 0, // kN, kN·m
   e0: 0, kx: 0, ky: 0, // absoluta, 1/m
   eSup: 0, beta: 0, x: Infinity, // absoluta, grados (de la fibra neutra), m
-  gammaC: null, alfaCC: null, phi: 0, lineal: false,
+  gammaC: null, alfaCC: null, gammaS: null, phi: 0, lineal: false,
   ultimo: null,
 };
 export function reiniciar() { est.i = null; est.para = null; est.ultimo = null; }
@@ -50,9 +50,10 @@ function calculo(p, s) {
   const prop = propiedadesHormigon(fck, p.norma, opcionesHormigon(mats.fichaH, p.norma));
   const gammaC = est.gammaC ?? prop.gammaC;
   const alfaCC = est.alfaCC ?? prop.alfa;
-  const clave = JSON.stringify([p.norma, s.geo, s.armado, s.hormigon, s.acero, gammaC, alfaCC, est.phi, est.lineal]);
+  const gammaS = est.gammaS ?? mats.acero.gamma; // el del material de la sección, salvo que se cambie aquí
+  const clave = JSON.stringify([p.norma, s.geo, s.armado, s.hormigon, s.acero, gammaC, alfaCC, gammaS, est.phi, est.lineal]);
   if (memo.clave === clave) return memo.c;
-  const mod = modeloTensional(geo, mats.hormigon, mats.acero, { gammaC, alfaCC, phi: est.phi, lineal: est.lineal, fctm: prop.fctm });
+  const mod = modeloTensional(geo, mats.hormigon, mats.acero, { gammaC, alfaCC, gammaS, phi: est.phi, lineal: est.lineal, fctm: prop.fctm });
   const caja = geo.caja;
   const bx = caja.xmax - caja.xmin;
   const hy = caja.ymax - caja.ymin;
@@ -60,7 +61,7 @@ function calculo(p, s) {
   const As = mod.puntos.reduce((a, b) => a + b.A, 0);
   const fyk = mats.acero.fk / 1000;
   const c = {
-    geo, mats, mod, prop, gammaC, alfaCC, fck, bx, hy,
+    geo, mats, mod, prop, gammaC, alfaCC, gammaS, fck, bx, hy,
     // Recorrido de las regletas: del orden de lo que resiste la sección en servicio (0,6·fck; 0,8·fyk)
     rg: {
       N: [Math.round(-0.8 * fyk * As * 1000 / 10) * 10 || -100, Math.round((0.6 * fck * Ac * 1000) / 10) * 10],
@@ -147,7 +148,7 @@ export function datos(ctx, form) {
       num('x', 'x', 'x', 'long', { paso: 10e-3, nombre: t('est.nombreX'), ref: t('est.refX') }),
     ],
   };
-  const gamma = (id, etq, k, defecto) => campoNum({ id: `et-${id}`, etq, valor: fmt(est[k] ?? defecto, 2), mag: null, paso: 0.05, min: 0.01, max: 10, sinUd: true, nombre: etq.replace(/<[^>]+>/g, ''), info: id === 'gc' ? t('est.infoGamma') : undefined, onCambio: (v) => { est[k] = v; ctx.pintar(); } });
+  const gamma = (id, etq, k, defecto) => campoNum({ id: `et-${id}`, etq, valor: fmt(est[k] ?? defecto, 2), mag: null, paso: 0.05, min: 0.01, max: 10, sinUd: true, nombre: etq.replace(/<[^>]+>/g, ''), info: id === 'gc' ? t('est.infoGamma') : id === 'gs' ? t('est.infoGammaS') : undefined, onCambio: (v) => { est[k] = v; ctx.pintar(); } });
   poner(form,
     segmentado({ ancho: true, capsula: true, etiqueta: t('est.modo'), opciones: [['NM', t('est.m.NM')], ['eK', t('est.m.eK')], ['sup', t('est.m.sup')]], valor: est.modo, onCambio: (m) => { est.modo = m; ctx.pintar(); } }),
     grupo(est.modo === 'NM' ? t('est.gEsfuerzos') : t('est.gPlano'), ...campos[est.modo]),
@@ -158,7 +159,8 @@ export function datos(ctx, form) {
       h('label', { class: 'tick' }, h('input', { type: 'checkbox', id: 'et-lineal', checked: est.lineal, onchange: (e) => { est.lineal = e.target.checked; ctx.pintar(); } }), h('span', { html: t('est.lineal') })),
       c ? h('div', { class: 'et-der' },
         h('span', {}, 'E', h('sub', {}, 'c,eff'), ` ${fmt(c.mod.ley.pendiente / 1000, 0)} MPa`),
-        h('span', {}, `n = ${fmt(c.mod.acero.E / c.mod.ley.pendiente, 1)}`)) : null));
+        h('span', {}, `n = ${fmt(c.mod.acero.E / c.mod.ley.pendiente, 1)}`)) : null),
+    grupo(t('est.gAcero'), c ? gamma('gs', t('est.gammaS'), 'gammaS', c.gammaS) : null));
 }
 
 // ---------------------------------------------------------------- dibujo
@@ -385,6 +387,8 @@ export function resultados(ctx, res) {
   if (c.mod.ley.avisos.includes('PR')) res.append(aviso(t('est.avPR')));
   if (c.mod.ley.avisos.includes('lineal')) res.append(aviso(t('est.avLineal')));
   if (r.avisos.includes('eps-cu')) res.append(aviso(t('est.avEpsCu')));
+  if (r.avisos.includes('acero-plast')) res.append(aviso(t('est.avPlast')));
+  if (r.avisos.includes('acero-eud')) res.append(aviso(t('est.avEud')));
 
   const lienzo = h('div', { class: 'lienzo et-lienzo', html: dibujo(c, r) });
   const derecha = h('article', { class: 'panel tarjeta et-der-card' });

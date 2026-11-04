@@ -40,3 +40,8 @@ Código: `src/core/estadoTensional.js` (motor), tests en `tests/estadoTensional.
 ## β y puesta a cero (4/11/2026, Pepiño)
 - **β de pantalla = ángulo de la fibra neutra** (antihorario desde +x): β = 0 es la sección en su posición normal (Mx > 0, neutra horizontal, comprime la cara superior). El motor sigue usando el ángulo de la dirección hacia la fibra más comprimida (90° más); la conversión se hace en la vista (`aMotor` / `deMotor`).
 - **Doble clic en una regleta la pone a cero** (la de x, en ∞). Es un parámetro opcional `reinicio` del componente común `regleta()` (`src/ui/campos.js`), con `title` «Doble clic: llevar a cero». Pendiente de que el hilo de estilo lo recoja como regla de la guía.
+
+## Acero con la ley de su material (4/11/2026, Pepiño)
+- **Regla**: nunca se sustituye en silencio la ley de un material. El acero lineal elástico sin plastificación era una sustitución mía y se retira.
+- El acero usa la ley bilineal de su material, con **γS como dato editable** (por defecto el del material; 1,00 da la meseta en f_yk, como γC y αcc en el hormigón). La rigidez elástica no cambia con γS.
+- Avisos pardos: «La armadura ha llegado a la meseta de su ley (plastifica)» y «supera la deformación última de su ley (la tensión es nula)»: el estado no es de servicio.
