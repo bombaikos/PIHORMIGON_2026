@@ -1244,6 +1244,15 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
 .et-esf-v b { font-variant-numeric: tabular-nums; font-weight: 700; }
 .et-esf-u { color: var(--tinta-3); font-size: var(--t-s); }
 .et-esf-v.trac, .et-esf-v.trac .et-esf-u { color: var(--rosa); }
+
+/* Valor del cursor como caja de datos editable */
+.regleta.rg-edit { grid-template-columns: max-content minmax(0, 1fr) 14ch; }
+.regleta.rg-edit.sin-etq { grid-template-columns: minmax(0, 1fr) 14ch; }
+.regleta.rg-gauge.rg-edit { grid-template-columns: 22px max-content minmax(0, 1fr) 14ch; }
+.regleta.rg-gauge.rg-edit.sin-etq { grid-template-columns: 22px minmax(0, 1fr) 14ch; }
+.rg-caja { height: 26px; }
+.rg-caja input { font-weight: 600; font-variant-numeric: tabular-nums; color: var(--tinta); }
+.regleta.fuera .rg-caja input { color: var(--no); }
 </style>
 
 <header class="barra">
@@ -6799,14 +6808,52 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
       )
     );
   }
-  function regleta({ etq, min, max, step = 1, valor, texto, etiqueta, onInput, onChange, clase = "", reinicio, gauge }) {
+  function regleta({ etq, min, max, step = 1, valor, texto, etiqueta, onInput, onChange, clase = "", reinicio, gauge, entrada: entrada6 }) {
     const input = h("input", { type: "range", min: String(min), max: String(max), step: String(step), value: String(valor), "aria-label": etiqueta ?? etq ?? "" });
-    const out = h("output", { class: "rg-v" });
+    let caja = null;
+    let campo = null;
+    if (entrada6) {
+      campo = h("input", { class: "rg-in", inputmode: "decimal", autocomplete: "off", "aria-label": `${etiqueta ?? etq ?? ""} (${entrada6.ud})` });
+      caja = h("div", { class: "caja rg-caja" }, campo, entrada6.ud ? h("span", { class: "ud" }, entrada6.ud) : null);
+    }
+    const out = caja ?? h("output", { class: "rg-v" });
+    const mostrar2 = entrada6?.mostrar ?? ((v2) => fmt(v2, entrada6?.d ?? 0));
+    const leer = entrada6?.leer ?? ((txt) => {
+      try {
+        return leerNumero(txt);
+      } catch {
+        return NaN;
+      }
+    });
     const pinta = () => {
       const v2 = Number(input.value);
       input.style.setProperty("--p", `${(v2 - Number(input.min)) / (Number(input.max) - Number(input.min) || 1) * 100}%`);
-      out.innerHTML = texto ? texto(v2) : String(v2);
+      if (campo) {
+        if (document.activeElement !== campo) campo.value = mostrar2(v2);
+      } else out.innerHTML = texto ? texto(v2) : String(v2);
     };
+    if (campo) {
+      const aplica = () => {
+        const x = leer(campo.value);
+        if (!Number.isFinite(x)) {
+          campo.value = mostrar2(Number(input.value));
+          return;
+        }
+        input.value = String(x);
+        campo.blur();
+        pinta();
+        onInput?.(Number(input.value));
+        onChange?.(Number(input.value));
+      };
+      campo.addEventListener("change", aplica);
+      campo.addEventListener("keydown", (e2) => {
+        if (e2.key === "Enter") {
+          e2.preventDefault();
+          campo.blur();
+        }
+      });
+      campo.addEventListener("focus", () => campo.select());
+    }
     input.addEventListener("input", () => {
       pinta();
       onInput?.(Number(input.value));
@@ -6858,7 +6905,7 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
         pinta();
       };
     }
-    const el = h("div", { class: `regleta ${clase}${gauge ? " rg-gauge" : ""}`.trim() }, cand, etq ? h("span", { class: "rg-et", html: etq }) : null, riel, out);
+    const el = h("div", { class: `regleta ${clase}${gauge ? " rg-gauge" : ""}${entrada6 ? " rg-edit" : ""}`.trim() }, cand, etq ? h("span", { class: "rg-et", html: etq }) : null, riel, out);
     if (!etq) el.classList.add("sin-etq");
     el.refrescar = () => pinta();
     el.poner = (v2) => {
@@ -15327,7 +15374,7 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
       const y = e2.q[1] + e2.rr + 12;
       if (puestas.some((o) => Math.abs(o.x - x) < 80 && Math.abs(o.y - y) < 16)) continue;
       puestas.push({ x, y });
-      out.push(`<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle">${fmt(e2.s, MAG.tension.d)}</text>`);
+      out.push(`<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle">${fmt(e2.s, 0)}</text>`);
     }
     for (const [jf, f] of r.franjas.entries()) {
       const th = Math.max(5, S * f.A / (f.x2 - f.x1) / 2) / S;
@@ -15336,7 +15383,7 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
       for (const [ie, [xe, se, lado]] of [[f.x1, f.s1, -1], [f.x2, f.s2, 1]].entries()) {
         const q2 = T([xe, f.y]);
         const eti = ver.has(r.barras.length + 2 * jf + ie);
-        out.push(`<circle class="et-pt" data-ref="f${jf}-${ie}" cx="${q2[0].toFixed(1)}" cy="${q2[1].toFixed(1)}" r="3"/>${eti ? `<text x="${(q2[0] + lado * 8).toFixed(1)}" y="${(q2[1] + 4).toFixed(1)}" text-anchor="${lado > 0 ? "start" : "end"}">${fmt(se, MAG.tension.d)}</text>` : ""}`);
+        out.push(`<circle class="et-pt" data-ref="f${jf}-${ie}" cx="${q2[0].toFixed(1)}" cy="${q2[1].toFixed(1)}" r="3"/>${eti ? `<text x="${(q2[0] + lado * 8).toFixed(1)}" y="${(q2[1] + 4).toFixed(1)}" text-anchor="${lado > 0 ? "start" : "end"}">${fmt(se, 0)}</text>` : ""}`);
       }
     }
     const c0 = T([xc, yc]);
@@ -15476,7 +15523,9 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
       res.querySelector(":scope > .veredicto").replaceWith(nuevo2);
       rotulaSeccion(res, nombre);
     };
+    const ENT = { N: { ud: "kN", d: 0 }, M: { ud: "kN\xB7m", d: 0 }, def: { ud: "\u2030", d: 2 }, ang1: { ud: "\xB0", d: 1 } };
     const reg = (id, etq, k, mag, min, max, step, texto, aVar = (v2) => v2, deVar = (v2) => v2) => regleta({
+      entrada: ENT[mag],
       clase: k === "N" && est7.N < 0 ? "trac" : "",
       etq,
       min,
@@ -15518,6 +15567,11 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
         return Math.max(0, m / (m + XM2));
       })() : 1;
       regs.push(regleta({
+        entrada: { ud: "mm", mostrar: (q2) => q2 >= 0.999 ? "\u221E" : fmt(X02 + XM2 * q2 / (1 - q2), 0), leer: (txt) => {
+          if (/^\s*(∞|inf)/i.test(txt)) return 1;
+          const m = leerNumero(txt);
+          return m <= X02 ? 0 : (m - X02) / (m - X02 + XM2);
+        } },
         etq: "x",
         min: 0,
         max: 1,
@@ -15553,6 +15607,7 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
     const f = [{ k: "e0", mag: "def", etq: sub23("\u03B5", "cdg"), ud: "\u2030" }, { k: "kx", mag: "curv", etq: sub23("\u03BA", "x"), ud: "\u2030/m" }, { k: "ky", mag: "curv", etq: sub23("\u03BA", "y"), ud: "\u2030/m" }];
     let R = rangos(en, uDe(), cand());
     const regs = f.map((q2, j) => regleta({
+      entrada: { ud: q2.ud, d: 2 },
       etq: q2.etq,
       min: -1,
       max: 1,

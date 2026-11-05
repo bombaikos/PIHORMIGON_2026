@@ -16,6 +16,7 @@ import { fmt, qh, MAG, decimalAlCopiar } from '../formato.js';
 import { grupoSeccion, rotulaSeccion } from './secciones.js';
 import { veredicto } from './flexion.js';
 import { SECCION_MAX, topeEscala } from '../dibujoSeccion.js';
+import { leerNumero } from '../../core/armado.js';
 import { h, poner, campoNum, segmentado, grupo, aviso, regleta, tabla } from '../campos.js';
 
 const FORMAS = ['rectangular', 'pilar', 'T', 'circular', 'generica'];
@@ -309,7 +310,7 @@ function dibujo(c, r) {
     const y = e.q[1] + e.rr + 12;
     if (puestas.some((o) => Math.abs(o.x - x) < 80 && Math.abs(o.y - y) < 16)) continue;
     puestas.push({ x, y });
-    out.push(`<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle">${fmt(e.s, MAG.tension.d)}</text>`);
+    out.push(`<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle">${fmt(e.s, 0)}</text>`);
   }
   // Franjas (armadura por área): rectángulo con su espesor equivalente y la tensión en sus dos extremos
   for (const [jf, f] of r.franjas.entries()) {
@@ -319,7 +320,7 @@ function dibujo(c, r) {
     for (const [ie, [xe, se, lado]] of [[f.x1, f.s1, -1], [f.x2, f.s2, 1]].entries()) {
       const q = T([xe, f.y]);
       const eti = ver.has(r.barras.length + 2 * jf + ie);
-      out.push(`<circle class="et-pt" data-ref="f${jf}-${ie}" cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="3"/>${eti ? `<text x="${(q[0] + lado * 8).toFixed(1)}" y="${(q[1] + 4).toFixed(1)}" text-anchor="${lado > 0 ? 'start' : 'end'}">${fmt(se, MAG.tension.d)}</text>` : ''}`);
+      out.push(`<circle class="et-pt" data-ref="f${jf}-${ie}" cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="3"/>${eti ? `<text x="${(q[0] + lado * 8).toFixed(1)}" y="${(q[1] + 4).toFixed(1)}" text-anchor="${lado > 0 ? 'start' : 'end'}">${fmt(se, 0)}</text>` : ''}`);
     }
   }
   // c.d.g.
@@ -468,7 +469,9 @@ export function resultados(ctx, res) {
     res.querySelector(':scope > .veredicto').replaceWith(nuevo);
     rotulaSeccion(res, nombre);
   };
+  const ENT = { N: { ud: 'kN', d: 0 }, M: { ud: 'kN·m', d: 0 }, def: { ud: '‰', d: 2 }, ang1: { ud: '°', d: 1 } };
   const reg = (id, etq, k, mag, min, max, step, texto, aVar = (v) => v, deVar = (v) => v) => regleta({
+    entrada: ENT[mag],
     clase: k === 'N' && est.N < 0 ? 'trac' : '',
     etq, min, max, step, valor: deVar(est[k]), reinicio: 0, etiqueta: etq.replace(/<[^>]+>/g, ''), texto,
     onInput: (v) => { est[k] = aVar(v); if (k === 'N') document.querySelector('.et-reglas .regleta')?.classList.toggle('trac', est.N < 0); refresca(); },
@@ -490,7 +493,7 @@ export function resultados(ctx, res) {
     const XM = 600;
     const aX = (q) => { const m = q >= 0.999 ? Infinity : (X0 + (XM * q) / (1 - q)) / 1000; return est.eSup < 0 ? -m : m; };
     const deX = (x) => (Number.isFinite(x) && Math.abs(x) < X_INF ? (() => { const m = Math.abs(x) * 1000 - X0; return Math.max(0, m / (m + XM)); })() : 1);
-    regs.push(regleta({ etq: 'x', min: 0, max: 1, step: 0.001, valor: deX(est.x), etiqueta: t('est.nombreX'), reinicio: 1, texto: (q) => (q >= 0.999 ? '∞' : `${fmt((X0 + (XM * q) / (1 - q)), 0)} mm`),
+    regs.push(regleta({ entrada: { ud: 'mm', mostrar: (q) => (q >= 0.999 ? '∞' : fmt(X0 + (XM * q) / (1 - q), 0)), leer: (txt) => { if (/^\s*(∞|inf)/i.test(txt)) return 1; const m = leerNumero(txt); return m <= X0 ? 0 : (m - X0) / (m - X0 + XM); } }, etq: 'x', min: 0, max: 1, step: 0.001, valor: deX(est.x), etiqueta: t('est.nombreX'), reinicio: 1, texto: (q) => (q >= 0.999 ? '∞' : `${fmt((X0 + (XM * q) / (1 - q)), 0)} mm`),
       onInput: (q) => { est.x = aX(q); refresca(); },
       onChange: (q) => { est.x = aX(q); ctx.cambio(); } }));
   }
@@ -518,7 +521,7 @@ function gaugesEK(c, refresca, ctx) {
   const f = [{ k: 'e0', mag: 'def', etq: sub('ε', 'cdg'), ud: '‰' }, { k: 'kx', mag: 'curv', etq: sub('κ', 'x'), ud: '‰/m' }, { k: 'ky', mag: 'curv', etq: sub('κ', 'y'), ud: '‰/m' }];
   let R = rangos(en, uDe(), cand());
   const regs = f.map((q, j) => regleta({
-    etq: q.etq, min: -1, max: 1, step: 0.01, valor: est[q.k] * 1000, reinicio: 0, etiqueta: q.k, texto: (v) => `${fmt(v, 2)} ${q.ud}`,
+    entrada: { ud: q.ud, d: 2 }, etq: q.etq, min: -1, max: 1, step: 0.01, valor: est[q.k] * 1000, reinicio: 0, etiqueta: q.k, texto: (v) => `${fmt(v, 2)} ${q.ud}`,
     gauge: { bloqueado: est.lock[q.k], onCandado: () => { est.lock[q.k] = !est.lock[q.k]; ctx.cambio(); } },
     onInput: (v) => mueve(j, v / 1000),
     onChange: () => { clearTimeout(timer); ctx.cambio(); },
