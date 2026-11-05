@@ -1260,6 +1260,14 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
 .rg-caja { height: 26px; }
 .rg-caja input { font-weight: 600; font-variant-numeric: tabular-nums; color: var(--tinta); }
 .regleta.fuera .rg-caja input { color: var(--no); }
+
+/* Cajas editables más estrechas y regletas de los modos sin gauge también a todo el ancho */
+.regleta.rg-edit { grid-template-columns: max-content minmax(0, 1fr) 11ch; }
+.regleta.rg-edit.sin-etq { grid-template-columns: minmax(0, 1fr) 11ch; }
+.regleta.rg-gauge.rg-edit { grid-template-columns: 22px max-content minmax(0, 1fr) 11ch; }
+.regleta.rg-gauge.rg-edit.sin-etq { grid-template-columns: 22px minmax(0, 1fr) 11ch; }
+.et-reglas { width: 100%; }
+.regleta.rg-edit:not(.rg-gauge) { width: 100%; padding: 0 6px; box-sizing: border-box; margin: 1px 0; }
 </style>
 
 <header class="barra">
@@ -15046,7 +15054,7 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
   var est7 = {
     i: null,
     para: null,
-    modo: "NM",
+    modo: "eK",
     N: 0,
     Mx: 0,
     My: 0,
