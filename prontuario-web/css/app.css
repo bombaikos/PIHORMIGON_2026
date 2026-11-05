@@ -1231,8 +1231,23 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
 .regleta.fuera .rg-v { color: var(--no); }
 .et-lienzo { flex: 0 0 auto !important; }
 .regleta.rg-gauge .rg-et { min-width: 3.4em; }
-.et-lienzo svg.dib { max-height: 50vh; }
+.et-lienzo svg.dib { max-height: calc(100vh - 410px) !important; }
 .regleta.rg-gauge { margin: 1px auto; } .et-reglas { gap: 0; }
 .tick.no-aplica { color: var(--tinta-3); cursor: not-allowed; } .tick.no-aplica input { cursor: not-allowed; } .et-der.no-aplica { color: var(--tinta-3); opacity: .7; }
 .et-reglas:has(.rg-gauge) { width: 100%; }
 .regleta.rg-gauge { width: 100%; margin: 1px 0; padding: 0 6px; box-sizing: border-box; }
+
+/* Análisis tensional: esfuerzos siempre sobre la figura */
+.et-esf { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--e2) var(--e5, 28px); padding: 2px 0 4px; font-size: calc(20px + var(--mas, 0px)); color: var(--tinta); flex: 0 0 auto; }
+.et-esf-v b { font-variant-numeric: tabular-nums; font-weight: 700; }
+.et-esf-u { color: var(--tinta-3); font-size: var(--t-s); }
+.et-esf-v.trac, .et-esf-v.trac .et-esf-u { color: var(--rosa); }
+
+/* Valor del cursor como caja de datos editable */
+.regleta.rg-edit { grid-template-columns: max-content minmax(0, 1fr) 14ch; }
+.regleta.rg-edit.sin-etq { grid-template-columns: minmax(0, 1fr) 14ch; }
+.regleta.rg-gauge.rg-edit { grid-template-columns: 22px max-content minmax(0, 1fr) 14ch; }
+.regleta.rg-gauge.rg-edit.sin-etq { grid-template-columns: 22px minmax(0, 1fr) 14ch; }
+.rg-caja { height: 26px; }
+.rg-caja input { font-weight: 600; font-variant-numeric: tabular-nums; color: var(--tinta); }
+.regleta.fuera .rg-caja input { color: var(--no); }

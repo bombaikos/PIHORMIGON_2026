@@ -72,3 +72,13 @@ Código: `src/core/estadoTensional.js` (motor), tests en `tests/estadoTensional.
 ## Banda translúcida y datos que no desaparecen (5/11/2026, Pepiño)
 - La banda compatible es una **sombra azul al 50 % de transparencia** (como en VLASTA) detrás de la pista, algo más alta que ella.
 - **Principio de diseño**: en los datos nada aparece ni desaparece al cambiar de opciones (norma, ELS/ELU…): lo que no procede se queda en su sitio, desactivado, con un hint (i) que explica por qué. En ELU, φ, k_c, k_s y la ley lineal quedan desactivados («—») y E_c,eff/n en gris.
+
+## Esfuerzos sobre la figura, sin títulos y sin campos de estado (5/11/2026, Pepiño)
+- Se quitan los títulos «Plano de deformaciones» y «Tensiones» del dibujo (es evidente).
+- Sobre la figura va siempre, con protagonismo (20 px), **N = … kN · Mx = … kN·m · My = … kN·m** del estado calculado; la N en rosa si es de tracción.
+- Los campos de esfuerzos y de plano de deformaciones salen de los datos: el estado se da con los cursores. El selector de modo se queda.
+- El dibujo se centra y su altura se limita a `100vh − 410 px` para que quepan la cabecera y los gauges a 1536×730 y 1366×657.
+
+## Valor del cursor editable y σ de armaduras sin decimales en el dibujo (5/11/2026, Pepiño)
+- El valor numérico a la derecha de cada cursor es una **caja de datos editable** (blanca, con borde y unidad), no un texto: escribir un valor (coma o punto) y Enter mueve el cursor, respetando el dominio en los gauges con rango. Es un parámetro `entrada` del componente común `regleta()`. La x admite «∞».
+- Las tensiones de las armaduras se rotulan **sin decimales en el dibujo**; la tabla mantiene un decimal.

@@ -16,6 +16,7 @@ import { fmt, qh, MAG, decimalAlCopiar } from '../formato.js';
 import { grupoSeccion, rotulaSeccion } from './secciones.js';
 import { veredicto } from './flexion.js';
 import { SECCION_MAX, topeEscala } from '../dibujoSeccion.js';
+import { leerNumero } from '../../core/armado.js';
 import { h, poner, campoNum, segmentado, grupo, aviso, regleta, tabla } from '../campos.js';
 
 const FORMAS = ['rectangular', 'pilar', 'T', 'circular', 'generica'];
@@ -157,28 +158,6 @@ export function datos(ctx, form) {
   let c = null;
   try { c = calculo(p, s); } catch { /* el error se muestra en resultados */ }
   if (c) resuelve(c, s); // fija el estado inicial antes de escribir los campos
-  const cambio = () => ctx.cambio();
-  const vis = (k) => (k === 'x' && !Number.isFinite(est.x) ? Math.sign(est.x) * X_INF : est[k]);
-  // En los campos, cada magnitud con sus decimales de la guía (§ 1): ε 2, β 1, x 0, κ 2, N y M 0
-  const redondeo = (x, mag) => { const m = MAG[mag]; const k = 10 ** (m.d ?? 0); return Math.round(x * m.f * k) / k / m.f; };
-  const num = (id, etq, k, mag, o = {}) => campoNum({ id: `et-${id}`, etq, valor: redondeo(vis(k), mag), mag, paso: o.paso, min: o.min ?? -1e9, max: o.max ?? 1e9, nombre: o.nombre, ref: o.ref, info: o.info, onCambio: (v) => { est[k] = k === 'x' && Math.abs(v) >= X_INF ? Math.sign(v) * Infinity : v; cambio(); } });
-  const campos = {
-    NM: [
-      num('N', sub('N', ''), 'N', 'N', { paso: 10, nombre: t('est.nombreN'), ref: t('fcr.compPos') }),
-      num('Mx', sub('M', 'x'), 'Mx', 'M', { paso: 5, nombre: t('est.nombreMx'), ref: t('est.refMx') }),
-      num('My', sub('M', 'y'), 'My', 'M', { paso: 5, nombre: t('est.nombreMy'), ref: t('est.refMy') }),
-    ],
-    eK: [
-      num('e0', sub('ε', 'cdg'), 'e0', 'def', { paso: 0.05e-3, nombre: t('est.nombreE0') }),
-      num('kx', sub('κ', 'x'), 'kx', 'curv', { paso: 0.1e-3, nombre: t('est.nombreKx') }),
-      num('ky', sub('κ', 'y'), 'ky', 'curv', { paso: 0.1e-3, nombre: t('est.nombreKy') }),
-    ],
-    sup: [
-      num('es', sub('ε', 'sup'), 'eSup', 'def', { paso: 0.05e-3, nombre: t('est.nombreESup'), info: t('est.infoSup') }),
-      num('b', 'β', 'beta', 'ang1', { paso: 1, min: 0, max: 360, nombre: t('est.nombreBeta') }),
-      num('x', 'x', 'x', 'long', { paso: 10e-3, nombre: t('est.nombreX'), ref: t('est.refX') }),
-    ],
-  };
   // γ y αcc: con el valor esperado del estado límite (ELS: 1,00; ELU: el de la norma) van normales; con otro, en rojo y con su (i)
   const gamma = (id, etq, k, defecto) => {
     const valor = V()[k] ?? defecto;
@@ -196,7 +175,6 @@ export function datos(ctx, form) {
   poner(form,
     segmentado({ ancho: true, capsula: true, etiqueta: t('est.estadoLimite'), opciones: [['ELS', 'ELS'], ['ELU', 'ELU']], valor: est.estado, onCambio: (m) => { est.estado = m; ctx.pintar(); } }),
     segmentado({ ancho: true, capsula: true, etiqueta: t('est.modo'), opciones: [['NM', t('est.m.NM')], ['eK', t('est.m.eK')], ['sup', t('est.m.sup')]], valor: est.modo, onCambio: (m) => { est.modo = m; ctx.pintar(); } }),
-    grupo(est.modo === 'NM' ? t('est.gEsfuerzos') : t('est.gPlano'), ...campos[est.modo]),
     grupo(t('est.gHormigon'),
       h('div', { class: 'fila-campos et-fc' }, c ? gamma('gc', t('est.gammaC'), 'gammaC', c.gammaC) : null, c ? gamma('ac', t('est.alfaCC'), 'alfaCC', c.alfaCC) : null),
       h('div', { class: 'fila-campos et-fc' },
@@ -281,7 +259,6 @@ function dibujo(c, r) {
   const x1 = x0 + comp * escE + 120; // línea base de las tensiones
   const aT = [x0 + r.eSup * escE, yTop];
   const aB = [x0 + r.eInf * escE, yBot];
-  out.push(`<text class="tit" x="${x1 - 20}" y="${yTop - 22}" text-anchor="end">${t('est.planoDef')}</text>`);
   out.push(`<line class="eje" x1="${x0}" y1="${yTop}" x2="${x0}" y2="${yBot}"/>`);
   // Parte comprimida (ε > 0) y parte traccionada (ε < 0) del plano, con su estilo
   const yCero = r.eSup === r.eInf ? yTop : yTop + ((yBot - yTop) * r.eSup) / (r.eSup - r.eInf);
@@ -298,7 +275,6 @@ function dibujo(c, r) {
   const sTop = mu[0].s;
   const sBot = mu[NS].s;
   const sEsc = SIG_W / Math.max(Math.abs(sTop), Math.abs(sBot), 1e-6);
-  out.push(`<text class="tit" x="${x1 - 8}" y="${yTop - 22}">${t('est.tensiones')}</text>`);
   out.push(`<line class="eje" x1="${x1}" y1="${yTop}" x2="${x1}" y2="${yBot}"/>`);
   const cP = mu.filter((q) => q.s > 1e-9);
   const tP = mu.filter((q) => q.s < -1e-9);
@@ -334,7 +310,7 @@ function dibujo(c, r) {
     const y = e.q[1] + e.rr + 12;
     if (puestas.some((o) => Math.abs(o.x - x) < 80 && Math.abs(o.y - y) < 16)) continue;
     puestas.push({ x, y });
-    out.push(`<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle">${fmt(e.s, MAG.tension.d)}</text>`);
+    out.push(`<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle">${fmt(e.s, 0)}</text>`);
   }
   // Franjas (armadura por área): rectángulo con su espesor equivalente y la tensión en sus dos extremos
   for (const [jf, f] of r.franjas.entries()) {
@@ -344,7 +320,7 @@ function dibujo(c, r) {
     for (const [ie, [xe, se, lado]] of [[f.x1, f.s1, -1], [f.x2, f.s2, 1]].entries()) {
       const q = T([xe, f.y]);
       const eti = ver.has(r.barras.length + 2 * jf + ie);
-      out.push(`<circle class="et-pt" data-ref="f${jf}-${ie}" cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="3"/>${eti ? `<text x="${(q[0] + lado * 8).toFixed(1)}" y="${(q[1] + 4).toFixed(1)}" text-anchor="${lado > 0 ? 'start' : 'end'}">${fmt(se, MAG.tension.d)}</text>` : ''}`);
+      out.push(`<circle class="et-pt" data-ref="f${jf}-${ie}" cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="3"/>${eti ? `<text x="${(q[0] + lado * 8).toFixed(1)}" y="${(q[1] + 4).toFixed(1)}" text-anchor="${lado > 0 ? 'start' : 'end'}">${fmt(se, 0)}</text>` : ''}`);
     }
   }
   // c.d.g.
@@ -365,7 +341,7 @@ function dibujo(c, r) {
     out.push(`<line class="en" x1="${ix - w[0] * 50}" y1="${iy - w[1] * 50}" x2="${ix + w[0] * 50}" y2="${iy + w[1] * 50}"/>`);
     out.push(`<path class="cota" d="M${ix + 26} ${iy}A26 26 0 ${bn > Math.PI ? 1 : 0} 0 ${ix + 26 * w[0]} ${iy + 26 * w[1]}"/><text x="${ix + 30}" y="${iy - 6}">β</text>`);
   }
-  return `<svg class="dib et-svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${W} ${H}"${topeEscala(W, H)} role="img" aria-label="${t('est.dibujoAria')}">${out.join('')}</svg>`;
+  return `<svg class="dib et-svg" preserveAspectRatio="xMidYMin meet" viewBox="0 0 ${W} ${H}"${topeEscala(W, H)} role="img" aria-label="${t('est.dibujoAria')}">${out.join('')}</svg>`;
 }
 
 // ---------------------------------------------------------------- resultados
@@ -445,6 +421,12 @@ function pastilla(c, r) {
   return veredicto(r.fisurada ? 'atencion' : 'neutro', sello, t('est.sigmaC'), qh(r.sigmaMax, 'tension'), `${ley} · n = ${fmt(r.n, 1)}`);
 }
 
+/** Esfuerzos del estado, siempre sobre la figura: N, Mx y My (N en rosa si es de tracción). */
+function cabeceraEsfuerzos(r) {
+  const par = (etq, v, ud, clase = '') => h('span', { class: `et-esf-v ${clase}`.trim() }, h('span', { class: 'et-esf-e', html: etq }), ' = ', h('b', {}, v), h('span', { class: 'et-esf-u' }, ` ${ud}`));
+  return [par('N', fmt(r.N, MAG.N.d), 'kN', r.N < 0 ? 'trac' : ''), par(sub('M', 'x'), fmt(r.Mx, MAG.M.d), 'kN·m'), par(sub('M', 'y'), fmt(r.My, MAG.M.d), 'kN·m')];
+}
+
 /** Desplegable de fondo ámbar con lo que dicen los apartados del EC-2 sobre las limitaciones de tensión en servicio. */
 function notaEC2() {
   return h('details', { class: 'pleg pleg-amb' }, h('summary', {}, t('est.ec2.titulo')),
@@ -468,6 +450,7 @@ export function resultados(ctx, res) {
   if (!dom.ok) res.append(aviso(t(`est.fuera.${dom.limita}`, est.estado, fmt(-dom.holgura * 1000, 2)), 'error'));
   if (c.els) res.append(notaEC2());
 
+  const esf = h('div', { class: 'et-esf', role: 'status' }, ...cabeceraEsfuerzos(r));
   const lienzo = h('div', { class: 'lienzo et-lienzo', html: dibujo(c, r) });
   const derecha = h('article', { class: 'panel tarjeta et-der-card' });
   const llena = (rr) => derecha.replaceChildren(tablaEstado(rr), h('h3', {}, t('est.tFibras')), tablaFibras(rr), tablaBarras(ctx, rr));
@@ -480,16 +463,18 @@ export function resultados(ctx, res) {
     if (!rr.ok) return;
     r = rr;
     lienzo.innerHTML = dibujo(c, rr);
+    esf.replaceChildren(...cabeceraEsfuerzos(rr));
     llena(rr);
     const nuevo = pastilla(c, rr);
     res.querySelector(':scope > .veredicto').replaceWith(nuevo);
     rotulaSeccion(res, nombre);
   };
-  const sincro = (id, mag, v) => { const el = document.getElementById(`et-${id}`); if (el) el.value = mag === 'ang1' ? String(+v.toFixed(1)) : String(+(v * MAG[mag].f).toFixed(MAG[mag].d ?? 0)); };
+  const ENT = { N: { ud: 'kN', d: 0 }, M: { ud: 'kN·m', d: 0 }, def: { ud: '‰', d: 2 }, ang1: { ud: '°', d: 1 } };
   const reg = (id, etq, k, mag, min, max, step, texto, aVar = (v) => v, deVar = (v) => v) => regleta({
+    entrada: ENT[mag],
     clase: k === 'N' && est.N < 0 ? 'trac' : '',
     etq, min, max, step, valor: deVar(est[k]), reinicio: 0, etiqueta: etq.replace(/<[^>]+>/g, ''), texto,
-    onInput: (v) => { est[k] = aVar(v); sincro(id, mag, est[k]); if (k === 'N') document.querySelector('.et-reglas .regleta')?.classList.toggle('trac', est.N < 0); refresca(); },
+    onInput: (v) => { est[k] = aVar(v); if (k === 'N') document.querySelector('.et-reglas .regleta')?.classList.toggle('trac', est.N < 0); refresca(); },
     onChange: (v) => { est[k] = aVar(v); ctx.cambio(); },
   });
   const unidad = (mag, d = MAG[mag].d) => (v) => `${fmt(v, d)} ${MAG[mag].ud}`;
@@ -499,7 +484,7 @@ export function resultados(ctx, res) {
     regs.push(reg('Mx', sub('M', 'x'), 'Mx', 'M', -c.rg.Mx, c.rg.Mx, 1, unidad('M')));
     regs.push(reg('My', sub('M', 'y'), 'My', 'M', -c.rg.My, c.rg.My, 1, unidad('M')));
   } else if (est.modo === 'eK') {
-    regs.push(...gaugesEK(c, refresca, sincro, ctx));
+    regs.push(...gaugesEK(c, refresca, ctx));
   } else {
     regs.push(reg('es', sub('ε', 'sup'), 'eSup', 'def', -1.5, 3.5, 0.01, (v) => `${fmt(v, 2)} ‰`, (v) => v / 1000, (v) => v * 1000));
     regs.push(reg('b', 'β', 'beta', 'ang1', 0, 360, 0.5, (v) => `${fmt(v, 1)} °`));
@@ -508,12 +493,12 @@ export function resultados(ctx, res) {
     const XM = 600;
     const aX = (q) => { const m = q >= 0.999 ? Infinity : (X0 + (XM * q) / (1 - q)) / 1000; return est.eSup < 0 ? -m : m; };
     const deX = (x) => (Number.isFinite(x) && Math.abs(x) < X_INF ? (() => { const m = Math.abs(x) * 1000 - X0; return Math.max(0, m / (m + XM)); })() : 1);
-    regs.push(regleta({ etq: 'x', min: 0, max: 1, step: 0.001, valor: deX(est.x), etiqueta: t('est.nombreX'), reinicio: 1, texto: (q) => (q >= 0.999 ? '∞' : `${fmt((X0 + (XM * q) / (1 - q)), 0)} mm`),
-      onInput: (q) => { est.x = aX(q); sincro('x', 'long', Number.isFinite(est.x) ? est.x : X_INF); refresca(); },
+    regs.push(regleta({ entrada: { ud: 'mm', mostrar: (q) => (q >= 0.999 ? '∞' : fmt(X0 + (XM * q) / (1 - q), 0)), leer: (txt) => { if (/^\s*(∞|inf)/i.test(txt)) return 1; const m = leerNumero(txt); return m <= X0 ? 0 : (m - X0) / (m - X0 + XM); } }, etq: 'x', min: 0, max: 1, step: 0.001, valor: deX(est.x), etiqueta: t('est.nombreX'), reinicio: 1, texto: (q) => (q >= 0.999 ? '∞' : `${fmt((X0 + (XM * q) / (1 - q)), 0)} mm`),
+      onInput: (q) => { est.x = aX(q); refresca(); },
       onChange: (q) => { est.x = aX(q); ctx.cambio(); } }));
   }
   const reglas = h('div', { class: 'et-reglas' }, ...regs);
-  res.append(h('div', { class: 'cuerpo dib-ancho' }, h('article', { class: 'panel tarjeta et-izq' }, lienzo, reglas), derecha));
+  res.append(h('div', { class: 'cuerpo dib-ancho' }, h('article', { class: 'panel tarjeta et-izq' }, esf, lienzo, reglas), derecha));
   rotulaSeccion(res, nombre);
 }
 
@@ -527,7 +512,7 @@ const RETARDO = 90; // ms: los rangos se recalculan al parar de mover, no en cad
  * Tres regletas con rango total (extremos escritos), banda compatible y candado. Mover dentro de la banda cambia solo esa
  * variable; fuera de la banda, las otras libres se reajustan lo mínimo (en proporción a su rango total) para seguir en el dominio.
  */
-function gaugesEK(c, refresca, sincro, ctx) {
+function gaugesEK(c, refresca, ctx) {
   const esc = [0.005, c.rg.kx, c.rg.ky];
   const en = (u) => admisible(c.mod, c.lim, { e0: u[0] * esc[0], kx: u[1] * esc[1], ky: u[2] * esc[2] }).ok;
   const cand = () => EK.map((k) => est.lock[k]);
@@ -536,7 +521,7 @@ function gaugesEK(c, refresca, sincro, ctx) {
   const f = [{ k: 'e0', mag: 'def', etq: sub('ε', 'cdg'), ud: '‰' }, { k: 'kx', mag: 'curv', etq: sub('κ', 'x'), ud: '‰/m' }, { k: 'ky', mag: 'curv', etq: sub('κ', 'y'), ud: '‰/m' }];
   let R = rangos(en, uDe(), cand());
   const regs = f.map((q, j) => regleta({
-    etq: q.etq, min: -1, max: 1, step: 0.01, valor: est[q.k] * 1000, reinicio: 0, etiqueta: q.k, texto: (v) => `${fmt(v, 2)} ${q.ud}`,
+    entrada: { ud: q.ud, d: 2 }, etq: q.etq, min: -1, max: 1, step: 0.01, valor: est[q.k] * 1000, reinicio: 0, etiqueta: q.k, texto: (v) => `${fmt(v, 2)} ${q.ud}`,
     gauge: { bloqueado: est.lock[q.k], onCandado: () => { est.lock[q.k] = !est.lock[q.k]; ctx.cambio(); } },
     onInput: (v) => mueve(j, v / 1000),
     onChange: () => { clearTimeout(timer); ctx.cambio(); },
@@ -560,7 +545,6 @@ function gaugesEK(c, refresca, sincro, ctx) {
       const q = reajusta(en, u, j, nuevo, cand(), R);
       if (q) aEst(q); else est[f[j].k] = Math.min(b[1], Math.max(b[0], nuevo)) * esc[j];
     }
-    EK.forEach((k) => sincro(k, k === 'e0' ? 'def' : 'curv', est[k]));
     regs.forEach((rg, m) => rg.poner(est[EK[m]] * 1000));
     refresca();
     clearTimeout(timer);
