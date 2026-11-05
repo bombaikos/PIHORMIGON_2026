@@ -82,3 +82,8 @@ Código: `src/core/estadoTensional.js` (motor), tests en `tests/estadoTensional.
 ## Valor del cursor editable y σ de armaduras sin decimales en el dibujo (5/11/2026, Pepiño)
 - El valor numérico a la derecha de cada cursor es una **caja de datos editable** (blanca, con borde y unidad), no un texto: escribir un valor (coma o punto) y Enter mueve el cursor, respetando el dominio en los gauges con rango. Es un parámetro `entrada` del componente común `regleta()`. La x admite «∞».
 - Las tensiones de las armaduras se rotulan **sin decimales en el dibujo**; la tabla mantiene un decimal.
+
+## Gauges del modo ε_sup, β, x (5/11/2026)
+- Mismos gauges que el modo ε, κ (rango total, banda, candados, reajuste, retardo de 90 ms, caja editable), con `rangosGeneral`/`reajustaGeneral` en `dominioGauges.js`: barrido de cada variable sobre una rejilla de las otras libres, extremos afinados por bisección y búsqueda local.
+- β es cíclica (0–360°): su rango total es siempre 0–360° con las otras libres; la banda puede ser varios tramos (la regleta dibuja una franja por tramo).
+- x se mueve en la escala no lineal de siempre (30 mm … ∞) y toma el signo de ε_sup; ε_sup y x de signo contrario no son estados admisibles.

@@ -198,6 +198,7 @@ export function regleta({ etq, min, max, step = 1, valor, texto, etiqueta, onInp
   if (gauge) {
     // Gauge con rango total (extremos escritos), banda compatible (franja bajo la pista) y candado
     const franja = h('span', { class: 'rg-banda' });
+    const extra = [];
     const lo = h('span', { class: 'rg-ext izq' });
     const hi = h('span', { class: 'rg-ext der' });
     riel = h('div', { class: 'rg-riel' }, input, franja, lo, hi);
@@ -212,11 +213,17 @@ export function regleta({ etq, min, max, step = 1, valor, texto, etiqueta, onInp
       const v = Number(input.value);
       input.value = String(Math.min(b, Math.max(a, v)));
       const f = (x) => (b > a ? (x - a) / (b - a) : 0);
-      franja.hidden = !banda;
-      if (banda) {
-        franja.style.setProperty('--b0', String(Math.max(0, f(banda[0]))));
-        franja.style.setProperty('--b1', String(Math.min(1, f(banda[1]))));
-        input.title = `${t('rg.banda')}: ${fmtExt(banda[0])} … ${fmtExt(banda[1])}${reinicio !== undefined ? `. ${t('rg.cero')}` : ''}`;
+      const tramos = !banda ? [] : Array.isArray(banda[0]) ? banda : [banda];
+      franja.hidden = !tramos.length;
+      while (extra.length < tramos.length - 1) { const e2 = h('span', { class: 'rg-banda' }); extra.push(e2); franja.after(e2); }
+      [franja, ...extra].forEach((fr, i) => {
+        fr.hidden = i >= tramos.length;
+        if (i >= tramos.length) return;
+        fr.style.setProperty('--b0', String(Math.max(0, f(tramos[i][0]))));
+        fr.style.setProperty('--b1', String(Math.min(1, f(tramos[i][1]))));
+      });
+      if (tramos.length) {
+        input.title = `${t('rg.banda')}: ${tramos.map((tr) => `${fmtExt(tr[0])} … ${fmtExt(tr[1])}`).join(' ; ')}${reinicio !== undefined ? `. ${t('rg.cero')}` : ''}`;
       } else input.title = reinicio !== undefined ? t('rg.cero') : '';
       lo.textContent = fmtExt(a);
       hi.textContent = fmtExt(b);

@@ -5,9 +5,9 @@
 // deformaciones va a su derecha, perpendicular a la neutra. Compresión positiva; Mx > 0 comprime la cara superior;
 // My > 0 comprime la cara derecha. Decisiones: analisis/estado-tensional-decisiones.md.
 
-import { modeloTensional, estadoTensional } from '../../core/estadoTensional.js';
+import { modeloTensional, estadoTensional, planoDeSup } from '../../core/estadoTensional.js';
 import { limitesDe, admisible, leyesNoAdmitidas } from '../../core/dominioTensional.js';
-import { rangos, reajusta, TOPE } from '../../core/dominioGauges.js';
+import { rangos, reajusta, rangosGeneral, reajustaGeneral, TOPE } from '../../core/dominioGauges.js';
 import { normaMat } from '../../norma/materiales/index.js';
 import { propiedadesHormigon, opcionesHormigon, sigma } from '../../core/materiales.js';
 import { geometriaDe, materialesSeccion } from '../../io/proyecto.js';
@@ -32,7 +32,7 @@ const est = {
   e0: 0, kx: 0, ky: 0, // absoluta, 1/m
   eSup: 0, beta: 0, x: Infinity, // absoluta, grados (de la fibra neutra), m
   estado: 'ELS',
-  lock: { e0: false, kx: false, ky: false }, // candados del modo ε, κ
+  lock: { e0: false, kx: false, ky: false, eSup: false, beta: false, x: false }, // candados de los modos ε, κ y ε_sup, β, x
   // Cada estado límite guarda sus propios datos; ninguno se traduce al otro (null = el valor de la ley del material).
   // ELS: γ = 1 y αcc = 1 (sin cansancio con σc ≤ 0,6·fck); ELU: los de la ley.
   v: {
@@ -486,16 +486,7 @@ export function resultados(ctx, res) {
   } else if (est.modo === 'eK') {
     regs.push(...gaugesEK(c, refresca, ctx));
   } else {
-    regs.push(reg('es', sub('ε', 'sup'), 'eSup', 'def', -1.5, 3.5, 0.01, (v) => `${fmt(v, 2)} ‰`, (v) => v / 1000, (v) => v * 1000));
-    regs.push(reg('b', 'β', 'beta', 'ang1', 0, 360, 0.5, (v) => `${fmt(v, 1)} °`));
-    // x en escala no lineal: la última posición es ∞ (compresión uniforme); el signo sigue al de ε_sup
-    const X0 = 30;
-    const XM = 600;
-    const aX = (q) => { const m = q >= 0.999 ? Infinity : (X0 + (XM * q) / (1 - q)) / 1000; return est.eSup < 0 ? -m : m; };
-    const deX = (x) => (Number.isFinite(x) && Math.abs(x) < X_INF ? (() => { const m = Math.abs(x) * 1000 - X0; return Math.max(0, m / (m + XM)); })() : 1);
-    regs.push(regleta({ entrada: { ud: 'mm', mostrar: (q) => (q >= 0.999 ? '∞' : fmt(X0 + (XM * q) / (1 - q), 0)), leer: (txt) => { if (/^\s*(∞|inf)/i.test(txt)) return 1; const m = leerNumero(txt); return m <= X0 ? 0 : (m - X0) / (m - X0 + XM); } }, etq: 'x', min: 0, max: 1, step: 0.001, valor: deX(est.x), etiqueta: t('est.nombreX'), reinicio: 1, texto: (q) => (q >= 0.999 ? '∞' : `${fmt((X0 + (XM * q) / (1 - q)), 0)} mm`),
-      onInput: (q) => { est.x = aX(q); refresca(); },
-      onChange: (q) => { est.x = aX(q); ctx.cambio(); } }));
+    regs.push(...gaugesSup(c, refresca, ctx));
   }
   const reglas = h('div', { class: 'et-reglas' }, ...regs);
   res.append(h('div', { class: 'cuerpo dib-ancho' }, h('article', { class: 'panel tarjeta et-izq' }, esf, lienzo, reglas), derecha));
@@ -549,6 +540,72 @@ function gaugesEK(c, refresca, ctx) {
     refresca();
     clearTimeout(timer);
     timer = setTimeout(() => { R = rangos(en, uDe(), cand()); pinta(); }, RETARDO);
+  };
+  pinta();
+  return regs;
+}
+
+// ---------------------------------------------------------------- gauges del modo ε_sup, β, x
+
+const X0 = 30;
+const XM = 600;
+const xDeQ = (q, eSup) => { const m = q >= 0.999 ? Infinity : (X0 + (XM * q) / (1 - q)) / 1000; return eSup < 0 ? -m : m; };
+const qDeX = (x) => (Number.isFinite(x) && Math.abs(x) < X_INF ? (() => { const m = Math.abs(x) * 1000 - X0; return Math.max(0, m / (m + XM)); })() : 1);
+const xTexto = (q) => (q >= 0.999 ? '∞' : fmt(X0 + (XM * q) / (1 - q), 0));
+
+/** Como gaugesEK, pero con ε_sup, β (cíclica) y x (escala no lineal, signo del de ε_sup). */
+function gaugesSup(c, refresca, ctx) {
+  const ESC = 0.005;
+  const SUP = ['eSup', 'beta', 'x'];
+  const dom = [{ lo: -TOPE, hi: TOPE }, { lo: 0, hi: 360, cic: true }, { lo: 0, hi: 1 }];
+  const en = (u) => {
+    const pl = planoDeSup(c.mod, u[0] * ESC, aMotor(u[1]), xDeQ(u[2], u[0]));
+    return !!pl && admisible(c.mod, c.lim, pl).ok;
+  };
+  const cand = () => SUP.map((k) => est.lock[k]);
+  const pDe = () => [est.eSup / ESC, est.beta, qDeX(est.x)];
+  const aEst = (p) => { est.eSup = p[0] * ESC; est.beta = p[1]; est.x = xDeQ(p[2], est.eSup); };
+  let R = rangosGeneral(en, dom, pDe(), cand());
+  let timer = 0;
+  const por = (j) => ({
+    0: { ud: '‰', d: 2, fmtExt: (x) => fmt(x * ESC * 1000, 2), a: (p) => p * ESC * 1000 },
+    1: { ud: '°', d: 1, fmtExt: (x) => fmt(x, 1), a: (p) => p },
+    2: { ud: 'mm', fmtExt: (x) => xTexto(x), a: (p) => p },
+  })[j];
+  const regs = [
+    regleta({ entrada: { ud: '‰', d: 2 }, etq: sub('ε', 'sup'), min: -1.5, max: 3.5, step: 0.01, valor: est.eSup * 1000, reinicio: 0, etiqueta: 'eSup', texto: (v) => `${fmt(v, 2)} ‰`,
+      gauge: { bloqueado: est.lock.eSup, onCandado: () => { est.lock.eSup = !est.lock.eSup; ctx.cambio(); } },
+      onInput: (v) => mueve(0, v / 1000 / ESC), onChange: () => { clearTimeout(timer); ctx.cambio(); } }),
+    regleta({ entrada: { ud: '°', d: 1 }, etq: 'β', min: 0, max: 360, step: 0.5, valor: est.beta, reinicio: 0, etiqueta: 'beta', texto: (v) => `${fmt(v, 1)} °`,
+      gauge: { bloqueado: est.lock.beta, onCandado: () => { est.lock.beta = !est.lock.beta; ctx.cambio(); } },
+      onInput: (v) => mueve(1, v), onChange: () => { clearTimeout(timer); ctx.cambio(); } }),
+    regleta({ entrada: { ud: 'mm', mostrar: (q) => xTexto(q), leer: (txt) => { if (/^\s*(∞|inf)/i.test(txt)) return 1; const m = leerNumero(txt); return m <= X0 ? 0 : (m - X0) / (m - X0 + XM); } },
+      etq: 'x', min: 0, max: 1, step: 0.001, valor: qDeX(est.x), etiqueta: t('est.nombreX'), reinicio: 1, texto: (q) => `${xTexto(q)} mm`,
+      gauge: { bloqueado: est.lock.x, onCandado: () => { est.lock.x = !est.lock.x; ctx.cambio(); } },
+      onInput: (q) => mueve(2, q), onChange: () => { clearTimeout(timer); ctx.cambio(); } }),
+  ];
+  const poner = () => { regs[0].poner(est.eSup * 1000); regs[1].poner(est.beta); regs[2].poner(qDeX(est.x)); };
+  const pinta = () => {
+    const p = pDe();
+    regs.forEach((rg, j) => {
+      const tot = R.total ? R.total[j] : [dom[j].lo, dom[j].hi];
+      const cv = (x) => por(j).a(x);
+      rg.rango({ min: cv(Math.min(tot[0], p[j])), max: cv(Math.max(tot[1], p[j])), banda: R.banda ? R.banda[j].map((t2) => t2.map(cv)) : null, fuera: !R.dentro, bloqueado: est.lock[SUP[j]], fmtExt: por(j).fmtExt });
+    });
+    poner();
+  };
+  const mueve = (j, v) => {
+    const p = pDe();
+    const tr = R.banda?.[j];
+    const dentroBanda = tr && tr.some(([a, b]) => v >= a - 1e-9 && v <= b + 1e-9);
+    if (dentroBanda || !R.dentro) { p[j] = v; aEst(p); } else {
+      const q = reajustaGeneral(en, dom, p, j, v, cand(), R);
+      if (q) aEst(q);
+    }
+    poner();
+    refresca();
+    clearTimeout(timer);
+    timer = setTimeout(() => { R = rangosGeneral(en, dom, pDe(), cand()); pinta(); }, RETARDO);
   };
   pinta();
   return regs;
