@@ -28,7 +28,8 @@ test('EC-2 2004: lbd de barra recta con cd (Tablas 8 y 9 de la guía, C30/37)', 
 });
 
 test('EC-2 2004: patilla, gancho o U con lb,eq = α1·lb,rqd (Tablas 10 y 14)', () => {
-  const c = (fck, phi, cd, adh) => anclaje({ ...base, norma: 'EC2-2004', fck, phi, adherencia: adh, forma: 'patilla', cd }).lbd;
+  // La guía da el valor de la fórmula (lb,eq) aunque supere a la recta; la app nunca muestra una patilla mayor que la recta
+  const c = (fck, phi, cd, adh) => { const a = anclaje({ ...base, norma: 'EC2-2004', fck, phi, adherencia: adh, forma: 'patilla', cd }); return a.coef.lbdPatilla ?? a.lbd; };
   cerca(c(30, 10, 25, 'buena'), 357);
   cerca(c(30, 10, 35, 'buena'), 250);
   cerca(c(50, 16, 50, 'buena'), 285);
@@ -103,4 +104,15 @@ test('EC-2 2023: solape = 1,2·lbd y no depende del % solapado', () => {
   assert.equal(s(25), s(100));
   const a = anclaje({ ...base, norma: 'EC2-2023', fck: 40, phi: 20, adherencia: 'buena', cd: 30 }).lbd;
   cerca(s(100), 1.2 * a, 0.01);
+});
+
+test('Una patilla nunca da más longitud que la prolongación recta', () => {
+  for (const norma of ['EHE-08', 'EC2-2004', 'EC2-2023']) {
+    for (const phi of [8, 10, 12, 16, 20, 25, 32]) {
+      for (const cd of [25, 40, 80]) {
+        const p = { ...base, norma, fck: 40, phi, cd, adherencia: 'buena' };
+        assert.ok(anclaje({ ...p, forma: 'patilla' }).lbd <= anclaje({ ...p, forma: 'recta' }).lbd + 1e-9, `${norma} ø${phi} cd${cd}`);
+      }
+    }
+  }
 });
