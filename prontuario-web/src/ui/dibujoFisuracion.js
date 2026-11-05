@@ -16,7 +16,7 @@ const sub = (b, s) => `${b}<tspan baseline-shift="sub" font-size="75%">${s}</tsp
 export function dibujoFisuracion(geo, s, r, hef) {
   const e = encuadre(geo, SECCION_MAX, SECCION_MAX, { completa: true });
   const x0 = 46;
-  const y0 = 42;
+  const y0 = 48;
   const signo = r.signo;
   const xm = !r.sinFisurar && r.e && r.e.x > 0 ? r.e.x / 1000 : null;
   const { svg, hp, bp } = capasSeccion(geo, s, { e, x0, y0, x: xm, id: 'fis', cotasCapas: false, abajo: signo < 0 });
