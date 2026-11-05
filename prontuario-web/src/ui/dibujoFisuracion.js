@@ -16,7 +16,7 @@ const sub = (b, s) => `${b}<tspan baseline-shift="sub" font-size="75%">${s}</tsp
 export function dibujoFisuracion(geo, s, r, hef) {
   const e = encuadre(geo, SECCION_MAX, SECCION_MAX, { completa: true });
   const x0 = 46;
-  const y0 = 16;
+  const y0 = 48;
   const signo = r.signo;
   const xm = !r.sinFisurar && r.e && r.e.x > 0 ? r.e.x / 1000 : null;
   const { svg, hp, bp } = capasSeccion(geo, s, { e, x0, y0, x: xm, id: 'fis', cotasCapas: false, abajo: signo < 0 });
@@ -43,7 +43,41 @@ export function dibujoFisuracion(geo, s, r, hef) {
     out.push(`<line class="en" x1="${x0 - 8}" y1="${yn}" x2="${x0 + bp + 8}" y2="${yn}"/>`);
     out.push(`<text class="fuerte" x="${x0 + bp / 2}" y="${yn + (signo > 0 ? -5 : 15)}" text-anchor="middle">x = ${fmt(r.e.x, 0)}</text>`);
   }
-  const W = x0 + bp + 112;
+  let W = x0 + bp + 112;
+  if (r.figura) {
+    const mx = Math.max(Math.abs(r.figura.Mk.eArriba), Math.abs(r.figura.Mk.eAbajo), Math.abs(r.figura.Mfis.eArriba), Math.abs(r.figura.Mfis.eAbajo), 0.05);
+    const ke = 38 / mx;
+    const ks = 40 / Math.max(r.figura.Mk.ss, r.figura.Mfis.ss, Math.abs(r.figura.Mk.sp), 1);
+    const yBarraT = signo > 0 ? y0 + hp - (r.g.ay / 1000) * sc : y0 + (r.g.ay / 1000) * sc;
+    const yBarraC = signo > 0 ? y0 + (r.g.ay / 1000) * sc : y0 + hp - (r.g.ay / 1000) * sc;
+    const col = (ex, F, rot) => {
+      const X = (v) => ex - v * ke;
+      let o = `<text x="${ex}" y="${y0 - 34}" class="fuerte" text-anchor="middle">${rot}</text>`;
+      o += `<line class="ref" x1="${ex}" y1="${y0 - 2}" x2="${ex}" y2="${y0 + hp + 2}"/>`;
+      const yn = F.x > 0 ? (signo > 0 ? y0 + (F.x / 1000) * sc : y0 + hp - (F.x / 1000) * sc) : (signo > 0 ? y0 : y0 + hp);
+      const yc = signo > 0 ? y0 : y0 + hp;
+      const yt = signo > 0 ? y0 + hp : y0;
+      const eC = signo > 0 ? F.eArriba : F.eAbajo;
+      const eT = signo > 0 ? F.eAbajo : F.eArriba;
+      if (F.x > 0) o += `<polygon class="eps-c" points="${ex},${yc} ${X(eC)},${yc} ${ex},${yn}"/>`;
+      o += `<polygon class="eps-t" points="${ex},${yn} ${X(eT)},${yt} ${ex},${yt}"/>`;
+      o += `<text x="${ex}" y="${y0 - 8}" text-anchor="middle">${sub('ε', signo > 0 ? 'sup' : 'inf')} ${fmt(F.eArriba, 2)}</text>`;
+      o += `<text x="${ex}" y="${y0 + hp + 16}" text-anchor="middle">${sub('ε', signo > 0 ? 'inf' : 'sup')} ${fmt(F.eAbajo, 2)}</text>`;
+      const ax = ex + 6;
+      o += `<line class="flecha" x1="${ax}" y1="${yBarraT}" x2="${ax + F.ss * ks}" y2="${yBarraT}" marker-end="url(#pta)"/>`;
+      o += `<text class="fuerte" x="${ax + F.ss * ks + 5}" y="${yBarraT + 4}">${sub('σ', 's')} ${fmt(F.ss, 0)}</text>`;
+      if (F.sp > 0.5) {
+        o += `<line class="flecha" x1="${ax}" y1="${yBarraC}" x2="${ax - F.sp * ks}" y2="${yBarraC}" marker-end="url(#pta)"/>`;
+        o += `<text x="${ax + 4}" y="${yBarraC - 5}">${fmt(F.sp, 0)}</text>`;
+      }
+      return o;
+    };
+    const e1 = x0 + bp + 112;
+    const e2 = e1 + 138;
+    out.push(col(e1, r.figura.Mfis, `${sub('M', 'fis')}(${sub('N', 'k')}) + ${sub('N', 'k')}`));
+    out.push(col(e2, r.figura.Mk, `${sub('M', 'k')} + ${sub('N', 'k')}`));
+    W = e2 + 120;
+  }
   const H = y0 + hp + 52;
   return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${W} ${H}"${topeEscala(W, H)} role="img" aria-label="${t('fis.dib.aria')}">${out.join('')}</svg>`;
 }

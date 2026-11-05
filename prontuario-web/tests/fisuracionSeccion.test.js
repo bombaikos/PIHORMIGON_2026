@@ -77,3 +77,30 @@ test('Dimensionar: con más barras o más ø baja wk, y la solución cumple wmá
   for (const x of ok) assert.ok(x.wk <= 0.3 + 1e-9);
   assert.ok(ok[0].n >= ok.at(-1).n);
 });
+
+test('Umbral de fisuración: fct,m,fl en la EHE-08 y fctm en el EC-2 (2004 y 2023)', () => {
+  const { c } = caso('rectangular', V1, 1, (s) => { s.geo = { b: 0.3, h: 0.5 }; });
+  const e = fisuraSeccion(c, { M: 80, norma: 'EHE08' });
+  const c4 = fisuraSeccion(c, { M: 80, norma: 'EC2-2004' });
+  cerca(e.MfisNorma.EHE08, 39.82644, 1e-5);
+  assert.ok(e.MfisNorma['EC2-2004'] < e.MfisNorma.EHE08);
+  cerca(c4.Mfis, c4.MfisNorma['EC2-2023'], 1e-12);
+  // entre las dos: fisura para el EC-2 y no para la EHE-08
+  const medio = (e.MfisNorma.EHE08 + c4.Mfis) / 2;
+  const r = fisuraSeccion(c, { M: medio, norma: 'EC2-2004' });
+  assert.ok(r.wk['EC2-2004'] > 0 && r.wk.EHE08 === 0);
+});
+
+test('Armadura mínima de control de fisuración por norma (V-1, flexión simple)', () => {
+  const { c } = caso('rectangular', V1, 1, (s) => { s.geo = { b: 0.3, h: 0.5 }; });
+  const m = (norma) => fisuraSeccion(c, { M: 80, norma }).minima;
+  // EC-2 2004: kc = 0,4; k = 1 − 0,35·(500 − 300)/500 = 0,86; Act = 300·250 mm²; fct,eff = fctm; σs = fyk
+  const a = m('EC2-2004');
+  cerca(a.datos.kc, 0.4, 1e-9);
+  cerca(a.datos.k, 0.86, 1e-9);
+  cerca(a.req, 0.4 * 0.86 * a.datos.fct * 75000 / 500, 1e-6);
+  // EC-2 2023 (9.2): 0,2·kh·fctm·Ac/fyk con kh = 0,8
+  const b = m('EC2-2023');
+  cerca(b.req, 0.2 * 0.8 * b.datos.fct * 150000 / 500, 1e-6);
+  assert.ok(m('EHE08').req > 0 && a.ok && b.ok);
+});
