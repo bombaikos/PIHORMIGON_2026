@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Maqueta · Bielas y tirantes · Nudos</title>
+<style>
+:root{--suelo:oklch(96.4% .005 240);--hoja:oklch(99.6% .002 240);--campo:#fff;--campo-borde:oklch(78% .05 252);
+--tinta:oklch(24% .02 248);--tinta-2:oklch(44% .02 248);--tinta-3:oklch(57% .016 248);--linea:oklch(90% .008 240);--linea-fuerte:oklch(80% .012 240);
+--acento:oklch(47% .13 252);--acento-suave:oklch(93.5% .03 252);--hormigon:oklch(91% .006 85);--hormigon-borde:oklch(60% .01 85);--compr:oklch(62% .09 252);--compr-suave:oklch(92% .035 252);
+--rosa:oklch(64% .15 355);--rosa-suave:oklch(92% .04 355);--acero:oklch(30% .012 250);
+--ok:oklch(46% .11 152);--ok-fondo:oklch(95% .035 152);--no:oklch(50% .17 27);--no-fondo:oklch(95.5% .03 27);--atencion:oklch(50% .1 70);--atencion-fondo:oklch(96% .04 85);
+--f:system-ui,'Segoe UI Variable Text','Segoe UI',Roboto,Arial,sans-serif;--s:14px;--m:16px}
+*{box-sizing:border-box}html,body{margin:0;height:100%;overflow:hidden}
+body{background:var(--suelo);color:var(--tinta);font:var(--s)/1.35 var(--f);font-variant-numeric:tabular-nums;display:flex;flex-direction:column}
+.barra{height:52px;flex:none;display:flex;align-items:center;gap:20px;padding:0 16px;background:var(--hoja);border-bottom:1px solid var(--linea)}
+.barra b{font-size:var(--m)}.menu{display:flex;gap:6px;font-size:var(--m);color:var(--tinta-2)}
+.menu span{padding:5px 10px;border-radius:6px}.menu .on{background:var(--acento-suave);color:var(--acento);font-weight:600}.menu .off{opacity:.45}
+.norma{margin-left:auto;border:1px solid var(--linea-fuerte);border-radius:4px;padding:3px 8px;cursor:pointer;background:var(--hoja);font:inherit}
+.norma.rojo{color:var(--no);border-color:var(--no)}
+main{flex:1;min-height:0;display:grid;grid-template-columns:330px 1fr 410px;gap:10px;padding:10px}
+.panel{background:var(--hoja);border:1px solid var(--linea);border-radius:10px;padding:12px;min-height:0;overflow:hidden;display:flex;flex-direction:column;gap:7px}
+.fila{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:28px}.fila label{color:var(--tinta-2)}
+.etq{color:var(--tinta-2)}
+.caja{width:130px;height:28px;border:1px solid var(--campo-borde);background:var(--campo);border-radius:6px;padding:0 8px;font:inherit;text-align:right;color:var(--tinta)}
+.caja:disabled{background:oklch(95.2% .006 240);border-color:var(--linea);color:var(--tinta-3);cursor:not-allowed}
+select.caja{text-align:left;padding:0 4px;width:100%}
+.dos{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.opc{display:grid;grid-auto-flow:column;grid-auto-columns:1fr}
+.opc button{border:1px solid var(--linea-fuerte);background:var(--hoja);font:inherit;padding:5px 2px;cursor:pointer;color:var(--tinta-2);margin-left:-1px;white-space:nowrap}
+.opc button:first-child{border-radius:6px 0 0 6px;margin:0}.opc button:last-child{border-radius:0 6px 6px 0}
+.opc button.on{background:var(--acento-suave);color:var(--acento);border-bottom:2px solid var(--acento);font-weight:600}
+.sep{border-top:1px solid var(--linea);margin:2px 0}.rot{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--tinta-3)}
+.rej{display:grid;grid-template-columns:78px 1fr 1fr 1fr;gap:4px 6px;align-items:center}
+.rej .h{font-size:12px;color:var(--tinta-3);text-align:right}.rej .h:first-child{text-align:left}
+.rej .caja{width:100%;height:26px;padding:0 6px}.rej .nom{color:var(--tinta-2);display:flex;align-items:center;gap:5px}
+.sw{width:10px;height:10px;border-radius:2px;display:inline-block}
+.chk{display:flex;align-items:center;gap:8px;min-height:26px;color:var(--tinta-2)}
+.chk i{width:16px;height:16px;border:1px solid var(--campo-borde);border-radius:4px;background:#fff;flex:none;display:grid;place-items:center;font-style:normal;color:var(--acento);font-size:12px;font-weight:700;cursor:pointer}
+.chk i.on{background:var(--acento-suave)}
+.regleta{display:grid;grid-template-columns:1fr 50px;align-items:center;gap:8px;width:80%}.regleta .n{text-align:right}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:20px;background:transparent;margin:0}
+input[type=range]::-webkit-slider-runnable-track{height:8px;border-radius:4px;background:var(--acento-suave);border:1px solid var(--campo-borde)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--acento);margin-top:-5px;border:2px solid #fff;box-shadow:0 0 0 1px var(--acento)}
+.centro{align-items:stretch}.leyenda{display:flex;gap:14px;color:var(--tinta-2);font-size:12px;flex-wrap:wrap}
+.dib{width:100%;flex:1;min-height:0}
+.pastilla{display:flex;align-items:center;gap:12px;border:1px solid var(--linea-fuerte);border-radius:10px;padding:8px 12px}
+.pastilla .nom{font-size:28px;font-weight:700;line-height:1}.pastilla .rr{font-size:10px;text-transform:uppercase;color:var(--tinta-3);letter-spacing:.04em}
+.pastilla .gr{margin-left:auto;text-align:right}.pastilla .gr b{font-size:28px;line-height:1;font-weight:700}
+.sello{display:inline-block;border-radius:4px;padding:1px 8px;font-weight:700}.sello.ok{background:var(--ok-fondo);color:var(--ok)}.sello.no{background:var(--no-fondo);color:var(--no)}
+table{border-collapse:collapse;width:100%}th{font-weight:600;color:var(--tinta-3);text-align:right;padding:2px 4px;font-size:12px;border-bottom:1px solid var(--linea)}
+td{padding:2px 4px;text-align:right}th:first-child,td:first-child{text-align:left}td:first-child{color:var(--tinta-2)}
+td.no{color:var(--no);font-weight:700}td.ok{color:var(--ok)}
+.aviso{background:var(--atencion-fondo);border:1px solid oklch(80% .08 80);border-radius:6px;padding:5px 8px;color:var(--atencion);font-size:12px}
+.btn{align-self:flex-end;border:1px solid var(--linea-fuerte);background:var(--hoja);border-radius:6px;padding:3px 10px;font:inherit;color:var(--tinta-2)}
+details{color:var(--tinta-2);font-size:12px}summary{cursor:pointer;color:var(--tinta-2)}details p{margin:4px 0}
+sub{font-size:.75em}svg text{font-family:var(--f);font-variant-numeric:tabular-nums}
+</style></head><body>
+<div class="barra"><b>Prontuario del hormigón</b><div class="menu"><span class="off">Materiales</span><span class="off">Secciones</span><span class="off">ELU</span><span class="off">Fuego</span><span class="on">Bielas y tirantes</span></div>
+<span style="color:var(--tinta-3)">Bielas y tirantes ▸ <b style="color:var(--acento)">Nudos</b> <span style="opacity:.5">| Regiones D (fase 2)</span></span><button class="norma" id="norma"></button></div>
+<main>
+<section class="panel" id="datos"></section>
+<section class="panel centro" id="centro"></section>
+<section class="panel" id="res"></section>
+</main>
+<script>
+// MAQUETA con cifras ilustrativas. Límites de tensión tomados de: EHE-08 40.4; EC-2 2004+AN 6.5.2 y 6.5.4 (AN: ν'=1−fck/200, k1=1,00, k2=0,70, k3=0,75, k4=3,0); EC-2 2023 8.5.2(4) y 8.5.4. Pendiente de verificar contra BOE/UNE (ver plan).
+const NORMAS=[{id:'EHE',n:'EHE-08',rojo:true},{id:'EC2',n:'EC-2 2004 + AN',rojo:false},{id:'EC23',n:'EC-2 2023',rojo:true}];
+const S={norma:1,tipo:'CCT',fck:30,fyk:500,t:300,
+ th:{CCC:60,CCT:45,CTT:45,TTT:0},dato:{CCC:0,CCT:0,CTT:1,TTT:0},F:{CCC:800,CCT:700,CTT:300,TTT:300},
+ w:{CCC:300,CCT:[300,100],CTT:[120,120],TTT:[120,120,120]},n:4,fi:25,disp:800,
+ tri:false,lim400:true,fis:1.0,mas10:false,fuera:0,nu:0.55,fis2:false};
+const FIS=[['Sin fisurar',1],['Paralela',.7],['Cortante',.6],['Tracción',.4]];
+const fmt=(x,d)=>(Math.abs(x)<.5*10**-d?0:x).toFixed(d).replace('-','−');
+const rad=a=>a*Math.PI/180,U=p=>[Math.cos(rad(p)),Math.sin(rad(p))];
+// ---- geometría y estática ----
+function miembros(){const T=S.tipo,th=S.th[T],W=S.w[T];let m;
+ if(T==='CCC')m=[{n:'Apoyo',c:1,phi:270},{n:'Biela 2',c:1,phi:th},{n:'Biela 3',c:1,phi:180-th}];
+ if(T==='CCT')m=[{n:'Apoyo',c:1,phi:270,w:W[0]},{n:'Biela',c:1,phi:th},{n:'Tirante',c:0,phi:0,w:W[1]}];
+ if(T==='CTT')m=[{n:'Biela',c:1,phi:360-th},{n:'Tirante A',c:0,phi:0,w:W[0]},{n:'Tirante B',c:0,phi:270,w:W[1]}];
+ if(T==='TTT')m=[{n:'Tirante 1',c:0,phi:90,w:W[0]},{n:'Tirante 2',c:0,phi:210,w:W[1]},{n:'Tirante 3',c:0,phi:330,w:W[2]}];
+ m.forEach(x=>x.u=U(x.phi));return m}
+function estatica(m){const k=S.dato[S.tipo],o=[0,1,2].filter(i=>i!==k),fk=(m[k].c?-1:1)*S.F[S.tipo];
+ const a=m[o[0]].u,b=m[o[1]].u,det=a[0]*b[1]-a[1]*b[0],r=[-fk*m[k].u[0],-fk*m[k].u[1]];
+ const fa=(r[0]*b[1]-r[1]*b[0])/det,fb=(a[0]*r[1]-a[1]*r[0])/det;const f=[];f[k]=fk;f[o[0]]=fa;f[o[1]]=fb;
+ m.forEach((x,i)=>{x.f=f[i];x.F=Math.abs(f[i]);x.ok=(x.c&&f[i]<=1e-9)||(!x.c&&f[i]>=-1e-9)});return m}
+function anchos(m){const T=S.tipo;
+ if(T==='CCC'){m[0].w=S.w.CCC;m.forEach((x,i)=>{if(i)x.w=m[0].w*x.F/m[0].F;x.calc=i>0})}
+ if(T==='CCT'){const n=[-m[1].u[1],m[1].u[0]];m[1].w=m[0].w*Math.abs(n[0])+m[2].w*Math.abs(n[1]);m[1].calc=true}
+ if(T==='CTT'){const n=[-m[0].u[1],m[0].u[0]];m[0].w=m[2].w*Math.abs(n[0])+m[1].w*Math.abs(n[1]);m[0].calc=true}
+ return m}
+// ---- límites ----
+function material(){const fcd=S.fck/1.5,fyd=S.fyk/1.15,fctd=.7*.3*Math.pow(S.fck,2/3)/1.5;return{fcd,fyd,fctd}}
+function limites(m){const{fcd}=material(),T=S.tipo,id=NORMAS[S.norma].id,con=m.filter(x=>!x.c),L=[];
+ const angCs=x=>{let a=90;con.forEach(t=>{const c=Math.min(1,Math.abs(x.u[0]*t.u[0]+x.u[1]*t.u[1]));a=Math.min(a,Math.acos(c)*180/Math.PI)});return a};
+ const nuTab=a=>a<20?null:a<30?.4:a<40?.55:a<60?.7:.85;
+ const nup=1-S.fck/200;
+ m.forEach(x=>{if(!x.c){x.lim=null;return}
+  let lim,nota;
+  if(id==='EHE'){const ties=con.length>0;lim=ties?.7*fcd:(S.tri?3.3*fcd:fcd);nota=ties?'0,70·fcd (40.4.3)':S.tri?'3,30·fcd (40.4.2)':'fcd (40.4.2)';
+   if(S.fis<1){lim=Math.min(lim,S.fis*fcd);nota+=' ∧ '+fmt(S.fis,2)+'·fcd biela (40.3.2)'}}
+  if(id==='EC2'){const k=con.length===0?1:con.length===1?.7:.75;lim=k*nup*fcd;nota=`k=${fmt(k,2)}·ν'·fcd (6.5.4(4))`;
+   if(S.mas10){lim*=1.1;nota+=' +10 % (6.5.4(5))'}if(S.tri&&con.length===0){lim=3*nup*fcd;nota=`k4·ν'·fcd (6.5.4(6))`}
+   if(S.fis2){lim=Math.min(lim,.6*nup*fcd);nota+=` ∧ 0,6·ν'·fcd (6.5.2(2))`}}
+  if(id==='EC23'){const a=angCs(x),nu=con.length===0?1:nuTab(a);
+   if(nu===null){x.fuera=true;lim=0.4*fcd;nota='θcs < 20°: fuera de 8.5.2(4)'}
+   else{const f=con.length===0?0:S.fuera/100;const nn=nu*(1-f)+1*f;lim=nn*fcd;nota=`ν=${fmt(nn,2)} (θcs=${fmt(a,0)}°; 8.5.2(4), 8.5.4)`}}
+  x.lim=lim;x.nota=nota;x.sig=x.F*1000/(x.w*S.t);x.eta=x.sig/lim});
+ return m}
+function tirantes(m){const{fyd,fctd}=material(),As=S.n*Math.PI*S.fi*S.fi/4,id=NORMAS[S.norma].id;
+ return m.filter(x=>!x.c).map(x=>{const fy=id==='EHE'&&S.lim400?Math.min(fyd,400):fyd,Trd=As*fy/1000,fbd=2.25*fctd,ss=x.F*1000/As,lb=S.fi/4*ss/fbd;
+  return{n:x.n,T:x.F,Trd,eta:x.F/Trd,lb,disp:S.disp,etaA:lb/S.disp,As,fy}})}
+// ---- dibujo ----
+function hull(P){P=P.slice().sort((a,b)=>a[0]-b[0]||a[1]-b[1]);const o=(a,b,c)=>(b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0]);const lo=[];P.forEach(p=>{while(lo.length>1&&o(lo[lo.length-2],lo[lo.length-1],p)<=0)lo.pop();lo.push(p)});const up=[];P.slice().reverse().forEach(p=>{while(up.length>1&&o(up[up.length-2],up[up.length-1],p)<=0)up.pop();up.push(p)});up.pop();lo.pop();return lo.concat(up)}
+function dibujo(m){const W=720,H=520,C=[W/2,H/2+10],maxW=Math.max(...m.map(x=>x.w)),s=Math.min(150/maxW,.6),px=x=>x.w*s;
+ const P=(u,l,v)=>[C[0]+u[0]*l+v*(-(-u[1])),C[1]-u[1]*l-v*u[0]];
+ // polígono del nudo
+ let pts=[];
+ if(S.tipo==='CCC'){const D=100;const ln=m.map(x=>({n:[x.u[0],-x.u[1]],d:D}));const V=[];
+  for(let i=0;i<3;i++){const a=ln[i],b=ln[(i+1)%3],det=a.n[0]*b.n[1]-a.n[1]*b.n[0];V.push([(a.d*b.n[1]-b.d*a.n[1])/det,(a.n[0]*b.d-b.n[0]*a.d)/det])}
+  const side=Math.hypot(V[0][0]-V[2][0],V[0][1]-V[2][1]);const k=px(m[0])/side;pts=V.map(v=>[C[0]+v[0]*k,C[1]+v[1]*k]);m.forEach((x,i)=>{x.dist=D*k})}
+ else{const ang=m.map(x=>x.phi);const dmax=Math.max(...m.map(px))/2;
+  m.forEach(x=>{x.dist=px(x)*.3});
+  const seg=(x,d)=>{const h=px(x)/2;return[[C[0]+x.u[0]*d+h*x.u[1],C[1]-x.u[1]*d+h*x.u[0]],[C[0]+x.u[0]*d-h*x.u[1],C[1]-x.u[1]*d-h*x.u[0]]]};
+  const cr=(A,B)=>{const o=(p,q,r)=>(q[0]-p[0])*(r[1]-p[1])-(q[1]-p[1])*(r[0]-p[0]);return o(A[0],A[1],B[0])*o(A[0],A[1],B[1])<0&&o(B[0],B[1],A[0])*o(B[0],B[1],A[1])<0};
+  for(let it=0;it<400;it++){let ch=false;for(let i=0;i<3;i++)for(let j=i+1;j<3;j++)if(cr(seg(m[i],m[i].dist),seg(m[j],m[j].dist))){ch=true;m[i].dist+=2;m[j].dist+=2}if(!ch)break}
+  m.forEach(x=>{seg(x,x.dist).forEach(p=>pts.push(p))});
+  pts=hull(pts)}
+ let g='';
+ m.forEach(x=>{const L=Math.max(120,px(x)*1.3),h=px(x)/2,nx=x.u[1]*-1*-1,ny=x.u[0];// perpendicular en pantalla
+  const p0=[C[0]+x.u[0]*x.dist,C[1]-x.u[1]*x.dist],t=[x.u[1],x.u[0]],q=(a,b)=>[a[0]+t[0]*b,a[1]+t[1]*b],e=[x.u[0],-x.u[1]],
+   A=q(p0,h),B=q(p0,-h),A2=[A[0]+e[0]*L,A[1]+e[1]*L],B2=[B[0]+e[0]*L,B[1]+e[1]*L];
+  const fill=x.c?'var(--compr-suave)':'var(--rosa-suave)',st=x.c?'var(--compr)':'var(--rosa)';
+  g+=`<polygon points="${[A,A2,B2,B].map(p=>p.join(',')).join(' ')}" fill="${fill}" stroke="${st}" stroke-width="1.2" ${x.c?'':'stroke-dasharray="5 3"'}/>`;
+  if(!x.c){for(let j=-1;j<=1;j++){const a=q(p0,j*h*.55),b=[a[0]+e[0]*(L+10),a[1]+e[1]*(L+10)];g+=`<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="var(--acero)" stroke-width="3"/>`}}
+  const m2=[p0[0]+e[0]*(L+8),p0[1]+e[1]*(L+8)],tail=[p0[0]+e[0]*(L*.35),p0[1]+e[1]*(L*.35)],hd=x.c?p0:[p0[0]+e[0]*(L*.95),p0[1]+e[1]*(L*.95)];
+  // flecha de fuerza sobre el eje
+  const a0=x.c?[p0[0]+e[0]*(L*.9),p0[1]+e[1]*(L*.9)]:[p0[0]+e[0]*(L*.25),p0[1]+e[1]*(L*.25)],a1=x.c?[p0[0]+e[0]*(L*.35),p0[1]+e[1]*(L*.35)]:[p0[0]+e[0]*(L*.85),p0[1]+e[1]*(L*.85)];
+  g+=`<line x1="${a0[0]}" y1="${a0[1]}" x2="${a1[0]}" y2="${a1[1]}" stroke="${x.c?'var(--acento)':'var(--rosa)'}" stroke-width="2.2" marker-end="url(#fl${x.c?'c':'t'})"/>`;
+  x._lab=[p0[0]+e[0]*(L+14),p0[1]+e[1]*(L+14)];x._e=e;x._t=t});
+ // nudo
+ g+=`<polygon points="${pts.map(p=>p.join(',')).join(' ')}" fill="var(--hormigon)" stroke="var(--hormigon-borde)" stroke-width="1.6"/>`;
+ g+=`<text x="${C[0]}" y="${C[1]+4}" text-anchor="middle" font-size="12" font-weight="700" fill="var(--tinta-2)">${S.tipo}</text>`;
+ // placa de apoyo CCT
+ if(S.tipo==='CCT'){const x=m[0],p0=[C[0]+x.u[0]*x.dist,C[1]-x.u[1]*x.dist],h=px(x)/2;
+  g+=`<rect x="${p0[0]-h}" y="${p0[1]}" width="${2*h}" height="9" fill="var(--acero)"/>`;
+  g+=`<line x1="${p0[0]-h}" y1="${p0[1]+26}" x2="${p0[0]+h}" y2="${p0[1]+26}" stroke="var(--tinta-2)"/><line x1="${p0[0]-h}" y1="${p0[1]+21}" x2="${p0[0]-h}" y2="${p0[1]+31}" stroke="var(--tinta-2)"/><line x1="${p0[0]+h}" y1="${p0[1]+21}" x2="${p0[0]+h}" y2="${p0[1]+31}" stroke="var(--tinta-2)"/>`;
+  g+=`<text x="${p0[0]}" y="${p0[1]+42}" text-anchor="middle" font-size="12" font-weight="700" fill="var(--tinta)">a = ${fmt(x.w,0)}</text>`}
+ // etiquetas
+ m.forEach(x=>{const[lx,ly]=x._lab,e=x._e;const ax=e[0]>.3?'start':e[0]<-.3?'end':'middle';
+  const vy=e[1]>.3?14:e[1]<-.3?-26:-8;const col=x.ok?(x.c?(x.eta>1?'var(--no)':'var(--tinta)'):'var(--tinta)'):'var(--no)';
+  g+=`<text x="${lx}" y="${ly+vy}" text-anchor="${ax}" font-size="12" font-weight="700" fill="${x.c?'var(--acento)':'var(--rosa)'}">${x.n}: ${fmt(x.F,0)} kN</text>`;
+  g+=`<text x="${lx}" y="${ly+vy+14}" text-anchor="${ax}" font-size="12" fill="var(--tinta-2)">${x.c?'b':'u'} = ${fmt(x.w,0)} mm${x.c&&x.lim?` · σ ${fmt(x.sig,1)}/${fmt(x.lim,1)}`:''}</text>`});
+ return`<svg class="dib" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMinYMin meet"><defs>
+ <marker id="flc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z" fill="var(--acento)"/></marker>
+ <marker id="flt" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z" fill="var(--rosa)"/></marker></defs>${g}</svg>`}
+// ---- interfaz ----
+const $=id=>document.getElementById(id);
+function num(id,v,dis,tit){return`<input class="caja" id="${id}" value="${v}" ${dis?'disabled':''} ${tit?`title="${tit}"`:''} inputmode="decimal">`}
+function pintaDatos(m){const T=S.tipo,n=NORMAS[S.norma].id,k=S.dato[T];
+ const nombres=['CCC','CCT','CTT','TTT'];
+ let h=`<div class="etq">Tipo de nudo</div><div class="opc" id="tipo">${nombres.map(t=>`<button class="${t===T?'on':''}" data-t="${t}" title="${{CCC:'3 bielas',CCT:'2 bielas y 1 tirante',CTT:'1 biela y 2 tirantes',TTT:'3 tirantes'}[t]}">${t}</button>`).join('')}</div>`;
+ h+=`<div class="dos"><div><div class="etq">Hormigón</div><select class="caja" id="fck">${[25,30,35,40,45,50].map(v=>`<option value="${v}" ${v===S.fck?'selected':''}>HA-${v}</option>`).join('')}</select></div><div><div class="etq">Acero</div><select class="caja" id="fyk"><option value="400" ${S.fyk===400?'selected':''}>B400S</option><option value="500" ${S.fyk===500?'selected':''}>B500S</option></select></div></div>`;
+ h+=`<div class="fila"><label>Espesor del nudo, t [mm]</label>${num('t',S.t)}</div><div class="sep"></div><div class="rot">Elementos del nudo</div>`;
+ h+=`<div class="rej"><div class="h">Elemento</div><div class="h">Ángulo [°]</div><div class="h">Ancho [mm]</div><div class="h">Fuerza [kN]</div>`;
+ m.forEach((x,i)=>{const ang=(T==='CCC'&&i===1)||(T==='CCT'&&i===1)||(T==='CTT'&&i===0)?'th':null;
+  const wc=x.calc,wid=T==='CCC'?(i===0?'w0':null):T==='CCT'?(i===0?'w0':i===2?'w1':null):T==='CTT'?(i===1?'w0':i===2?'w1':null):['w0','w1','w2'][i];
+  const aVal=(T==='CCC'&&i===1)?S.th.CCC:(T==='CCC'&&i===2)?180-S.th.CCC:ang?S.th[T]:(x.phi);
+  h+=`<div class="nom"><span class="sw" style="background:${x.c?'var(--compr)':'var(--rosa)'}"></span>${x.n}</div>`;
+  h+=num('a'+i,fmt(((T==='CTT'&&i===0)?S.th.CTT:aVal),0),!ang,ang?'Ángulo con el tirante (o con la horizontal)':'Fijado por el tipo de nudo');
+  h+=wid?num('wd'+i,fmt(x.w,0)):num('wc'+i,fmt(x.w,0),true,'Calculado por la geometría del nudo');
+  h+=i===k?num('fz',S.F[T]):`<input class="caja" value="${fmt(x.F,0)}" disabled title="Sale del equilibrio del nudo (clic en la fila para fijarlo como dato)" data-d="${i}">`});
+ h+=`</div><div class="aviso" style="display:${m.every(x=>x.ok)?'none':'block'}">El equilibrio da un signo distinto al tipo marcado: revise los ángulos.</div>`;
+ if(T!=='CCC'){h+=`<div class="sep"></div><div class="rot">Tirante</div><div class="fila"><label>Armadura</label><span style="display:flex;gap:6px"><input class="caja" style="width:62px" id="nb" value="${S.n}"><input class="caja" style="width:62px" id="fi" value="${S.fi}"></span></div><div class="fila"><label>Longitud disponible [mm]</label>${num('disp',S.disp)}</div>`}
+ h+=`<div class="sep"></div><div class="rot">Opciones · ${NORMAS[S.norma].n}</div>`;
+ const chk=(id,t,on)=>`<div class="chk" data-c="${id}"><i class="${on?'on':''}">${on?'✓':''}</i>${t}</div>`;
+ if(n==='EHE'){if(T==='CCC')h+=chk('tri','Compresión triaxial confinada (3,30·f<sub>cd</sub>)',S.tri);
+   h+=`<div class="etq">Biela comprimida</div><div class="opc" id="fis">${FIS.map(f=>`<button class="${f[1]===S.fis?'on':''}" data-f="${f[1]}" title="${fmt(f[1],2)}·fcd (40.3)">${f[0]}</button>`).join('')}</div>`;
+   if(T!=='CCC')h+=chk('l4','Limitar tirante a 400 MPa (fisuración)',S.lim400)}
+ if(n==='EC2'){h+=chk('m10','Aumento del 10 % (6.5.4(5))',S.mas10);if(T==='CCC')h+=chk('tri','Compresión triaxial (k₄)',S.tri);h+=chk('fis2','Biela con tracción transversal (6.5.2(2))',S.fis2)}
+ if(n==='EC23'&&(T==='CCT'||T==='CTT'))h+=`<div class="etq">Anclaje del tirante fuera del nudo</div><div class="regleta"><input type="range" id="fuera" min="0" max="100" step="5" value="${S.fuera}"><span class="n">${S.fuera} %</span></div>`;
+ if(n==='EC23'&&T==='TTT')h+=`<div class="fila"><label>ν del nudo (8.5.4.1(2))</label>${num('nu',S.nu)}</div>`;
+ $('datos').innerHTML=h;
+ $('tipo').onclick=e=>{const b=e.target.closest('button');if(b){S.tipo=b.dataset.t;todo()}};
+ [['fck',v=>S.fck=v],['fyk',v=>S.fyk=v]].forEach(([id,f])=>$(id).onchange=e=>{f(+e.target.value);todo()});
+ const ent=(id,f)=>{const el=$(id);if(el){el.onchange=e=>{const v=parseFloat(String(e.target.value).replace(',','.'));if(isFinite(v)){f(v);todo()}};el.onfocus=e=>e.target.select()}};
+ ent('t',v=>S.t=v);ent('fz',v=>S.F[T]=v);ent('nb',v=>S.n=v);ent('fi',v=>S.fi=v);ent('disp',v=>S.disp=v);ent('nu',v=>S.nu=v);
+ [0,1,2].forEach(i=>{ent('wd'+i,v=>{if(T==='CCC')S.w.CCC=v;else{const idx=T==='CCT'?[0,null,1][i]:T==='CTT'?[null,0,1][i]:i;S.w[T][idx]=v}});ent('a'+i,v=>{if(T==='CCC'){S.th.CCC=i===1?v:180-v}else S.th[T]=v})});
+ document.querySelectorAll('[data-c]').forEach(el=>el.onclick=()=>{const c=el.dataset.c;if(c==='tri')S.tri=!S.tri;if(c==='l4')S.lim400=!S.lim400;if(c==='m10')S.mas10=!S.mas10;if(c==='fis2')S.fis2=!S.fis2;todo()});
+ if($('fis'))$('fis').onclick=e=>{const b=e.target.closest('button');if(b){S.fis=+b.dataset.f;todo()}};
+ if($('fuera'))$('fuera').oninput=e=>{S.fuera=+e.target.value;todo()};
+ document.querySelectorAll('[data-d]').forEach(el=>el.parentElement&&0);
+}
+function pintaRes(m,tir){const T=S.tipo,id=NORMAS[S.norma].id;const con=m.filter(x=>x.c&&x.lim);
+ const e1=con.length?Math.max(...con.map(x=>x.eta)):0,e2=tir.length?Math.max(...tir.map(t=>Math.max(t.eta,t.etaA))):0,emax=Math.max(e1,e2),ok=emax<=1&&m.every(x=>x.ok);
+ const cual=(()=>{let b=['',-1];con.forEach(x=>{if(x.eta>b[1])b=[x.n+' (hormigón)',x.eta]});tir.forEach(t=>{if(t.eta>b[1])b=[t.n+' (armadura)',t.eta];if(t.etaA>b[1])b=[t.n+' (anclaje)',t.etaA]});return b[0]})();
+ let h=`<div class="pastilla"><div><div class="rr">Nudo</div><div class="nom">${T}</div></div><div class="gr"><div class="rr">Aprovechamiento · ${cual}</div><b>${fmt(emax,2)}</b> <span class="sello ${ok?'ok':'no'}">${ok?'Cumple':'No cumple'}</span></div></div>`;
+ if(con.length){h+=`<table><tr><th>Cara</th><th>F [kN]</th><th>b [mm]</th><th>σ [MPa]</th><th>σ<sub>Rd</sub></th><th>η</th></tr>`+con.map(x=>`<tr><td title="${x.nota}">${x.n}</td><td>${fmt(x.F,0)}</td><td>${fmt(x.w,0)}</td><td>${fmt(x.sig,1)}</td><td>${fmt(x.lim,1)}</td><td class="${x.eta>1?'no':'ok'}">${fmt(x.eta,2)}</td></tr>`).join('')+`</table>`}
+ else h+=`<div class="aviso">Nudo TTT: no hay compresión en el hormigón del nudo; solo se comprueban los tirantes y su anclaje.</div>`;
+ if(tir.length){h+=`<table><tr><th>Tirante</th><th>T [kN]</th><th>T<sub>Rd</sub></th><th>η</th><th>l<sub>b,nec</sub> [mm]</th><th>η anclaje</th></tr>`+tir.map(t=>`<tr><td>${t.n}</td><td>${fmt(t.T,0)}</td><td>${fmt(t.Trd,0)}</td><td class="${t.eta>1?'no':'ok'}">${fmt(t.eta,2)}</td><td>${fmt(t.lb,0)}</td><td class="${t.etaA>1?'no':'ok'}">${fmt(t.etaA,2)}</td></tr>`).join('')+`</table><div class="etq" style="font-size:12px">A<sub>s</sub> = ${S.n}ø${S.fi} = ${fmt(tir[0].As,0)} mm² · f<sub>y,eff</sub> = ${fmt(tir[0].fy,0)} MPa</div>`}
+ if(id==='EC23'&&con.some(x=>x.fuera))h+=`<div class="aviso">Ángulo biela–tirante &lt; 20°: fuera del campo de 8.5.2(4). Se limita a ν = 0,4 solo como referencia.</div>`;
+ const ref={EHE:'EHE-08, art. 40.3 (bielas), 40.4.2 (nudos multicomprimidos: f<sub>2cd</sub> = f<sub>cd</sub>; triaxial 3,30·f<sub>cd</sub>), 40.4.3 (nudos con tirantes anclados: 0,70·f<sub>cd</sub>), 40.2 (tirantes; σ<sub>s</sub> ≤ 400 MPa recomendado).',EC2:'EN 1992-1-1:2004 + AN, 6.5.2 (ν\' = 1 − f<sub>ck</sub>/200 en el AN), 6.5.4(4): k₁ = 1,00 (CCC), k₂ = 0,70 (un tirante), k₃ = 0,75 (varios); 6.5.4(5) +10 %; 6.5.4(6) k₄ = 3,0; 6.5.4(7) el anclaje empieza en la cara interior del nudo.',EC23:'EN 1992-1-1:2023, 8.5.2(4) ν según θ<sub>cs</sub> (8.115–8.118), 8.5.4.2 (CCC: ν = 1,0), 8.5.4.3(4) y 8.5.4.4(2) (ν interpolado según el anclaje dentro/fuera del nudo), 8.5.3 (F<sub>Rd</sub> = A<sub>s</sub>·f<sub>yd</sub>).'}[id];
+ h+=`<details><summary>Cómo se comprueba</summary><p>${ref}</p><p>σ = F / (b · t). Equilibrio: Σ F<sub>i</sub> = 0 con las direcciones dadas; el ancho de la biela sale de proyectar sobre ella la placa y la altura útil del tirante.</p></details>`;
+ h+=`<button class="btn">Copiar tabla</button>`;
+ $('res').innerHTML=h}
+function todo(){const N=NORMAS[S.norma];const b=$('norma');b.textContent=N.n;b.className='norma'+(N.rojo?' rojo':'');
+ let m=anchos(estatica(miembros()));m=limites(m);const tir=tirantes(m);
+ pintaDatos(m);$('centro').innerHTML=`<div class="leyenda"><span><b style="color:var(--acento)">━</b> Biela (compresión)</span><span><b style="color:var(--rosa)">┅</b> Tirante (tracción)</span><span style="margin-left:auto;color:var(--tinta-3)">Esquema, no a escala de armado</span></div>`+dibujo(m);pintaRes(m,tir)}
+$('norma').onclick=()=>{S.norma=(S.norma+1)%3;todo()};
+todo();
+</script></body></html>

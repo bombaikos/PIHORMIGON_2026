@@ -7,3 +7,9 @@
 ## Flexión compuesta recta (1/11/2026)
 - Armadura máxima de pilar, EC-2 2004 9.5.2(3): se usa el valor recomendado 0,04·A_c; comprobar el valor del Anejo Nacional español.
 - Armadura máxima, EC-2 2023: no localizado en la tabla 12.3; comprobar si existe un límite (12.6 / 9.x) para añadirlo.
+
+## Bielas y tirantes (nudos)
+- EHE-08 40.4.3: ¿f2cd = 0,70·f1cd con f1cd = fcd? (extracción ilegible)
+- EC-2 2004 AN 6.5.2(2): ν' = 1 − fck/200 y 2/3 de ese valor con fisuras anchas; ¿se mantiene el 0,6 de la (6.56)?
+- EC-2 2004 AN 6.5.4(4): k2 = 0,70 < k3 = 0,75, raro; confirmar.
+- EC-2 2023: definición de fcd (ηfc, kTc) para ν·fcd; reutilizar Materiales.
