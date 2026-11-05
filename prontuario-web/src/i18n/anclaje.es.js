@@ -26,7 +26,7 @@ export default {
   'an.dib.sep': '≤ 4 ø', 'an.dib.long1': 'armadura longitudinal', 'an.dib.long2': 'que se ancla', 'an.dib.cerco': 'cerco',
   'an.cdDef': 'c<sub>d</sub> = mín(a/2; c<sub>x</sub>; c<sub>y</sub>)', 'an.cdLey': 'Recubrimiento geométrico de la barra que se ancla, a su superficie: lateral c<sub>x</sub> e inferior c<sub>y</sub> (incluyen el cerco), o la mitad de la separación libre a entre barras, el menor.',
   'an.notas': 'Aclaraciones',
-  'an.n.pos': 'Posición I y II', 'an.n.min': 'Mínimos aplicados', 'an.n.transv': 'Armadura transversal y escalonado', 'an.n.falta': 'Qué no incluye',
+  'an.n.pos': 'Posición I y II', 'an.n.min': 'Mínimos aplicados', 'an.n.transv': 'Armadura transversal y escalonado', 'an.n.falta': 'Efectos no considerados',
   'an.pos.ehe': 'Posición I (adherencia buena): barras que al hormigonar forman 45°-90° con la horizontal, o menos de 45° si están en la mitad inferior de la sección o a 30 cm o más de la cara superior de la tongada. Posición II: el resto. EHE-08, 69.5.1.1.',
   'an.pos.ec2': 'Adherencia buena: barras a 45°-90°; o a menos de 45° con h ≤ 250 mm; con 250 < h ≤ 600 mm en los 250 mm inferiores; con h > 600 mm en la mitad inferior o a 300 mm o más de la cara superior. El resto, deficiente. UNE-EN 1992-1-1, 8.4.2 y fig. 8.2.',
   'an.pos.ec23': 'Adherencia buena: barras a 45°-90°; o a menos de 45° a no más de 300 mm del fondo del encofrado o a 300 mm o más de la superficie libre. El resto, deficiente (k<sub>cp</sub> = 1,2). EN 1992-1-1:2023, 11.4.2(4).',

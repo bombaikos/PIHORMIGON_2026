@@ -25,7 +25,7 @@ export default {
   'an.dib.sep': '≤ 4 ø', 'an.dib.long1': 'longitudinal bar', 'an.dib.long2': 'being anchored', 'an.dib.cerco': 'stirrup',
   'an.cdDef': 'c<sub>d</sub> = min(a/2; c<sub>x</sub>; c<sub>y</sub>)', 'an.cdLey': 'Geometric cover of the anchored bar, to its surface: side c<sub>x</sub> and bottom c<sub>y</sub> (stirrup included), or half the clear spacing a between bars, the smaller.',
   'an.notas': 'Clarifications',
-  'an.n.pos': 'Bond position I and II', 'an.n.min': 'Minimum values applied', 'an.n.transv': 'Transverse reinforcement and staggering', 'an.n.falta': 'Not included',
+  'an.n.pos': 'Bond position I and II', 'an.n.min': 'Minimum values applied', 'an.n.transv': 'Transverse reinforcement and staggering', 'an.n.falta': 'Effects not considered',
   'an.ce.tit': 'Check against the Spanish Structural Code (art. 49.5)',
   'an.ce.igual': 'CE 49.5 never exceeds EC-2 with these data.',
   'an.no.ehe': 'Not applicable in this code (EHE-08 only).',

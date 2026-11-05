@@ -1202,11 +1202,11 @@ tr.et-act td { font-weight: 650; }
 .tabla-an { table-layout: fixed; width: 100%; }
 .tabla-an col.c-phi, .tabla-an col.c-cd { width: 6.5%; }
 .tabla-an th, .tabla-an td { overflow-wrap: anywhere; }
-.an-cd-dib { margin-top: 6px; display: flex; gap: 16px; align-items: flex-start; }
+.an-cd-dib { margin-top: 28px; display: flex; gap: 16px; align-items: flex-start; }
 .an-cd-fig { flex: 0 0 300px; }
 .an-cd-dib .nota { margin: 0; }
-.dib-cd { max-width: 300px; max-height: 176px; width: 100%; min-width: 0; margin: 0 auto; }
-.dib .cerco { fill: none; stroke: var(--tinta-3); stroke-width: 3; }
+.dib-cd { max-width: 300px; max-height: 170px; width: 100%; min-width: 0; margin: 0 auto; }
+.dib .cerco { fill: none; stroke: var(--tinta-3); stroke-width: 6; }
 .dib .an-ancla { stroke: var(--acento); stroke-width: 2.5; }
 .dib-anclaje { max-width: none; max-height: none; }
 .tabla-an thead th.n3 { font-size: 11px; font-weight: 500; padding-inline: 2px; line-height: 1.2; }

@@ -191,11 +191,12 @@ export function resultados(ctx, res) {
   tablaEl.addEventListener('copy', (e) => { e.preventDefault(); e.clipboardData.setData('text/plain', texto()); e.clipboardData.setData('text/html', html()); });
   poner(centro,
     h('div', { class: 'an-tit' }, h('h2', { class: 'an-h', html: `${t('m.anclaje')} <span class="an-mat">${r.hor.nombre} ${r.ace.nombre}</span>` }),
-      h('button', { type: 'button', class: 'tecla', id: 'an-copiar', title: t('graf.copiarTablaTit'), onclick: copiar }, t('graf.copiar'))), h('p', { class: 'nota', html: `${t('an.titulo')}. ${t('an.sub', art)}` }),
+      h('button', { type: 'button', class: 'tecla', id: 'an-copiar', title: t('graf.copiarTablaTit'), onclick: copiar }, t('graf.copiar'))), 
     h('div', { class: 'tabla-scroll' }, tablaEl),
     h('p', { class: 'nota an-ficha', id: 'an-ficha', html: ficha }),
+    h('p', { class: 'nota', html: `${t('an.titulo')}. ${t('an.sub', art)}` }),
     h('div', { class: 'an-cd-dib' }, h('div', { class: 'an-cd-fig', html: dibujoRecubrimiento() }),
-      h('p', { class: 'nota' }, h('b', { html: t('an.cdDef') }), h('br'), h('span', { html: t('an.cdLey') }))));
+      h('p', { class: 'nota' }, h('b', { html: t('an.cdDef') }))));
 
   // Derecha: esquema y notas plegadas
   const n = idNorma(p);

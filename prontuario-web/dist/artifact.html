@@ -1204,11 +1204,11 @@ tr.et-act td { font-weight: 650; }
 .tabla-an { table-layout: fixed; width: 100%; }
 .tabla-an col.c-phi, .tabla-an col.c-cd { width: 6.5%; }
 .tabla-an th, .tabla-an td { overflow-wrap: anywhere; }
-.an-cd-dib { margin-top: 6px; display: flex; gap: 16px; align-items: flex-start; }
+.an-cd-dib { margin-top: 28px; display: flex; gap: 16px; align-items: flex-start; }
 .an-cd-fig { flex: 0 0 300px; }
 .an-cd-dib .nota { margin: 0; }
-.dib-cd { max-width: 300px; max-height: 176px; width: 100%; min-width: 0; margin: 0 auto; }
-.dib .cerco { fill: none; stroke: var(--tinta-3); stroke-width: 3; }
+.dib-cd { max-width: 300px; max-height: 170px; width: 100%; min-width: 0; margin: 0 auto; }
+.dib .cerco { fill: none; stroke: var(--tinta-3); stroke-width: 6; }
 .dib .an-ancla { stroke: var(--acento); stroke-width: 2.5; }
 .dib-anclaje { max-width: none; max-height: none; }
 .tabla-an thead th.n3 { font-size: 11px; font-weight: 500; padding-inline: 2px; line-height: 1.2; }
@@ -4627,7 +4627,7 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
     "an.n.pos": "Posici\xF3n I y II",
     "an.n.min": "M\xEDnimos aplicados",
     "an.n.transv": "Armadura transversal y escalonado",
-    "an.n.falta": "Qu\xE9 no incluye",
+    "an.n.falta": "Efectos no considerados",
     "an.pos.ehe": "Posici\xF3n I (adherencia buena): barras que al hormigonar forman 45\xB0-90\xB0 con la horizontal, o menos de 45\xB0 si est\xE1n en la mitad inferior de la secci\xF3n o a 30 cm o m\xE1s de la cara superior de la tongada. Posici\xF3n II: el resto. EHE-08, 69.5.1.1.",
     "an.pos.ec2": "Adherencia buena: barras a 45\xB0-90\xB0; o a menos de 45\xB0 con h \u2264 250 mm; con 250 < h \u2264 600 mm en los 250 mm inferiores; con h > 600 mm en la mitad inferior o a 300 mm o m\xE1s de la cara superior. El resto, deficiente. UNE-EN 1992-1-1, 8.4.2 y fig. 8.2.",
     "an.pos.ec23": "Adherencia buena: barras a 45\xB0-90\xB0; o a menos de 45\xB0 a no m\xE1s de 300 mm del fondo del encofrado o a 300 mm o m\xE1s de la superficie libre. El resto, deficiente (k<sub>cp</sub> = 1,2). EN 1992-1-1:2023, 11.4.2(4).",
@@ -4716,7 +4716,7 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
     "an.n.pos": "Bond position I and II",
     "an.n.min": "Minimum values applied",
     "an.n.transv": "Transverse reinforcement and staggering",
-    "an.n.falta": "Not included",
+    "an.n.falta": "Effects not considered",
     "an.ce.tit": "Check against the Spanish Structural Code (art. 49.5)",
     "an.ce.igual": "CE 49.5 never exceeds EC-2 with these data.",
     "an.no.ehe": "Not applicable in this code (EHE-08 only).",
@@ -16519,12 +16519,12 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
   var barra2 = (d) => `<path class="barra-lin" d="${d}"/>`;
   var g = (x, y, s) => `<g transform="translate(${x} ${y})">${s}</g>`;
   var hor = (x, y, w, h2) => `<rect class="hor" x="${x}" y="${y}" width="${w}" height="${h2}"/>`;
-  var radio = (cx, cy, r, tx2, ty) => `<line class="cota" x1="${cx}" y1="${cy}" x2="${(cx + r * 0.7).toFixed(1)}" y2="${(cy - r * 0.7).toFixed(1)}"/><text x="${tx2}" y="${ty}" class="nota-d">r</text>`;
+  var radio = (cx, cy, r, tx2, ty) => `<line class="cota" x1="${cx}" y1="${cy}" x2="${(cx + r * 0.7).toFixed(1)}" y2="${(cy - r * 0.7).toFixed(1)}"/><text x="${tx2}" y="${ty}">r</text>`;
   var recta = () => tit(0, 10, t("an.dib.t.recta")) + hor(10, 16, 180, 40) + barra2("M0 36 H170") + ref2(10, 56, 10, 72) + ref2(170, 56, 170, 72) + cotaH3(10, 170, 68, sub28("l", "bd"));
-  var patilla = () => tit(0, 10, t("an.dib.t.patilla")) + hor(10, 16, 170, 64) + barra2("M0 30 H120 A14 14 0 0 1 134 44 V68") + radio(120, 44, 14, 109, 54) + cotaV3(148, 44, 68) + `<text x="153" y="60" class="nota-d">\u2265 5 \xF8</text><text x="140" y="34" class="nota-d">90\xB0</text>` + ref2(10, 80, 10, 96) + ref2(134, 68, 134, 96) + cotaH3(10, 134, 92, sub28("l", "bd"));
-  var gancho = () => tit(0, 10, t("an.dib.t.gancho")) + hor(10, 16, 180, 64) + barra2("M0 30 H132 A14 14 0 0 1 132 58 H106") + radio(132, 44, 14, 121, 52) + cotaH3(106, 132, 70, null) + `<text x="138" y="73" class="nota-d">\u2265 5 \xF8</text><text x="152" y="48" class="nota-d">\u03B1 \u2265 150\xB0</text>` + ref2(10, 80, 10, 96) + ref2(132, 60, 132, 96) + cotaH3(10, 132, 92, sub28("l", "bd"));
+  var patilla = () => tit(0, 10, t("an.dib.t.patilla")) + hor(10, 16, 170, 64) + barra2("M0 30 H120 A14 14 0 0 1 134 44 V68") + radio(120, 44, 14, 109, 54) + cotaV3(148, 44, 68) + `<text x="153" y="60">\u2265 5 \xF8</text><text x="140" y="34">90\xB0</text>` + ref2(10, 80, 10, 96) + ref2(134, 68, 134, 96) + cotaH3(10, 134, 92, sub28("l", "bd"));
+  var gancho = () => tit(0, 10, t("an.dib.t.gancho")) + hor(10, 16, 180, 64) + barra2("M0 30 H132 A14 14 0 0 1 132 58 H106") + radio(132, 44, 14, 121, 52) + cotaH3(106, 132, 70, null) + `<text x="138" y="73">\u2265 5 \xF8</text><text x="152" y="48">\u03B1 \u2265 150\xB0</text>` + ref2(10, 80, 10, 96) + ref2(132, 60, 132, 96) + cotaH3(10, 132, 92, sub28("l", "bd"));
   var u = () => tit(0, 10, t("an.dib.t.u")) + hor(10, 16, 180, 46) + barra2("M0 26 H128 A12 12 0 0 1 128 50 H0") + radio(128, 38, 12, 116, 44) + ref2(10, 62, 10, 78) + ref2(128, 50, 128, 78) + cotaH3(10, 128, 74, sub28("l", "bd"));
-  var solapo = (w) => tit(0, 10, t("an.dib.t.solapo")) + hor(10, 16, w - 10, 46) + barra2(`M0 31 H${w * 0.62}`) + barra2(`M${w * 0.32} 47 H${w}`) + cotaV3(24, 31, 47) + `<text x="30" y="45" class="nota-d">${t("an.dib.sep")}</text>` + ref2(w * 0.32, 62, w * 0.32, 78) + ref2(w * 0.62, 62, w * 0.62, 78) + cotaH3(w * 0.32, w * 0.62, 74, sub28("l", "s"));
+  var solapo = (w) => tit(0, 10, t("an.dib.t.solapo")) + hor(10, 16, w - 10, 46) + barra2(`M0 31 H${w * 0.62}`) + barra2(`M${w * 0.32} 47 H${w}`) + cotaV3(24, 31, 47) + `<text x="30" y="45">${t("an.dib.sep")}</text>` + ref2(w * 0.32, 62, w * 0.32, 78) + ref2(w * 0.62, 62, w * 0.62, 78) + cotaH3(w * 0.32, w * 0.62, 74, sub28("l", "s"));
   function dibujoAnclaje({ esfuerzo }) {
     const comp = esfuerzo === "compresion";
     let s;
@@ -16540,16 +16540,16 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
   }
   function dibujoRecubrimiento() {
     const bar = (cx, cy, extra = "") => `<circle class="barra-ac${extra}" cx="${cx}" cy="${cy}" r="10"/>`;
-    let s = tit(0, 10, t("an.dib.t.esquina"));
+    let s = "";
     s += `<rect class="hor" x="50" y="18" width="240" height="152"/>`;
-    s += `<path class="cerco" d="M280 40 H76 Q66 40 66 50 V144 Q66 154 76 154 H280"/>`;
-    s += bar(77.5, 142.5, " an-ancla") + bar(127.5, 142.5);
+    s += `<path class="cerco" d="M280 40 H76.5 Q64.5 40 64.5 52 V143.5 Q64.5 155.5 76.5 155.5 H280"/>`;
+    s += bar(77.5, 142.5) + bar(127.5, 142.5);
     s += ref2(50, 170, 50, 188) + ref2(67.5, 152.5, 67.5, 188) + cotaH3(50, 67.5, 184, null) + `<text x="46" y="188" text-anchor="end" class="fuerte">${sub28("c", "x")}</text>`;
     s += ref2(22, 170, 50, 170) + ref2(22, 152.5, 77.5, 152.5) + cotaV3(28, 152.5, 170) + `<text x="22" y="164" text-anchor="end" class="fuerte">${sub28("c", "y")}</text>`;
     s += ref2(87.5, 142.5, 87.5, 126) + ref2(117.5, 142.5, 117.5, 126) + cotaH3(87.5, 117.5, 130, null) + `<text x="102.5" y="123" text-anchor="middle" class="fuerte">a</text>`;
-    s += `<line class="cota" x1="150" y1="96" x2="84" y2="133"/><text x="152" y="96" class="nota-d">${t("an.dib.long1")}</text><text x="152" y="109" class="nota-d">${t("an.dib.long2")}</text>`;
-    s += `<text x="190" y="33" class="nota-d">${t("an.dib.cerco")}</text>`;
-    return `<svg class="dib dib-cd" viewBox="0 0 296 202" preserveAspectRatio="xMidYMin meet" role="img" aria-label="${t("an.dib.ariaCd")}">${tic}${s}</svg>`;
+    s += `<line class="cota" x1="112" y1="106" x2="84" y2="133"/><text x="116" y="84">${t("an.dib.long1")}</text><text x="116" y="100">${t("an.dib.long2")}</text>`;
+    s += `<text x="180" y="33">${t("an.dib.cerco")}</text>`;
+    return `<svg class="dib dib-cd" viewBox="0 12 296 190" preserveAspectRatio="xMidYMin meet" role="img" aria-label="${t("an.dib.ariaCd")}">${tic}${s}</svg>`;
   }
 
   // src/ui/vistas/anclaje.js
@@ -16780,14 +16780,14 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
         h("h2", { class: "an-h", html: `${t("m.anclaje")} <span class="an-mat">${r.hor.nombre} ${r.ace.nombre}</span>` }),
         h("button", { type: "button", class: "tecla", id: "an-copiar", title: t("graf.copiarTablaTit"), onclick: copiar }, t("graf.copiar"))
       ),
-      h("p", { class: "nota", html: `${t("an.titulo")}. ${t("an.sub", art6)}` }),
       h("div", { class: "tabla-scroll" }, tablaEl),
       h("p", { class: "nota an-ficha", id: "an-ficha", html: ficha }),
+      h("p", { class: "nota", html: `${t("an.titulo")}. ${t("an.sub", art6)}` }),
       h(
         "div",
         { class: "an-cd-dib" },
         h("div", { class: "an-cd-fig", html: dibujoRecubrimiento() }),
-        h("p", { class: "nota" }, h("b", { html: t("an.cdDef") }), h("br"), h("span", { html: t("an.cdLey") }))
+        h("p", { class: "nota" }, h("b", { html: t("an.cdDef") }))
       )
     );
     const n = idNorma(p);
