@@ -45,3 +45,18 @@ Código: `src/core/estadoTensional.js` (motor), tests en `tests/estadoTensional.
 - **Regla**: nunca se sustituye en silencio la ley de un material. El acero lineal elástico sin plastificación era una sustitución mía y se retira.
 - El acero usa la ley bilineal de su material, con **γS como dato editable** (por defecto el del material; 1,00 da la meseta en f_yk, como γC y αcc en el hormigón). La rigidez elástica no cambia con γS.
 - Avisos pardos: «La armadura ha llegado a la meseta de su ley (plastifica)» y «supera la deformación última de su ley (la tensión es nula)»: el estado no es de servicio.
+
+## Tensiones del hormigón, x a la izquierda y regleta de N rosa (4/11/2026, Pepiño)
+- A la derecha del plano de deformaciones se dibuja el **diagrama de tensiones del hormigón** («Tensiones»), con la ley en uso (sin fisurar: con su rama de tracción; fisurada: sin ella), σc máxima arriba y σ de tracción abajo si la hay, en MPa con un decimal.
+- La **x se acota a la izquierda** del plano; se quita el rótulo «fibra neutra» (la línea discontinua se queda).
+- La **regleta de N se pone rosa** (clase `trac`, la misma de Flexión esviada) cuando N < 0 (tracción).
+
+## Análisis tensional: ELS / ELU y dominio admisible (5/11/2026, Pepiño)
+- El módulo pasa de ELS a **Secciones › Análisis tensional**, con un interruptor **ELS / ELU**. Cada estado límite guarda sus propios datos (`est.v.ELS`, `est.v.ELU`); nada se traduce en silencio de uno a otro.
+- **Límites como deformaciones leídas de las leyes** (`src/core/dominioTensional.js`, `limitesDe`): ELS, σc ≤ kc·fck y σs ≤ ks·fyk pasadas a deformación en el primer punto de la rama ascendente de la ley (si la ley no llega, la deformación última de la ley). ELU, ε_ud del acero, ε_cu del hormigón y pivote C: a·ε_sup + (1 − a)·ε_inf ≤ ε_c2, con a = ε_c2/ε_cu (en Sargin, ε_c2 es la deformación de pico). La norma restringe el plano, no cambia la ley.
+- **Oráculo de pertenencia** `admisible(mod, lim, plano)` (¿es admisible este plano?, con holgura y la restricción que limita) más `intervaloEnRecta` (bisección): no se supone dominio convexo (el pivote C lo rompe en T y genéricas). Base de los gauges tipo VLASTA (siguientes pasos: modo 2, 3 y 1).
+- **ELS**: γC = αcc = γS = 1,00 por defecto (sin cansancio con σc ≤ 0,6·fck; acero característico con ks·fyk); kc = 0,60 y ks = 0,80 editables. Cualquier otro valor se pinta en rojo con una (i). Desplegable de fondo ámbar con EC-2 7.2(2), 7.2(3) y 7.2(5). φ y ley lineal solo en ELS.
+- **ELU**: γC, αcc y γS salen de la ley del material; en rojo con (i) si no coinciden con los de la norma (p. ej. γC ≠ 1,5). Sin φ ni ley lineal.
+- **Solo PR y Sargin (hormigón) y bilineal (acero)**: con otra ley, el cálculo se para con un mensaje («aún no implementado»).
+- Estado fuera del dominio: aviso rojo con el exceso en ‰. Reajustar al admisible más próximo al cambiar de estado límite (decidido) llega con los gauges.
+- Pendiente: EHE-08, límites de tensión en servicio (no localizados con búsqueda simple; ver `formulas-por-verificar.md`).

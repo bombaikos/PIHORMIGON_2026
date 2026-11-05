@@ -1197,3 +1197,11 @@ tr.et-act td { font-weight: 650; }
 .an-hint { font-size: 10px; line-height: 1.3; color: var(--tinta-3); }
 .tabla-an th.pos { border-bottom: 1px solid var(--linea-fuerte); }
 .tabla-an .g2 { border-left: 1px solid var(--linea-fuerte); }
+
+/* Análisis tensional: valor distinto del esperado en el estado límite (rojo, con su (i)) y nota de EC-2 con fondo ámbar */
+.campo.disc .caja { border-color: var(--no); background: var(--no-fondo); }
+.campo.disc > label, .campo.disc .etq { color: var(--no); }
+details.pleg.pleg-amb { background: var(--atencion-fondo); border-color: color-mix(in oklch, var(--atencion) 35%, transparent); }
+details.pleg.pleg-amb > summary { color: var(--atencion); }
+details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
+.et-fc .campo > label { overflow: visible; white-space: nowrap; text-overflow: clip; }
