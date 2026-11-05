@@ -1,4 +1,4 @@
-// ELS · Estado tensional: deformaciones y tensiones de una sección cualquiera en servicio.
+// Análisis tensional (Secciones): deformaciones y tensiones de una sección cualquiera, en ELS o en ELU.
 // La sección (geometría, armadura y materiales) viene de Secciones. El estado se da de tres maneras, siempre con regletas:
 // (N, Mx, My), (ε_cdg, κx, κy) o (ε_sup, β, x). Motor: src/core/estadoTensional.js (kN, m; ε absolutas; κ en 1/m; β en rad).
 // Dibujo: la sección se gira para que la fibra más comprimida quede arriba y la fibra neutra horizontal; el plano de
@@ -6,6 +6,8 @@
 // My > 0 comprime la cara derecha. Decisiones: analisis/estado-tensional-decisiones.md.
 
 import { modeloTensional, estadoTensional } from '../../core/estadoTensional.js';
+import { limitesDe, admisible, leyesNoAdmitidas } from '../../core/dominioTensional.js';
+import { normaMat } from '../../norma/materiales/index.js';
 import { propiedadesHormigon, opcionesHormigon, sigma } from '../../core/materiales.js';
 import { geometriaDe, materialesSeccion } from '../../io/proyecto.js';
 import { t } from '../i18n.js';
@@ -27,9 +29,16 @@ const est = {
   N: 0, Mx: 0, My: 0, // kN, kN·m
   e0: 0, kx: 0, ky: 0, // absoluta, 1/m
   eSup: 0, beta: 0, x: Infinity, // absoluta, grados (de la fibra neutra), m
-  gammaC: null, alfaCC: null, gammaS: null, phi: 0, lineal: false,
+  estado: 'ELS',
+  // Cada estado límite guarda sus propios datos; ninguno se traduce al otro (null = el valor de la ley del material).
+  // ELS: γ = 1 y αcc = 1 (sin cansancio con σc ≤ 0,6·fck); ELU: los de la ley.
+  v: {
+    ELS: { gammaC: 1, alfaCC: 1, gammaS: 1, phi: 0, lineal: false, kc: 0.6, ks: 0.8 },
+    ELU: { gammaC: null, alfaCC: null, gammaS: null, phi: 0, lineal: false, kc: 0.6, ks: 0.8 },
+  },
   ultimo: null,
 };
+const V = () => est.v[est.estado];
 export function reiniciar() { est.i = null; est.para = null; est.ultimo = null; }
 
 const sub = (a, b) => `${a}<sub>${b}</sub>`;
@@ -48,12 +57,23 @@ function calculo(p, s) {
   const mats = materialesSeccion(p, s);
   const fck = mats.hormigon.fk / 1000;
   const prop = propiedadesHormigon(fck, p.norma, opcionesHormigon(mats.fichaH, p.norma));
-  const gammaC = est.gammaC ?? prop.gammaC;
-  const alfaCC = est.alfaCC ?? prop.alfa;
-  const gammaS = est.gammaS ?? mats.acero.gamma; // el del material de la sección, salvo que se cambie aquí
-  const clave = JSON.stringify([p.norma, s.geo, s.armado, s.hormigon, s.acero, gammaC, alfaCC, gammaS, est.phi, est.lineal]);
+  const no = leyesNoAdmitidas(mats.hormigon, mats.acero);
+  if (no) throw new Error(t(`est.leyNo.${no}`));
+  const u = V();
+  const gammaC = u.gammaC ?? prop.gammaC;
+  const alfaCC = u.alfaCC ?? prop.alfa;
+  const gammaS = u.gammaS ?? mats.acero.gamma; // el del material de la sección, salvo que se cambie aquí
+  const els = est.estado === 'ELS';
+  const phi = els ? u.phi : 0;
+  const lineal = els && u.lineal;
+  const clave = JSON.stringify([p.norma, s.geo, s.armado, s.hormigon, s.acero, est.estado, gammaC, alfaCC, gammaS, phi, lineal, u.kc, u.ks]);
   if (memo.clave === clave) return memo.c;
-  const mod = modeloTensional(geo, mats.hormigon, mats.acero, { gammaC, alfaCC, gammaS, phi: est.phi, lineal: est.lineal, fctm: prop.fctm });
+  const mod = modeloTensional(geo, mats.hormigon, mats.acero, { gammaC, alfaCC, gammaS, phi, lineal, fctm: prop.fctm });
+  const lim = limitesDe(mod, est.estado, { kc: u.kc, ks: u.ks });
+  const norm = propiedadesHormigon(fck, p.norma, {});
+  const normaGammaS = normaMat(p.norma).gammaS;
+  const mc = els ? 0.6 : 1;
+  const ms = els ? 0.8 : 1;
   const caja = geo.caja;
   const bx = caja.xmax - caja.xmin;
   const hy = caja.ymax - caja.ymin;
@@ -61,15 +81,16 @@ function calculo(p, s) {
   const As = mod.puntos.reduce((a, b) => a + b.A, 0);
   const fyk = mats.acero.fk / 1000;
   const c = {
-    geo, mats, mod, prop, gammaC, alfaCC, gammaS, fck, bx, hy,
-    // Recorrido de las regletas: del orden de lo que resiste la sección en servicio (0,6·fck; 0,8·fyk)
+    geo, mats, mod, prop, gammaC, alfaCC, gammaS, fck, bx, hy, lim, els,
+    esperado: els ? { gammaC: 1, alfaCC: 1, gammaS: 1 } : { gammaC: norm.gammaC, alfaCC: norm.alfa, gammaS: normaGammaS },
+    // Recorrido de las regletas: del orden de lo que resiste la sección (ELS: 0,6·fck y 0,8·fyk; ELU: fck y fyk)
     rg: {
-      N: [Math.round(-0.8 * fyk * As * 1000 / 10) * 10 || -100, Math.round((0.6 * fck * Ac * 1000) / 10) * 10],
-      Mx: Math.ceil((0.6 * fck * 1000 * (Ac * hy) / 6) / 10) * 10 || 100,
-      My: Math.ceil((0.6 * fck * 1000 * (Ac * bx) / 6) / 10) * 10 || 100,
+      N: [Math.round(-ms * fyk * As * 1000 / 10) * 10 || -100, Math.round((mc * fck * Ac * 1000) / 10) * 10],
+      Mx: Math.ceil((mc * fck * 1000 * (Ac * hy) / 6) / 10) * 10 || 100,
+      My: Math.ceil((mc * fck * 1000 * (Ac * bx) / 6) / 10) * 10 || 100,
       kx: 0.008 / hy, ky: 0.008 / bx, // 8 ‰ de deformación a lo largo del canto, no más
     },
-    lector: leyDe(mats.hormigon, est.lineal),
+    lector: leyDe(mats.hormigon, lineal),
   };
   memo = { clave, c };
   return c;
@@ -148,19 +169,37 @@ export function datos(ctx, form) {
       num('x', 'x', 'x', 'long', { paso: 10e-3, nombre: t('est.nombreX'), ref: t('est.refX') }),
     ],
   };
-  const gamma = (id, etq, k, defecto) => campoNum({ id: `et-${id}`, etq, valor: fmt(est[k] ?? defecto, 2), mag: null, paso: 0.05, min: 0.01, max: 10, sinUd: true, nombre: etq.replace(/<[^>]+>/g, ''), info: id === 'gc' ? t('est.infoGamma') : id === 'gs' ? t('est.infoGammaS') : undefined, onCambio: (v) => { est[k] = v; ctx.pintar(); } });
+  // γ y αcc: con el valor esperado del estado límite (ELS: 1,00; ELU: el de la norma) van normales; con otro, en rojo y con su (i)
+  const gamma = (id, etq, k, defecto) => {
+    const valor = V()[k] ?? defecto;
+    const dist = c && Math.abs(valor - c.esperado[k]) > 1e-9;
+    const info = dist ? t('est.infoDist', fmt(c.esperado[k], 2), est.estado) : id === 'gc' ? t('est.infoGamma') : id === 'gs' ? t('est.infoGammaS') : undefined;
+    const e = campoNum({ id: `et-${id}`, etq, valor: fmt(valor, 2), mag: null, paso: 0.05, min: 0.01, max: 10, sinUd: true, nombre: etq.replace(/<[^>]+>/g, ''), info, onCambio: (v) => { V()[k] = v; ctx.pintar(); } });
+    e.classList.toggle('disc', !!dist);
+    return e;
+  };
+  const els = est.estado === 'ELS';
+  const lim = c?.lim;
+  const limTxt = lim ? (els
+    ? `${sub('ε', 'c,lím')} ${fmt(lim.ec * 1000, 2)} ‰ · ${sub('ε', 's,lím')} ${fmt(lim.esT * 1000, 2)} ‰`
+    : `${sub('ε', 'cu')} ${fmt(lim.ecu * 1000, 2)} ‰ · ${sub('ε', 'c2')} ${fmt((lim.pivote?.ec2 ?? lim.ecu) * 1000, 2)} ‰ · ${sub('ε', 'ud')} ${fmt(lim.esT * 1000, 2)} ‰`) : '';
   poner(form,
+    segmentado({ ancho: true, capsula: true, etiqueta: t('est.estadoLimite'), opciones: [['ELS', 'ELS'], ['ELU', 'ELU']], valor: est.estado, onCambio: (m) => { est.estado = m; ctx.pintar(); } }),
     segmentado({ ancho: true, capsula: true, etiqueta: t('est.modo'), opciones: [['NM', t('est.m.NM')], ['eK', t('est.m.eK')], ['sup', t('est.m.sup')]], valor: est.modo, onCambio: (m) => { est.modo = m; ctx.pintar(); } }),
     grupo(est.modo === 'NM' ? t('est.gEsfuerzos') : t('est.gPlano'), ...campos[est.modo]),
     grupo(t('est.gHormigon'),
-      c ? gamma('gc', t('est.gammaC'), 'gammaC', c.gammaC) : null,
-      c ? gamma('ac', t('est.alfaCC'), 'alfaCC', c.alfaCC) : null,
-      campoNum({ id: 'et-phi', etq: t('est.phi'), valor: fmt(est.phi, 2), mag: null, paso: 0.1, min: 0, max: 10, sinUd: true, info: t('est.infoPhi'), onCambio: (v) => { est.phi = v; ctx.pintar(); } }),
-      h('label', { class: 'tick' }, h('input', { type: 'checkbox', id: 'et-lineal', checked: est.lineal, onchange: (e) => { est.lineal = e.target.checked; ctx.pintar(); } }), h('span', { html: t('est.lineal') })),
-      c ? h('div', { class: 'et-der' },
+      h('div', { class: 'fila-campos et-fc' }, c ? gamma('gc', t('est.gammaC'), 'gammaC', c.gammaC) : null, c ? gamma('ac', t('est.alfaCC'), 'alfaCC', c.alfaCC) : null),
+      els ? h('div', { class: 'fila-campos et-fc' },
+        campoNum({ id: 'et-phi', etq: t('est.phi'), valor: fmt(V().phi, 2), mag: null, paso: 0.1, min: 0, max: 10, sinUd: true, info: t('est.infoPhi'), onCambio: (v) => { V().phi = v; ctx.pintar(); } }),
+        campoNum({ id: 'et-kc', etq: t('est.kc'), valor: fmt(V().kc, 2), mag: null, paso: 0.05, min: 0.05, max: 1, sinUd: true, info: t('est.infoKc'), onCambio: (v) => { V().kc = v; ctx.pintar(); } })) : null,
+      els ? h('label', { class: 'tick' }, h('input', { type: 'checkbox', id: 'et-lineal', checked: V().lineal, onchange: (e) => { V().lineal = e.target.checked; ctx.pintar(); } }), h('span', { html: t('est.lineal') })) : null,
+      c && els ? h('div', { class: 'et-der' },
         h('span', {}, 'E', h('sub', {}, 'c,eff'), ` ${fmt(c.mod.ley.pendiente / 1000, 0)} MPa`),
         h('span', {}, `n = ${fmt(c.mod.acero.E / c.mod.ley.pendiente, 1)}`)) : null),
-    grupo(t('est.gAcero'), c ? gamma('gs', t('est.gammaS'), 'gammaS', c.gammaS) : null));
+    grupo(t('est.gAcero'),
+      h('div', { class: 'fila-campos et-fc' }, c ? gamma('gs', t('est.gammaS'), 'gammaS', c.gammaS) : null,
+        els ? campoNum({ id: 'et-ks', etq: t('est.ks'), valor: fmt(V().ks, 2), mag: null, paso: 0.05, min: 0.05, max: 1.5, sinUd: true, info: t('est.infoKs'), onCambio: (v) => { V().ks = v; ctx.pintar(); } }) : null),
+      c ? h('div', { class: 'et-der', html: limTxt }) : null));
 }
 
 // ---------------------------------------------------------------- dibujo
@@ -392,6 +431,12 @@ function pastilla(c, r) {
   return veredicto(r.fisurada ? 'atencion' : 'neutro', sello, t('est.sigmaC'), qh(r.sigmaMax, 'tension'), `${ley} · n = ${fmt(r.n, 1)}`);
 }
 
+/** Desplegable de fondo ámbar con lo que dicen los apartados del EC-2 sobre las limitaciones de tensión en servicio. */
+function notaEC2() {
+  return h('details', { class: 'pleg pleg-amb' }, h('summary', {}, t('est.ec2.titulo')),
+    h('div', { class: 'cuenta' }, ...['est.ec2.c', 'est.ec2.s', 'est.ec2.k'].map((k) => h('p', { class: 'nota', html: t(k) }))));
+}
+
 export function resultados(ctx, res) {
   const p = ctx.p;
   const s = activa(p);
@@ -403,11 +448,11 @@ export function resultados(ctx, res) {
   const nombre = s.nombre;
   const ver = pastilla(c, r);
   res.append(ver);
-  if (c.mod.ley.avisos.includes('PR')) res.append(aviso(t('est.avPR')));
+  if (c.els && c.mod.ley.avisos.includes('PR')) res.append(aviso(t('est.avPR')));
   if (c.mod.ley.avisos.includes('lineal')) res.append(aviso(t('est.avLineal')));
-  if (r.avisos.includes('eps-cu')) res.append(aviso(t('est.avEpsCu')));
-  if (r.avisos.includes('acero-plast')) res.append(aviso(t('est.avPlast')));
-  if (r.avisos.includes('acero-eud')) res.append(aviso(t('est.avEud')));
+  const dom = admisible(c.mod, c.lim, r.plano);
+  if (!dom.ok) res.append(aviso(t(`est.fuera.${dom.limita}`, est.estado, fmt(-dom.holgura * 1000, 2)), 'error'));
+  if (c.els) res.append(notaEC2());
 
   const lienzo = h('div', { class: 'lienzo et-lienzo', html: dibujo(c, r) });
   const derecha = h('article', { class: 'panel tarjeta et-der-card' });

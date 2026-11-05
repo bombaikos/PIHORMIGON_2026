@@ -1198,6 +1198,14 @@ tr.et-act td { font-weight: 650; }
 .an-hint { font-size: 10px; line-height: 1.3; color: var(--tinta-3); }
 .tabla-an th.pos { border-bottom: 1px solid var(--linea-fuerte); }
 .tabla-an .g2 { border-left: 1px solid var(--linea-fuerte); }
+
+/* Análisis tensional: valor distinto del esperado en el estado límite (rojo, con su (i)) y nota de EC-2 con fondo ámbar */
+.campo.disc .caja { border-color: var(--no); background: var(--no-fondo); }
+.campo.disc > label, .campo.disc .etq { color: var(--no); }
+details.pleg.pleg-amb { background: var(--atencion-fondo); border-color: color-mix(in oklch, var(--atencion) 35%, transparent); }
+details.pleg.pleg-amb > summary { color: var(--atencion); }
+details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
+.et-fc .campo > label { overflow: visible; white-space: nowrap; text-overflow: clip; }
 </style>
 
 <header class="barra">
@@ -1659,15 +1667,15 @@ tr.et-act td { font-weight: 650; }
   function quiebros(mat) {
     return [...mat.comp.map((p) => p[0]), ...mat.tracc.map((p) => p[0])];
   }
-  function sigma(mat, eps2) {
-    const pts = eps2 < 0 ? mat.comp : mat.tracc;
+  function sigma(mat, eps3) {
+    const pts = eps3 < 0 ? mat.comp : mat.tracc;
     for (let j = 1; j < pts.length; j++) {
       const [e0, s0] = pts[j - 1];
       const [e1, s1] = pts[j];
-      const dentro2 = eps2 < 0 ? eps2 <= e0 && eps2 >= e1 : eps2 >= e0 && eps2 <= e1;
+      const dentro2 = eps3 < 0 ? eps3 <= e0 && eps3 >= e1 : eps3 >= e0 && eps3 <= e1;
       if (dentro2) {
         if (e1 === e0) return s1;
-        return s0 + (s1 - s0) * (eps2 - e0) / (e1 - e0);
+        return s0 + (s1 - s0) * (eps3 - e0) / (e1 - e0);
       }
     }
     return 0;
@@ -2371,9 +2379,9 @@ tr.et-act td { font-weight: 650; }
   function fisuradaArriba(geo, Ec2, Es, N, h2, Mfis) {
     const sec = seccionMotor(geo, lineal(Ec2, false), lineal(Es, true));
     const kappa = N === 0 || !(Mfis > 0) ? 1e-4 : Mfis / (Ec2 * h2.Ix);
-    const eps2 = planoLineal(sec, N, kappa, h2.yg);
-    const { M: M2 } = esfuerzos(sec, eps2, kappa, h2.yg);
-    const x = eps2 < 0 ? -eps2 / kappa : 0;
+    const eps3 = planoLineal(sec, N, kappa, h2.yg);
+    const { M: M2 } = esfuerzos(sec, eps3, kappa, h2.yg);
+    const x = eps3 < 0 ? -eps3 / kappa : 0;
     return { Ifis: M2 / (kappa * Ec2), x: Math.min(x, geo.h) };
   }
   var fctmFlexotraccion = (fctm, h2) => Math.max((1.6 - h2) * fctm, fctm);
@@ -4665,12 +4673,12 @@ tr.et-act td { font-weight: 650; }
     "cor.ver.min": "Cuant\xEDa m\xEDnima",
     "cor.ver.valida": "Armadura calculada",
     "cor.ver.aum": "Aumentar la secci\xF3n",
-    "cor.ver.ecu": (V, Vu, ok, manda) => `${sub5("V", "Ed")} <b>${V}</b> ${ok ? "\u2264" : ">"} ${sub5("V", "u")} <b>${Vu}</b> \xB7 ${manda}`,
+    "cor.ver.ecu": (V2, Vu, ok, manda) => `${sub5("V", "Ed")} <b>${V2}</b> ${ok ? "\u2264" : ">"} ${sub5("V", "u")} <b>${Vu}</b> \xB7 ${manda}`,
     "cor.manda.biela": "manda la compresi\xF3n oblicua V<sub>u1</sub>",
     "cor.manda.arm": "manda la tracci\xF3n en el alma V<sub>u2</sub>",
     "cor.manda.sin": "pieza sin armadura de cortante",
-    "cor.ver.nec": (V, Vu1) => `V<sub>Ed</sub> <b>${V}</b> con V<sub>u1</sub> <b>${Vu1}</b>`,
-    "cor.ver.necAum": (V, Vu1) => `V<sub>Ed</sub> <b>${V}</b> &gt; V<sub>u1</sub> <b>${Vu1}</b>: la biela comprimida agota la secci\xF3n`,
+    "cor.ver.nec": (V2, Vu1) => `V<sub>Ed</sub> <b>${V2}</b> con V<sub>u1</sub> <b>${Vu1}</b>`,
+    "cor.ver.necAum": (V2, Vu1) => `V<sub>Ed</sub> <b>${V2}</b> &gt; V<sub>u1</sub> <b>${Vu1}</b>: la biela comprimida agota la secci\xF3n`,
     "cor.aprov": "Aprovechamiento",
     "cor.armNec": "A<sub>sw</sub>/s necesaria",
     "cor.c.Vu1": sub5("V", "u1"),
@@ -4711,7 +4719,7 @@ tr.et-act td { font-weight: 650; }
     "cor.f.min": "A<sub>sw</sub>/s \xB7 f<sub>y\u03B1,d</sub>/sen \u03B1 \u2265 f<sub>ct,m</sub>/7,5 \xB7 b<sub>0</sub>",
     "cor.f.sep": "s<sub>t</sub> \u2264 0,75 d(1 + cotg \u03B1) \u2264 600 mm si V<sub>Ed</sub> \u2264 V<sub>u1</sub>/5 \xB7 \u2264 0,60 d(1 + cotg \u03B1) \u2264 450 si \u2264 2/3 V<sub>u1</sub> \xB7 \u2264 0,30 d(1 + cotg \u03B1) \u2264 300 en los dem\xE1s \xB7 entre ramas \u2264 d y \u2264 500 mm",
     "cor.f.long": "\u0394T = V<sub>rd</sub>\xB7cotg \u03B8 \u2212 (V<sub>su</sub>/2)(cotg \u03B8 + cotg \u03B1) \xB7 decalaje s<sub>d</sub> = z\xB7\u0394T/V<sub>rd</sub>",
-    "cor.v.Vu1": (K, f1cd, V) => `K = ${K} \xB7 f<sub>1cd</sub> = ${f1cd} MPa \u2192 ${V}`,
+    "cor.v.Vu1": (K, f1cd, V2) => `K = ${K} \xB7 f<sub>1cd</sub> = ${f1cd} MPa \u2192 ${V2}`,
     "cor.v.concMin": (c, m) => `F\xF3rmula general ${c} kN \xB7 m\xEDnimo ${m} kN: vale el mayor`,
     "cor.sinReduccion": "sin reducir",
     "cor.cmdComprobar": "Cortante: comprobar",
@@ -4720,7 +4728,7 @@ tr.et-act td { font-weight: 650; }
     "cor.noOk": "no cumple",
     "cor.avs.sep": (s, smax, art5 = "44.2.3.4.1") => `La separaci\xF3n s = ${s} mm supera el m\xE1ximo ${smax} mm de ${art5} para este cortante`,
     "cor.avs.trans": (m) => `La separaci\xF3n entre ramas no puede pasar de ${m} mm (d y 500 mm); comprueba el n\xFAmero de ramas`,
-    "cor.avs.noCumple": (V, Vu) => `V<sub>Ed</sub> ${V} es mayor que V<sub>u</sub> ${Vu}`,
+    "cor.avs.noCumple": (V2, Vu) => `V<sub>Ed</sub> ${V2} es mayor que V<sub>u</sub> ${Vu}`,
     // Avisos del núcleo
     "cor.av.fyd400": (f) => `f<sub>y\u03B1,d</sub> se limita a 400 MPa en los cercos (40.2; el acero dar\xEDa ${f} MPa)`,
     "cor.av.rho": (r) => `\u03C1<sub>l</sub> = ${r} \u2030 se limita a 20 \u2030 en las f\xF3rmulas`,
@@ -4757,9 +4765,9 @@ tr.et-act td { font-weight: 650; }
     "cor.ec.manda.biela": "manda la biela V<sub>Rd,m\xE1x</sub>",
     "cor.ec.manda.arm": "manda la armadura V<sub>Rd,s</sub>",
     "cor.ec.manda.sin": "pieza sin armadura de cortante (V<sub>Rd,c</sub>)",
-    "cor.ec.ver.ecu": (V, Vu, ok, manda) => `${sub5("V", "Ed")} <b>${V}</b> ${ok ? "\u2264" : ">"} ${sub5("V", "Rd")} <b>${Vu}</b> \xB7 ${manda}`,
-    "cor.ec.ver.nec": (V, Vu1) => `V<sub>Ed</sub> <b>${V}</b> con V<sub>Rd,m\xE1x</sub> <b>${Vu1}</b>`,
-    "cor.ec.ver.necAum": (V, Vu1) => `V<sub>Ed</sub> <b>${V}</b> &gt; V<sub>Rd,m\xE1x</sub> <b>${Vu1}</b>: la biela comprimida agota la secci\xF3n`,
+    "cor.ec.ver.ecu": (V2, Vu, ok, manda) => `${sub5("V", "Ed")} <b>${V2}</b> ${ok ? "\u2264" : ">"} ${sub5("V", "Rd")} <b>${Vu}</b> \xB7 ${manda}`,
+    "cor.ec.ver.nec": (V2, Vu1) => `V<sub>Ed</sub> <b>${V2}</b> con V<sub>Rd,m\xE1x</sub> <b>${Vu1}</b>`,
+    "cor.ec.ver.necAum": (V2, Vu1) => `V<sub>Ed</sub> <b>${V2}</b> &gt; V<sub>Rd,m\xE1x</sub> <b>${Vu1}</b>: la biela comprimida agota la secci\xF3n`,
     "cor.ec.c.vmax": sub5("V", "Rd,m\xE1x"),
     "cor.ec.c.vs": sub5("V", "Rd,s"),
     "cor.ec.c.vc": sub5("V", "Rd,c"),
@@ -4887,8 +4895,8 @@ tr.et-act td { font-weight: 650; }
     "cor.manda.biela": "web crushing V<sub>u1</sub> governs",
     "cor.manda.arm": "web tension V<sub>u2</sub> governs",
     "cor.manda.sin": "member without shear reinforcement",
-    "cor.ver.nec": (V, Vu1) => `V<sub>Ed</sub> <b>${V}</b> with V<sub>u1</sub> <b>${Vu1}</b>`,
-    "cor.ver.necAum": (V, Vu1) => `V<sub>Ed</sub> <b>${V}</b> &gt; V<sub>u1</sub> <b>${Vu1}</b>: the compression strut fails`,
+    "cor.ver.nec": (V2, Vu1) => `V<sub>Ed</sub> <b>${V2}</b> with V<sub>u1</sub> <b>${Vu1}</b>`,
+    "cor.ver.necAum": (V2, Vu1) => `V<sub>Ed</sub> <b>${V2}</b> &gt; V<sub>u1</sub> <b>${Vu1}</b>: the compression strut fails`,
     "cor.armNec": "Required A<sub>sw</sub>/s",
     "cor.t.dibujo": "Section and truss",
     "cor.t.res": "Results",
@@ -4940,9 +4948,9 @@ tr.et-act td { font-weight: 650; }
     "cor.ec.manda.biela": "the strut V<sub>Rd,max</sub> governs",
     "cor.ec.manda.arm": "the reinforcement V<sub>Rd,s</sub> governs",
     "cor.ec.manda.sin": "member without shear reinforcement (V<sub>Rd,c</sub>)",
-    "cor.ec.ver.ecu": (V, Vu, ok, manda) => `${sub6("V", "Ed")} <b>${V}</b> ${ok ? "\u2264" : ">"} ${sub6("V", "Rd")} <b>${Vu}</b> \xB7 ${manda}`,
-    "cor.ec.ver.nec": (V, Vu1) => `V<sub>Ed</sub> <b>${V}</b> with V<sub>Rd,max</sub> <b>${Vu1}</b>`,
-    "cor.ec.ver.necAum": (V, Vu1) => `V<sub>Ed</sub> <b>${V}</b> &gt; V<sub>Rd,max</sub> <b>${Vu1}</b>: the compression strut is exhausted`,
+    "cor.ec.ver.ecu": (V2, Vu, ok, manda) => `${sub6("V", "Ed")} <b>${V2}</b> ${ok ? "\u2264" : ">"} ${sub6("V", "Rd")} <b>${Vu}</b> \xB7 ${manda}`,
+    "cor.ec.ver.nec": (V2, Vu1) => `V<sub>Ed</sub> <b>${V2}</b> with V<sub>Rd,max</sub> <b>${Vu1}</b>`,
+    "cor.ec.ver.necAum": (V2, Vu1) => `V<sub>Ed</sub> <b>${V2}</b> &gt; V<sub>Rd,max</sub> <b>${Vu1}</b>: the compression strut is exhausted`,
     "cor.ec.c.vmax": sub6("V", "Rd,max"),
     "cor.ec.c.vs": sub6("V", "Rd,s"),
     "cor.ec.c.vc": sub6("V", "Rd,c"),
@@ -5307,11 +5315,11 @@ tr.et-act td { font-weight: 650; }
     "pun.nPerAyuda": "N\xFAmero de per\xEDmetros de cercos (al menos 2 en EC-2)",
     // Veredicto y cifras
     "pun.armNec": "A<sub>sw</sub> necesaria",
-    "pun.ver.ecu": (V, Vu, ok, manda) => `${sub9("V", "Ed")} <b>${V}</b> ${ok ? "\u2264" : ">"} ${sub9("V", "u")} <b>${Vu}</b> \xB7 ${manda}`,
-    "pun.ver.necAum": (V, Vmax) => `${sub9("V", "Ed")} <b>${V}</b> &gt; ${sub9("V", "m\xE1x")} <b>${Vmax}</b>: la compresi\xF3n junto al pilar agota la losa`,
+    "pun.ver.ecu": (V2, Vu, ok, manda) => `${sub9("V", "Ed")} <b>${V2}</b> ${ok ? "\u2264" : ">"} ${sub9("V", "u")} <b>${Vu}</b> \xB7 ${manda}`,
+    "pun.ver.necAum": (V2, Vmax) => `${sub9("V", "Ed")} <b>${V2}</b> &gt; ${sub9("V", "m\xE1x")} <b>${Vmax}</b>: la compresi\xF3n junto al pilar agota la losa`,
     "pun.ver.sinArm": "No hace falta armadura",
-    "pun.ver.sin": (V, Vc) => `${sub9("V", "Ed")} <b>${V}</b> \u2264 ${sub9("V", "u")} sin armadura <b>${Vc}</b>`,
-    "pun.ver.nec": (n, V) => `${n} per\xEDmetro${n === "1" ? "" : "s"} de cercos para ${sub9("V", "Ed")} <b>${V}</b>`,
+    "pun.ver.sin": (V2, Vc) => `${sub9("V", "Ed")} <b>${V2}</b> \u2264 ${sub9("V", "u")} sin armadura <b>${Vc}</b>`,
+    "pun.ver.nec": (n, V2) => `${n} per\xEDmetro${n === "1" ? "" : "s"} de cercos para ${sub9("V", "Ed")} <b>${V2}</b>`,
     "pun.manda.hormigon": "losa sin armadura",
     "pun.manda.biela": "manda la compresi\xF3n junto al pilar",
     "pun.manda.cercos": "mandan los cercos",
@@ -5519,10 +5527,10 @@ tr.et-act td { font-weight: 650; }
     "pun.nPer": "Perim.",
     "pun.nPerAyuda": "Number of link perimeters (at least 2 in EC-2)",
     "pun.armNec": "Required A<sub>sw</sub>",
-    "pun.ver.necAum": (V, Vmax) => `${sub10("V", "Ed")} <b>${V}</b> &gt; ${sub10("V", "max")} <b>${Vmax}</b>: compression next to the column crushes the slab`,
+    "pun.ver.necAum": (V2, Vmax) => `${sub10("V", "Ed")} <b>${V2}</b> &gt; ${sub10("V", "max")} <b>${Vmax}</b>: compression next to the column crushes the slab`,
     "pun.ver.sinArm": "No reinforcement needed",
-    "pun.ver.sin": (V, Vc) => `${sub10("V", "Ed")} <b>${V}</b> \u2264 ${sub10("V", "u")} without reinforcement <b>${Vc}</b>`,
-    "pun.ver.nec": (n, V) => `${n} link perimeter${n === "1" ? "" : "s"} for ${sub10("V", "Ed")} <b>${V}</b>`,
+    "pun.ver.sin": (V2, Vc) => `${sub10("V", "Ed")} <b>${V2}</b> \u2264 ${sub10("V", "u")} without reinforcement <b>${Vc}</b>`,
+    "pun.ver.nec": (n, V2) => `${n} link perimeter${n === "1" ? "" : "s"} for ${sub10("V", "Ed")} <b>${V2}</b>`,
     "pun.manda.hormigon": "slab without reinforcement",
     "pun.manda.biela": "compression next to the column governs",
     "pun.manda.cercos": "the links govern",
@@ -5662,7 +5670,7 @@ tr.et-act td { font-weight: 650; }
     "pun.f.vmaxEHE": "F<sub>sd,ef</sub> = \u03B2\xB7V<sub>Ed</sub> \u2264 0.5\xB7f<sub>1cd</sub>\xB7u<sub>0</sub>\xB7d",
     "pun.r.vRdc": "v<sub>Rd,c</sub> / V<sub>Rd,c</sub>",
     "pun.v.minVal": (a, b) => `\u03C1<sub>w</sub> = ${a} \u2030 \u2265 \u03C1<sub>w,min</sub> = ${b} \u2030`,
-    "pun.ver.ecu": (V, Vu, ok, manda) => `${sub10("V", "Ed")} <b>${V}</b> ${ok ? "\u2264" : ">"} ${sub10("V", "u")} <b>${Vu}</b> \xB7 ${manda}`,
+    "pun.ver.ecu": (V2, Vu, ok, manda) => `${sub10("V", "Ed")} <b>${V2}</b> ${ok ? "\u2264" : ">"} ${sub10("V", "u")} <b>${Vu}</b> \xB7 ${manda}`,
     "pun.tipoRama": "Reinforcement type",
     "pun.tipoCerrado": "Closed stirrups",
     "pun.tipoAbierto": "Open stirrups or single legs",
@@ -5784,13 +5792,13 @@ tr.et-act td { font-weight: 650; }
 
   // src/i18n/estadoTensional.es.js
   var estadoTensional_es_default = {
-    "menu.estadoTensional": "Estado tensional",
-    "est.subtitulo": "Deformaciones y tensiones de la secci\xF3n en servicio, dado el estado en esfuerzos o en deformaciones",
+    "menu.estadoTensional": "An\xE1lisis tensional",
+    "est.subtitulo": "Deformaciones y tensiones de la secci\xF3n en ELS o en ELU, dado el estado en esfuerzos o en deformaciones",
     "est.modo": "Datos del estado",
     "est.m.NM": "N, M<sub>x</sub>, M<sub>y</sub>",
     "est.m.eK": "\u03B5<sub>cdg</sub>, \u03BA<sub>x</sub>, \u03BA<sub>y</sub>",
     "est.m.sup": "\u03B5<sub>sup</sub>, \u03B2, x",
-    "est.gEsfuerzos": "Esfuerzos de servicio",
+    "est.gEsfuerzos": "Esfuerzos",
     "est.gPlano": "Plano de deformaciones",
     "est.nombreN": "Axil",
     "est.nombreMx": "Momento respecto al eje horizontal",
@@ -5806,15 +5814,15 @@ tr.et-act td { font-weight: 650; }
     "est.infoSup": "\u03B5_sup es la deformaci\xF3n de la fibra m\xE1s comprimida, \u03B2 el \xE1ngulo (antihorario desde +x) de la fibra neutra (\u03B2 = 0: neutra horizontal, comprime la cara superior) y x la profundidad de la fibra neutra medida desde ella. x = \u221E es compresi\xF3n uniforme. Si toda la secci\xF3n est\xE1 en tracci\xF3n, x sale negativa y \u03B5_sup tambi\xE9n.",
     "est.refX": "\u2265 100 000 mm: compresi\xF3n uniforme",
     "est.tensiones": "TENSIONES",
-    "est.gHormigon": "Hormig\xF3n en servicio",
-    "est.gAcero": "Acero en servicio",
-    "est.gammaS": "\u03B3<sub>S</sub> [\u2014]",
+    "est.gHormigon": "Hormig\xF3n",
+    "est.gAcero": "Acero",
+    "est.gammaS": "\u03B3<sub>S</sub>",
     "est.infoGammaS": "Acero: se usa la ley de su material (bilineal), con su \u03B3S. Con \u03B3S = 1,00 la meseta es f_yk; con el de c\xE1lculo, f_yk/\u03B3S. Se parte del \u03B3S del material de la secci\xF3n.",
     "est.avPlast": "La armadura ha llegado a la meseta de su ley (plastifica): el estado no es de servicio.",
     "est.avEud": "La armadura supera la deformaci\xF3n \xFAltima de su ley (ah\xED la tensi\xF3n es nula): el estado no es de servicio.",
-    "est.gammaC": "\u03B3<sub>C</sub> [\u2014]",
-    "est.alfaCC": "\u03B1<sub>cc</sub> [\u2014]",
-    "est.phi": "\u03C6(t,t<sub>0</sub>) [\u2014]",
+    "est.gammaC": "\u03B3<sub>C</sub>",
+    "est.alfaCC": "\u03B1<sub>cc</sub>",
+    "est.phi": "\u03C6",
     "est.infoGamma": "Propiedades del hormig\xF3n: con \u03B3C = 1,00 y \u03B1cc = 1,00 se usan las caracter\xEDsticas; con los valores de c\xE1lculo, las minoradas. Se parte de los del material de la secci\xF3n.",
     "est.infoPhi": "Coeficiente de fluencia que estira el eje de deformaciones del diagrama (m\xE9todo del m\xF3dulo efectivo). 0 = carga instant\xE1nea.",
     "est.lineal": "Ley lineal (E<sub>cm</sub>)",
@@ -5859,15 +5867,31 @@ tr.et-act td { font-weight: 650; }
     "est.p.estadoSub": "Se calcula con la secci\xF3n \xEDntegra y, si la tracci\xF3n supera f_ctm, sin resistencia a tracci\xF3n.",
     "est.pFibras": "Fibras",
     "est.infinito": "\u221E",
-    "p.estadoTensional": "Estado tensional ELS"
+    "p.estadoTensional": "An\xE1lisis tensional ELS ELU",
+    "est.estadoLimite": "Estado l\xEDmite",
+    "est.gLimites": "L\xEDmites del estado",
+    "est.kc": "k<sub>c</sub>",
+    "est.ks": "k<sub>s</sub>",
+    "est.infoKc": "L\xEDmite de compresi\xF3n del hormig\xF3n en servicio, como fracci\xF3n de f_ck (0,60 por defecto, EC-2 7.2(2)). Se pasa a deformaci\xF3n con la ley del hormig\xF3n.",
+    "est.infoKs": "L\xEDmite de tracci\xF3n del acero en servicio, como fracci\xF3n de f_yk (0,80 por defecto, EC-2 7.2(5); 1,00 si la tracci\xF3n viene de una deformaci\xF3n impuesta). Se pasa a deformaci\xF3n con la ley del acero.",
+    "est.infoDist": (v2, e2) => `Distinto de ${v2}, el valor esperado en ${e2}. Se usa el que has puesto, sin cambiar la ley del material.`,
+    "est.leyNo.hormigon": "Este m\xF3dulo solo admite hormig\xF3n con par\xE1bola-rect\xE1ngulo o Sargin: con otra ley no se calcula (a\xFAn no implementado).",
+    "est.leyNo.acero": "Este m\xF3dulo solo admite acero con ley bilineal: con otra ley no se calcula (a\xFAn no implementado).",
+    "est.fuera.hormigon": (e2, d) => `Fuera de ${e2}: la fibra m\xE1s comprimida pasa en ${d} \u2030 del l\xEDmite de deformaci\xF3n del hormig\xF3n.`,
+    "est.fuera.acero": (e2, d) => `Fuera de ${e2}: la armadura pasa en ${d} \u2030 del l\xEDmite de deformaci\xF3n del acero.`,
+    "est.fuera.pivote": (e2, d) => `Fuera de ${e2}: el plano pasa en ${d} \u2030 del pivote C (deformaci\xF3n de pico del hormig\xF3n).`,
+    "est.ec2.titulo": "L\xEDmites de tensi\xF3n en servicio (EC-2, 7.2)",
+    "est.ec2.c": "<b>7.2(2)</b> Para evitar fisuras longitudinales, microfisuraci\xF3n y fluencia elevada, la compresi\xF3n del hormig\xF3n se limita a k<sub>1</sub>\xB7f<sub>ck</sub> (k<sub>1</sub> = 0,60 recomendado) en las clases de exposici\xF3n XD, XF y XS.",
+    "est.ec2.k": "<b>7.2(3)</b> Si la tensi\xF3n en el hormig\xF3n bajo cargas cuasipermanentes es menor que k<sub>2</sub>\xB7f<sub>ck</sub> (0,45), la fluencia es lineal y puede aceptarse el coeficiente \u03C6. Con \u03B1<sub>cc</sub> = 1 y \u03B3<sub>C</sub> = 1 este m\xF3dulo trabaja con el valor caracter\xEDstico.",
+    "est.ec2.s": "<b>7.2(5)</b> La tensi\xF3n de tracci\xF3n de la armadura bajo la combinaci\xF3n caracter\xEDstica se limita a k<sub>3</sub>\xB7f<sub>yk</sub> (0,80); si la tracci\xF3n proviene de una deformaci\xF3n impuesta, a k<sub>4</sub>\xB7f<sub>yk</sub> (1,00)."
   };
 
   // src/i18n/estadoTensional.en.js
   var estadoTensional_en_default = {
-    "menu.estadoTensional": "Stress state",
-    "est.subtitulo": "Strains and stresses of the section in service, given the state in forces or in strains",
+    "menu.estadoTensional": "Stress analysis",
+    "est.subtitulo": "Strains and stresses of the section at SLS or ULS, given the state in forces or in strains",
     "est.modo": "State data",
-    "est.gEsfuerzos": "Service forces",
+    "est.gEsfuerzos": "Forces",
     "est.gPlano": "Strain plane",
     "est.nombreN": "Axial force",
     "est.nombreMx": "Moment about the horizontal axis",
@@ -5883,9 +5907,9 @@ tr.et-act td { font-weight: 650; }
     "est.infoSup": "\u03B5_sup is the strain of the most compressed fibre, \u03B2 the angle (counter-clockwise from +x) of the neutral axis (\u03B2 = 0: horizontal neutral axis, top face compressed) and x the neutral axis depth measured from it. x = \u221E is uniform compression. If the whole section is in tension, x and \u03B5_sup are negative.",
     "est.refX": "\u2265 100 000 mm: uniform compression",
     "est.tensiones": "STRESSES",
-    "est.gHormigon": "Concrete in service",
-    "est.gAcero": "Steel in service",
-    "est.gammaS": "\u03B3<sub>S</sub> [\u2014]",
+    "est.gHormigon": "Concrete",
+    "est.gAcero": "Steel",
+    "est.gammaS": "\u03B3<sub>S</sub>",
     "est.infoGammaS": "Steel: the law of its material (bilinear) is used, with its \u03B3S. With \u03B3S = 1.00 the plateau is f_yk; with the design value, f_yk/\u03B3S. It starts from the \u03B3S of the section material.",
     "est.avPlast": "The reinforcement has reached the plateau of its law (it yields): this is not a service state.",
     "est.avEud": "The reinforcement exceeds the ultimate strain of its law (stress is zero there): this is not a service state.",
@@ -5922,7 +5946,23 @@ tr.et-act td { font-weight: 650; }
     "est.der": "right",
     "est.p.estado": "Section state in service",
     "est.p.estadoSub": "Computed with the uncracked section and, if tension exceeds f_ctm, with no tensile strength.",
-    "p.estadoTensional": "SLS stress state"
+    "p.estadoTensional": "Stress analysis SLS ULS",
+    "est.estadoLimite": "Limit state",
+    "est.gLimites": "State limits",
+    "est.kc": "k<sub>c</sub>",
+    "est.ks": "k<sub>s</sub>",
+    "est.infoKc": "Service compression limit of the concrete as a fraction of f_ck (0.60 by default, EC-2 7.2(2)). Converted to strain with the concrete law.",
+    "est.infoKs": "Service tension limit of the steel as a fraction of f_yk (0.80 by default, EC-2 7.2(5); 1.00 if the tension comes from an imposed deformation). Converted to strain with the steel law.",
+    "est.infoDist": (v2, e2) => `Different from ${v2}, the expected value at ${e2}. The value you entered is used; the material law is not changed.`,
+    "est.leyNo.hormigon": "This module only supports concrete with parabola-rectangle or Sargin laws: with another law it does not calculate (not implemented yet).",
+    "est.leyNo.acero": "This module only supports steel with a bilinear law: with another law it does not calculate (not implemented yet).",
+    "est.fuera.hormigon": (e2, d) => `Outside ${e2}: the most compressed fibre exceeds the concrete strain limit by ${d} \u2030.`,
+    "est.fuera.acero": (e2, d) => `Outside ${e2}: the reinforcement exceeds the steel strain limit by ${d} \u2030.`,
+    "est.fuera.pivote": (e2, d) => `Outside ${e2}: the plane exceeds pivot C (peak concrete strain) by ${d} \u2030.`,
+    "est.ec2.titulo": "Service stress limits (EC-2, 7.2)",
+    "est.ec2.c": "<b>7.2(2)</b> To avoid longitudinal cracks, microcracking and high creep, concrete compression is limited to k<sub>1</sub>\xB7f<sub>ck</sub> (k<sub>1</sub> = 0.60 recommended) in exposure classes XD, XF and XS.",
+    "est.ec2.k": "<b>7.2(3)</b> If the concrete stress under quasi-permanent loads is below k<sub>2</sub>\xB7f<sub>ck</sub> (0.45), creep is linear and the coefficient \u03C6 may be accepted. With \u03B1<sub>cc</sub> = 1 and \u03B3<sub>C</sub> = 1 this module works with the characteristic value.",
+    "est.ec2.s": "<b>7.2(5)</b> The tensile stress in the reinforcement under the characteristic combination is limited to k<sub>3</sub>\xB7f<sub>yk</sub> (0.80); if the tension comes from an imposed deformation, to k<sub>4</sub>\xB7f<sub>yk</sub> (1.00)."
   };
 
   // src/i18n/rasante.es.js
@@ -7679,9 +7719,9 @@ tr.et-act td { font-weight: 650; }
   }
   function retraccion2023({ fck, HR, h0, t: t2 = Infinity, ts = 1, cemento = "N" }) {
     const fcm = fck + 8;
-    const [abs, ads] = AB_AD[cemento];
+    const [abs2, ads] = AB_AD[cemento];
     if (esFin(t2)) t2 = T_FINAL_2023;
-    const eBs = abs * Math.pow(fcm / (60 + fcm), 2.5) * 1e-6;
+    const eBs = abs2 * Math.pow(fcm / (60 + fcm), 2.5) * 1e-6;
     const bBs = 1 - Math.exp(-0.2 * Math.sqrt(t2));
     const eDs = (220 + 110 * ads) * Math.exp(-0.012 * fcm) * 1e-6;
     const RHeq = Math.min(99 * Math.pow(35 / fcm, 0.1), 99);
@@ -12619,14 +12659,14 @@ tr.et-act td { font-weight: 650; }
     out.push(`<text class="fuerte" x="${x0 + bp + 16}" y="${(Y(0) + yx) / 2 + 4}">x = ${fmt(r.x * 1e3, 0)}</text>`);
     const e0 = Math.max(x0 + bp + 130, 400);
     const ke = 58 / Math.max(-r.epsSup, r.epsInf, 1e-3);
-    const eps2 = (y) => r.epsSup + r.kappa * y;
+    const eps3 = (y) => r.epsSup + r.kappa * y;
     const X1 = (v2) => e0 + v2 * ke;
     const xn = Math.min(Math.max(r.x, 0), d.h);
     out.push(`<text class="tit" x="${e0 - 58}" y="22">${t("tit.def")}</text>`);
     out.push(`<line class="ref" x1="${e0}" y1="${y0 - 6}" x2="${e0}" y2="${y0 + hp + 6}"/>`);
-    out.push(`<polygon class="eps-c" points="${e0},${Y(0)} ${X1(eps2(0))},${Y(0)} ${e0},${Y(xn)}"/>`);
-    out.push(`<polygon class="eps-t" points="${e0},${Y(xn)} ${X1(eps2(d.h))},${Y(d.h)} ${e0},${Y(d.h)}"/>`);
-    out.push(`<text x="${X1(eps2(0)) - 4}" y="${yTop}">\u03B5<tspan baseline-shift="sub" font-size="75%">c</tspan> = ${fmt(-r.epsSup * 1e3, 2)}</text>`);
+    out.push(`<polygon class="eps-c" points="${e0},${Y(0)} ${X1(eps3(0))},${Y(0)} ${e0},${Y(xn)}"/>`);
+    out.push(`<polygon class="eps-t" points="${e0},${Y(xn)} ${X1(eps3(d.h))},${Y(d.h)} ${e0},${Y(d.h)}"/>`);
+    out.push(`<text x="${X1(eps3(0)) - 4}" y="${yTop}">\u03B5<tspan baseline-shift="sub" font-size="75%">c</tspan> = ${fmt(-r.epsSup * 1e3, 2)}</text>`);
     const ys1 = Y(d.h - d.rinf);
     out.push(`<line class="ref" x1="${x0 + bp}" y1="${ys1}" x2="${X1(r.epsAinf)}" y2="${ys1}" stroke-dasharray="2 3"/><circle cx="${X1(r.epsAinf)}" cy="${ys1}" r="3" class="barra-ac"/>`);
     out.push(`<text class="fuerte" x="${X1(r.epsAinf) + 7}" y="${ys1 + 4}">\u03B5<tspan baseline-shift="sub" font-size="75%">s1</tspan> = ${fmt(r.epsAinf * 1e3, 2)}</text>`);
@@ -12704,9 +12744,9 @@ tr.et-act td { font-weight: 650; }
     const { Ncomp, Ntrac } = axilesLimite(sec);
     const rama = (signo) => {
       const [lo, hi] = intervaloEpsSup(sec, 0);
-      const extremo = (eps2) => {
-        const r = esfuerzos(sec, eps2, 0, yref);
-        return { N: -r.N, M: r.M, x: eps2 < 0 ? Infinity : -Infinity, epsSup: eps2, epsInf: eps2, kappa: 0 };
+      const extremo = (eps3) => {
+        const r = esfuerzos(sec, eps3, 0, yref);
+        return { N: -r.N, M: r.M, x: eps3 < 0 ? Infinity : -Infinity, epsSup: eps3, epsInf: eps3, kappa: 0 };
       };
       const pts = [extremo(lo)];
       for (let i = 1; i < n; i++) {
@@ -13123,7 +13163,7 @@ tr.et-act td { font-weight: 650; }
     const xn = Number.isFinite(e2.x) ? Math.min(Math.max(e2.x, 0), geo.h) : 0;
     const { svg, hp, bp } = capasSeccion(geo, s, { e: em, x0, y0, x: e2.x > 0 ? e2.x : null, id: "fcr", cotasCapas: false });
     const Y = (y) => y0 + y * em.s;
-    const eps2 = (y) => e2.epsSup + e2.kappa * y;
+    const eps3 = (y) => e2.epsSup + e2.kappa * y;
     const out = [DEFS, svg];
     out.push(`<text class="tit" x="${x0}" y="22">${t("tit.sec")}</text>`);
     if (e2.x > 0 && e2.x < geo.h) {
@@ -13132,18 +13172,18 @@ tr.et-act td { font-weight: 650; }
       out.push(`<text class="fuerte" x="${x0 + bp + 16}" y="${(Y(0) + Y(xn)) / 2 + 4}">x = ${fmt(e2.x * 1e3, 0)}</text>`);
     }
     const e0 = x0 + bp + 110;
-    const emax = Math.max(Math.abs(eps2(0)), Math.abs(eps2(geo.h)), 1e-3);
+    const emax = Math.max(Math.abs(eps3(0)), Math.abs(eps3(geo.h)), 1e-3);
     const ke = 58 / emax;
     const X1 = (v2) => e0 + v2 * ke;
     out.push(`<text class="tit" style="text-transform:none" x="${e0 - 58}" y="22">\u03B5 [\u2030]</text>`);
     out.push(`<line class="ref" x1="${e0}" y1="${y0 - 6}" x2="${e0}" y2="${y0 + hp + 6}"/>`);
-    const poli = (cl3, y1, y2) => `<polygon class="${cl3}" points="${e0},${Y(y1)} ${X1(eps2(y1))},${Y(y1)} ${X1(eps2(y2))},${Y(y2)} ${e0},${Y(y2)}"/>`;
+    const poli = (cl3, y1, y2) => `<polygon class="${cl3}" points="${e0},${Y(y1)} ${X1(eps3(y1))},${Y(y1)} ${X1(eps3(y2))},${Y(y2)} ${e0},${Y(y2)}"/>`;
     if (e2.x > 0 && e2.x < geo.h) {
-      out.push(`<polygon class="eps-c" points="${e0},${Y(0)} ${X1(eps2(0))},${Y(0)} ${e0},${Y(xn)}"/>`);
-      out.push(`<polygon class="eps-t" points="${e0},${Y(xn)} ${X1(eps2(geo.h))},${Y(geo.h)} ${e0},${Y(geo.h)}"/>`);
+      out.push(`<polygon class="eps-c" points="${e0},${Y(0)} ${X1(eps3(0))},${Y(0)} ${e0},${Y(xn)}"/>`);
+      out.push(`<polygon class="eps-t" points="${e0},${Y(xn)} ${X1(eps3(geo.h))},${Y(geo.h)} ${e0},${Y(geo.h)}"/>`);
     } else out.push(poli(e2.x >= geo.h || e2.epsSup < 0 && e2.epsInf < 0 ? "eps-c" : "eps-t", 0, geo.h));
-    out.push(`<text x="${X1(eps2(0)) - 4}" y="${y0 - 8}">\u03B5<tspan baseline-shift="sub" font-size="75%">sup</tspan> = ${fmt(-eps2(0) * 1e3, 2)}</text>`);
-    out.push(`<text x="${X1(eps2(geo.h)) - 4}" y="${y0 + hp + 18}">\u03B5<tspan baseline-shift="sub" font-size="75%">inf</tspan> = ${fmt(-eps2(geo.h) * 1e3, 2)}</text>`);
+    out.push(`<text x="${X1(eps3(0)) - 4}" y="${y0 - 8}">\u03B5<tspan baseline-shift="sub" font-size="75%">sup</tspan> = ${fmt(-eps3(0) * 1e3, 2)}</text>`);
+    out.push(`<text x="${X1(eps3(geo.h)) - 4}" y="${y0 + hp + 18}">\u03B5<tspan baseline-shift="sub" font-size="75%">inf</tspan> = ${fmt(-eps3(geo.h) * 1e3, 2)}</text>`);
     const t0 = e0 + 185;
     const fcd = Math.max(...matH.comp.map((v2) => -v2[1]), 1);
     const kc = 64 / fcd;
@@ -13154,7 +13194,7 @@ tr.et-act td { font-weight: 650; }
     const n = 40;
     for (let i = 0; i <= n; i++) {
       const y = geo.h * i / n;
-      const sg = sigma(matH, eps2(y));
+      const sg = sigma(matH, eps3(y));
       if (sg < 0) {
         pts.push(`${t0 + sg * kc},${Y(y)}`);
         ys.push(y);
@@ -13165,7 +13205,7 @@ tr.et-act td { font-weight: 650; }
     if (matA) {
       const fy = Math.max(...matA.tracc.map((v2) => v2[1]), 1);
       const ks = 46 / fy;
-      const barras = sec.barras.map((b) => ({ y: b.y, sg: sigma(matA, eps2(b.y)), A: b.A }));
+      const barras = sec.barras.map((b) => ({ y: b.y, sg: sigma(matA, eps3(b.y)), A: b.A }));
       const extremas = [barras.reduce((a, b) => b.y < a.y ? b : a), barras.reduce((a, b) => b.y > a.y ? b : a)];
       for (const b of barras) out.push(`<line class="flecha" x1="${t0}" y1="${Y(b.y)}" x2="${t0 + b.sg * ks}" y2="${Y(b.y)}" marker-end="url(#pta)"/>`);
       for (const b of extremas) out.push(`<text class="fuerte" x="${t0 + 52}" y="${Y(b.y) + (b === extremas[0] ? -4 : 14)}">\u03C3<tspan baseline-shift="sub" font-size="75%">s</tspan> = ${fmt(-b.sg / 1e3, 1)}${ESP}MPa</text>`);
@@ -13249,7 +13289,7 @@ tr.et-act td { font-weight: 650; }
   }
   function esfuerzosPlano(m, theta, eps0, kappa) {
     const g = giro(m, theta);
-    const eps2 = (t2) => eps0 + kappa * t2;
+    const eps3 = (t2) => eps0 + kappa * t2;
     let F2 = 0;
     let Fy = 0;
     let Fx = 0;
@@ -13273,7 +13313,7 @@ tr.et-act td { font-weight: 650; }
       const half = (b - a) / 2;
       for (const [xi, w] of GL2) {
         const t2 = mid + half * xi;
-        const f = -sigma(m.hormigon, eps2(t2));
+        const f = -sigma(m.hormigon, eps3(t2));
         if (f === 0) continue;
         const p0 = g.smax - t2;
         let ancho = 0;
@@ -13296,7 +13336,7 @@ tr.et-act td { font-weight: 650; }
     }
     for (const p of m.puntos) {
       const t2 = g.smax - (g.ux * p.x + g.uy * p.y);
-      const f = -sigma(m.acero, eps2(t2));
+      const f = -sigma(m.acero, eps3(t2));
       F2 += f * p.A;
       Fx += f * p.A * p.x;
       Fy += f * p.A * p.y;
@@ -13428,7 +13468,7 @@ tr.et-act td { font-weight: 650; }
   }
   function crucesNivel(S, i, fijo, M0) {
     const F2 = fijo === "Mx" ? S.Mx[i] : S.My[i];
-    const V = fijo === "Mx" ? S.My[i] : S.Mx[i];
+    const V2 = fijo === "Mx" ? S.My[i] : S.Mx[i];
     const nT = F2.length;
     const out = [];
     for (let j = 0; j < nT; j++) {
@@ -13438,7 +13478,7 @@ tr.et-act td { font-weight: 650; }
       if (!Number.isFinite(a) || !Number.isFinite(b) || a === 0 && b === 0) continue;
       if (a <= 0 && b > 0 || a >= 0 && b < 0) {
         const t2 = a / (a - b);
-        out.push({ v: V[j] + t2 * (V[k] - V[j]), j, t: t2 });
+        out.push({ v: V2[j] + t2 * (V2[k] - V2[j]), j, t: t2 });
       }
     }
     return out;
@@ -14378,7 +14418,7 @@ tr.et-act td { font-weight: 650; }
     const mI = modeloEsviada(geo, ley.integra, ac);
     const mF = modeloEsviada(geo, ley.fisurada, ac);
     const pts = geo.contornos.flatMap((c) => c.signo > 0 ? c.pts : []);
-    return { ley, acero: ac, mI, mF, xc: mI.xc, yc: mI.yc, vertices: pts, puntos: mI.puntos, Ac: mI.Ac, armadura: { barras: geo.barras, franjas: geo.franjas ?? [] } };
+    return { mat: { hormigon: hormigonMat, acero: aceroMat }, ley, acero: ac, mI, mF, xc: mI.xc, yc: mI.yc, vertices: pts, puntos: mI.puntos, Ac: mI.Ac, armadura: { barras: geo.barras, franjas: geo.franjas ?? [] } };
   }
   function distanciaCdg(mod, bet) {
     const ux = Math.cos(bet);
@@ -14533,6 +14573,75 @@ tr.et-act td { font-weight: 650; }
     };
   }
 
+  // src/core/dominioTensional.js
+  var TOL2 = 1e-9;
+  function leyesNoAdmitidas(hormigonMat, aceroMat) {
+    if (hormigonMat.diag === "puntos") return "hormigon";
+    if (aceroMat.tracc?.length !== 3 || aceroMat.comp?.length !== 3) return "acero";
+    return null;
+  }
+  function primeraEn(pts, T) {
+    for (let i = 1; i < pts.length; i++) {
+      const [e0, s0] = pts[i - 1];
+      const [e1, s1] = pts[i];
+      if (s0 < T && s1 >= T) return e0 + (e1 - e0) * (T - s0) / (s1 - s0);
+    }
+    return null;
+  }
+  var abs = (pts) => pts.map(([e2, s]) => [Math.abs(e2), Math.abs(s)]);
+  function compPropia(ley) {
+    const comp = abs(ley.comp);
+    return ley.diag === "lineal" ? comp : comp.slice(0, -1);
+  }
+  function limitesDe(mod, estado4, { kc = 0.6, ks = 0.8 } = {}) {
+    const comp = compPropia(mod.ley.integra);
+    const ecu = comp[comp.length - 1][0];
+    const accT = abs(mod.acero.tracc);
+    const accC = abs(mod.acero.comp);
+    const euT = accT[accT.length - 1][0];
+    const euC = accC[accC.length - 1][0];
+    if (estado4 === "ELS") {
+      const fck = mod.mat.hormigon.fk;
+      const fyk = mod.mat.acero.fk;
+      const ec = primeraEn(comp, kc * fck) ?? ecu;
+      return {
+        estado: estado4,
+        ec,
+        ecu,
+        esT: primeraEn(accT, ks * fyk) ?? euT,
+        esC: primeraEn(accC, ks * fyk) ?? euC,
+        pivote: null,
+        alcanzaC: primeraEn(comp, kc * fck) !== null
+      };
+    }
+    const smax = Math.max(...comp.map((p) => p[1]));
+    const ec2 = comp.find((p) => p[1] >= smax * (1 - 1e-12))[0];
+    return { estado: estado4, ec: ecu, ecu, esT: euT, esC: euC, pivote: ec2 < ecu * (1 - 1e-9) ? { a: ec2 / ecu, ec2 } : null, alcanzaC: true };
+  }
+  var eps2 = (mod, pl, x, y) => pl.e0 + pl.ky * (x - mod.xc) - pl.kx * (y - mod.yc);
+  function admisible(mod, lim, pl) {
+    let holgura = Infinity;
+    let limita = null;
+    const mira = (h2, q2) => {
+      if (h2 < holgura) {
+        holgura = h2;
+        limita = q2;
+      }
+    };
+    const es = mod.vertices.map(([x, y]) => eps2(mod, pl, x, y));
+    const eSup = Math.max(...es);
+    const eInf = Math.min(...es);
+    mira(lim.ec - eSup, "hormigon");
+    if (lim.pivote) mira(lim.pivote.ec2 - (lim.pivote.a * eSup + (1 - lim.pivote.a) * eInf), "pivote");
+    const puntos = [...mod.armadura.barras.map((b) => [b.x, b.y]), ...mod.armadura.franjas.flatMap((f) => [[f.x1, f.y], [f.x2, f.y]])];
+    for (const [x, y] of puntos) {
+      const e2 = eps2(mod, pl, x, y);
+      mira(lim.esC - e2, "acero");
+      mira(lim.esT + e2, "acero");
+    }
+    return { ok: holgura >= -TOL2, holgura, limita };
+  }
+
   // src/ui/vistas/estadoTensional.js
   var FORMAS4 = ["rectangular", "pilar", "T", "circular", "generica"];
   var X_INF = 100;
@@ -14555,13 +14664,16 @@ tr.et-act td { font-weight: 650; }
     beta: 0,
     x: Infinity,
     // absoluta, grados (de la fibra neutra), m
-    gammaC: null,
-    alfaCC: null,
-    gammaS: null,
-    phi: 0,
-    lineal: false,
+    estado: "ELS",
+    // Cada estado límite guarda sus propios datos; ninguno se traduce al otro (null = el valor de la ley del material).
+    // ELS: γ = 1 y αcc = 1 (sin cansancio con σc ≤ 0,6·fck); ELU: los de la ley.
+    v: {
+      ELS: { gammaC: 1, alfaCC: 1, gammaS: 1, phi: 0, lineal: false, kc: 0.6, ks: 0.8 },
+      ELU: { gammaC: null, alfaCC: null, gammaS: null, phi: 0, lineal: false, kc: 0.6, ks: 0.8 }
+    },
     ultimo: null
   };
+  var V = () => est7.v[est7.estado];
   function reiniciar7() {
     est7.i = null;
     est7.para = null;
@@ -14579,12 +14691,23 @@ tr.et-act td { font-weight: 650; }
     const mats = materialesSeccion(p, s);
     const fck = mats.hormigon.fk / 1e3;
     const prop = propiedadesHormigon(fck, p.norma, opcionesHormigon(mats.fichaH, p.norma));
-    const gammaC = est7.gammaC ?? prop.gammaC;
-    const alfaCC = est7.alfaCC ?? prop.alfa;
-    const gammaS = est7.gammaS ?? mats.acero.gamma;
-    const clave = JSON.stringify([p.norma, s.geo, s.armado, s.hormigon, s.acero, gammaC, alfaCC, gammaS, est7.phi, est7.lineal]);
+    const no = leyesNoAdmitidas(mats.hormigon, mats.acero);
+    if (no) throw new Error(t(`est.leyNo.${no}`));
+    const u = V();
+    const gammaC = u.gammaC ?? prop.gammaC;
+    const alfaCC = u.alfaCC ?? prop.alfa;
+    const gammaS = u.gammaS ?? mats.acero.gamma;
+    const els = est7.estado === "ELS";
+    const phi = els ? u.phi : 0;
+    const lineal2 = els && u.lineal;
+    const clave = JSON.stringify([p.norma, s.geo, s.armado, s.hormigon, s.acero, est7.estado, gammaC, alfaCC, gammaS, phi, lineal2, u.kc, u.ks]);
     if (memo3.clave === clave) return memo3.c;
-    const mod = modeloTensional(geo, mats.hormigon, mats.acero, { gammaC, alfaCC, gammaS, phi: est7.phi, lineal: est7.lineal, fctm: prop.fctm });
+    const mod = modeloTensional(geo, mats.hormigon, mats.acero, { gammaC, alfaCC, gammaS, phi, lineal: lineal2, fctm: prop.fctm });
+    const lim = limitesDe(mod, est7.estado, { kc: u.kc, ks: u.ks });
+    const norm = propiedadesHormigon(fck, p.norma, {});
+    const normaGammaS = normaMat(p.norma).gammaS;
+    const mc = els ? 0.6 : 1;
+    const ms = els ? 0.8 : 1;
     const caja = geo.caja;
     const bx = caja.xmax - caja.xmin;
     const hy = caja.ymax - caja.ymin;
@@ -14602,16 +14725,19 @@ tr.et-act td { font-weight: 650; }
       fck,
       bx,
       hy,
-      // Recorrido de las regletas: del orden de lo que resiste la sección en servicio (0,6·fck; 0,8·fyk)
+      lim,
+      els,
+      esperado: els ? { gammaC: 1, alfaCC: 1, gammaS: 1 } : { gammaC: norm.gammaC, alfaCC: norm.alfa, gammaS: normaGammaS },
+      // Recorrido de las regletas: del orden de lo que resiste la sección (ELS: 0,6·fck y 0,8·fyk; ELU: fck y fyk)
       rg: {
-        N: [Math.round(-0.8 * fyk * As * 1e3 / 10) * 10 || -100, Math.round(0.6 * fck * Ac * 1e3 / 10) * 10],
-        Mx: Math.ceil(0.6 * fck * 1e3 * (Ac * hy) / 6 / 10) * 10 || 100,
-        My: Math.ceil(0.6 * fck * 1e3 * (Ac * bx) / 6 / 10) * 10 || 100,
+        N: [Math.round(-ms * fyk * As * 1e3 / 10) * 10 || -100, Math.round(mc * fck * Ac * 1e3 / 10) * 10],
+        Mx: Math.ceil(mc * fck * 1e3 * (Ac * hy) / 6 / 10) * 10 || 100,
+        My: Math.ceil(mc * fck * 1e3 * (Ac * bx) / 6 / 10) * 10 || 100,
         kx: 8e-3 / hy,
         ky: 8e-3 / bx
         // 8 ‰ de deformación a lo largo del canto, no más
       },
-      lector: leyDe(mats.hormigon, est7.lineal)
+      lector: leyDe(mats.hormigon, lineal2)
     };
     memo3 = { clave, c };
     return c;
@@ -14699,12 +14825,26 @@ tr.et-act td { font-weight: 650; }
         num4("x", "x", "x", "long", { paso: 0.01, nombre: t("est.nombreX"), ref: t("est.refX") })
       ]
     };
-    const gamma = (id, etq, k, defecto) => campoNum({ id: `et-${id}`, etq, valor: fmt(est7[k] ?? defecto, 2), mag: null, paso: 0.05, min: 0.01, max: 10, sinUd: true, nombre: etq.replace(/<[^>]+>/g, ""), info: id === "gc" ? t("est.infoGamma") : id === "gs" ? t("est.infoGammaS") : void 0, onCambio: (v2) => {
-      est7[k] = v2;
-      ctx2.pintar();
-    } });
+    const gamma = (id, etq, k, defecto) => {
+      const valor = V()[k] ?? defecto;
+      const dist = c && Math.abs(valor - c.esperado[k]) > 1e-9;
+      const info2 = dist ? t("est.infoDist", fmt(c.esperado[k], 2), est7.estado) : id === "gc" ? t("est.infoGamma") : id === "gs" ? t("est.infoGammaS") : void 0;
+      const e2 = campoNum({ id: `et-${id}`, etq, valor: fmt(valor, 2), mag: null, paso: 0.05, min: 0.01, max: 10, sinUd: true, nombre: etq.replace(/<[^>]+>/g, ""), info: info2, onCambio: (v2) => {
+        V()[k] = v2;
+        ctx2.pintar();
+      } });
+      e2.classList.toggle("disc", !!dist);
+      return e2;
+    };
+    const els = est7.estado === "ELS";
+    const lim = c?.lim;
+    const limTxt = lim ? els ? `${sub23("\u03B5", "c,l\xEDm")} ${fmt(lim.ec * 1e3, 2)} \u2030 \xB7 ${sub23("\u03B5", "s,l\xEDm")} ${fmt(lim.esT * 1e3, 2)} \u2030` : `${sub23("\u03B5", "cu")} ${fmt(lim.ecu * 1e3, 2)} \u2030 \xB7 ${sub23("\u03B5", "c2")} ${fmt((lim.pivote?.ec2 ?? lim.ecu) * 1e3, 2)} \u2030 \xB7 ${sub23("\u03B5", "ud")} ${fmt(lim.esT * 1e3, 2)} \u2030` : "";
     poner(
       form,
+      segmentado({ ancho: true, capsula: true, etiqueta: t("est.estadoLimite"), opciones: [["ELS", "ELS"], ["ELU", "ELU"]], valor: est7.estado, onCambio: (m) => {
+        est7.estado = m;
+        ctx2.pintar();
+      } }),
       segmentado({ ancho: true, capsula: true, etiqueta: t("est.modo"), opciones: [["NM", t("est.m.NM")], ["eK", t("est.m.eK")], ["sup", t("est.m.sup")]], valor: est7.modo, onCambio: (m) => {
         est7.modo = m;
         ctx2.pintar();
@@ -14712,24 +14852,43 @@ tr.et-act td { font-weight: 650; }
       grupo(est7.modo === "NM" ? t("est.gEsfuerzos") : t("est.gPlano"), ...campos[est7.modo]),
       grupo(
         t("est.gHormigon"),
-        c ? gamma("gc", t("est.gammaC"), "gammaC", c.gammaC) : null,
-        c ? gamma("ac", t("est.alfaCC"), "alfaCC", c.alfaCC) : null,
-        campoNum({ id: "et-phi", etq: t("est.phi"), valor: fmt(est7.phi, 2), mag: null, paso: 0.1, min: 0, max: 10, sinUd: true, info: t("est.infoPhi"), onCambio: (v2) => {
-          est7.phi = v2;
+        h("div", { class: "fila-campos et-fc" }, c ? gamma("gc", t("est.gammaC"), "gammaC", c.gammaC) : null, c ? gamma("ac", t("est.alfaCC"), "alfaCC", c.alfaCC) : null),
+        els ? h(
+          "div",
+          { class: "fila-campos et-fc" },
+          campoNum({ id: "et-phi", etq: t("est.phi"), valor: fmt(V().phi, 2), mag: null, paso: 0.1, min: 0, max: 10, sinUd: true, info: t("est.infoPhi"), onCambio: (v2) => {
+            V().phi = v2;
+            ctx2.pintar();
+          } }),
+          campoNum({ id: "et-kc", etq: t("est.kc"), valor: fmt(V().kc, 2), mag: null, paso: 0.05, min: 0.05, max: 1, sinUd: true, info: t("est.infoKc"), onCambio: (v2) => {
+            V().kc = v2;
+            ctx2.pintar();
+          } })
+        ) : null,
+        els ? h("label", { class: "tick" }, h("input", { type: "checkbox", id: "et-lineal", checked: V().lineal, onchange: (e2) => {
+          V().lineal = e2.target.checked;
           ctx2.pintar();
-        } }),
-        h("label", { class: "tick" }, h("input", { type: "checkbox", id: "et-lineal", checked: est7.lineal, onchange: (e2) => {
-          est7.lineal = e2.target.checked;
-          ctx2.pintar();
-        } }), h("span", { html: t("est.lineal") })),
-        c ? h(
+        } }), h("span", { html: t("est.lineal") })) : null,
+        c && els ? h(
           "div",
           { class: "et-der" },
           h("span", {}, "E", h("sub", {}, "c,eff"), ` ${fmt(c.mod.ley.pendiente / 1e3, 0)} MPa`),
           h("span", {}, `n = ${fmt(c.mod.acero.E / c.mod.ley.pendiente, 1)}`)
         ) : null
       ),
-      grupo(t("est.gAcero"), c ? gamma("gs", t("est.gammaS"), "gammaS", c.gammaS) : null)
+      grupo(
+        t("est.gAcero"),
+        h(
+          "div",
+          { class: "fila-campos et-fc" },
+          c ? gamma("gs", t("est.gammaS"), "gammaS", c.gammaS) : null,
+          els ? campoNum({ id: "et-ks", etq: t("est.ks"), valor: fmt(V().ks, 2), mag: null, paso: 0.05, min: 0.05, max: 1.5, sinUd: true, info: t("est.infoKs"), onCambio: (v2) => {
+            V().ks = v2;
+            ctx2.pintar();
+          } }) : null
+        ),
+        c ? h("div", { class: "et-der", html: limTxt }) : null
+      )
     );
   }
   function recorta(pts, f) {
@@ -14773,11 +14932,11 @@ tr.et-act td { font-weight: 650; }
     const smax = Math.max(...vs.map(prof));
     const smin = Math.min(...vs.map(prof));
     const lmax = Math.max(...vs.map(lat));
-    const eps2 = (p) => r.e0 + r.ky * (p[0] - xc) - r.kx * (p[1] - yc);
+    const eps3 = (p) => r.e0 + r.ky * (p[0] - xc) - r.kx * (p[1] - yc);
     const out = ['<defs><pattern id="rayado" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)" class="rayas"><line x1="0" y1="0" x2="0" y2="6"/></pattern><pattern id="rayado-t" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)" class="rayas-t"><line x1="0" y1="0" x2="0" y2="5"/></pattern><marker id="tic" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M2 8L8 2" class="tic"/></marker></defs>'];
     for (const k of geo.contornos.filter((q2) => q2.signo > 0)) {
       out.push(`<polygon class="hor" points="${pts2(k.pts.map(T))}"/>`);
-      const zc = r.beta === null ? r.eSup > 0 ? k.pts : [] : recorta(k.pts, eps2);
+      const zc = r.beta === null ? r.eSup > 0 ? k.pts : [] : recorta(k.pts, eps3);
       if (zc.length > 2) out.push(`<polygon class="zc" points="${pts2(zc.map(T))}"/>`);
     }
     for (const k of geo.contornos.filter((q2) => q2.signo < 0)) out.push(`<polygon class="tapa" points="${pts2(k.pts.map(T))}"/><polygon class="corte" points="${pts2(k.pts.map(T))}"/>`);
@@ -14951,6 +15110,14 @@ tr.et-act td { font-weight: 650; }
     const ley = t(`est.ley.${c.lector}`);
     return veredicto(r.fisurada ? "atencion" : "neutro", sello, t("est.sigmaC"), qh(r.sigmaMax, "tension"), `${ley} \xB7 n = ${fmt(r.n, 1)}`);
   }
+  function notaEC2() {
+    return h(
+      "details",
+      { class: "pleg pleg-amb" },
+      h("summary", {}, t("est.ec2.titulo")),
+      h("div", { class: "cuenta" }, ...["est.ec2.c", "est.ec2.s", "est.ec2.k"].map((k) => h("p", { class: "nota", html: t(k) })))
+    );
+  }
   function resultados11(ctx2, res) {
     const p = ctx2.p;
     const s = activa3(p);
@@ -14962,11 +15129,11 @@ tr.et-act td { font-weight: 650; }
     const nombre = s.nombre;
     const ver = pastilla(c, r);
     res.append(ver);
-    if (c.mod.ley.avisos.includes("PR")) res.append(aviso(t("est.avPR")));
+    if (c.els && c.mod.ley.avisos.includes("PR")) res.append(aviso(t("est.avPR")));
     if (c.mod.ley.avisos.includes("lineal")) res.append(aviso(t("est.avLineal")));
-    if (r.avisos.includes("eps-cu")) res.append(aviso(t("est.avEpsCu")));
-    if (r.avisos.includes("acero-plast")) res.append(aviso(t("est.avPlast")));
-    if (r.avisos.includes("acero-eud")) res.append(aviso(t("est.avEud")));
+    const dom = admisible(c.mod, c.lim, r.plano);
+    if (!dom.ok) res.append(aviso(t(`est.fuera.${dom.limita}`, est7.estado, fmt(-dom.holgura * 1e3, 2)), "error"));
+    if (c.els) res.append(notaEC2());
     const lienzo = h("div", { class: "lienzo et-lienzo", html: dibujo(c, r) });
     const derecha = h("article", { class: "panel tarjeta et-der-card" });
     const llena = (rr) => derecha.replaceChildren(tablaEstado(rr), h("h3", {}, t("est.tFibras")), tablaFibras(rr), tablaBarras(ctx2, rr));
@@ -18534,10 +18701,10 @@ tr.et-act td { font-weight: 650; }
     const N = 2e3;
     let ant = s.VRdc;
     for (let i = 1; i <= N; i++) {
-      const V = s.VRdc + (tope - s.VRdc) * i / N;
-      if (V > VRdcs(P, s, fiW, Vw, V).VRdcs) {
+      const V2 = s.VRdc + (tope - s.VRdc) * i / N;
+      if (V2 > VRdcs(P, s, fiW, Vw, V2).VRdcs) {
         let lo = ant;
-        let hi = V;
+        let hi = V2;
         for (let k = 0; k < 60; k++) {
           const m = (lo + hi) / 2;
           if (m <= VRdcs(P, s, fiW, Vw, m).VRdcs) lo = m;
@@ -18545,7 +18712,7 @@ tr.et-act td { font-weight: 650; }
         }
         return { V: lo, manda: "cercos" };
       }
-      ant = V;
+      ant = V2;
     }
     return { V: tope, manda: "biela" };
   }
@@ -19234,7 +19401,7 @@ tr.et-act td { font-weight: 650; }
     const ctrl = e23 ? 0.5 * d : 2 * d;
     const dl = r.deltaUltimo;
     const kd = e23 ? 0.5 * r.dvOut : 2 * d;
-    const V = D.VEd;
+    const V2 = D.VEd;
     const uCara = e23 ? r.u.b0 : r.u.u0;
     const uCtrl = e23 ? r.u.b05 : r.u.u1;
     const capCtrl = e23 ? r.VRdcs / r.beta : r.Vcs;
@@ -19242,11 +19409,11 @@ tr.et-act td { font-weight: 650; }
     const uReq = e23 ? r.b05out : r.uOutReq ?? r.unReq;
     const nombre = (a, b) => `${sub28(a, b)}`;
     const filas = [
-      [t("pun.crit.cara"), "0", fmt(uCara, 0), `${kN(V)} \u2264 ${kN(r.Vmax)} kN ${ok(V <= r.Vmax + 1e-9)}`],
-      [t("pun.crit.ctrl", e23 ? nombre("b", "0,5") : nombre("u", "1")), fmt(ctrl, 0), fmt(uCtrl, 0), `${kN(V)} \u2264 ${kN(capCtrl)} kN ${ok(V <= capCtrl + 1e-9)}`],
+      [t("pun.crit.cara"), "0", fmt(uCara, 0), `${kN(V2)} \u2264 ${kN(r.Vmax)} kN ${ok(V2 <= r.Vmax + 1e-9)}`],
+      [t("pun.crit.ctrl", e23 ? nombre("b", "0,5") : nombre("u", "1")), fmt(ctrl, 0), fmt(uCtrl, 0), `${kN(V2)} \u2264 ${kN(capCtrl)} kN ${ok(V2 <= capCtrl + 1e-9)}`],
       [t("pun.crit.ext", e23 ? nombre("b", "0,5,out") : ec ? nombre("u", "out,ef") : nombre("u", "n,ef")), fmt(dl + kd, 0), fmt(uProv, 0), `${fmt(uProv, 0)} \u2265 ${fmt(uReq, 0)} mm ${ok(uProv >= uReq - 1e-6)}`]
     ];
-    const usos = [V / r.Vmax, V / capCtrl, Number.isFinite(uReq) && uProv > 0 ? uReq / uProv : 0];
+    const usos = [V2 / r.Vmax, V2 / capCtrl, Number.isFinite(uReq) && uProv > 0 ? uReq / uProv : 0];
     const iMax = usos.indexOf(Math.max(...usos));
     const tabCrit = tabla(filas, { cabecera: [t("pun.crit.t"), t("pun.crit.dist"), t("pun.crit.long"), t("pun.crit.comp")], clase: "rejilla-res" });
     const trM = tabCrit.querySelectorAll("tbody tr")[iMax];
@@ -20551,7 +20718,7 @@ tr.et-act td { font-weight: 650; }
 
   // src/ui/vistas/inestabilidad.js
   var FORMAS7 = ["pilar", "circular"];
-  var TOL2 = 2e-5;
+  var TOL3 = 2e-5;
   var sub31 = (a, b) => `${a}<sub>${b}</sub>`;
   var ind3 = (a, b) => `${a}<tspan class="ind" dy="3">${b}</tspan>`;
   var sigla3 = (g) => g === Infinity ? "\u221E" : fmt(g, 2);
@@ -20633,7 +20800,7 @@ tr.et-act td { font-weight: 650; }
     const gammaDe = (k2, cs = casos[0], dado = null) => {
       const r = calcularInestabilidad(entradaCaso(k2, cs));
       if (!r.valido || !Number.isFinite(r.MEd)) return { r, g: NaN, d: dado };
-      const d = dado ?? diagramaNM(escalarArmadura(sec, k2), { n: est12.modo === "dimensionar" ? 40 : 100, simetrica: true, tol: TOL2 });
+      const d = dado ?? diagramaNM(escalarArmadura(sec, k2), { n: est12.modo === "dimensionar" ? 40 : 100, simetrica: true, tol: TOL3 });
       return { r, g: coeficienteNM(d, r.N, r.MEd), d };
     };
     let k = 1;
@@ -20666,10 +20833,10 @@ tr.et-act td { font-weight: 650; }
     }
     const kk = Number.isFinite(k) ? k : 1;
     const g = gammaDe(kk);
-    const dBase = g.d ?? diagramaNM(escalarArmadura(sec, kk), { n: 100, simetrica: true, tol: TOL2 });
+    const dBase = g.d ?? diagramaNM(escalarArmadura(sec, kk), { n: 100, simetrica: true, tol: TOL3 });
     const res = casos.map((cs, i) => ({ i, ...cs, ...gammaDe(kk, cs, dBase) }));
     const secD = escalarArmadura(sec, kk);
-    const dH = diagramaNM(soloHormigon(sec), { n: 100, simetrica: true, tol: TOL2 });
+    const dH = diagramaNM(soloHormigon(sec), { n: 100, simetrica: true, tol: TOL3 });
     const reducido = g.r.valido && g.r.segundoOrden && dBase ? contornoReducido(entradaCaso(kk, casos[0]), dBase.pos) : null;
     const c = { ...c0, As0, phi0, Amin: cm.A, k, kEstricto, phiEstricto, phiProp, gamma: g.g, r: g.r, d: dBase, dH, secD, reducido, kk, res };
     memo4 = { clave, c };
@@ -21171,27 +21338,27 @@ tr.et-act td { font-weight: 650; }
     for (const c of en) for (const p of c.tipo === "distribuida" ? [c.a, c.b] : [c.a]) xs.add(p);
     const orden = [...xs].sort((p, q2) => p - q2);
     const pts = orden.map((x) => {
-      const [V, M2, T, Y] = en_x(x);
-      return { x, V, M: M2, giro: -T / EI, flecha: -Y / EI };
+      const [V2, M2, T, Y] = en_x(x);
+      return { x, V: V2, M: M2, giro: -T / EI, flecha: -Y / EI };
     });
-    const eps2 = 1e-9 * L;
+    const eps3 = 1e-9 * L;
     const diag = [];
     for (const p of pts) {
-      const a = en_x(Math.max(0, p.x - eps2));
-      const b = en_x(Math.min(L, p.x + eps2));
+      const a = en_x(Math.max(0, p.x - eps3));
+      const b = en_x(Math.min(L, p.x + eps3));
       if (p.x > 0) diag.push({ x: p.x, V: a[0], M: a[1] });
       diag.push({ x: p.x, V: b[0], M: b[1] });
     }
     const renglon = (x, v2) => ({ x, V: v2[0], M: v2[1], giro: -v2[2] / EI, flecha: -v2[3] / EI });
     const tabla3 = [];
     for (const p of pts) {
-      const a = en_x(Math.max(0, p.x - eps2));
-      const b = en_x(Math.min(L, p.x + eps2));
+      const a = en_x(Math.max(0, p.x - eps3));
+      const b = en_x(Math.min(L, p.x + eps3));
       const salta = Math.abs(a[0] - b[0]) > 1e-6 * (1 + Math.abs(a[0])) || Math.abs(a[1] - b[1]) > 1e-6 * (1 + Math.abs(a[1]));
       if (salta && p.x > 0) tabla3.push(renglon(p.x, a));
       tabla3.push(renglon(p.x, salta || p.x === 0 ? b : en_x(p.x)));
     }
-    const fin = en_x(L - eps2);
+    const fin = en_x(L - eps3);
     const RL = -fin[0];
     const reacciones = {
       izq: { R: izq === "libre" ? 0 : R0 + cs.filter((c) => c.tipo === "puntual" && c.a === 0 && izq !== "libre").reduce((s, c) => s + c.P, 0), M: izq === "empotramiento" ? M0 : 0 },
@@ -21643,7 +21810,7 @@ tr.et-act td { font-weight: 650; }
   }
 
   // src/ui/app.js
-  var EMISION = true ? "04.11.26" : (/* @__PURE__ */ new Date()).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "2-digit" }).replace(/\//g, ".");
+  var EMISION = true ? "05.11.26" : (/* @__PURE__ */ new Date()).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "2-digit" }).replace(/\//g, ".");
   function vistaSecciones(m, propia) {
     const fijar = (f) => (...a) => {
       modo(m);
@@ -21655,10 +21822,10 @@ tr.et-act td { font-weight: 650; }
   var VISTAS = { proyecto: proyecto_exports, materiales: materiales_exports, reologicas: reologicas_exports, secciones: vistaSecciones("seccion", true), durabilidad: durabilidad_exports5, diagramas: vistaSecciones("mk", false), vigas1vano: vigas_exports, flexion: flexion_exports, flexRecta: flexRecta_exports, flexEsviada: flexEsviada_exports, estadoTensional: estadoTensional_exports, fuego: fuego_exports, anclaje: anclaje_exports, cortante: cortante_exports, torsion: torsion_exports, punzonamiento: punzonamiento_exports, rasante: rasante_exports, inestabilidad: inestabilidad_exports };
   var MENU = [
     { grupo: "materiales", vistas: ["materiales", "reologicas"] },
-    { grupo: "secciones", vistas: ["secciones", "durabilidad", "diagramas"] },
+    { grupo: "secciones", vistas: ["secciones", "durabilidad", "diagramas", "estadoTensional"] },
     { grupo: "analisis", vistas: ["vigas1vano"] },
     { grupo: "elu", siempre: true, vistas: ["flexion", "flexRecta", "flexEsviada", "|", "cortante", "torsion", "punzonamiento", "anclaje", "rasante", "|", "inestabilidad"] },
-    { grupo: "els", siempre: true, vistas: ["estadoTensional", "flechas"] },
+    { grupo: "els", siempre: true, vistas: ["flechas"] },
     "fuego",
     "bielas",
     "ejecucion",
