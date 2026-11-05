@@ -1197,6 +1197,14 @@ tr.et-act td { font-weight: 650; }
 .an-hint { font-size: 10px; line-height: 1.3; color: var(--tinta-3); }
 .tabla-an th.pos { border-bottom: 1px solid var(--linea-fuerte); }
 .tabla-an .g2 { border-left: 1px solid var(--linea-fuerte); }
+.dib .acef { fill: color-mix(in oklch, var(--traccion) 22%, transparent); stroke: var(--traccion); stroke-width: 1; stroke-dasharray: 3 3; }
+.graf .serie.lim { stroke: var(--tinta); stroke-width: 1.6; stroke-dasharray: none; }
+.graf .punto.lim { stroke: var(--tinta); }
+.datos .campo.apilado > label .info-i { display: inline-block; vertical-align: middle; margin: 0 0 0 4px; }
+.fis-arm { order: 3; display: flex; flex-direction: column; gap: var(--e2); }
+.fis-pie { order: 4; }
+.fis-tabla { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
+.fis-tabla .tabla-scroll { width: 100%; }
 
 /* Análisis tensional: valor distinto del esperado en el estado límite (rojo, con su (i)) y nota de EC-2 con fondo ámbar */
 .campo.disc .caja { border-color: var(--no); background: var(--no-fondo); }
