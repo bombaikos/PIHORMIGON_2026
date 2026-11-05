@@ -20,6 +20,7 @@ export default {
   'ine.f.pilarSup': 'Upper column', 'ine.f.pilarInf': 'Lower column', 'ine.f.viga1': 'Beam 1', 'ine.f.viga2': 'Beam 2',
   'ine.gExtremos': 'Ends', 'ine.vol': 'Cant.', 'ine.volAyuda': 'Cantilever: the beam adds no stiffness to the joint',
   'ine.l': 'span [mm]',
+  'ine.conErrores': 'WITH ERRORS',
   'ine.cumple': 'Complies', 'ine.noCumple': 'Does not comply', 'ine.revisar': 'Review', 'ine.aprov': 'Utilisation',
   'ine.ver.sin': (l, lim) => `λ = ${l} ≤ λlim = ${lim}: the code would allow neglecting second order; it is always computed here so the diagram has no jumps.`,
   'ine.pRes': 'Results', 'ine.pSoporteDib': 'Column', 'ine.pRotura': 'Failure',

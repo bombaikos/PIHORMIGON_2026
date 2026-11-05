@@ -1284,6 +1284,10 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
 .regleta.rg-edit:not(.rg-gauge) { width: 100%; padding: 0 6px; box-sizing: border-box; margin: 1px 0; }
 .dib .eps-p { fill: color-mix(in oklch, var(--compr) 14%, transparent); stroke: var(--tinta); stroke-width: 1.4; }
 .tarjeta .fis-lienzo { flex: 0 0 auto !important; }
+
+/* Cartel «CON ERRORES» en la tarjeta de veredicto de Inestabilidad */
+.veredicto .sellos { display: inline-flex; align-items: center; gap: 10px; justify-self: end; }
+.cartel-error { padding: 5px 12px; border-radius: 6px; background: var(--no); color: #fff; font-weight: 800; font-size: var(--t-m); letter-spacing: .08em; white-space: nowrap; }
 </style>
 
 <header class="barra">
@@ -6639,6 +6643,7 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
     "ine.l": "luz [mm]",
     "ine.psi": "\u03A8",
     // Resultados
+    "ine.conErrores": "CON ERRORES",
     "ine.cumple": "Cumple",
     "ine.noCumple": "No cumple",
     "ine.revisar": "Revisar",
@@ -6751,6 +6756,7 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
     "ine.vol": "Cant.",
     "ine.volAyuda": "Cantilever: the beam adds no stiffness to the joint",
     "ine.l": "span [mm]",
+    "ine.conErrores": "WITH ERRORS",
     "ine.cumple": "Complies",
     "ine.noCumple": "Does not comply",
     "ine.revisar": "Review",
@@ -22437,6 +22443,13 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
         t("ine.ver.con", q(r.M0eq, "M"), q(r.MEd - r.M0eq, "M"), q(r.MEd, "M")),
         Math.min(1 / Math.max(c.gamma, 1e-9) / 1.25, 1)
       ));
+    }
+    const ver = res.querySelector(".veredicto");
+    const sello = ver && ver.querySelector(".sello");
+    if (sello) {
+      const env = h("div", { class: "sellos" }, h("span", { class: "cartel-error", role: "alert", html: t("ine.conErrores") }));
+      sello.replaceWith(env);
+      env.append(sello);
     }
     if (c.As0 * c.k + 1e-12 < c.Amin && c.As0 > 0) res.append(aviso(t("fcr.bajoMin", q(c.As0 * c.k, "As"), q(c.Amin, "As"))));
     if (!(c.As0 > 0)) res.append(aviso(t("ine.av.sinArm")));
