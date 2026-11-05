@@ -24,6 +24,7 @@ export default {
   'ine.b': 'b [mm]', 'ine.h': 'h [mm]', 'ine.l': 'luz [mm]',
   'ine.psi': 'Ψ',
   // Resultados
+  'ine.conErrores': 'CON ERRORES',
   'ine.cumple': 'Cumple', 'ine.noCumple': 'No cumple', 'ine.revisar': 'Revisar', 'ine.aprov': 'Aprovechamiento',
   'ine.ver.sin': (l, lim) => `λ = ${l} ≤ λlim = ${lim}: la norma permitiría despreciar el segundo orden; aquí se calcula siempre, para que el diagrama no tenga saltos.`,
   'ine.ver.con': (m0, m2, med) => `M0 ${m0} + ΔM ${m2} = M_Ed ${med}`,

@@ -1280,3 +1280,7 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
 .regleta.rg-gauge.rg-edit.sin-etq { grid-template-columns: 22px minmax(0, 1fr) 11ch; }
 .et-reglas { width: 100%; }
 .regleta.rg-edit:not(.rg-gauge) { width: 100%; padding: 0 6px; box-sizing: border-box; margin: 1px 0; }
+
+/* Cartel «CON ERRORES» en la tarjeta de veredicto de Inestabilidad */
+.veredicto .sellos { display: inline-flex; align-items: center; gap: 10px; justify-self: end; }
+.cartel-error { padding: 5px 12px; border-radius: 6px; background: var(--no); color: #fff; font-weight: 800; font-size: var(--t-m); letter-spacing: .08em; white-space: nowrap; }

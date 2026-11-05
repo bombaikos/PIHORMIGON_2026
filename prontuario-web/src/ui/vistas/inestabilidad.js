@@ -243,6 +243,14 @@ function resultadosInestabilidad(ctx, res) {
     res.append(veredicto(ok ? 'cumple' : 'nocumple', ok ? t('ine.cumple') : t('ine.noCumple'), 'γ = |OQ|/|OP|', sigla(c.gamma),
       t('ine.ver.con', q(r.M0eq, 'M'), q(r.MEd - r.M0eq, 'M'), q(r.MEd, 'M')), Math.min(1 / Math.max(c.gamma, 1e-9) / 1.25, 1)));
   }
+  // Cartel rojo: el módulo está en revisión por resultados dudosos
+  const ver = res.querySelector('.veredicto');
+  const sello = ver && ver.querySelector('.sello');
+  if (sello) {
+    const env = h('div', { class: 'sellos' }, h('span', { class: 'cartel-error', role: 'alert', html: t('ine.conErrores') }));
+    sello.replaceWith(env);
+    env.append(sello);
+  }
   if (c.As0 * c.k + 1e-12 < c.Amin && c.As0 > 0) res.append(aviso(t('fcr.bajoMin', q(c.As0 * c.k, 'As'), q(c.Amin, 'As'))));
   if (!(c.As0 > 0)) res.append(aviso(t('ine.av.sinArm')));
   for (const a of r.avisos ?? []) res.append(aviso(t(a.clave, ...(a.args ?? []).map((v) => (typeof v === 'number' ? fmt(v, 0) : v))), a.clave === 'ine.av.eMin' ? 'info' : ''));
