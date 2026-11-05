@@ -27,7 +27,7 @@ const RAD = Math.PI / 180;
 const aMotor = (b) => (b + 90) * RAD;
 const deMotor = (rad) => (((rad / RAD - 90) % 360) + 360) % 360;
 const est = {
-  i: null, para: null, modo: 'NM',
+  i: null, para: null, modo: 'eK',
   N: 0, Mx: 0, My: 0, // kN, kN·m
   e0: 0, kx: 0, ky: 0, // absoluta, 1/m
   eSup: 0, beta: 0, x: Infinity, // absoluta, grados (de la fibra neutra), m
