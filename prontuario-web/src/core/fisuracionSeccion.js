@@ -53,6 +53,17 @@ function barrasConEstado(geo, est) {
   return geo.barras.map((b, i) => ({ ...b, eps: est.barras[i].eps, sigma: est.barras[i].sigma }));
 }
 
+/** Resumen para la figura: x [mm], deformaciones de la cara de arriba y de abajo [‰], σ de la armadura traccionada y de la comprimida [MPa]. */
+function resumenEstado(F, L, signo) {
+  const comp = F.barras.filter((b) => b.sigma > 0);
+  const A = comp.reduce((a, b) => a + b.A, 0);
+  return {
+    x: Number.isFinite(F.x) && F.x > 0 ? F.x * MM : 0,
+    eArriba: (signo > 0 ? F.eSup : F.eInf) * 1000, eAbajo: (signo > 0 ? F.eInf : F.eSup) * 1000,
+    ss: L ? L.sigma : 0, sp: A > 0 ? comp.reduce((a, b) => a + b.sigma * b.A, 0) / A : 0,
+  };
+}
+
 /**
  * Cálculo completo para un esfuerzo.
  * @param {Object} c  { geo, mats, v (datosViga con el signo de M), fck, mod? }
@@ -100,7 +111,8 @@ export function fisuraSeccion(c, o) {
     wk[n] = r.wk;
     det[n] = r;
   }
-  return { ...res, g, e, wk, det, estado: F, lecho: L };
+  const figura = { Mk: resumenEstado(F, L, signo), Mfis: resumenEstado(Fr.ok ? Fr : F, Lr ?? L, signo) };
+  return { ...res, g, e, wk, det, estado: F, lecho: L, figura };
 }
 
 /** Curva wk(M) para las tres normas, con el mismo modelo; M de 0 a Mmax en n pasos (los puntos sin fisurar valen 0). */

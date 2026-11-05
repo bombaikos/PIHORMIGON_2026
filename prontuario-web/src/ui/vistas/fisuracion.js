@@ -150,7 +150,7 @@ function resultadosFis(ctx, res) {
   const dcha = h('article', { class: 'panel tarjeta' });
   poner(centro, h('h2', {}, t('fis.t.dibujo')), h('div', { class: 'lienzo', html: dibujoFisuracion(c.geo, s, r, r.det?.[id]?.hef ?? null) }), cifrasArmadura(r), pie());
   poner(dcha, h('h2', {}, t('fis.t.res')));
-  if (!r.sinFisurar) poner(dcha, cifras([[t('fis.c.Mfis'), qh(r.Mfis, 'M')], [t('fis.c.x'), qh(r.e.x / 1000, 'long')], [t('fis.c.ss'), qh(r.e.ss, 'tension')], [t('fis.c.ssr'), qh(r.e.ssr, 'tension')]]));
+  if (!r.sinFisurar) poner(dcha, cifras([[t('fis.c.Mfis'), qh(r.Mfis, 'M')], [t('fis.c.x'), qh(r.e.x / 1000, 'long')], [t('fis.c.ss'), `${fmt(r.e.ss, 0)}<span class="u"> MPa</span>`], [t('fis.c.ssr'), `${fmt(r.e.ssr, 0)}<span class="u"> MPa</span>`]]));
   else poner(dcha, cifras([[t('fis.c.Mfis'), qh(r.Mfis, 'M')]]));
   if (dim) poner(dcha, tablaDim(ctx, filasDim), h('p', { class: 'pista', html: t('fis.dim.una') }));
   else poner(dcha, tablaNormas(ctx, r, id, wmax));

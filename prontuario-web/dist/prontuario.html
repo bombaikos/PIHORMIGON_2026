@@ -1276,6 +1276,7 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
 .regleta.rg-gauge.rg-edit.sin-etq { grid-template-columns: 22px minmax(0, 1fr) 11ch; }
 .et-reglas { width: 100%; }
 .regleta.rg-edit:not(.rg-gauge) { width: 100%; padding: 0 6px; box-sizing: border-box; margin: 1px 0; }
+.dib .eps-p { fill: color-mix(in oklch, var(--compr) 14%, transparent); stroke: var(--tinta); stroke-width: 1.4; }
 </style>
 
 <header class="barra">
@@ -18805,6 +18806,17 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
   function barrasConEstado(geo, est14) {
     return geo.barras.map((b, i) => ({ ...b, eps: est14.barras[i].eps, sigma: est14.barras[i].sigma }));
   }
+  function resumenEstado(F2, L, signo) {
+    const comp = F2.barras.filter((b) => b.sigma > 0);
+    const A = comp.reduce((a, b) => a + b.A, 0);
+    return {
+      x: Number.isFinite(F2.x) && F2.x > 0 ? F2.x * MM : 0,
+      eArriba: (signo > 0 ? F2.eSup : F2.eInf) * 1e3,
+      eAbajo: (signo > 0 ? F2.eInf : F2.eSup) * 1e3,
+      ss: L ? L.sigma : 0,
+      sp: A > 0 ? comp.reduce((a, b) => a + b.sigma * b.A, 0) / A : 0
+    };
+  }
   function estadoFisurado(mod, N, Mx) {
     const r = estadoTensional(mod, { tipo: "NM", N, Mx, My: 0 }, { fisurada: true });
     if (r.ok || N === 0) return r;
@@ -18853,7 +18865,8 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
       wk[n] = r.wk;
       det[n] = r;
     }
-    return { ...res, g, e: e3, wk, det, estado: F2, lecho: L };
+    const figura = { Mk: resumenEstado(F2, L, signo), Mfis: resumenEstado(Fr.ok ? Fr : F2, Lr ?? L, signo) };
+    return { ...res, g, e: e3, wk, det, estado: F2, lecho: L, figura };
   }
   function curvaWk(c, o, Mmax, n = 36) {
     const mod = c.mod ?? modeloServicio(c.geo, c.mats, c.fck);
@@ -18906,11 +18919,19 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
   function dibujoFisuracion(geo, s, r, hef) {
     const e2 = encuadre(geo, SECCION_MAX, SECCION_MAX, { completa: true });
     const x0 = 46;
-    const y0 = 16;
+    const y0 = 42;
     const signo = r.signo;
     const xm = !r.sinFisurar && r.e && r.e.x > 0 ? r.e.x / 1e3 : null;
     const { svg, hp, bp } = capasSeccion(geo, s, { e: e2, x0, y0, x: xm, id: "fis", cotasCapas: false, abajo: signo < 0 });
     const out = [DEFS, svg];
+    if (xm !== null && r.e.x < geo.h * 1e3) {
+      const Xs = (xm_) => x0 + (xm_ - e2.x0m) * e2.s;
+      const Ys = (ym) => y0 + (ym - geo.caja.ymin) * e2.s;
+      const cam = geo.contornos.map((c) => "M" + c.pts.map(([px, py]) => `${Xs(px).toFixed(2)} ${Ys(py).toFixed(2)}`).join("L") + "Z").join("");
+      const yn0 = signo > 0 ? y0 + xm * e2.s : y0;
+      out.push(`<clipPath id="fis-tr"><path fill-rule="evenodd" d="${cam}"/></clipPath>`);
+      out.push(`<rect clip-path="url(#fis-tr)" fill="url(#rayado-t)" x="${x0}" y="${yn0}" width="${bp}" height="${hp - xm * e2.s}"/>`);
+    }
     const sc2 = e2.s;
     const yTrac = signo > 0 ? y0 + hp : y0;
     const dir = signo > 0 ? -1 : 1;
@@ -18931,7 +18952,41 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
       out.push(`<line class="en" x1="${x0 - 8}" y1="${yn}" x2="${x0 + bp + 8}" y2="${yn}"/>`);
       out.push(`<text class="fuerte" x="${x0 + bp / 2}" y="${yn + (signo > 0 ? -5 : 15)}" text-anchor="middle">x = ${fmt(r.e.x, 0)}</text>`);
     }
-    const W2 = x0 + bp + 112;
+    let W2 = x0 + bp + 112;
+    if (r.figura) {
+      const mx = Math.max(Math.abs(r.figura.Mk.eArriba), Math.abs(r.figura.Mk.eAbajo), Math.abs(r.figura.Mfis.eArriba), Math.abs(r.figura.Mfis.eAbajo), 0.05);
+      const ke = 38 / mx;
+      const ks = 40 / Math.max(r.figura.Mk.ss, r.figura.Mfis.ss, Math.abs(r.figura.Mk.sp), 1);
+      const yBarraT = signo > 0 ? y0 + hp - r.g.ay / 1e3 * sc2 : y0 + r.g.ay / 1e3 * sc2;
+      const yBarraC = signo > 0 ? y0 + r.g.ay / 1e3 * sc2 : y0 + hp - r.g.ay / 1e3 * sc2;
+      const col2 = (ex, F2, rot) => {
+        const X = (v2) => ex - v2 * ke;
+        let o = `<text x="${ex}" y="${y0 - 34}" class="fuerte" text-anchor="middle">${rot}</text>`;
+        o += `<line class="ref" x1="${ex}" y1="${y0 - 2}" x2="${ex}" y2="${y0 + hp + 2}"/>`;
+        const yn = F2.x > 0 ? signo > 0 ? y0 + F2.x / 1e3 * sc2 : y0 + hp - F2.x / 1e3 * sc2 : signo > 0 ? y0 : y0 + hp;
+        const yc = signo > 0 ? y0 : y0 + hp;
+        const yt = signo > 0 ? y0 + hp : y0;
+        const eC = signo > 0 ? F2.eArriba : F2.eAbajo;
+        const eT = signo > 0 ? F2.eAbajo : F2.eArriba;
+        if (F2.x > 0) o += `<polygon class="eps-c" points="${ex},${yc} ${X(eC)},${yc} ${ex},${yn}"/>`;
+        o += `<polygon class="eps-t" points="${ex},${yn} ${X(eT)},${yt} ${ex},${yt}"/>`;
+        o += `<text x="${ex}" y="${y0 - 8}" text-anchor="middle">${sub30("\u03B5", signo > 0 ? "sup" : "inf")} ${fmt(F2.eArriba, 2)}</text>`;
+        o += `<text x="${ex}" y="${y0 + hp + 16}" text-anchor="middle">${sub30("\u03B5", signo > 0 ? "inf" : "sup")} ${fmt(F2.eAbajo, 2)}</text>`;
+        const ax = ex + 6;
+        o += `<line class="flecha" x1="${ax}" y1="${yBarraT}" x2="${ax + F2.ss * ks}" y2="${yBarraT}" marker-end="url(#pta)"/>`;
+        o += `<text class="fuerte" x="${ax + F2.ss * ks + 5}" y="${yBarraT + 4}">${sub30("\u03C3", "s")} ${fmt(F2.ss, 0)}</text>`;
+        if (F2.sp > 0.5) {
+          o += `<line class="flecha" x1="${ax}" y1="${yBarraC}" x2="${ax - F2.sp * ks}" y2="${yBarraC}" marker-end="url(#pta)"/>`;
+          o += `<text x="${ax + 4}" y="${yBarraC - 5}">${fmt(F2.sp, 0)}</text>`;
+        }
+        return o;
+      };
+      const e1 = x0 + bp + 112;
+      const e22 = e1 + 138;
+      out.push(col2(e1, r.figura.Mfis, `${sub30("M", "fis")}(${sub30("N", "k")}) + ${sub30("N", "k")}`));
+      out.push(col2(e22, r.figura.Mk, `${sub30("M", "k")} + ${sub30("N", "k")}`));
+      W2 = e22 + 120;
+    }
     const H2 = y0 + hp + 52;
     return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${W2} ${H2}"${topeEscala(W2, H2)} role="img" aria-label="${t("fis.dib.aria")}">${out.join("")}</svg>`;
   }
@@ -19105,7 +19160,7 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
     const dcha = h("article", { class: "panel tarjeta" });
     poner(centro, h("h2", {}, t("fis.t.dibujo")), h("div", { class: "lienzo", html: dibujoFisuracion(c.geo, s, r, r.det?.[id]?.hef ?? null) }), cifrasArmadura3(r), pie());
     poner(dcha, h("h2", {}, t("fis.t.res")));
-    if (!r.sinFisurar) poner(dcha, cifras([[t("fis.c.Mfis"), qh(r.Mfis, "M")], [t("fis.c.x"), qh(r.e.x / 1e3, "long")], [t("fis.c.ss"), qh(r.e.ss, "tension")], [t("fis.c.ssr"), qh(r.e.ssr, "tension")]]));
+    if (!r.sinFisurar) poner(dcha, cifras([[t("fis.c.Mfis"), qh(r.Mfis, "M")], [t("fis.c.x"), qh(r.e.x / 1e3, "long")], [t("fis.c.ss"), `${fmt(r.e.ss, 0)}<span class="u"> MPa</span>`], [t("fis.c.ssr"), `${fmt(r.e.ssr, 0)}<span class="u"> MPa</span>`]]));
     else poner(dcha, cifras([[t("fis.c.Mfis"), qh(r.Mfis, "M")]]));
     if (dim) poner(dcha, tablaDim(ctx2, filasDim), h("p", { class: "pista", html: t("fis.dim.una") }));
     else poner(dcha, tablaNormas(ctx2, r, id, wmax));
