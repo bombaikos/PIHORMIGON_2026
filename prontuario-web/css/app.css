@@ -1205,3 +1205,27 @@ details.pleg.pleg-amb { background: var(--atencion-fondo); border-color: color-m
 details.pleg.pleg-amb > summary { color: var(--atencion); }
 details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
 .et-fc .campo > label { overflow: visible; white-space: nowrap; text-overflow: clip; }
+
+/* Gauges con rango total, banda compatible y candado (Análisis tensional, modo ε, κ) */
+.regleta.rg-gauge { grid-template-columns: 22px max-content minmax(0, 1fr) 9ch; --banda: color-mix(in oklch, var(--acento) 55%, var(--tinta)); }
+.regleta.rg-gauge.sin-etq { grid-template-columns: 22px minmax(0, 1fr) 9ch; }
+.rg-riel { position: relative; min-width: 0; padding-bottom: 13px; }
+.rg-banda { position: absolute; left: calc(8px + (100% - 16px) * var(--b0, 0)); width: calc((100% - 16px) * (var(--b1, 1) - var(--b0, 0))); top: 17px; height: 3px; border-radius: 2px; background: var(--banda); pointer-events: none; }
+.rg-ext { position: absolute; top: 22px; font-size: 10px; line-height: 12px; color: var(--tinta-3); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.rg-ext.izq { left: 0; }
+.rg-ext.der { right: 0; }
+.rg-cand { width: 22px; height: 22px; padding: 0; display: grid; place-items: center; background: none; border: 0; border-radius: 6px; cursor: pointer; color: var(--tinta-3); }
+.rg-cand svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; }
+.rg-cand:hover { background: var(--suelo); color: var(--tinta); }
+.rg-cand[aria-pressed="true"] { color: var(--acento); background: var(--acento-suave); }
+.rg-cand[aria-pressed="true"] svg rect { fill: currentColor; }
+.regleta.bloq input[type=range] { opacity: .55; cursor: not-allowed; }
+.regleta.fuera input[type=range]::-webkit-slider-runnable-track { background: linear-gradient(to right, var(--no) var(--p, 50%), var(--no-fondo) var(--p, 50%)); }
+.regleta.fuera input[type=range]::-moz-range-track { background: linear-gradient(to right, var(--no) var(--p, 50%), var(--no-fondo) var(--p, 50%)); }
+.regleta.fuera input[type=range]::-webkit-slider-thumb { background: var(--no); box-shadow: 0 0 0 1px var(--no); }
+.regleta.fuera input[type=range]::-moz-range-thumb { background: var(--no); box-shadow: 0 0 0 1px var(--no); }
+.regleta.fuera .rg-v { color: var(--no); }
+.et-lienzo { flex: 0 0 auto !important; }
+.regleta.rg-gauge .rg-et { min-width: 3.4em; }
+.et-lienzo svg.dib { max-height: 50vh; }
+.regleta.rg-gauge { margin: 1px auto; } .et-reglas { gap: 0; }

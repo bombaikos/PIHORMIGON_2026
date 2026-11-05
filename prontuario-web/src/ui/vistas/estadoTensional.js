@@ -7,6 +7,7 @@
 
 import { modeloTensional, estadoTensional } from '../../core/estadoTensional.js';
 import { limitesDe, admisible, leyesNoAdmitidas } from '../../core/dominioTensional.js';
+import { rangos, reajusta, TOPE } from '../../core/dominioGauges.js';
 import { normaMat } from '../../norma/materiales/index.js';
 import { propiedadesHormigon, opcionesHormigon, sigma } from '../../core/materiales.js';
 import { geometriaDe, materialesSeccion } from '../../io/proyecto.js';
@@ -30,6 +31,7 @@ const est = {
   e0: 0, kx: 0, ky: 0, // absoluta, 1/m
   eSup: 0, beta: 0, x: Infinity, // absoluta, grados (de la fibra neutra), m
   estado: 'ELS',
+  lock: { e0: false, kx: false, ky: false }, // candados del modo ε, κ
   // Cada estado límite guarda sus propios datos; ninguno se traduce al otro (null = el valor de la ley del material).
   // ELS: γ = 1 y αcc = 1 (sin cansancio con σc ≤ 0,6·fck); ELU: los de la ley.
   v: {
@@ -485,9 +487,7 @@ export function resultados(ctx, res) {
     regs.push(reg('Mx', sub('M', 'x'), 'Mx', 'M', -c.rg.Mx, c.rg.Mx, 1, unidad('M')));
     regs.push(reg('My', sub('M', 'y'), 'My', 'M', -c.rg.My, c.rg.My, 1, unidad('M')));
   } else if (est.modo === 'eK') {
-    regs.push(reg('e0', sub('ε', 'cdg'), 'e0', 'def', -1.5, 2, 0.01, (v) => `${fmt(v, 2)} ‰`, (v) => v / 1000, (v) => v * 1000));
-    regs.push(reg('kx', sub('κ', 'x'), 'kx', 'curv', -c.rg.kx * 1000, c.rg.kx * 1000, 0.01, (v) => `${fmt(v, 2)} ‰/m`, (v) => v / 1000, (v) => v * 1000));
-    regs.push(reg('ky', sub('κ', 'y'), 'ky', 'curv', -c.rg.ky * 1000, c.rg.ky * 1000, 0.01, (v) => `${fmt(v, 2)} ‰/m`, (v) => v / 1000, (v) => v * 1000));
+    regs.push(...gaugesEK(c, refresca, sincro, ctx));
   } else {
     regs.push(reg('es', sub('ε', 'sup'), 'eSup', 'def', -1.5, 3.5, 0.01, (v) => `${fmt(v, 2)} ‰`, (v) => v / 1000, (v) => v * 1000));
     regs.push(reg('b', 'β', 'beta', 'ang1', 0, 360, 0.5, (v) => `${fmt(v, 1)} °`));
@@ -503,6 +503,59 @@ export function resultados(ctx, res) {
   const reglas = h('div', { class: 'et-reglas' }, ...regs);
   res.append(h('div', { class: 'cuerpo dib-ancho' }, h('article', { class: 'panel tarjeta et-izq' }, lienzo, reglas), derecha));
   rotulaSeccion(res, nombre);
+}
+
+
+// ---------------------------------------------------------------- gauges del modo ε, κ (rango total, banda y candados)
+
+const EK = ['e0', 'kx', 'ky'];
+const RETARDO = 90; // ms: los rangos se recalculan al parar de mover, no en cada píxel
+
+/**
+ * Tres regletas con rango total (extremos escritos), banda compatible y candado. Mover dentro de la banda cambia solo esa
+ * variable; fuera de la banda, las otras libres se reajustan lo mínimo (en proporción a su rango total) para seguir en el dominio.
+ */
+function gaugesEK(c, refresca, sincro, ctx) {
+  const esc = [0.005, c.rg.kx, c.rg.ky];
+  const en = (u) => admisible(c.mod, c.lim, { e0: u[0] * esc[0], kx: u[1] * esc[1], ky: u[2] * esc[2] }).ok;
+  const cand = () => EK.map((k) => est.lock[k]);
+  const uDe = () => EK.map((k, j) => est[k] / esc[j]);
+  const aEst = (u) => EK.forEach((k, j) => { est[k] = u[j] * esc[j]; });
+  const f = [{ k: 'e0', mag: 'def', etq: sub('ε', 'cdg'), ud: '‰' }, { k: 'kx', mag: 'curv', etq: sub('κ', 'x'), ud: '‰/m' }, { k: 'ky', mag: 'curv', etq: sub('κ', 'y'), ud: '‰/m' }];
+  let R = rangos(en, uDe(), cand());
+  const regs = f.map((q, j) => regleta({
+    etq: q.etq, min: -1, max: 1, step: 0.01, valor: est[q.k] * 1000, reinicio: 0, etiqueta: q.k, texto: (v) => `${fmt(v, 2)} ${q.ud}`,
+    gauge: { bloqueado: est.lock[q.k], onCandado: () => { est.lock[q.k] = !est.lock[q.k]; ctx.cambio(); } },
+    onInput: (v) => mueve(j, v / 1000),
+    onChange: () => { clearTimeout(timer); ctx.cambio(); },
+  }));
+  const pinta = () => {
+    const u = uDe();
+    regs.forEach((rg, j) => {
+      const tot = R.total ? R.total[j].map((x) => x * esc[j] * 1000) : [-TOPE * esc[j] * 1000, TOPE * esc[j] * 1000];
+      const ban = R.banda ? R.banda[j].map((x) => x * esc[j] * 1000) : null;
+      rg.rango({ min: Math.min(tot[0], u[j] * esc[j] * 1000), max: Math.max(tot[1], u[j] * esc[j] * 1000), banda: ban, fuera: !R.dentro, bloqueado: est.lock[f[j].k], fmtExt: (x) => fmt(x, 2) });
+      rg.poner(est[f[j].k] * 1000);
+    });
+  };
+  let timer = 0;
+  const mueve = (j, v) => {
+    const u = uDe();
+    const nuevo = v / esc[j];
+    const b = R.banda?.[j];
+    const dentroBanda = b && nuevo >= b[0] - 1e-9 && nuevo <= b[1] + 1e-9;
+    if (dentroBanda || !R.dentro) { est[f[j].k] = v; } else {
+      const q = reajusta(en, u, j, nuevo, cand(), R);
+      if (q) aEst(q); else est[f[j].k] = Math.min(b[1], Math.max(b[0], nuevo)) * esc[j];
+    }
+    EK.forEach((k) => sincro(k, k === 'e0' ? 'def' : 'curv', est[k]));
+    regs.forEach((rg, m) => rg.poner(est[EK[m]] * 1000));
+    refresca();
+    clearTimeout(timer);
+    timer = setTimeout(() => { R = rangos(en, uDe(), cand()); pinta(); }, RETARDO);
+  };
+  pinta();
+  return regs;
 }
 
 export function comandos(ctx) {

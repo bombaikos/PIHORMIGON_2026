@@ -60,3 +60,11 @@ Código: `src/core/estadoTensional.js` (motor), tests en `tests/estadoTensional.
 - **Solo PR y Sargin (hormigón) y bilineal (acero)**: con otra ley, el cálculo se para con un mensaje («aún no implementado»).
 - Estado fuera del dominio: aviso rojo con el exceso en ‰. Reajustar al admisible más próximo al cambiar de estado límite (decidido) llega con los gauges.
 - Pendiente: EHE-08, límites de tensión en servicio (no localizados con búsqueda simple; ver `formulas-por-verificar.md`).
+
+## Gauges del modo ε, κ: rango total, banda y candados (5/11/2026, Pepiño)
+- Las regletas suben y se colocan junto a la figura.
+- `src/core/dominioGauges.js` (puro): `rangos(en, p, bloqueo)` da el **rango total** de cada variable (valores con algún estado admisible, las demás libres; las bloqueadas, fijas), la **banda** (las otras dos en su valor actual) y los puntos extremos; `reajusta(en, p, i, nuevo, bloqueo, r)` lleva la variable i al valor nuevo y mueve lo mínimo las otras libres (métrica: cada variable en proporción a su rango total). Todo sobre el oráculo `admisible`: radial desde el origen (o desde el punto actual con candados) con bisección y refinado de los vértices; variables normalizadas, con tope |u| ≤ 2 para los dominios sin límite.
+- **Vista**: `regleta()` admite `gauge` (extremos escritos, banda como franja bajo la pista, candado con `aria-pressed`) y `rango()`; mover dentro de la banda cambia solo esa variable; fuera, se reajustan las otras al instante; los rangos se recalculan 90 ms después de parar de mover. Doble clic a cero respeta el dominio.
+- Estado fuera del dominio tras cambiar datos: pista en rojo y aviso, sin banda.
+- Los valores escritos en los campos no se reajustan: si quedan fuera, se marca en rojo.
+- Color de la banda provisional (tono oscuro del acento), pendiente de Pepiño (la guía reserva el verde para «Cumple»). Modos 3 y 1 siguen con las regletas anteriores.
