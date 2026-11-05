@@ -18394,7 +18394,7 @@ tr.et-act td { font-weight: 650; }
       ),
       grupo(
         t("fis.gAccion"),
-        selector({ id: "fi-clase", etq: t("fis.clase"), opciones: clases.map((c) => [c, c]), valor: claseDe(id), onCambio: (v2) => {
+        selector({ id: "fi-clase", linea: true, etq: t("fis.clase"), opciones: clases.map((c) => [c, c]), valor: claseDe(id), onCambio: (v2) => {
           est10.clase[id] = v2;
           est10.wmax = null;
           ctx2.pintar();
@@ -18403,19 +18403,19 @@ tr.et-act td { font-weight: 650; }
           est10.wmax = v2;
           cambio();
         } }), t("fis.infoWmax")),
-        selector({ id: "fi-dur", etq: t("fis.duracion"), opciones: [["larga", t("fis.larga")], ["corta", t("fis.corta")]], valor: est10.larga ? "larga" : "corta", onCambio: (v2) => {
+        selector({ id: "fi-dur", linea: true, etq: t("fis.duracion"), opciones: [["larga", t("fis.larga")], ["corta", t("fis.corta")]], valor: est10.larga ? "larga" : "corta", onCambio: (v2) => {
           est10.larga = v2 === "larga";
           cambio();
         } }),
-        id === "EHE08" ? selector({ id: "fi-acc", etq: t("fis.accion"), opciones: [["directa", t("fis.directa")], ["indirecta", t("fis.indirecta")]], valor: est10.directa ? "directa" : "indirecta", onCambio: (v2) => {
+        id === "EHE08" ? selector({ id: "fi-acc", linea: true, etq: t("fis.accion"), opciones: [["directa", t("fis.directa")], ["indirecta", t("fis.indirecta")]], valor: est10.directa ? "directa" : "indirecta", onCambio: (v2) => {
           est10.directa = v2 === "directa";
           cambio();
-        } }) : apaga2(selector({ id: "fi-acc", etq: t("fis.accion"), opciones: [["directa", t("fis.directa")]], valor: "directa", onCambio: () => {
+        } }) : apaga2(selector({ id: "fi-acc", linea: true, etq: t("fis.accion"), opciones: [["directa", t("fis.directa")]], valor: "directa", onCambio: () => {
         } }), t("fis.accionSoloEHE")),
-        id === "EC2-2023" ? selector({ id: "fi-adh", etq: t("fis.adherencia"), opciones: [["buena", t("fis.buena")], ["mala", t("fis.mala")]], valor: est10.buenaAdh ? "buena" : "mala", onCambio: (v2) => {
+        id === "EC2-2023" ? selector({ id: "fi-adh", linea: true, etq: t("fis.adherencia"), opciones: [["buena", t("fis.buena")], ["mala", t("fis.mala")]], valor: est10.buenaAdh ? "buena" : "mala", onCambio: (v2) => {
           est10.buenaAdh = v2 === "buena";
           cambio();
-        } }) : apaga2(selector({ id: "fi-adh", etq: t("fis.adherencia"), opciones: [["buena", t("fis.buena")]], valor: "buena", onCambio: () => {
+        } }) : apaga2(selector({ id: "fi-adh", linea: true, etq: t("fis.adherencia"), opciones: [["buena", t("fis.buena")]], valor: "buena", onCambio: () => {
         } }), t("fis.adhSolo23"))
       )
     );

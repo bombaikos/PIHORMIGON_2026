@@ -94,15 +94,15 @@ export function datos(ctx, form) {
       campoNum({ id: 'fi-m', etq: t('fis.M'), ref: t('fis.refM'), valor: est.M, mag: 'M', paso: 5, min: -1e6, max: 1e6, nombre: t('fis.nombreM'), onCambio: (v) => { est.M = v; cambio(); } }),
       campoNum({ id: 'fi-n', etq: t('fis.N'), ref: t('fis.refN'), valor: est.N, mag: 'N', paso: 10, min: -1e6, max: 1e6, nombre: t('fis.nombreN'), onCambio: (v) => { est.N = v; cambio(); } })),
     grupo(t('fis.gAccion'),
-      selector({ id: 'fi-clase', etq: t('fis.clase'), opciones: clases.map((c) => [c, c]), valor: claseDe(id), onCambio: (v) => { est.clase[id] = v; est.wmax = null; ctx.pintar(); } }),
+      selector({ id: 'fi-clase', linea: true, etq: t('fis.clase'), opciones: clases.map((c) => [c, c]), valor: claseDe(id), onCambio: (v) => { est.clase[id] = v; est.wmax = null; ctx.pintar(); } }),
       conInfo(campoNum({ id: 'fi-wmax', etq: t('fis.wmax'), valor: wmaxDeNorma(id), mag: 'wk', paso: 0.05, min: 0.01, max: 5, onCambio: (v) => { est.wmax = v; cambio(); } }), t('fis.infoWmax')),
-      selector({ id: 'fi-dur', etq: t('fis.duracion'), opciones: [['larga', t('fis.larga')], ['corta', t('fis.corta')]], valor: est.larga ? 'larga' : 'corta', onCambio: (v) => { est.larga = v === 'larga'; cambio(); } }),
+      selector({ id: 'fi-dur', linea: true, etq: t('fis.duracion'), opciones: [['larga', t('fis.larga')], ['corta', t('fis.corta')]], valor: est.larga ? 'larga' : 'corta', onCambio: (v) => { est.larga = v === 'larga'; cambio(); } }),
       id === 'EHE08'
-        ? selector({ id: 'fi-acc', etq: t('fis.accion'), opciones: [['directa', t('fis.directa')], ['indirecta', t('fis.indirecta')]], valor: est.directa ? 'directa' : 'indirecta', onCambio: (v) => { est.directa = v === 'directa'; cambio(); } })
-        : apaga(selector({ id: 'fi-acc', etq: t('fis.accion'), opciones: [['directa', t('fis.directa')]], valor: 'directa', onCambio: () => {} }), t('fis.accionSoloEHE')),
+        ? selector({ id: 'fi-acc', linea: true, etq: t('fis.accion'), opciones: [['directa', t('fis.directa')], ['indirecta', t('fis.indirecta')]], valor: est.directa ? 'directa' : 'indirecta', onCambio: (v) => { est.directa = v === 'directa'; cambio(); } })
+        : apaga(selector({ id: 'fi-acc', linea: true, etq: t('fis.accion'), opciones: [['directa', t('fis.directa')]], valor: 'directa', onCambio: () => {} }), t('fis.accionSoloEHE')),
       id === 'EC2-2023'
-        ? selector({ id: 'fi-adh', etq: t('fis.adherencia'), opciones: [['buena', t('fis.buena')], ['mala', t('fis.mala')]], valor: est.buenaAdh ? 'buena' : 'mala', onCambio: (v) => { est.buenaAdh = v === 'buena'; cambio(); } })
-        : apaga(selector({ id: 'fi-adh', etq: t('fis.adherencia'), opciones: [['buena', t('fis.buena')]], valor: 'buena', onCambio: () => {} }), t('fis.adhSolo23'))));
+        ? selector({ id: 'fi-adh', linea: true, etq: t('fis.adherencia'), opciones: [['buena', t('fis.buena')], ['mala', t('fis.mala')]], valor: est.buenaAdh ? 'buena' : 'mala', onCambio: (v) => { est.buenaAdh = v === 'buena'; cambio(); } })
+        : apaga(selector({ id: 'fi-adh', linea: true, etq: t('fis.adherencia'), opciones: [['buena', t('fis.buena')]], valor: 'buena', onCambio: () => {} }), t('fis.adhSolo23'))));
 }
 
 export function resultados(ctx, res) {
