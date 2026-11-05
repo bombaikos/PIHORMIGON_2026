@@ -68,3 +68,7 @@ Código: `src/core/estadoTensional.js` (motor), tests en `tests/estadoTensional.
 - Estado fuera del dominio tras cambiar datos: pista en rojo y aviso, sin banda.
 - Los valores escritos en los campos no se reajustan: si quedan fuera, se marca en rojo.
 - Color de la banda provisional (tono oscuro del acento), pendiente de Pepiño (la guía reserva el verde para «Cumple»). Modos 3 y 1 siguen con las regletas anteriores.
+
+## Banda translúcida y datos que no desaparecen (5/11/2026, Pepiño)
+- La banda compatible es una **sombra azul al 50 % de transparencia** (como en VLASTA) detrás de la pista, algo más alta que ella.
+- **Principio de diseño**: en los datos nada aparece ni desaparece al cambiar de opciones (norma, ELS/ELU…): lo que no procede se queda en su sitio, desactivado, con un hint (i) que explica por qué. En ELU, φ, k_c, k_s y la ley lineal quedan desactivados («—») y E_c,eff/n en gris.
