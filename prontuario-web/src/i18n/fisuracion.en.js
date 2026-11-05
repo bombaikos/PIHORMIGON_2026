@@ -23,7 +23,7 @@ export default {
   'fis.ver.ecuSin': (M, Mf) => `${sub('M', 'k')} <b>${M}</b> ≤ ${sub('M', 'fis')} <b>${Mf}</b>`,
   'fis.ver.dim': (fi, n, As) => `ø${fi} × ${n} · ${sub('A', 's')} <b>${As}</b>`,
   'fis.ver.noDim': 'No bar diameter in the series works with a single layer',
-  'fis.arm': 'Tension steel (first layer)', 'fis.aprov': 'Utilisation', 'fis.armNec': 'Required reinforcement',
+  'fis.arm': 'Tension steel (first layer)', 'fis.copiarTabla': 'Copy table', 'fis.aprov': 'Utilisation', 'fis.armNec': 'Required reinforcement',
   'fis.tabla.n': 'Code', 'fis.tabla.wk': sub('w', 'k') + ' [mm]', 'fis.tabla.ap': sub('w', 'k') + '/' + sub('w', 'max'),
   'fis.n.EC2-2004': 'EC-2 2004 + NA', 'fis.n.c.EC2-2004': 'EC-2 + NA',
   'fis.dim.libre': 'Clear spacing [mm]',

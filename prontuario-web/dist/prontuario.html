@@ -1212,6 +1212,8 @@ tr.et-act td { font-weight: 650; }
 .datos .campo.apilado > label .info-i { display: inline-block; vertical-align: middle; margin: 0 0 0 4px; }
 .fis-arm { order: 3; display: flex; flex-direction: column; gap: var(--e2); }
 .fis-pie { order: 4; }
+.fis-tabla { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
+.fis-tabla .tabla-scroll { width: 100%; }
 </style>
 
 <header class="barra">
@@ -5980,6 +5982,7 @@ tr.et-act td { font-weight: 650; }
     "fis.ver.dim": (fi, n, As) => `\xF8${fi} \xD7 ${n} \xB7 ${sub11("A", "s")} <b>${As}</b>`,
     "fis.ver.noDim": "Ning\xFAn \xF8 de la serie cumple con una sola capa",
     "fis.arm": "Armadura traccionada (primer lecho)",
+    "fis.copiarTabla": "Copiar tabla",
     "fis.aprov": "Aprovechamiento",
     "fis.armNec": "Armadura necesaria",
     "fis.c.Mfis": sub11("M", "fis"),
@@ -6083,6 +6086,7 @@ tr.et-act td { font-weight: 650; }
     "fis.ver.dim": (fi, n, As) => `\xF8${fi} \xD7 ${n} \xB7 ${sub12("A", "s")} <b>${As}</b>`,
     "fis.ver.noDim": "No bar diameter in the series works with a single layer",
     "fis.arm": "Tension steel (first layer)",
+    "fis.copiarTabla": "Copy table",
     "fis.aprov": "Utilisation",
     "fis.armNec": "Required reinforcement",
     "fis.tabla.n": "Code",
@@ -7004,11 +7008,11 @@ tr.et-act td { font-weight: 650; }
     const pl = document.getElementById("paleta-lista");
     let sel = 0;
     let vis = [];
-    const plano3 = (x) => x.replace(/<[^>]+>/g, "");
+    const plano4 = (x) => x.replace(/<[^>]+>/g, "");
     const texto = (c) => c.texto ?? t(c.k);
     function listar() {
       const x = pq.value.trim().toLowerCase();
-      vis = comandos18().filter((c) => !x || (plano3(texto(c)) + " " + (c.b ?? "")).toLowerCase().includes(x));
+      vis = comandos18().filter((c) => !x || (plano4(texto(c)) + " " + (c.b ?? "")).toLowerCase().includes(x));
       sel = Math.min(sel, Math.max(vis.length - 1, 0));
       pl.innerHTML = vis.map((c, i) => `<li role="option" aria-selected="${i === sel}" data-i="${i}">${texto(c)}</li>`).join("") || `<li aria-selected="false"><small>${t("p.nada")}</small></li>`;
       pl.querySelector('[aria-selected="true"]')?.scrollIntoView({ block: "nearest" });
@@ -7030,7 +7034,7 @@ tr.et-act td { font-weight: 650; }
       const c = vis[i];
       if (!c) return;
       pal.close();
-      const msg = plano3(texto(c));
+      const msg = plano4(texto(c));
       c.f();
       avisar2(msg);
     }
@@ -18344,11 +18348,6 @@ tr.et-act td { font-weight: 650; }
     memo4 = { clave, c };
     return c;
   }
-  var parejas3 = (campos) => {
-    const filas = [];
-    for (let i = 0; i < campos.length; i += 2) filas.push(h("div", { class: "par2" }, ...campos.slice(i, i + 2)));
-    return filas;
-  };
   var conInfo2 = (c, texto) => {
     c.title = texto;
     const i = h("span", { class: "info-i izq", tabindex: 0, role: "img", "aria-label": texto, "data-tip": texto }, "i");
@@ -18382,7 +18381,8 @@ tr.et-act td { font-weight: 650; }
         est10.modo = m;
         ctx2.pintar();
       } }),
-      grupo(t("fis.gEsfuerzo"), ...parejas3([
+      grupo(
+        t("fis.gEsfuerzo"),
         campoNum({ id: "fi-m", etq: t("fis.M"), ref: t("fis.refM"), valor: est10.M, mag: "M", paso: 5, min: -1e6, max: 1e6, nombre: t("fis.nombreM"), onCambio: (v2) => {
           est10.M = v2;
           cambio();
@@ -18391,7 +18391,7 @@ tr.et-act td { font-weight: 650; }
           est10.N = v2;
           cambio();
         } })
-      ])),
+      ),
       grupo(
         t("fis.gAccion"),
         selector({ id: "fi-clase", etq: t("fis.clase"), opciones: clases.map((c) => [c, c]), valor: claseDe(id), onCambio: (v2) => {
@@ -18399,10 +18399,10 @@ tr.et-act td { font-weight: 650; }
           est10.wmax = null;
           ctx2.pintar();
         } }),
-        ...parejas3([conInfo2(campoNum({ id: "fi-wmax", etq: t("fis.wmax"), valor: wmaxDeNorma(id), mag: "wk", paso: 0.05, min: 0.01, max: 5, onCambio: (v2) => {
+        conInfo2(campoNum({ id: "fi-wmax", etq: t("fis.wmax"), valor: wmaxDeNorma(id), mag: "wk", paso: 0.05, min: 0.01, max: 5, onCambio: (v2) => {
           est10.wmax = v2;
           cambio();
-        } }), t("fis.infoWmax"))]),
+        } }), t("fis.infoWmax")),
         selector({ id: "fi-dur", etq: t("fis.duracion"), opciones: [["larga", t("fis.larga")], ["corta", t("fis.corta")]], valor: est10.larga ? "larga" : "corta", onCambio: (v2) => {
           est10.larga = v2 === "larga";
           cambio();
@@ -18470,8 +18470,8 @@ tr.et-act td { font-weight: 650; }
     poner(dcha, h("h2", {}, t("fis.t.res")));
     if (!r.sinFisurar) poner(dcha, cifras([[t("fis.c.Mfis"), qh(r.Mfis, "M")], [t("fis.c.x"), qh(r.e.x / 1e3, "long")], [t("fis.c.ss"), qh(r.e.ss, "tension")], [t("fis.c.ssr"), qh(r.e.ssr, "tension")]]));
     else poner(dcha, cifras([[t("fis.c.Mfis"), qh(r.Mfis, "M")]]));
-    if (dim) poner(dcha, tablaDim(filasDim), h("p", { class: "pista", html: t("fis.dim.una") }));
-    else poner(dcha, tablaNormas(r, id, wmax));
+    if (dim) poner(dcha, tablaDim(ctx2, filasDim), h("p", { class: "pista", html: t("fis.dim.una") }));
+    else poner(dcha, tablaNormas(ctx2, r, id, wmax));
     if (dim && r.sinFisurar) poner(dcha, aviso(t("fis.dim.sinFisurar"), "info"));
     if (!dim && !r.sinFisurar) poner(dcha, h("div", { class: "traza" }, ...trazas3(r, id).map((f) => {
       const det = h(
@@ -18497,7 +18497,21 @@ tr.et-act td { font-weight: 650; }
       ["s", `${fmt(g.s, 0)}<span class="u"> mm</span>`]
     ]));
   }
-  function tablaNormas(r, id, wmax) {
+  var plano3 = (x) => String(x).replace(/<[^>]+>/g, "");
+  function copiable(ctx2, filas, cab, el) {
+    const dec = decimalAlCopiar();
+    const copiar = async () => {
+      try {
+        const txt = [cab.map(plano3), ...filas.map((f) => [...f].map(plano3))].map((f) => f.map((v2) => v2.replace("\u2212", "-").replace(".", dec)).join("	")).join("\r\n");
+        await navigator.clipboard.writeText(txt);
+        ctx2.avisar(t("graf.tablaCopiada"));
+      } catch {
+        ctx2.avisar(t("graf.error"));
+      }
+    };
+    return h("div", { class: "fis-tabla" }, h("button", { type: "button", class: "tecla", title: t("graf.copiarTablaTit"), onclick: copiar }, t("fis.copiarTabla")), el);
+  }
+  function tablaNormas(ctx2, r, id, wmax) {
     const fila6 = (etq, f) => [etq, ...NORMAS_FIS.map((n) => f(n))];
     const cab = ["", ...NORMAS_FIS.map((n) => n === id ? `<b>${t(`fis.n.c.${n}`)}</b>` : t(`fis.n.c.${n}`))];
     const wk = (n) => fmt(r.wk[n], MAG.wk.d);
@@ -18510,15 +18524,16 @@ tr.et-act td { font-weight: 650; }
         f2[i + 1] = `<span class="no-cumple">${f2[i + 1]}</span>`;
       }
     });
-    return tabla([f1, f2], { cabecera: cab, clase: "normas-fis" });
+    return copiable(ctx2, [f1, f2], cab, tabla([f1, f2], { cabecera: cab, clase: "normas-fis" }));
   }
-  function tablaDim(filas) {
+  function tablaDim(ctx2, filas) {
     const rows = filas.map((f) => {
       const fila6 = f.n ? [`\xF8${f.fi}`, String(f.n), fmt(f.As, 0), fmt(f.wk, MAG.wk.d), fmt(f.libre, 0)] : [`\xF8${f.fi}`, "\u2014", "\u2014", "\u2014", "\u2014"];
       if (f.mejor) fila6.clase = "sugerida";
       return fila6;
     });
-    return tabla(rows, { cabecera: [t("fis.dim.fi"), t("fis.dim.n"), t("fis.dim.As"), t("fis.dim.wk"), t("fis.dim.libre")] });
+    const cab = [t("fis.dim.fi"), t("fis.dim.n"), t("fis.dim.As"), t("fis.dim.wk"), t("fis.dim.libre")];
+    return copiable(ctx2, rows, cab, tabla(rows, { cabecera: cab }));
   }
   var art4 = (id, a) => `<span class="art">${NOMBRE(id)} \xB7 ${a}</span>`;
   var REF = { EHE08: { ac: "49.2.4", sep: "49.2.4", esm: "49.2.4", wk: "49.2.4" }, "EC2-2004": { ac: "7.3.4(3)", sep: "7.3.4(3), (7.11), (7.14)", esm: "7.3.4(2), (7.9)", wk: "7.3.4(1), (7.8)" }, "EC2-2023": { ac: "9.2.3", sep: "9.2.3", esm: "9.2.3", wk: "9.2.3" } };
@@ -18591,7 +18606,7 @@ tr.et-act td { font-weight: 650; }
       archivo: `wk-M ${s.nombre}`,
       avisar: ctx2.avisar
     }));
-    const tablaWk = r.sinFisurar ? null : tablaNormas(r, id, wmax);
+    const tablaWk = r.sinFisurar ? null : tablaNormas(ctx2, r, id, wmax);
     const lado = h("article", { class: "panel tarjeta fcr-lado" }, h("div", { class: "fcr-sec", html: dibujoSeccionPeq(c.geo, s) }), tablaWk);
     res.append(h(
       "div",
@@ -19685,7 +19700,7 @@ tr.et-act td { font-weight: 650; }
     else caja?.append(h("span", { class: "ud" }, "[-]"));
     return c;
   };
-  var parejas4 = (campos) => {
+  var parejas3 = (campos) => {
     const c = campos.filter(Boolean);
     const filas = [];
     for (let i = 0; i < c.length; i += 2) filas.push(h("div", { class: "par2" }, ...c.slice(i, i + 2)));
@@ -19731,14 +19746,14 @@ tr.et-act td { font-weight: 650; }
           D.exc = "aprox";
           ctx2.cambio({ estructura: true });
         } }),
-        ...rect2 ? parejas4([
+        ...rect2 ? parejas3([
           campoNum2({ id: "p-c1", etq: sub32("c", "1"), ref: D.pos === "interior" ? "" : t("pun.c1Ref"), valor: D.c1, mag: "diam", paso: 25, min: 1, max: 5e3, ayuda: t("pun.c1Ayuda"), onCambio: set("c1") }),
           campoNum2({ id: "p-c2", etq: sub32("c", "2"), ref: D.pos === "interior" ? "" : t("pun.c2Ref"), valor: D.c2, mag: "diam", paso: 25, min: 1, max: 5e3, ayuda: t("pun.c2Ayuda"), onCambio: set("c2") })
-        ]) : parejas4([campoNum2({ id: "p-D", etq: "D", valor: D.D, mag: "diam", paso: 25, min: 1, max: 5e3, ayuda: t("pun.DAyuda"), onCambio: set("D") })])
+        ]) : parejas3([campoNum2({ id: "p-D", etq: "D", valor: D.D, mag: "diam", paso: 25, min: 1, max: 5e3, ayuda: t("pun.DAyuda"), onCambio: set("D") })])
       ),
       grupo(
         t("pun.losa"),
-        ...parejas4([
+        ...parejas3([
           selector({ id: "p-hor", linea: true, etq: t("pun.hormigon"), opciones: p.hormigones.map((m) => [m.nombre, m.nombre]), valor: D.hormigon, onCambio: (v2) => {
             D.hormigon = v2;
             cambio();
@@ -19749,7 +19764,7 @@ tr.et-act td { font-weight: 650; }
           campoNum2({ id: "p-rx", etq: sub32("\u03C1", "x"), valor: D.rhoX, mag: "cuantia", paso: 0.5, min: 0, max: 0.1, ayuda: t("pun.rhoAyuda"), onCambio: set("rhoX") }),
           campoNum2({ id: "p-ry", etq: sub32("\u03C1", "y"), valor: D.rhoY, mag: "cuantia", paso: 0.5, min: 0, max: 0.1, ayuda: t("pun.rhoAyuda"), onCambio: set("rhoY") })
         ]),
-        ...parejas4([
+        ...parejas3([
           campoNum2({ id: "p-ved", etq: sub32("V", "Ed"), valor: D.VEd, mag: "N", paso: 10, min: 0.01, max: 1e6, nombre: t("pun.VEdNombre"), ayuda: t("pun.VEdAyuda"), onCambio: set("VEd") }),
           campoNum2({ id: "p-beta", etq: e23 ? sub32("\u03B2", "e") : "\u03B2", valor: beta2, mag: "ratio", paso: 0.05, min: 1, max: 3, ayuda: t("pun.betaAyuda"), onCambio: (v2) => {
             D.betaOtro = v2;
@@ -19769,7 +19784,7 @@ tr.et-act td { font-weight: 650; }
         return c;
       };
       const cruz = D.esq === "cruz";
-      const campos = parejas4([
+      const campos = parejas3([
         selector({ id: "p-ace", linea: true, etq: t("pun.acero"), opciones: p.aceros.map((m) => [m.nombre, m.nombre]), valor: D.aceroCercos, onCambio: (v2) => {
           D.aceroCercos = v2;
           cambio();
@@ -20884,7 +20899,7 @@ tr.et-act td { font-weight: 650; }
       arm: { fi: D.fi, ramas: D.ramas, s: D.s }
     };
   }
-  var parejas5 = (campos) => {
+  var parejas4 = (campos) => {
     const c = campos.filter(Boolean);
     const filas = [];
     for (let i = 0; i < c.length; i += 2) filas.push(h("div", { class: "par2" }, ...c.slice(i, i + 2)));
@@ -20929,7 +20944,7 @@ tr.et-act td { font-weight: 650; }
           D.rug = v2;
           cambio();
         } }),
-        ...parejas5([
+        ...parejas4([
           campoNum({ id: "r-b", etq: "b", valor: D.b, mag: "diam", paso: 25, min: 10, max: 5e3, ayuda: t("ras.bAyuda"), onCambio: set("b") }),
           campoNum({ id: "r-L", etq: "L", valor: D.L, mag: "diam", paso: 100, min: 10, max: 1e5, ayuda: t("ras.LAyuda"), onCambio: set("L") }),
           campoNum({ id: "r-red", etq: sub34("R", "Ed"), valor: D.REd, mag: "N", paso: 10, min: 0.01, max: 1e7, nombre: t("ras.REdNombre"), ayuda: t("ras.REdAyuda"), onCambio: set("REd") }),
@@ -20963,7 +20978,7 @@ tr.et-act td { font-weight: 650; }
             } }),
             e23 && D.anclaje === "parcial" ? null : campoNum({ id: "r-alfa", etq: "\u03B1", valor: D.alfa, mag: "ang", paso: 5, min: N.ALFA_MIN, max: e23 && D.rug === "muyLisa" ? 90 : N.ALFA_MAX, ayuda: t("ras.alfaAyuda", N.ALFA_MIN, N.ALFA_MAX), onCambio: set("alfa") })
           ),
-          ...parejas5([
+          ...parejas4([
             comp ? selector({ id: "r-fi", etq: t("cor.fi"), linea: true, opciones: diametrosEntrada3().map((x) => [String(x), `\xF8${x}`]), valor: String(D.fi), onCambio: (v2) => {
               D.fi = Number(v2);
               cambio();

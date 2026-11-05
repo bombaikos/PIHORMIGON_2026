@@ -7,7 +7,7 @@ import { fisuraSeccion, curvaWk, dimensionaSeccion, modeloServicio, NORMAS_FIS }
 import { wmaxDe, CLASES } from '../../norma/fisuracion/limites.js';
 import { datosViga, geometriaDe, materialesSeccion, sepCapas } from '../../io/proyecto.js';
 import { t } from '../i18n.js';
-import { fmt, q, qh, MAG, serieDiametros } from '../formato.js';
+import { fmt, q, qh, MAG, serieDiametros, decimalAlCopiar } from '../formato.js';
 import { grupoSeccion, rotulaSeccion } from './secciones.js';
 import { h, poner, campoNum, selector, segmentado, grupo, aviso, cifras, tabla } from '../campos.js';
 import { grafica } from '../grafica.js';
@@ -90,13 +90,12 @@ export function datos(ctx, form) {
   const clases = (CLASES[id] ?? []).flatMap((g) => g.clases);
   poner(form,
     segmentado({ ancho: true, capsula: true, etiqueta: t('fis.modo'), opciones: [['comprobar', t('comprobar')], ['dimensionar', t('dimensionar')], ['diagrama', t('fis.modoDiagrama')]], valor: est.modo, onCambio: (m) => { est.modo = m; ctx.pintar(); } }),
-    grupo(t('fis.gEsfuerzo'), ...parejas([
+    grupo(t('fis.gEsfuerzo'),
       campoNum({ id: 'fi-m', etq: t('fis.M'), ref: t('fis.refM'), valor: est.M, mag: 'M', paso: 5, min: -1e6, max: 1e6, nombre: t('fis.nombreM'), onCambio: (v) => { est.M = v; cambio(); } }),
-      campoNum({ id: 'fi-n', etq: t('fis.N'), ref: t('fis.refN'), valor: est.N, mag: 'N', paso: 10, min: -1e6, max: 1e6, nombre: t('fis.nombreN'), onCambio: (v) => { est.N = v; cambio(); } }),
-    ])),
+      campoNum({ id: 'fi-n', etq: t('fis.N'), ref: t('fis.refN'), valor: est.N, mag: 'N', paso: 10, min: -1e6, max: 1e6, nombre: t('fis.nombreN'), onCambio: (v) => { est.N = v; cambio(); } })),
     grupo(t('fis.gAccion'),
       selector({ id: 'fi-clase', etq: t('fis.clase'), opciones: clases.map((c) => [c, c]), valor: claseDe(id), onCambio: (v) => { est.clase[id] = v; est.wmax = null; ctx.pintar(); } }),
-      ...parejas([conInfo(campoNum({ id: 'fi-wmax', etq: t('fis.wmax'), valor: wmaxDeNorma(id), mag: 'wk', paso: 0.05, min: 0.01, max: 5, onCambio: (v) => { est.wmax = v; cambio(); } }), t('fis.infoWmax'))]),
+      conInfo(campoNum({ id: 'fi-wmax', etq: t('fis.wmax'), valor: wmaxDeNorma(id), mag: 'wk', paso: 0.05, min: 0.01, max: 5, onCambio: (v) => { est.wmax = v; cambio(); } }), t('fis.infoWmax')),
       selector({ id: 'fi-dur', etq: t('fis.duracion'), opciones: [['larga', t('fis.larga')], ['corta', t('fis.corta')]], valor: est.larga ? 'larga' : 'corta', onCambio: (v) => { est.larga = v === 'larga'; cambio(); } }),
       id === 'EHE08'
         ? selector({ id: 'fi-acc', etq: t('fis.accion'), opciones: [['directa', t('fis.directa')], ['indirecta', t('fis.indirecta')]], valor: est.directa ? 'directa' : 'indirecta', onCambio: (v) => { est.directa = v === 'directa'; cambio(); } })
@@ -153,8 +152,8 @@ function resultadosFis(ctx, res) {
   poner(dcha, h('h2', {}, t('fis.t.res')));
   if (!r.sinFisurar) poner(dcha, cifras([[t('fis.c.Mfis'), qh(r.Mfis, 'M')], [t('fis.c.x'), qh(r.e.x / 1000, 'long')], [t('fis.c.ss'), qh(r.e.ss, 'tension')], [t('fis.c.ssr'), qh(r.e.ssr, 'tension')]]));
   else poner(dcha, cifras([[t('fis.c.Mfis'), qh(r.Mfis, 'M')]]));
-  if (dim) poner(dcha, tablaDim(filasDim), h('p', { class: 'pista', html: t('fis.dim.una') }));
-  else poner(dcha, tablaNormas(r, id, wmax));
+  if (dim) poner(dcha, tablaDim(ctx, filasDim), h('p', { class: 'pista', html: t('fis.dim.una') }));
+  else poner(dcha, tablaNormas(ctx, r, id, wmax));
   if (dim && r.sinFisurar) poner(dcha, aviso(t('fis.dim.sinFisurar'), 'info'));
   if (!dim && !r.sinFisurar) poner(dcha, h('div', { class: 'traza' }, ...trazas(r, id).map((f) => {
     const det = h('details', { 'data-ref': f.id, open: est.abiertos.has(f.id) },
@@ -175,8 +174,22 @@ function cifrasArmadura(r) {
     ['c', `${fmt(g.c, 0)}<span class="u"> mm</span>`], [sub('a', 'y'), `${fmt(g.ay, 0)}<span class="u"> mm</span>`], ['s', `${fmt(g.s, 0)}<span class="u"> mm</span>`]]));
 }
 
+const plano = (x) => String(x).replace(/<[^>]+>/g, '');
+/** Tabla con el botón «Copiar tabla» (guía: tablas de resultados copiables, texto con tabuladores). */
+function copiable(ctx, filas, cab, el) {
+  const dec = decimalAlCopiar();
+  const copiar = async () => {
+    try {
+      const txt = [cab.map(plano), ...filas.map((f) => [...f].map(plano))].map((f) => f.map((v) => v.replace('−', '-').replace('.', dec)).join('\t')).join('\r\n');
+      await navigator.clipboard.writeText(txt);
+      ctx.avisar(t('graf.tablaCopiada'));
+    } catch { ctx.avisar(t('graf.error')); }
+  };
+  return h('div', { class: 'fis-tabla' }, h('button', { type: 'button', class: 'tecla', title: t('graf.copiarTablaTit'), onclick: copiar }, t('fis.copiarTabla')), el);
+}
+
 /** wk de las tres normas, con la del proyecto marcada. */
-function tablaNormas(r, id, wmax) {
+function tablaNormas(ctx, r, id, wmax) {
   const fila = (etq, f) => [etq, ...NORMAS_FIS.map((n) => f(n))];
   const cab = ['', ...NORMAS_FIS.map((n) => (n === id ? `<b>${t(`fis.n.c.${n}`)}</b>` : t(`fis.n.c.${n}`)))];
   const wk = (n) => fmt(r.wk[n], MAG.wk.d);
@@ -184,16 +197,17 @@ function tablaNormas(r, id, wmax) {
   const f1 = fila(t('fis.tabla.wk'), wk);
   const f2 = fila(t('fis.tabla.ap'), ap);
   NORMAS_FIS.forEach((n, i) => { if (r.wk[n] > wmax + 1e-9) { f1[i + 1] = `<span class="no-cumple">${f1[i + 1]}</span>`; f2[i + 1] = `<span class="no-cumple">${f2[i + 1]}</span>`; } });
-  return tabla([f1, f2], { cabecera: cab, clase: 'normas-fis' });
+  return copiable(ctx, [f1, f2], cab, tabla([f1, f2], { cabecera: cab, clase: 'normas-fis' }));
 }
 
-function tablaDim(filas) {
+function tablaDim(ctx, filas) {
   const rows = filas.map((f) => {
     const fila = f.n ? [`ø${f.fi}`, String(f.n), fmt(f.As, 0), fmt(f.wk, MAG.wk.d), fmt(f.libre, 0)] : [`ø${f.fi}`, '—', '—', '—', '—'];
     if (f.mejor) fila.clase = 'sugerida';
     return fila;
   });
-  return tabla(rows, { cabecera: [t('fis.dim.fi'), t('fis.dim.n'), t('fis.dim.As'), t('fis.dim.wk'), t('fis.dim.libre')] });
+  const cab = [t('fis.dim.fi'), t('fis.dim.n'), t('fis.dim.As'), t('fis.dim.wk'), t('fis.dim.libre')];
+  return copiable(ctx, rows, cab, tabla(rows, { cabecera: cab }));
 }
 
 const art = (id, a) => `<span class="art">${NOMBRE(id)} · ${a}</span>`;
@@ -242,7 +256,7 @@ function diagrama(ctx, res, { s, c, r, o, id, wmax }) {
     archivo: `wk-M ${s.nombre}`,
     avisar: ctx.avisar,
   }));
-  const tablaWk = r.sinFisurar ? null : tablaNormas(r, id, wmax);
+  const tablaWk = r.sinFisurar ? null : tablaNormas(ctx, r, id, wmax);
   const lado = h('article', { class: 'panel tarjeta fcr-lado' }, h('div', { class: 'fcr-sec', html: dibujoSeccionPeq(c.geo, s) }), tablaWk);
   res.append(h('div', { class: 'cuerpo dib-ancho fcr-diagrama' },
     h('article', { class: 'panel tarjeta' }, h('h2', {}, `${t('fis.graf.tit')} · ${s.nombre}`), h('div', { class: 'fcr-graf' }, graf, nota)),

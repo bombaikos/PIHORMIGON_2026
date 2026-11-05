@@ -23,7 +23,7 @@ export default {
   'fis.ver.ecuSin': (M, Mf) => `${sub('M', 'k')} <b>${M}</b> ≤ ${sub('M', 'fis')} <b>${Mf}</b>`,
   'fis.ver.dim': (fi, n, As) => `ø${fi} × ${n} · ${sub('A', 's')} <b>${As}</b>`,
   'fis.ver.noDim': 'Ningún ø de la serie cumple con una sola capa',
-  'fis.arm': 'Armadura traccionada (primer lecho)', 'fis.aprov': 'Aprovechamiento', 'fis.armNec': 'Armadura necesaria',
+  'fis.arm': 'Armadura traccionada (primer lecho)', 'fis.copiarTabla': 'Copiar tabla', 'fis.aprov': 'Aprovechamiento', 'fis.armNec': 'Armadura necesaria',
   'fis.c.Mfis': sub('M', 'fis'), 'fis.c.x': 'x', 'fis.c.ss': sub('σ', 's'), 'fis.c.ssr': sub('σ', 'sr'),
   'fis.c.wk': sub('w', 'k'), 'fis.c.wmax': sub('w', 'máx'),
   'fis.tabla.n': 'Norma', 'fis.tabla.wk': sub('w', 'k') + ' [mm]', 'fis.tabla.ap': sub('w', 'k') + '/' + sub('w', 'máx'),
