@@ -1193,9 +1193,19 @@ tr.et-act td { font-weight: 650; }
 .dib .et-fr.foco { stroke: var(--acento); stroke-width: 2.5; }
 .fu-campo.inactivo, .campo.inactivo { opacity: .55; }
 .fu-campo.inactivo .seg button, .campo.inactivo input { cursor: not-allowed; }
-.an-hint { font-size: 10px; line-height: 1.3; color: var(--tinta-3); }
 .tabla-an thead th { vertical-align: bottom; }
 .tabla-an th.niv { border-bottom: 1px solid var(--linea-fuerte); }
 .tabla-an .g2 { border-left: 1px solid var(--linea-fuerte); }
 .tabla-an thead th b { white-space: nowrap; }
 .tabla-an td.an-cd { color: var(--tinta-3); }
+.tabla-an { table-layout: fixed; width: 100%; }
+.tabla-an col.c-phi, .tabla-an col.c-cd { width: 6.5%; }
+.tabla-an th, .tabla-an td { overflow-wrap: anywhere; }
+.an-cd-dib { margin-top: 6px; display: flex; gap: 16px; align-items: flex-start; }
+.an-cd-fig { flex: 0 0 300px; }
+.an-cd-dib .nota { margin: 0; }
+.dib-cd { max-width: 300px; max-height: 176px; width: 100%; min-width: 0; margin: 0 auto; }
+.dib .cerco { fill: none; stroke: var(--tinta-3); stroke-width: 3; }
+.dib .an-ancla { stroke: var(--acento); stroke-width: 2.5; }
+.dib-anclaje { max-width: none; max-height: none; }
+.tabla-an thead th.n3 { font-size: 11px; font-weight: 500; padding-inline: 2px; line-height: 1.2; }

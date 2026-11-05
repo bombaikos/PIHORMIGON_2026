@@ -7,7 +7,7 @@ import { t } from '../i18n.js';
 import { fmt, ESP, serieDiametros } from '../formato.js';
 import { h, poner, campoNum, selector, segmentado, grupo, par, tabla } from '../campos.js';
 import { filasPlegables } from '../filasPlegables.js';
-import { dibujoAnclaje } from '../dibujoAnclaje.js';
+import { dibujoAnclaje, dibujoRecubrimiento } from '../dibujoAnclaje.js';
 
 const sub = (a, b) => `${a}<sub>${b}</sub>`;
 
@@ -33,13 +33,12 @@ export function datos(ctx, form) {
   const set = (k) => (v) => { D[k] = v; cambio(); };
   const comp = D.esfuerzo === 'compresion';
   const n = idNorma(p);
-  // Los mismos campos con cualquier norma: los que no se aplican se desactivan y dicen por qué (hint y línea bajo el campo)
+  // Los mismos campos con cualquier norma: los que no se aplican se desactivan y dicen por qué (hint al pasar el ratón)
   const inactivo = (c, motivo) => {
     if (!motivo) return c;
     c.classList.add('inactivo');
     c.title = motivo;
     c.querySelectorAll('input,button').forEach((e) => { e.disabled = true; e.title = motivo; });
-    c.append(h('span', { class: 'an-hint', html: motivo }));
     return c;
   };
   const seg = (k, opciones, etq, est = true, motivo = null) => inactivo(h('div', { class: 'fu-campo' }, h('span', { class: 'etq-grupo', html: etq }),
@@ -47,7 +46,7 @@ export function datos(ctx, form) {
   const noEHE = ehe ? null : t('an.no.ehe');
   const noDist = ehe ? (comp ? t('an.no.comp') : null) : t('an.no.dist');
   const noPct = n === 'EC2-2023' ? t('an.no.pct23') : ehe && comp ? t('an.no.comp') : null;
-  poner(form, h('div', { class: 'cab' }, h('h1', {}, t('m.anclaje')), h('p', {}, t('an.subtitulo'))));
+  poner(form, h('div', { class: 'cab' }, h('h1', {}, t('m.anclaje'))));
   poner(form,
     grupo(t('an.materiales'), par(
       selector({ id: 'an-hor', etq: t('an.hormigon'), opciones: p.hormigones.map((m) => [m.nombre, m.nombre]), valor: D.hormigon, onCambio: (v) => { D.hormigon = v; cambio(true); } }),
@@ -58,7 +57,7 @@ export function datos(ctx, form) {
       seg('via', [['viga', t('an.viaViga')], ['corrugas', t('an.viaCorr')]], t('an.via'), true, noEHE)),
     grupo(t('an.solapo'),
       inactivo(campoNum({ id: 'an-pct', etq: t('an.pct'), valor: D.pct, mag: 'pct', paso: 5, min: 1, max: 100, ayuda: t('an.pctAyuda'), onCambio: set('pct') }), noPct),
-      seg('lejos', [[false, t('an.cerca')], [true, t('an.lejos')]], t('an.dist'), true, noDist)));
+      seg('lejos', [[false, t('an.cerca')], [true, t('an.lejos')]], t('an.dist'), true, noDist)),)
 }
 
 /** Entrada común del núcleo para un diámetro y una posición. */
@@ -70,7 +69,7 @@ function base(p, D, fck, fyk) {
 }
 
 /** Recubrimiento de cálculo cd de todas las filas: máx(25 mm; 1,5 ø), el límite de la Tabla 11.1 del EC-2 2023 (cd ≥ 1,5 ø). El proyecto debe garantizarlo. */
-const cdDe = (phi) => Math.max(25, 1.5 * phi);
+const cdDe = (phi) => Math.round(Math.max(25, 1.5 * phi));
 const sobre5 = (x) => Math.ceil(x / 5 - 1e-9) * 5;
 
 /** Todas las casillas de la tabla (y del contraste con el CE). */
@@ -122,10 +121,15 @@ function articulo(p, D) {
   return 'EN 1992-1-1:2023 · 11.4 y 11.5';
 }
 
-const num = (c, tipo) => {
+const num = (c) => {
   if (!c) return '—';
   if (c.est) return 'est.';
   return `${fmt(c.v, 0)}${c.min ? '*' : ''}${c.g ? '†' : ''}`;
+};
+/** Celda de la tabla; los asteriscos y las notas se explican en el hint. */
+const celdaTd = (c) => {
+  const hint = !c ? null : c.est ? t('an.hint.est') : c.g ? t('an.hint.g') : c.min ? t('an.hint.min') : null;
+  return h('td', hint ? { title: hint.replace(/&gt;/g, '>') } : {}, num(c));
 };
 
 export function resultados(ctx, res) {
@@ -154,11 +158,12 @@ export function resultados(ctx, res) {
   const fila2 = h('tr', {},
     th(posC('I'), comp ? { rowspan: '2' } : { colspan: '2' }), g2(th(posC('II'), comp ? { rowspan: '2' } : { colspan: '2' })),
     g2(th(posC('I'), { rowspan: comp ? '2' : '2' })), th(posC('II'), { rowspan: '2' }));
-  const fila3 = comp ? null : h('tr', {}, th(t('an.col.l3r')), th(t('an.col.l3p')), g2(th(t('an.col.l3r'))), th(t('an.col.l3p')));
+  const n3 = { class: 'n3' };
+  const fila3 = comp ? null : h('tr', {}, th(t('an.col.l3r'), n3), th(t('an.col.l3p'), n3), g2(th(t('an.col.l3r'), n3)), th(t('an.col.l3p'), n3));
   const cab = h('thead', {}, fila1, fila2, fila3);
   const cuerpo = h('tbody', {}, ...r.filas.map((f) => {
     const cel = comp ? [f.I[0], f.II[0], f.sI, f.sII] : [f.I[0], f.I[1], f.II[0], f.II[1], f.sI, f.sII];
-    const tr = h('tr', {}, h('th', { scope: 'row' }, String(f.phi)), h('td', { class: 'an-cd' }, fmt(cdDe(f.phi), cdDe(f.phi) % 1 ? 1 : 0)), ...cel.map((c) => h('td', {}, num(c))));
+    const tr = h('tr', {}, h('th', { scope: 'row' }, String(f.phi)), h('td', { class: 'an-cd' }, fmt(cdDe(f.phi), 0)), ...cel.map(celdaTd));
     (comp ? [3, 4] : [4, 6]).forEach((i) => tr.cells[i].classList.add('g2'));
     return tr;
   }));
@@ -181,21 +186,23 @@ export function resultados(ctx, res) {
       ctx.avisar(t('graf.tablaCopiada'));
     } catch { ctx.avisar(t('graf.error')); }
   };
-  const tablaEl = h('table', { class: 'tabla-dur tabla-an', id: 'an-tabla' }, cab, cuerpo);
+  const cols = h('colgroup', {}, h('col', { class: 'c-phi' }), h('col', { class: 'c-cd' }), ...Array.from({ length: comp ? 4 : 6 }, () => h('col')));
+  const tablaEl = h('table', { class: 'tabla-dur tabla-an', id: 'an-tabla' }, cols, cab, cuerpo);
   tablaEl.addEventListener('copy', (e) => { e.preventDefault(); e.clipboardData.setData('text/plain', texto()); e.clipboardData.setData('text/html', html()); });
   poner(centro,
     h('div', { class: 'an-tit' }, h('h2', { class: 'an-h', html: `${t('m.anclaje')} <span class="an-mat">${r.hor.nombre} ${r.ace.nombre}</span>` }),
       h('button', { type: 'button', class: 'tecla', id: 'an-copiar', title: t('graf.copiarTablaTit'), onclick: copiar }, t('graf.copiar'))), h('p', { class: 'nota', html: `${t('an.titulo')}. ${t('an.sub', art)}` }),
     h('div', { class: 'tabla-scroll' }, tablaEl),
-    h('p', { class: 'fu-leyenda', html: t('an.leyenda') }),
-    h('p', { class: 'nota an-ficha', id: 'an-ficha', html: ficha }));
+    h('p', { class: 'nota an-ficha', id: 'an-ficha', html: ficha }),
+    h('div', { class: 'an-cd-dib' }, h('div', { class: 'an-cd-fig', html: dibujoRecubrimiento() }),
+      h('p', { class: 'nota' }, h('b', { html: t('an.cdDef') }), h('br'), h('span', { html: t('an.cdLey') }))));
 
   // Derecha: esquema y notas plegadas
   const n = idNorma(p);
   const pos = n === 'EHE-08' ? 'an.pos.ehe' : n === 'EC2-2004' ? 'an.pos.ec2' : 'an.pos.ec23';
   const mn = n === 'EHE-08' ? 'an.min.ehe' : n === 'EC2-2004' ? 'an.min.ec2' : 'an.min.ec23';
   const tv = n === 'EHE-08' ? 'an.transv.ehe' : n === 'EC2-2004' ? 'an.transv.ec2' : 'an.transv.ec23';
-  const claves = [['an.n.pos', pos], ['an.n.min', mn], ['an.n.transv', tv], ['an.n.cd', 'an.cdTxt'], ['an.n.falta', 'an.falta']];
+  const claves = [['an.n.pos', pos], ['an.n.min', mn], ['an.n.transv', tv], ['an.n.cd', 'an.cdTxt'], ['an.n.patilla', n === 'EHE-08' ? 'an.patilla.ehe' : n === 'EC2-2004' ? 'an.patilla.ec2' : 'an.patilla.ec23'], ['an.n.falta', 'an.falta']];
   const tbNotas = tabla(claves.map(([k]) => [t(k)]));
   filasPlegables(tbNotas, claves.map(([, v]) => `<span>${t(v)}</span>`));
   poner(dcha, h('div', { class: 'an-dib', html: dibujoAnclaje({ esfuerzo: D.esfuerzo }) }), h('h3', {}, t('an.notas')), tbNotas);

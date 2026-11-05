@@ -1195,12 +1195,22 @@ tr.et-act td { font-weight: 650; }
 .dib .et-fr.foco { stroke: var(--acento); stroke-width: 2.5; }
 .fu-campo.inactivo, .campo.inactivo { opacity: .55; }
 .fu-campo.inactivo .seg button, .campo.inactivo input { cursor: not-allowed; }
-.an-hint { font-size: 10px; line-height: 1.3; color: var(--tinta-3); }
 .tabla-an thead th { vertical-align: bottom; }
 .tabla-an th.niv { border-bottom: 1px solid var(--linea-fuerte); }
 .tabla-an .g2 { border-left: 1px solid var(--linea-fuerte); }
 .tabla-an thead th b { white-space: nowrap; }
 .tabla-an td.an-cd { color: var(--tinta-3); }
+.tabla-an { table-layout: fixed; width: 100%; }
+.tabla-an col.c-phi, .tabla-an col.c-cd { width: 6.5%; }
+.tabla-an th, .tabla-an td { overflow-wrap: anywhere; }
+.an-cd-dib { margin-top: 6px; display: flex; gap: 16px; align-items: flex-start; }
+.an-cd-fig { flex: 0 0 300px; }
+.an-cd-dib .nota { margin: 0; }
+.dib-cd { max-width: 300px; max-height: 176px; width: 100%; min-width: 0; margin: 0 auto; }
+.dib .cerco { fill: none; stroke: var(--tinta-3); stroke-width: 3; }
+.dib .an-ancla { stroke: var(--acento); stroke-width: 2.5; }
+.dib-anclaje { max-width: none; max-height: none; }
+.tabla-an thead th.n3 { font-size: 11px; font-weight: 500; padding-inline: 2px; line-height: 1.2; }
 </style>
 
 <header class="barra">
@@ -1504,11 +1514,11 @@ tr.et-act td { font-weight: 650; }
     const n = normaMat(norma2);
     if (!(fck > 0)) throw new Error("fck debe ser positivo");
     if (fck > n.fckMax) throw new Error(`${n.nombre}: esta versi\xF3n solo admite fck \u2264 ${n.fckMax} MPa`);
-    const g = gammaC ?? n.gammaC;
+    const g2 = gammaC ?? n.gammaC;
     const a = alfa2 ?? n.alfaCC(fck, { ktc, alfaCC });
     if (diag === "EC2" || diag === "puntos") {
       const E = n.Ec(fck, { kE, coefArido }) * 1e3;
-      const fcd2 = a * fck / g;
+      const fcd2 = a * fck / g2;
       const comp2 = diag === "EC2" ? compSargin(fck, norma2, { kE, coefArido, refDiag: calculo5 ? "fcd" : refDiag, fcd: fcd2 }) : compPuntos(puntos);
       return {
         tipo: "hormigon",
@@ -1516,7 +1526,7 @@ tr.et-act td { font-weight: 650; }
         norma: n.id,
         E,
         fk: fck * 1e3,
-        gamma: calculo5 && diag === "EC2" ? g : 1,
+        gamma: calculo5 && diag === "EC2" ? g2 : 1,
         alfa: calculo5 && diag === "EC2" ? a : 1,
         ktc: n.id === "EC2-2023" ? ktc ?? n.ktc : void 0,
         diag,
@@ -1529,7 +1539,7 @@ tr.et-act td { font-weight: 650; }
     const ec2 = n.epsC2(fck);
     const ecu = n.epsCu(fck);
     const np = n.nParab(fck);
-    const fcd = a * fck * 1e3 / g;
+    const fcd = a * fck * 1e3 / g2;
     const comp = [];
     for (let i = 0; i <= tramos; i++) {
       const e2 = ec2 * i / tramos;
@@ -1543,7 +1553,7 @@ tr.et-act td { font-weight: 650; }
       norma: n.id,
       E: n.Ec(fck, { kE, coefArido }) * 1e3,
       fk: fck * 1e3,
-      gamma: g,
+      gamma: g2,
       alfa: a,
       ktc: n.id === "EC2-2023" ? ktc ?? n.ktc : void 0,
       comp,
@@ -1600,9 +1610,9 @@ tr.et-act td { font-weight: 650; }
   function acero({ nombre = "", fyk, norma: norma2 = "EHE-98", gammaS, Es, epsUd, ductilidad, rama = "horizontal", epsUdModo, k }) {
     const n = normaMat(norma2);
     if (!(fyk > 0)) throw new Error("fyk debe ser positivo");
-    const g = gammaS ?? n.gammaS;
+    const g2 = gammaS ?? n.gammaS;
     const E = (Es ?? n.Es) * 1e3;
-    const fyd = fyk * 1e3 / g;
+    const fyd = fyk * 1e3 / g2;
     const ey = fyd / E;
     let eu = epsUd ?? n.epsUd;
     let sU = fyd;
@@ -1612,10 +1622,10 @@ tr.et-act td { font-weight: 650; }
       clase = ductilidad ?? n.ductilidad;
       const dc = (n.DUCTILIDAD ?? DUCTILIDAD)[clase];
       if (!dc) throw new Error(`Clase de ductilidad desconocida: ${clase}`);
-      if (n.id === "EC2-2023") eu = epsUd ?? dc.euk / g;
+      if (n.id === "EC2-2023") eu = epsUd ?? dc.euk / g2;
       else eu = epsUd ?? Math.min((epsUdModo === "euk" ? 1 : 0.9) * dc.euk, n.epsUdMax);
       if (rama === "inclinada") {
-        const sMax = (k ?? dc.k) * fyk * 1e3 / g;
+        const sMax = (k ?? dc.k) * fyk * 1e3 / g2;
         sU = fyd + (sMax - fyd) * (eu - ey) / (dc.euk - ey);
       }
     }
@@ -1625,7 +1635,7 @@ tr.et-act td { font-weight: 650; }
       norma: n.id,
       E,
       fk: fyk * 1e3,
-      gamma: g,
+      gamma: g2,
       alfa: 1,
       ductilidad: clase,
       k: conClase && rama === "inclinada" ? k ?? (n.DUCTILIDAD ?? DUCTILIDAD)[clase].k : void 0,
@@ -1886,19 +1896,19 @@ tr.et-act td { font-weight: 650; }
     });
   }
   function contornos(s) {
-    const g = s.geo;
+    const g2 = s.geo;
     switch (s.forma) {
       case "rectangular":
       case "pilar":
-        return [{ pts: [[0, 0], [g.b, 0], [g.b, g.h], [0, g.h]], signo: 1 }];
+        return [{ pts: [[0, 0], [g2.b, 0], [g2.b, g2.h], [0, g2.h]], signo: 1 }];
       case "T": {
-        const a = (g.b - g.bw) / 2;
-        return [{ pts: [[0, 0], [g.b, 0], [g.b, g.hf], [a + g.bw, g.hf], [a + g.bw, g.h], [a, g.h], [a, g.hf], [0, g.hf]], signo: 1 }];
+        const a = (g2.b - g2.bw) / 2;
+        return [{ pts: [[0, 0], [g2.b, 0], [g2.b, g2.hf], [a + g2.bw, g2.hf], [a + g2.bw, g2.h], [a, g2.h], [a, g2.hf], [0, g2.hf]], signo: 1 }];
       }
       case "circular":
-        return [{ pts: poligonoCircular(g.D), signo: 1 }];
+        return [{ pts: poligonoCircular(g2.D), signo: 1 }];
       case "generica":
-        return [{ pts: g.contorno, signo: 1 }, ...(g.huecos ?? []).map((pts) => ({ pts, signo: -1 }))];
+        return [{ pts: g2.contorno, signo: 1 }, ...(g2.huecos ?? []).map((pts) => ({ pts, signo: -1 }))];
       default:
         throw new Error(`Forma de secci\xF3n desconocida: ${s.forma}`);
     }
@@ -1943,63 +1953,63 @@ tr.et-act td { font-weight: 650; }
     const franjas = [];
     const errores = [];
     const avisos4 = [];
-    (s.armado ?? []).forEach((g, grupo2) => {
-      if (g.tipo === "puntual") {
-        for (const b of g.barras ?? []) barras.push({ x: b.x, y: b.y, fi: b.fi, A: Math.PI * (b.fi / 1e3) ** 2 / 4, grupo: grupo2 });
+    (s.armado ?? []).forEach((g2, grupo2) => {
+      if (g2.tipo === "puntual") {
+        for (const b of g2.barras ?? []) barras.push({ x: b.x, y: b.y, fi: b.fi, A: Math.PI * (b.fi / 1e3) ** 2 / 4, grupo: grupo2 });
         return;
       }
-      if (g.tipo === "caras") {
+      if (g2.tipo === "caras") {
         if (s.forma !== "generica") {
           errores.push(err("geoErr.carasSoloGen"));
           return;
         }
-        barrasCaras(cs[0].pts, g, grupo2, barras, errores, avisos4);
+        barrasCaras(cs[0].pts, g2, grupo2, barras, errores, avisos4);
         return;
       }
-      if (g.tipo === "perimetral") {
+      if (g2.tipo === "perimetral") {
         if (s.forma !== "pilar") {
           errores.push(err("geoErr.perimSoloPilar"));
           return;
         }
-        barrasPerimetrales(caja, g, grupo2, barras, errores);
+        barrasPerimetrales(caja, g2, grupo2, barras, errores);
         return;
       }
-      if (g.tipo === "capa") {
-        const r = leerCapas(g.texto);
+      if (g2.tipo === "capa") {
+        const r = leerCapas(g2.texto);
         if (!r) {
-          errores.push(err("geoErr.formatoCara", g.cara));
+          errores.push(err("geoErr.formatoCara", g2.cara));
           return;
         }
-        if (r.error === "err.unaBarra") errores.push(err("geoErr.unaBarraCara", g.cara));
+        if (r.error === "err.unaBarra") errores.push(err("geoErr.unaBarraCara", g2.cara));
         r.capas.forEach((c, k) => {
-          const dk = g.d + k * sep;
-          const y = g.cara === "sup" ? caja.ymin + dk : caja.ymax - dk;
+          const dk = g2.d + k * sep;
+          const y = g2.cara === "sup" ? caja.ymin + dk : caja.ymax - dk;
           const t2 = tramoEn(cs, y);
           if (!t2) {
-            errores.push(err("geoErr.capaFuera", k + 1, g.cara));
+            errores.push(err("geoErr.capaFuera", k + 1, g2.cara));
             return;
           }
           if (c.n === void 0) {
-            franjas.push({ y, A: c.A * 1e-6, x1: t2[0] + g.d, x2: t2[1] - g.d, grupo: grupo2 });
+            franjas.push({ y, A: c.A * 1e-6, x1: t2[0] + g2.d, x2: t2[1] - g2.d, grupo: grupo2 });
             return;
           }
           const A = Math.PI * (c.fi / 1e3) ** 2 / 4;
-          for (const x of repartir(c.n, t2[0], t2[1], g.d)) barras.push({ x, y, fi: c.fi, A, grupo: grupo2, capa: k });
+          for (const x of repartir(c.n, t2[0], t2[1], g2.d)) barras.push({ x, y, fi: c.fi, A, grupo: grupo2, capa: k });
         });
         return;
       }
-      const a = leerArmado(g.texto);
+      const a = leerArmado(g2.texto);
       if (!a) {
         errores.push(err("geoErr.formatoGrupo", grupo2 + 1));
         return;
       }
       const fis = a.barras.flatMap((b) => Array(b.n).fill(b.fi));
-      if (g.tipo === "anillo") {
+      if (g2.tipo === "anillo") {
         if (s.forma !== "circular") {
           errores.push(err("geoErr.anilloSoloCirc"));
           return;
         }
-        const R = s.geo.D / 2 - g.r;
+        const R = s.geo.D / 2 - g2.r;
         const n = fis.length;
         fis.forEach((fi, i) => {
           const ang = 2 * Math.PI * i / n;
@@ -2010,27 +2020,27 @@ tr.et-act td { font-weight: 650; }
     });
     return { contornos: cs, caja, h: h2, barras, franjas, errores, avisos: avisos4 };
   }
-  function barrasPerimetrales(caja, g, grupo2, barras, errores) {
-    const nx = Math.round(g.nx);
-    const ny = Math.round(g.ny);
+  function barrasPerimetrales(caja, g2, grupo2, barras, errores) {
+    const nx = Math.round(g2.nx);
+    const ny = Math.round(g2.ny);
     if (!(nx >= 2 && ny >= 2)) {
       errores.push(err("geoErr.perimMinimo"));
       return;
     }
-    if (!(g.fi > 0)) {
+    if (!(g2.fi > 0)) {
       errores.push(err("geoErr.perimDiametro"));
       return;
     }
-    const x1 = caja.xmin + g.d;
-    const x2 = caja.xmax - g.d;
-    const y1 = caja.ymin + g.d;
-    const y2 = caja.ymax - g.d;
+    const x1 = caja.xmin + g2.d;
+    const x2 = caja.xmax - g2.d;
+    const y1 = caja.ymin + g2.d;
+    const y2 = caja.ymax - g2.d;
     if (!(x2 > x1 && y2 > y1)) {
       errores.push(err("geoErr.perimFuera"));
       return;
     }
-    const A = Math.PI * (g.fi / 1e3) ** 2 / 4;
-    const pon = (x, y, cara2) => barras.push({ x, y, fi: g.fi, A, grupo: grupo2, cara: cara2 });
+    const A = Math.PI * (g2.fi / 1e3) ** 2 / 4;
+    const pon = (x, y, cara2) => barras.push({ x, y, fi: g2.fi, A, grupo: grupo2, cara: cara2 });
     for (let i = 0; i < nx; i++) {
       const x = x1 + (x2 - x1) * i / (nx - 1);
       pon(x, y1, "sup");
@@ -2042,7 +2052,7 @@ tr.et-act td { font-weight: 650; }
       pon(x2, y, "lat");
     }
   }
-  function barrasCaras(P, g, grupo2, barras, errores, avisos4) {
+  function barrasCaras(P, g2, grupo2, barras, errores, avisos4) {
     const n = P.length;
     if (n < 3) return;
     let A = 0;
@@ -2058,11 +2068,11 @@ tr.et-act td { font-weight: 650; }
       const a = normal((i - 1 + n) % n);
       const b = normal(i);
       const c = 1 + a[0] * b[0] + a[1] * b[1];
-      if (c < 1e-6) return [p[0] + b[0] * g.d, p[1] + b[1] * g.d];
-      return [p[0] + (a[0] + b[0]) / c * g.d, p[1] + (a[1] + b[1]) / c * g.d];
+      if (c < 1e-6) return [p[0] + b[0] * g2.d, p[1] + b[1] * g2.d];
+      return [p[0] + (a[0] + b[0]) / c * g2.d, p[1] + (a[1] + b[1]) / c * g2.d];
     });
     const puestas = [];
-    (g.textos ?? []).forEach((txt, i) => {
+    (g2.textos ?? []).forEach((txt, i) => {
       if (i >= n || !String(txt ?? "").trim()) return;
       const c = leerCara(txt);
       if (!c) {
@@ -2083,9 +2093,9 @@ tr.et-act td { font-weight: 650; }
         if (Math.abs(real - c.sep) > 0.2 * c.sep) avisos4.push(err("geoAv.caraSep", i + 1, Math.round(L * 1e3), Math.round(c.sep * 1e3), nb, Math.round(real * 1e3)));
       }
       for (let k = 0; k < nb; k++) {
-        const u = k / nb;
-        const x = a[0] + (z[0] - a[0]) * u;
-        const y = a[1] + (z[1] - a[1]) * u;
+        const u2 = k / nb;
+        const x = a[0] + (z[0] - a[0]) * u2;
+        const y = a[1] + (z[1] - a[1]) * u2;
         const igual = puestas.find((b) => Math.hypot(b.x - x, b.y - y) < 1e-4);
         if (igual) {
           if (c.fi > igual.fi) Object.assign(igual, { fi: c.fi, A: Math.PI * (c.fi / 1e3) ** 2 / 4 });
@@ -2126,12 +2136,12 @@ tr.et-act td { font-weight: 650; }
   }
   function girar(geo) {
     const { xmin, xmax, ymin, ymax } = geo.caja;
-    const g = (x, y) => [xmin + xmax - x, ymin + ymax - y];
+    const g2 = (x, y) => [xmin + xmax - x, ymin + ymax - y];
     return {
       ...geo,
-      contornos: geo.contornos.map((c) => ({ ...c, pts: c.pts.map(([x, y]) => g(x, y)) })),
+      contornos: geo.contornos.map((c) => ({ ...c, pts: c.pts.map(([x, y]) => g2(x, y)) })),
       barras: geo.barras.map((b) => {
-        const [x, y] = g(b.x, b.y);
+        const [x, y] = g2(b.x, b.y);
         return { ...b, x, y };
       }),
       franjas: geo.franjas.map((f) => ({ ...f, y: ymin + ymax - f.y, x1: xmin + xmax - f.x2, x2: xmin + xmax - f.x1 }))
@@ -2147,8 +2157,8 @@ tr.et-act td { font-weight: 650; }
         const dx = x2 - x1;
         const dy = y2 - y1;
         const L2 = dx * dx + dy * dy;
-        const u = L2 > 0 ? Math.max(0, Math.min(1, ((x - x1) * dx + (y - y1) * dy) / L2)) : 0;
-        d = Math.min(d, Math.hypot(x - x1 - u * dx, y - y1 - u * dy));
+        const u2 = L2 > 0 ? Math.max(0, Math.min(1, ((x - x1) * dx + (y - y1) * dy) / L2)) : 0;
+        d = Math.min(d, Math.hypot(x - x1 - u2 * dx, y - y1 - u2 * dy));
       }
     }
     return d;
@@ -2441,9 +2451,9 @@ tr.et-act td { font-weight: 650; }
   function seccionEjemplo(nombre, forma) {
     const s = seccionNueva(nombre, forma, "HA-25", "B 500 S");
     if (forma === "generica") {
-      const g = GENERICA_EJEMPLO;
-      s.geo = { contorno: g.contorno.map((p) => [...p]), huecos: g.huecos.map((h2) => h2.map((p) => [...p])) };
-      s.armado = [{ tipo: "caras", d: g.d, textos: [...g.textos] }];
+      const g2 = GENERICA_EJEMPLO;
+      s.geo = { contorno: g2.contorno.map((p) => [...p]), huecos: g2.huecos.map((h2) => h2.map((p) => [...p])) };
+      s.armado = [{ tipo: "caras", d: g2.d, textos: [...g2.textos] }];
     }
     return s;
   }
@@ -2466,31 +2476,31 @@ tr.et-act td { font-weight: 650; }
   var geometriaDe = (p, s) => geometria(s, { sep: sepCapas(p) });
   function normalizarCaras(s, sep = SEP_CAPAS) {
     if (s.forma === "generica") {
-      if (!s.armado.some((g) => g.tipo === "caras")) s.armado.unshift({ tipo: "caras", d: 0.04, textos: [] });
+      if (!s.armado.some((g2) => g2.tipo === "caras")) s.armado.unshift({ tipo: "caras", d: 0.04, textos: [] });
       return s;
     }
     if (s.forma !== "rectangular" && s.forma !== "T") return s;
     const resto = [];
     const caras = {};
     for (const cara2 of ["sup", "inf"]) {
-      const lista = s.armado.filter((g) => g.tipo === "capa" && g.cara === cara2).sort((a, b) => a.d - b.d);
+      const lista = s.armado.filter((g2) => g2.tipo === "capa" && g2.cara === cara2).sort((a, b) => a.d - b.d);
       if (!lista.length) {
         caras[cara2] = { tipo: "capa", cara: cara2, texto: "", d: cara2 === "sup" ? 0.04 : 0.045 };
         continue;
       }
       const base2 = { ...lista[0] };
       let k = 1;
-      for (const g of lista.slice(1)) {
-        const r = leerCapas(g.texto);
+      for (const g2 of lista.slice(1)) {
+        const r = leerCapas(g2.texto);
         const r0 = leerCapas(base2.texto);
-        if (r && !r.error && r.capas.length === 1 && r0 && !r0.error && Math.abs(g.d - base2.d - r0.capas.length * sep) < 3e-3) {
-          base2.texto = `${base2.texto}+${g.texto}`;
+        if (r && !r.error && r.capas.length === 1 && r0 && !r0.error && Math.abs(g2.d - base2.d - r0.capas.length * sep) < 3e-3) {
+          base2.texto = `${base2.texto}+${g2.texto}`;
           k++;
-        } else resto.push(g);
+        } else resto.push(g2);
       }
       caras[cara2] = base2;
     }
-    s.armado = [caras.sup, caras.inf, ...resto, ...s.armado.filter((g) => g.tipo !== "capa")];
+    s.armado = [caras.sup, caras.inf, ...resto, ...s.armado.filter((g2) => g2.tipo !== "capa")];
     return s;
   }
   function migrarSeccion(s) {
@@ -2556,24 +2566,24 @@ tr.et-act td { font-weight: 650; }
   function datosViga(p, s, signo = 1) {
     if (s.forma !== "rectangular" && s.forma !== "T") throw new ErrorClave("err.flexSoloRect", s.nombre, s.forma);
     const { hormigonCalc: hormigon2, acero: acero2 } = materialesSeccion(p, s);
-    const g = geometriaDe(p, s);
-    if (g.errores.length) throw new ErrorClave("err.varios", g.errores);
+    const g2 = geometriaDe(p, s);
+    if (g2.errores.length) throw new ErrorClave("err.varios", g2.errores);
     const H2 = s.geo.h;
     const lado = (inf) => {
-      const todas = [...g.barras, ...g.franjas].filter((b) => b.y - g.caja.ymin > H2 / 2 === inf);
+      const todas = [...g2.barras, ...g2.franjas].filter((b) => b.y - g2.caja.ymin > H2 / 2 === inf);
       const A = todas.reduce((t2, b) => t2 + b.A, 0);
-      const y = A > 0 ? todas.reduce((t2, b) => t2 + b.A * (b.y - g.caja.ymin), 0) / A : NaN;
+      const y = A > 0 ? todas.reduce((t2, b) => t2 + b.A * (b.y - g2.caja.ymin), 0) / A : NaN;
       return { A, r: A > 0 ? inf ? H2 - y : y : 0.05 };
     };
     const i = lado(true);
-    const u = lado(false);
+    const u2 = lado(false);
     const pos = signo >= 0;
-    const tr = pos ? i : u;
-    const co = pos ? u : i;
-    const y0 = g.caja.ymin;
-    let trap = trapecios(g.contornos).map((t2) => ({ y1: t2.y1 - y0, y2: t2.y2 - y0, b1: t2.b1, b2: t2.b2 }));
+    const tr = pos ? i : u2;
+    const co = pos ? u2 : i;
+    const y0 = g2.caja.ymin;
+    let trap = trapecios(g2.contornos).map((t2) => ({ y1: t2.y1 - y0, y2: t2.y2 - y0, b1: t2.b1, b2: t2.b2 }));
     if (!pos) trap = trap.map((t2) => ({ y1: H2 - t2.y2, y2: H2 - t2.y1, b1: t2.b2, b2: t2.b1 })).reverse();
-    const br = bruta(g);
+    const br = bruta(g2);
     const ancho = (y) => {
       const t2 = trap.find((q2) => y >= q2.y1 - 1e-12 && y <= q2.y2 + 1e-12);
       return t2.b1 + (t2.b2 - t2.b1) * (y - t2.y1) / (t2.y2 - t2.y1 || 1);
@@ -2604,10 +2614,10 @@ tr.et-act td { font-weight: 650; }
       const b0 = Math.min(...v2.trapecios.flatMap((t2) => [t2.b1, t2.b2]));
       return { ...comun, b0, h: v2.h, d: v2.h - v2.rinf, Ac: v2.Ac, Asl: v2.Ainf, Asc: 0, circular: false };
     }
-    const g = geometriaDe(p, s);
-    if (g.errores.length) throw new ErrorClave("err.varios", g.errores);
-    const A = [...g.barras, ...g.franjas].reduce((t2, b) => t2 + b.A, 0);
-    const Ac = bruta(g).A;
+    const g2 = geometriaDe(p, s);
+    if (g2.errores.length) throw new ErrorClave("err.varios", g2.errores);
+    const A = [...g2.barras, ...g2.franjas].reduce((t2, b) => t2 + b.A, 0);
+    const Ac = bruta(g2).A;
     if (s.forma === "pilar") {
       const arm = s.armado.find((a) => a.tipo === "perimetral");
       const r = arm?.d ?? 0.05;
@@ -2791,7 +2801,7 @@ tr.et-act td { font-weight: 650; }
     "mat.gDeformacion": "Deformabilidad",
     "mat.gDuctilidad": "Ductilidad",
     "mat.alfaAyuda": (a) => `Cansancio del hormig\xF3n (${a})`,
-    "mat.gammaAyuda": (g, a, art5) => `Por defecto ${g}; ${a} en situaciones accidentales (${art5})`,
+    "mat.gammaAyuda": (g2, a, art5) => `Por defecto ${g2}; ${a} en situaciones accidentales (${art5})`,
     "mat.arido": "\xC1rido",
     "mat.cemento": "Cemento",
     "mat.cem.S": "S \xB7 endurecimiento lento",
@@ -3068,7 +3078,7 @@ tr.et-act td { font-weight: 650; }
     "fcr.sinEsfuerzos": "Escribe al menos un par N, M en la tabla.",
     "fcr.noBasta": "Ni multiplicando por 40 la armadura de Secciones caben los esfuerzos.",
     "fcr.sinArm": "Basta el hormig\xF3n",
-    "fcr.kArm": (k, a, g) => `Armadura de Secciones \xD7 <b>${k}</b> (${a}) para \u03B3 \u2265 ${g}.`,
+    "fcr.kArm": (k, a, g2) => `Armadura de Secciones \xD7 <b>${k}</b> (${a}) para \u03B3 \u2265 ${g2}.`,
     "fcr.coefSeg": "Coeficiente de seguridad",
     "fcr.puntos": "Esfuerzos",
     "fcr.dentro": "dentro del diagrama",
@@ -3079,7 +3089,7 @@ tr.et-act td { font-weight: 650; }
     "fcr.puntosCont": "puntos",
     "fcr.f.env": "Misma secci\xF3n sin armadura: resistencia del hormig\xF3n solo (sin tracci\xF3n), para ver cu\xE1nto aporta el acero.",
     "fcr.pista": "Compresi\xF3n +, tracci\xF3n \u2212. Armadura sim\xE9trica: solo M \u2265 0 (el signo de M no importa). \u03B3 = |OQ|/|OP| a excentricidad constante (verde \u2265 1, rojo < 1).",
-    "fcr.resumenRes": (n, g) => `Resultados y esfuerzos (${n} \xB7 \u03B3 m\xEDn. ${g})`,
+    "fcr.resumenRes": (n, g2) => `Resultados y esfuerzos (${n} \xB7 \u03B3 m\xEDn. ${g2})`,
     "fcr.modoDiagrama": "Diagrama",
     "fcr.pista1": "Compresi\xF3n +, tracci\xF3n \u2212. Armadura sim\xE9trica: el signo de M no importa. \u03B3 = |OQ|/|OP| a excentricidad constante.",
     "fcr.dibujoSub": "Secci\xF3n, deformaciones y tensiones en el estado \xFAltimo al mismo e = M/N, a la misma escala vertical",
@@ -3087,7 +3097,7 @@ tr.et-act td { font-weight: 650; }
     "fcr.fiCalc": "di\xE1metro de c\xE1lculo",
     "fcr.fiSec": (f) => `Secci\xF3n: \xF8${f}. Aqu\xED se puede cambiar sin tocar Secciones.`,
     "fcr.fiProp": "Di\xE1metro propuesto",
-    "fcr.fiArm": (fe, a, ae, g) => `\xF8 estricto ${fe} mm \xB7 A<sub>s</sub> ${a} (estricta ${ae}) para \u03B3 \u2265 ${g}.`,
+    "fcr.fiArm": (fe, a, ae, g2) => `\xF8 estricto ${fe} mm \xB7 A<sub>s</sub> ${a} (estricta ${ae}) para \u03B3 \u2265 ${g2}.`,
     "fcr.estricto": "estricto",
     "fcr.propuesto": "propuesto",
     "fcr.bajoMin": (a, m) => `Armadura dispuesta ${a} menor que la cuant\xEDa m\xEDnima ${m}: aunque cumpla el c\xE1lculo, no cumple el m\xEDnimo.`,
@@ -3205,7 +3215,7 @@ tr.et-act td { font-weight: 650; }
     "geoErr.formatoCara": (c) => `Armadura de la cara ${c === "sup" ? "superior" : "inferior"}: formato no v\xE1lido`,
     "geoErr.unaBarraCara": (c) => `Cara ${c === "sup" ? "superior" : "inferior"}: cada capa necesita al menos dos barras`,
     "geoErr.capaFuera": (k, c) => `La capa ${k} de la cara ${c === "sup" ? "superior" : "inferior"} queda fuera de la secci\xF3n`,
-    "geoErr.formatoGrupo": (g) => `Armadura del grupo ${g}: formato no v\xE1lido`,
+    "geoErr.formatoGrupo": (g2) => `Armadura del grupo ${g2}: formato no v\xE1lido`,
     "geoErr.anilloSoloCirc": "El anillo de barras solo vale para secciones circulares",
     "geoErr.perimSoloPilar": "La armadura perimetral solo vale para pilares rectangulares",
     "geoErr.perimMinimo": "Hacen falta al menos dos barras en horizontal y dos en vertical",
@@ -3828,7 +3838,7 @@ tr.et-act td { font-weight: 650; }
     "mat.gDeformacion": "Deformability",
     "mat.gDuctilidad": "Ductility",
     "mat.alfaAyuda": (a) => `Long-term effects coefficient (${a})`,
-    "mat.gammaAyuda": (g, a, art5) => `Default ${g}; ${a} in accidental situations (${art5})`,
+    "mat.gammaAyuda": (g2, a, art5) => `Default ${g2}; ${a} in accidental situations (${art5})`,
     "mat.arido": "Aggregate",
     "mat.cemento": "Cement",
     "mat.cem.S": "S \xB7 slow hardening",
@@ -4100,7 +4110,7 @@ tr.et-act td { font-weight: 650; }
     "fcr.sinEsfuerzos": "Enter at least one N, M pair in the table.",
     "fcr.noBasta": "Even 40 times the reinforcement of Sections cannot carry the actions.",
     "fcr.sinArm": "Concrete is enough",
-    "fcr.kArm": (k, a, g) => `Reinforcement of Sections \xD7 <b>${k}</b> (${a}) for \u03B3 \u2265 ${g}.`,
+    "fcr.kArm": (k, a, g2) => `Reinforcement of Sections \xD7 <b>${k}</b> (${a}) for \u03B3 \u2265 ${g2}.`,
     "fcr.coefSeg": "Safety factor",
     "fcr.puntos": "Actions",
     "fcr.dentro": "inside the diagram",
@@ -4111,7 +4121,7 @@ tr.et-act td { font-weight: 650; }
     "fcr.puntosCont": "points",
     "fcr.f.env": "Same section without reinforcement: concrete-only capacity (no tension), to show what the steel adds.",
     "fcr.pista": "Compression +, tension \u2212. Symmetric reinforcement: only M \u2265 0 (the sign of M is ignored). \u03B3 = |OQ|/|OP| at constant eccentricity (green \u2265 1, red < 1).",
-    "fcr.resumenRes": (n, g) => `Results and actions (${n} \xB7 min. \u03B3 ${g})`,
+    "fcr.resumenRes": (n, g2) => `Results and actions (${n} \xB7 min. \u03B3 ${g2})`,
     "fcr.modoDiagrama": "Diagram",
     "fcr.pista1": "Compression +, tension \u2212. Symmetric reinforcement: the sign of M is ignored. \u03B3 = |OQ|/|OP| at constant eccentricity.",
     "fcr.dibujoSub": "Section, strains and stresses at the ultimate state at the same e = M/N, same vertical scale",
@@ -4119,7 +4129,7 @@ tr.et-act td { font-weight: 650; }
     "fcr.fiCalc": "design diameter",
     "fcr.fiSec": (f) => `Section: \xF8${f}. It can be changed here without touching Sections.`,
     "fcr.fiProp": "Proposed diameter",
-    "fcr.fiArm": (fe, a, ae, g) => `strict \xF8 ${fe} mm \xB7 A<sub>s</sub> ${a} (strict ${ae}) for \u03B3 \u2265 ${g}.`,
+    "fcr.fiArm": (fe, a, ae, g2) => `strict \xF8 ${fe} mm \xB7 A<sub>s</sub> ${a} (strict ${ae}) for \u03B3 \u2265 ${g2}.`,
     "fcr.estricto": "strict",
     "fcr.propuesto": "proposed",
     "fcr.bajoMin": (a, m) => `Provided reinforcement ${a} is below the minimum ${m}: it passes the calculation but not the minimum.`,
@@ -4237,7 +4247,7 @@ tr.et-act td { font-weight: 650; }
     "geoErr.formatoCara": (c) => `${c === "sup" ? "Top" : "Bottom"} face reinforcement: invalid format`,
     "geoErr.unaBarraCara": (c) => `${c === "sup" ? "Top" : "Bottom"} face: each layer needs at least two bars`,
     "geoErr.capaFuera": (k, c) => `Layer ${k} of the ${c === "sup" ? "top" : "bottom"} face falls outside the section`,
-    "geoErr.formatoGrupo": (g) => `Reinforcement group ${g}: invalid format`,
+    "geoErr.formatoGrupo": (g2) => `Reinforcement group ${g2}: invalid format`,
     "geoErr.anilloSoloCirc": "A ring of bars is only valid for circular sections",
     "geoErr.perimSoloPilar": "Perimeter reinforcement only applies to rectangular columns",
     "geoErr.perimMinimo": "At least two bars are needed horizontally and two vertically",
@@ -4508,7 +4518,7 @@ tr.et-act td { font-weight: 650; }
     "an.col.d": "\xF8",
     "an.col.anclaje": (e2) => `Anclaje ${sub3("l", "bd")} (${e2})`,
     "an.col.solapo": (e2) => `Solapo ${sub3("l", "s")} (${e2})`,
-    "an.col.l3r": "Prolongaci\xF3n recta",
+    "an.col.l3r": "Prolongaci\xF3n<br>recta",
     "an.col.l3p": "Patilla",
     "an.col.I": "Posici\xF3n I",
     "an.col.II": "Posici\xF3n II",
@@ -4522,11 +4532,20 @@ tr.et-act td { font-weight: 650; }
     "an.aCerca": " \xB7 a \u2264 10 \xF8",
     "an.aLejos": " \xB7 a > 10 \xF8",
     "an.fichaTit": "Ficha para planos",
-    "an.dib.aria": "Esquema de anclaje recto, con patilla y de solapo",
-    "an.dib.anclaje": "Anclaje",
-    "an.dib.solapo": "Solapo",
-    "an.dib.gancho": "Patilla",
+    "an.dib.aria": "Esquemas de prolongaci\xF3n recta, patilla, gancho, U y solapo",
+    "an.dib.ariaCd": "Esquina de una viga con el cerco, la armadura longitudinal que se ancla y los recubrimientos",
+    "an.dib.t.recta": "Prolongaci\xF3n recta",
+    "an.dib.t.patilla": "Patilla",
+    "an.dib.t.gancho": "Gancho",
+    "an.dib.t.u": "Gancho en U",
+    "an.dib.t.solapo": "Solapo",
+    "an.dib.t.esquina": "Esquina de la viga",
     "an.dib.sep": "\u2264 4 \xF8",
+    "an.dib.long1": "armadura longitudinal",
+    "an.dib.long2": "que se ancla",
+    "an.dib.cerco": "cerco",
+    "an.cdDef": "c<sub>d</sub> = m\xEDn(a/2; c<sub>x</sub>; c<sub>y</sub>)",
+    "an.cdLey": "Recubrimiento geom\xE9trico de la barra que se ancla, a su superficie: lateral c<sub>x</sub> e inferior c<sub>y</sub> (incluyen el cerco), o la mitad de la separaci\xF3n libre a entre barras, el menor.",
     "an.notas": "Aclaraciones",
     "an.n.pos": "Posici\xF3n I y II",
     "an.n.min": "M\xEDnimos aplicados",
@@ -4555,7 +4574,14 @@ tr.et-act td { font-weight: 650; }
     "an.no.pct23": "No se aplica en esta norma: l<sub>s</sub> = 1,2\xB7l<sub>b</sub> (11.5.2).",
     "an.no.comp": "No se aplica en compresi\xF3n (\u03B1 = 1).",
     "an.n.cd": "Recubrimiento c<sub>d</sub>",
+    "an.n.patilla": "Patilla, gancho y U",
     "an.cdTxt": "En todas las filas c<sub>d</sub> = m\xE1x(25 mm; 1,5 \xF8) (columna c<sub>d</sub>), el l\xEDmite de la Tabla 11.1 del EC-2 2023: el proyecto debe garantizarlo (el m\xEDnimo por adherencia es \xF8: EC-2 4.4.1.2(3), Tabla 4.2; EHE-08 37.2.4.1). En EC-2 c<sub>d</sub> es el menor de a/2, el recubrimiento lateral y el inferior (con tope 3,75 \xF8 en la 2023). Un c<sub>d</sub> mayor acorta a\xFAn m\xE1s el anclaje: en EC-2 2004 hasta 3 \xF8 (\u03B1<sub>2</sub>; \u03B1<sub>1</sub> = 0,7 en patilla si c<sub>d</sub> &gt; 3 \xF8) y en EC-2 2023 hasta 3,75 \xF8; en la EHE-08 (ensayo de la viga) solo la patilla con recubrimiento &gt; 3 \xF8.",
+    "an.patilla.ehe": "Tramo recto tras la curva \u2265 5 \xF8 (fig. 69.5.1.1). Gancho: \u03B1 \u2265 150\xB0; patilla: 90\xB0 \u2264 \u03B1 &lt; 150\xB0. Mandril D \u2265 4 \xF8 (\xF8 &lt; 20 mm) o 7 \xF8 (\xF8 \u2265 20 mm) y radio interior r = D/2 (Tabla 69.3.4). Patillas y ganchos solo en tracci\xF3n.",
+    "an.patilla.ec2": "Con un tramo recto de 5 \xF8 tras la curva no hace falta comprobar el hormig\xF3n del interior (8.3(3)). Mandril D \u2265 4 \xF8 (\xF8 \u2264 16 mm) o 7 \xF8 (\xF8 &gt; 16 mm) y radio interior r = D/2 (Tabla 8.1N). Patillas, ganchos y U no contribuyen en compresi\xF3n (8.4.1(3)).",
+    "an.patilla.ec23": "Con un tramo recto de 5 \xF8 tras la curva no hace falta comprobar el hormig\xF3n del interior (11.3(3)). Mandril D \u2265 4 \xF8 (\xF8 \u2264 16 mm) o 7 \xF8 (\xF8 &gt; 16 mm) y r = D/2 (11.3(2)). Patilla o gancho normalizados: l<sub>bd</sub> \u2212 15 \xF8, m\xEDnimo 10 \xF8 (11.4.4(1)); U: \u2212 20 \xF8 con el mandril m\xEDnimo (11.4.6(2), no aplicado).",
+    "an.hint.min": "Manda el m\xEDnimo normativo",
+    "an.hint.est": "Solo con estudio especial",
+    "an.hint.g": "\xF8 &gt; 32 mm: reglas adicionales (EC-2 8.8)",
     "an.sinAcero": "No hay acero en el proyecto"
   };
 
@@ -4583,7 +4609,7 @@ tr.et-act td { font-weight: 650; }
     "an.sub": (art5) => `${art5}. Rounded up to 5 mm.`,
     "an.col.anclaje": (e2) => `Anchorage ${sub4("l", "bd")} (${e2})`,
     "an.col.solapo": (e2) => `Lap ${sub4("l", "s")} (${e2})`,
-    "an.col.l3r": "Straight",
+    "an.col.l3r": "Straight<br>length",
     "an.col.l3p": "Hook",
     "an.col.I": "Position I",
     "an.col.II": "Position II",
@@ -4595,10 +4621,20 @@ tr.et-act td { font-weight: 650; }
     "an.ficha": (h2, a, e2, r, cd, pct, extra) => `${h2} \xB7 ${a} \xB7 ${e2} \xB7 A<sub>s,req</sub>/A<sub>s,prov</sub> = ${r} % \xB7 ${cd} \xB7 ${pct} % of bars lapped${extra}`,
     "an.cdFicha": "c<sub>d</sub> = max(25 mm; 1.5 \xF8)",
     "an.fichaTit": "Note for drawings",
-    "an.dib.aria": "Sketch of straight anchorage, hooked anchorage and lap splice",
-    "an.dib.anclaje": "Anchorage",
-    "an.dib.solapo": "Lap",
-    "an.dib.gancho": "Hook",
+    "an.dib.aria": "Sketches of straight length, bend, hook, U-hook and lap",
+    "an.dib.ariaCd": "Corner of a beam with the stirrup, the anchored longitudinal bar and the covers",
+    "an.dib.t.recta": "Straight length",
+    "an.dib.t.patilla": "Bend",
+    "an.dib.t.gancho": "Hook",
+    "an.dib.t.u": "U-hook",
+    "an.dib.t.solapo": "Lap",
+    "an.dib.t.esquina": "Beam corner",
+    "an.dib.sep": "\u2264 4 \xF8",
+    "an.dib.long1": "longitudinal bar",
+    "an.dib.long2": "being anchored",
+    "an.dib.cerco": "stirrup",
+    "an.cdDef": "c<sub>d</sub> = min(a/2; c<sub>x</sub>; c<sub>y</sub>)",
+    "an.cdLey": "Geometric cover of the anchored bar, to its surface: side c<sub>x</sub> and bottom c<sub>y</sub> (stirrup included), or half the clear spacing a between bars, the smaller.",
     "an.notas": "Clarifications",
     "an.n.pos": "Bond position I and II",
     "an.n.min": "Minimum values applied",
@@ -4611,7 +4647,14 @@ tr.et-act td { font-weight: 650; }
     "an.no.pct23": "Not applicable in this code: l<sub>s</sub> = 1.2\xB7l<sub>b</sub> (11.5.2).",
     "an.no.comp": "Not applicable in compression (\u03B1 = 1).",
     "an.n.cd": "Cover c<sub>d</sub>",
+    "an.n.patilla": "Bend, hook and U",
     "an.cdTxt": "All rows use c<sub>d</sub> = max(25 mm; 1.5 \xF8) (column c<sub>d</sub>), the limit of Table 11.1 of EC-2 2023: the design must ensure it (the minimum cover for bond is \xF8: EC-2 4.4.1.2(3), Table 4.2; EHE-08 37.2.4.1). In EC-2 c<sub>d</sub> is the smaller of a/2, side and bottom cover (capped at 3.75 \xF8 in the 2023 edition). A larger c<sub>d</sub> shortens the anchorage further: up to 3 \xF8 in EC-2 2004 (\u03B1<sub>2</sub>; \u03B1<sub>1</sub> = 0.7 for hooks if c<sub>d</sub> &gt; 3 \xF8), up to 3.75 \xF8 in EC-2 2023; in EHE-08 (beam test) only hooks with cover &gt; 3 \xF8.",
+    "an.patilla.ehe": "Straight tail after the bend \u2265 5 \xF8 (fig. 69.5.1.1). Hook: \u03B1 \u2265 150\xB0; bend: 90\xB0 \u2264 \u03B1 &lt; 150\xB0. Mandrel D \u2265 4 \xF8 (\xF8 &lt; 20 mm) or 7 \xF8 (\xF8 \u2265 20 mm), inner radius r = D/2 (Table 69.3.4). Bends and hooks in tension only.",
+    "an.patilla.ec2": "With a 5 \xF8 straight tail after the bend the concrete inside the bend need not be checked (8.3(3)). Mandrel D \u2265 4 \xF8 (\xF8 \u2264 16 mm) or 7 \xF8 (\xF8 &gt; 16 mm), inner radius r = D/2 (Table 8.1N). Bends, hooks and U-hooks do not count in compression (8.4.1(3)).",
+    "an.patilla.ec23": "With a 5 \xF8 straight tail after the bend the concrete inside the bend need not be checked (11.3(3)). Mandrel D \u2265 4 \xF8 (\xF8 \u2264 16 mm) or 7 \xF8 (\xF8 &gt; 16 mm), r = D/2 (11.3(2)). Standard bend or hook: l<sub>bd</sub> \u2212 15 \xF8, minimum 10 \xF8 (11.4.4(1)); U: \u2212 20 \xF8 with the minimum mandrel (11.4.6(2), not applied).",
+    "an.hint.min": "Code minimum governs",
+    "an.hint.est": "Only with a special study",
+    "an.hint.g": "\xF8 &gt; 32 mm: additional rules (EC-2 8.8)",
     "an.sinAcero": "There is no steel in the project"
   };
 
@@ -5359,9 +5402,9 @@ tr.et-act td { font-weight: 650; }
     "pun.esqRet": "Ret\xEDcula",
     "pun.dib.cercosCruz": (n, per, fi) => `Cruz ${n} ramas \xF8${fi}, ${per} per\xEDm.`,
     "pun.dib.cercosRet": (n, per, fi, nxy) => `Ret\xEDcula ${nxy} (${n}) ramas \xF8${fi}, ${per} per\xEDm.`,
-    "pun.dib.extEHE": (dl, u, req) => `${sv("u", "n,ef")} a ${dl} mm: ${u} \u2265 ${req}`,
-    "pun.dib.extEC": (dl, u, req) => `${sv("u", "out,ef")} a ${dl} mm: ${u} \u2265 ${req}`,
-    "pun.dib.ext23": (dl, u, req) => `${sv("b", "0,5,out")} a ${dl} mm: ${u} \u2265 ${req}`,
+    "pun.dib.extEHE": (dl, u2, req) => `${sv("u", "n,ef")} a ${dl} mm: ${u2} \u2265 ${req}`,
+    "pun.dib.extEC": (dl, u2, req) => `${sv("u", "out,ef")} a ${dl} mm: ${u2} \u2265 ${req}`,
+    "pun.dib.ext23": (dl, u2, req) => `${sv("b", "0,5,out")} a ${dl} mm: ${u2} \u2265 ${req}`,
     "pun.crit.t": "Per\xEDmetros cr\xEDticos",
     "pun.crit.per": "Per\xEDmetro",
     "pun.crit.dist": "Dist. [mm]",
@@ -5377,8 +5420,8 @@ tr.et-act td { font-weight: 650; }
     "pun.dib.borde": "borde libre",
     "pun.dib.pilarR": (a, b, pos) => `Pilar ${a} \xD7 ${b} mm, ${pos}`,
     "pun.dib.pilarC": (D, pos) => `Pilar circular \xF8${D} mm, ${pos}`,
-    "pun.dib.u1": (dl, u) => `${sv("u", "1")} a 2d = ${dl} mm: ${u} mm`,
-    "pun.dib.b05": (dl, u) => `${sv("b", "0,5")} a 0.5\xB7${sv("d", "v")} = ${dl} mm: ${u} mm`,
+    "pun.dib.u1": (dl, u2) => `${sv("u", "1")} a 2d = ${dl} mm: ${u2} mm`,
+    "pun.dib.b05": (dl, u2) => `${sv("b", "0,5")} a 0.5\xB7${sv("d", "v")} = ${dl} mm: ${u2} mm`,
     // Avisos
     "pun.av.fyd400": (f) => `f<sub>yd</sub> = ${f} MPa se limita a 400 MPa en los cercos (EHE-08 46.4.1)`,
     "pun.av.rho": (r) => `La cuant\xEDa \u03C1<sub>l</sub> = ${r} \u2030 pasa del 20 \u2030 que admite la f\xF3rmula: se toma 20 \u2030`,
@@ -5565,9 +5608,9 @@ tr.et-act td { font-weight: 650; }
     "pun.esqRet": "Rectangular grid",
     "pun.dib.cercosCruz": (n, per, fi) => `Cross ${n} legs \xF8${fi}, ${per} perim.`,
     "pun.dib.cercosRet": (n, per, fi, nxy) => `Grid ${nxy} (${n}) legs \xF8${fi}, ${per} perim.`,
-    "pun.dib.extEHE": (dl, u, req) => `${sv2("u", "n,ef")} at ${dl} mm: ${u} \u2265 ${req}`,
-    "pun.dib.extEC": (dl, u, req) => `${sv2("u", "out,ef")} at ${dl} mm: ${u} \u2265 ${req}`,
-    "pun.dib.ext23": (dl, u, req) => `${sv2("b", "0,5,out")} at ${dl} mm: ${u} \u2265 ${req}`,
+    "pun.dib.extEHE": (dl, u2, req) => `${sv2("u", "n,ef")} at ${dl} mm: ${u2} \u2265 ${req}`,
+    "pun.dib.extEC": (dl, u2, req) => `${sv2("u", "out,ef")} at ${dl} mm: ${u2} \u2265 ${req}`,
+    "pun.dib.ext23": (dl, u2, req) => `${sv2("b", "0,5,out")} at ${dl} mm: ${u2} \u2265 ${req}`,
     "pun.crit.t": "Critical perimeters",
     "pun.crit.per": "Perimeter",
     "pun.crit.dist": "Dist. [mm]",
@@ -5583,8 +5626,8 @@ tr.et-act td { font-weight: 650; }
     "pun.dib.borde": "free edge",
     "pun.dib.pilarR": (a, b, pos) => `Column ${a} \xD7 ${b} mm, ${pos}`,
     "pun.dib.pilarC": (D, pos) => `Circular column \xF8${D} mm, ${pos}`,
-    "pun.dib.u1": (dl, u) => `${sv2("u", "1")} at 2d = ${dl} mm: ${u} mm`,
-    "pun.dib.b05": (dl, u) => `${sv2("b", "0,5")} at 0.5\xB7${sv2("d", "v")} = ${dl} mm: ${u} mm`,
+    "pun.dib.u1": (dl, u2) => `${sv2("u", "1")} at 2d = ${dl} mm: ${u2} mm`,
+    "pun.dib.b05": (dl, u2) => `${sv2("b", "0,5")} at 0.5\xB7${sv2("d", "v")} = ${dl} mm: ${u2} mm`,
     "pun.av.fyd400": (f) => `f<sub>yd</sub> = ${f} MPa is limited to 400 MPa for links (EHE-08 46.4.1)`,
     "pun.av.rho": (r) => `The ratio \u03C1<sub>l</sub> = ${r} \u2030 exceeds the 20 \u2030 the formula allows: 20 \u2030 is used`,
     "pun.av.sigCd": (s, l) => `\u03C3'<sub>cd</sub> = ${s} MPa exceeds the limit of ${l} MPa (0.30 f<sub>cd</sub>, max. 12 MPa): the limit is used`,
@@ -6038,8 +6081,8 @@ tr.et-act td { font-weight: 650; }
     "ras.f.rhoMin": "El cosido solo se contabiliza si \u03C1 = A<sub>st</sub>/(s\xB7p) \u2265 0,001; si no, la junta resiste solo la cohesi\xF3n",
     "ras.v.res": (c, f, s, r) => `${c} (cohesi\xF3n) + ${f} (fricci\xF3n) + ${s} (cosido) \u2192 ${r} MPa, sin pasar del l\xEDmite superior`,
     "ras.v.tracc": "tracci\xF3n normal: cohesi\xF3n nula",
-    "ras.v.estado1": (u) => `\u03C4<sub>rd</sub> \u2264 ${u} MPa: estado 1 (cohesi\xF3n + cosido con \u03BC bajo)`,
-    "ras.v.estado2": (u) => `\u03C4<sub>rd</sub> > ${u} MPa: estado 2 (solo cosido, \u03BC alto)`,
+    "ras.v.estado1": (u2) => `\u03C4<sub>rd</sub> \u2264 ${u2} MPa: estado 1 (cohesi\xF3n + cosido con \u03BC bajo)`,
+    "ras.v.estado2": (u2) => `\u03C4<sub>rd</sub> > ${u2} MPa: estado 2 (solo cosido, \u03BC alto)`,
     "ras.tope400": "limitado a 400 MPa",
     "ras.noContab": "no se contabiliza",
     // Avisos
@@ -6183,8 +6226,8 @@ tr.et-act td { font-weight: 650; }
     "ras.f.rhoMin": "The ties only count if \u03C1 = A<sub>st</sub>/(s\xB7p) \u2265 0.001; otherwise the joint resists the cohesion only",
     "ras.v.res": (c, f, s, r) => `${c} (cohesion) + ${f} (friction) + ${s} (ties) \u2192 ${r} MPa, not above the upper limit`,
     "ras.v.tracc": "normal tension: no cohesion",
-    "ras.v.estado1": (u) => `\u03C4<sub>rd</sub> \u2264 ${u} MPa: state 1 (cohesion + ties with low \u03BC)`,
-    "ras.v.estado2": (u) => `\u03C4<sub>rd</sub> > ${u} MPa: state 2 (ties only, high \u03BC)`,
+    "ras.v.estado1": (u2) => `\u03C4<sub>rd</sub> \u2264 ${u2} MPa: state 1 (cohesion + ties with low \u03BC)`,
+    "ras.v.estado2": (u2) => `\u03C4<sub>rd</sub> > ${u2} MPa: state 2 (ties only, high \u03BC)`,
     "ras.tope400": "limited to 400 MPa",
     "ras.noContab": "not counted",
     "ras.av.traccion": "There is tension normal to the joint: the cohesion is nil and that tension needs separate reinforcement in addition to the ties",
@@ -6542,12 +6585,12 @@ tr.et-act td { font-weight: 650; }
     return m.sig ? cientifico(x * m.f, m.sig) : fmt(x * m.f, m.d);
   }
   function q(x, mag, { ud = true } = {}) {
-    const u = MAG[mag].ud;
-    return cifra(x, mag) + (ud && u && Number.isFinite(x) ? ESP + u : "");
+    const u2 = MAG[mag].ud;
+    return cifra(x, mag) + (ud && u2 && Number.isFinite(x) ? ESP + u2 : "");
   }
   function qh(x, mag) {
-    const u = MAG[mag].ud;
-    return cifra(x, mag) + (u && Number.isFinite(x) ? `<span class="u">${ESP}${u}</span>` : "");
+    const u2 = MAG[mag].ud;
+    return cifra(x, mag) + (u2 && Number.isFinite(x) ? `<span class="u">${ESP}${u2}</span>` : "");
   }
   function paraCampo(x, mag) {
     if (!Number.isFinite(x)) return "";
@@ -6672,11 +6715,11 @@ tr.et-act td { font-weight: 650; }
     const opt = ([v2, e2]) => h("option", { value: v2, selected: String(v2) === String(valor), html: e2 });
     const grupos2 = /* @__PURE__ */ new Map();
     for (const o of opciones) {
-      const g = o[2] ?? "";
-      if (!grupos2.has(g)) grupos2.set(g, []);
-      grupos2.get(g).push(o);
+      const g2 = o[2] ?? "";
+      if (!grupos2.has(g2)) grupos2.set(g2, []);
+      grupos2.get(g2).push(o);
     }
-    const s = h("select", { id }, ...[...grupos2].flatMap(([g, l]) => g ? [h("optgroup", { label: g }, ...l.map(opt))] : l.map(opt)));
+    const s = h("select", { id }, ...[...grupos2].flatMap(([g2, l]) => g2 ? [h("optgroup", { label: g2 }, ...l.map(opt))] : l.map(opt)));
     s.addEventListener("change", () => onCambio(s.value));
     const c = marco(id, etq, null, h("div", { class: "caja" }, s), nota).c;
     if (!linea) c.classList.add("apilado");
@@ -7065,18 +7108,18 @@ tr.et-act td { font-weight: 650; }
     const avisos4 = [];
     const esFicticio = (p) => p.tipo === "f" || /^ficticio$/i.test(p.material);
     const partes = s.partes.filter((p) => !esFicticio(p));
-    const hor = partes[0];
+    const hor2 = partes[0];
     const durabilidad5 = {
       ambiente: s.ambiente !== void 0 ? AMBIENTES[s.ambiente] : void 0,
       exposiciones: s.exposiciones ? EXPOSICIONES.filter((e2, i) => s.exposiciones[i] && e2 !== "Nada") : []
     };
-    const base2 = { nombre: s.nombre, hormigon: hor?.material, durabilidad: durabilidad5, origen: { formato: s.tipo } };
+    const base2 = { nombre: s.nombre, hormigon: hor2?.material, durabilidad: durabilidad5, origen: { formato: s.tipo } };
     if (s.recubrimiento) base2.durabilidad.rnomImportado = s.recubrimiento;
     let forma = "generica";
     let geo;
     let xc = 0;
-    if (hor?.tipo === "T" && hor.trapecios?.length) {
-      const tr = hor.trapecios;
+    if (hor2?.tipo === "T" && hor2.trapecios?.length) {
+      const tr = hor2.trapecios;
       const h2 = tr.reduce((t2, x) => t2 + x.h, 0);
       const bmax = Math.max(...tr.flatMap((t2) => [t2.bSup, t2.bInf]));
       xc = bmax / 2;
@@ -7089,7 +7132,7 @@ tr.et-act td { font-weight: 650; }
         geo = { b: tr[0].bSup, h: h2, bw: tr[1].bSup, hf: tr[0].h };
       } else {
         const der = [];
-        let y = hor.ySup ?? 0;
+        let y = hor2.ySup ?? 0;
         for (const t2 of tr) {
           der.push([xc + t2.bSup / 2, y], [xc + t2.bInf / 2, y + t2.h]);
           y += t2.h;
@@ -7097,15 +7140,15 @@ tr.et-act td { font-weight: 650; }
         const izq = der.map(([x, yy]) => [2 * xc - x, yy]).reverse();
         geo = { contorno: [...der, ...izq] };
       }
-    } else if (hor?.tipo === "C") {
+    } else if (hor2?.tipo === "C") {
       forma = "circular";
-      geo = { D: 2 * hor.R };
-      xc = hor.R - (hor.xc ?? 0);
-    } else if (hor?.tipo === "X") {
-      const xs = hor.puntos.map((q2) => q2.x);
+      geo = { D: 2 * hor2.R };
+      xc = hor2.R - (hor2.xc ?? 0);
+    } else if (hor2?.tipo === "X") {
+      const xs = hor2.puntos.map((q2) => q2.x);
       xc = -Math.min(...xs);
-      const ys0 = Math.min(...hor.puntos.map((q2) => q2.y));
-      geo = { contorno: hor.puntos.map((q2) => [q2.x + xc, q2.y - ys0]), huecos: partes.filter((p) => p.tipo === "H").map((p) => p.puntos.map((q2) => [q2.x + xc, q2.y - ys0])) };
+      const ys0 = Math.min(...hor2.puntos.map((q2) => q2.y));
+      geo = { contorno: hor2.puntos.map((q2) => [q2.x + xc, q2.y - ys0]), huecos: partes.filter((p) => p.tipo === "H").map((p) => p.puntos.map((q2) => [q2.x + xc, q2.y - ys0])) };
     } else {
       return { ...base2, forma: "generica", geo: { contorno: [[0, 0], [0.3, 0], [0.3, 0.5], [0, 0.5]] }, armado: [], aviso: `No se reconoce el contorno de ${s.nombre}`, acero: void 0 };
     }
@@ -7791,10 +7834,10 @@ tr.et-act td { font-weight: 650; }
         const c = document.createElement("canvas");
         c.width = W2 * 2;
         c.height = H2 * 2;
-        const g = c.getContext("2d");
-        g.fillStyle = "#fff";
-        g.fillRect(0, 0, c.width, c.height);
-        g.drawImage(img, 0, 0, c.width, c.height);
+        const g2 = c.getContext("2d");
+        g2.fillStyle = "#fff";
+        g2.fillRect(0, 0, c.width, c.height);
+        g2.drawImage(img, 0, 0, c.width, c.height);
         URL.revokeObjectURL(url);
         c.toBlob((b) => b ? ok(b) : mal(new Error("png")), "image/png");
       };
@@ -7969,10 +8012,10 @@ tr.et-act td { font-weight: 650; }
         const pw0 = W2 - M.izq - M.der;
         const ph0 = H2 - M.arr - M.aba;
         const igualar = (v2) => {
-          const u = Math.max((v2.x1 - v2.x0) / pw0, (v2.y1 - v2.y0) / ph0);
+          const u2 = Math.max((v2.x1 - v2.x0) / pw0, (v2.y1 - v2.y0) / ph0);
           const cx = (v2.x0 + v2.x1) / 2;
           const cy = (v2.y0 + v2.y1) / 2;
-          return { x0: cx - u * pw0 / 2, x1: cx + u * pw0 / 2, y0: cy - u * ph0 / 2, y1: cy + u * ph0 / 2 };
+          return { x0: cx - u2 * pw0 / 2, x1: cx + u2 * pw0 / 2, y0: cy - u2 * ph0 / 2, y1: cy + u2 * ph0 / 2 };
         };
         Object.assign(completa, igualar(completaBase));
         vista = igualar(vista);
@@ -8223,8 +8266,8 @@ tr.et-act td { font-weight: 650; }
   function borrador(ctx2, tipo = est.tipo) {
     const b = est.b[tipo];
     if (b && b.nombre !== null && !sucio(b)) {
-      const g = ctx2.p[tipo].find((x) => x.nombre === b.nombre);
-      if (g && JSON.stringify(g) !== b.base) return cargar(tipo, g);
+      const g2 = ctx2.p[tipo].find((x) => x.nombre === b.nombre);
+      if (g2 && JSON.stringify(g2) !== b.base) return cargar(tipo, g2);
     }
     if (b) return b;
     const m0 = ctx2.p[tipo][0];
@@ -8419,7 +8462,7 @@ tr.et-act td { font-weight: 650; }
       } })
     );
     const gruposM = m.tipo === "hormigon" ? gruposHormigon(m, N, cambio, () => ctx2.cambio({ estructura: true })) : gruposAcero(m, N, cambio, () => ctx2.cambio({ estructura: true }));
-    if (m.tipo === "acero" && aceroTipificado(m.nombre)) for (const g of gruposM) g?.querySelectorAll?.("input, select").forEach((c) => {
+    if (m.tipo === "acero" && aceroTipificado(m.nombre)) for (const g2 of gruposM) g2?.querySelectorAll?.("input, select").forEach((c) => {
       c.disabled = true;
       c.tabIndex = -1;
     });
@@ -9037,8 +9080,8 @@ tr.et-act td { font-weight: 650; }
     const LINEAS = [["elastica", "rg.elastica", "s2"], ["diferida", "rg.diferida", "s3"], ["retraccion", "rg.retraccion", "s4"], ["total", "rg.total", "s1"]];
     const lienzo = h("div", { class: "lienzo g32" });
     const dibuja = () => {
-      const G = H2(mallaFig).map((g) => ({ ...g, secado: g.retraccion - g.autogena }));
-      const ser = (k, nombre, clase) => ({ nombre, xy: G.map((g) => [lg(g.t), g[k] * 1e3]), clase });
+      const G = H2(mallaFig).map((g2) => ({ ...g2, secado: g2.retraccion - g2.autogena }));
+      const ser = (k, nombre, clase) => ({ nombre, xy: G.map((g2) => [lg(g2.t), g2[k] * 1e3]), clase });
       const activas = LINEAS.filter(([k]) => est2.ver[k]);
       const series = [];
       for (const [k, tx2, cl3] of activas) {
@@ -9084,8 +9127,8 @@ tr.et-act td { font-weight: 650; }
         `${sub14("\u03C3", "c")}<br><span class="u u-cab">[MPa]</span>`,
         ...["el", "dif", "cs", "tot"].map((k) => `${sub14("\u03B5", k)}<br><span class="u u-cab">[\xB710\u207B\u2076]</span>`)
       ];
-      copia3 = [["t [d\xEDas]", "\u03C3c [MPa]", "\u03B5el [\xB710\u207B\u2076]", "\u03B5dif [\xB710\u207B\u2076]", "\u03B5cs [\xB710\u207B\u2076]", "\u03B5tot [\xB710\u207B\u2076]"], ...R.map((g) => [dias(g.t), fmt(g.tension, 1), e2(g.elastica), e2(g.diferida), e2(g.retraccion), e2(g.total)])];
-      marco2.replaceChildren(tabla(R.map((g) => [dias(g.t), fmt(g.tension, 1), e2(g.elastica), e2(g.diferida), e2(g.retraccion), e2(g.total)]), { cabecera: cab, clase: "num excel" }));
+      copia3 = [["t [d\xEDas]", "\u03C3c [MPa]", "\u03B5el [\xB710\u207B\u2076]", "\u03B5dif [\xB710\u207B\u2076]", "\u03B5cs [\xB710\u207B\u2076]", "\u03B5tot [\xB710\u207B\u2076]"], ...R.map((g2) => [dias(g2.t), fmt(g2.tension, 1), e2(g2.elastica), e2(g2.diferida), e2(g2.retraccion), e2(g2.total)])];
+      marco2.replaceChildren(tabla(R.map((g2) => [dias(g2.t), fmt(g2.tension, 1), e2(g2.elastica), e2(g2.diferida), e2(g2.retraccion), e2(g2.total)]), { cabecera: cab, clase: "num excel" }));
     };
     const tarjeta = h(
       "article",
@@ -9161,9 +9204,9 @@ tr.et-act td { font-weight: 650; }
   }
   function curvaMomentoCurvatura(sec, Nd, { signo = 1, n = 60 } = {}) {
     const yref = centroHomogeneizado(sec).yg;
-    const u = estadoUltimo(sec, Nd, { signo, yref });
-    if (!u.converge) return { converge: false, motivo: u.motivo, puntos: [] };
-    const ku = Math.abs(u.kappa);
+    const u2 = estadoUltimo(sec, Nd, { signo, yref });
+    if (!u2.converge) return { converge: false, motivo: u2.motivo, puntos: [] };
+    const ku = Math.abs(u2.kappa);
     const punto = (k) => {
       const kap = signo * k;
       const e2 = planoCon(sec, kap, Nd, yref);
@@ -9173,8 +9216,8 @@ tr.et-act td { font-weight: 650; }
     };
     const ks = Array.from({ length: n + 1 }, (_2, i) => ku * (i / n) ** 1.5);
     const puntos = ks.map(punto).filter(Boolean);
-    const xu = profundidad(sec, u.epsSup, u.kappa, signo);
-    if (puntos.at(-1)?.kappa < ku * (1 - 1e-9)) puntos.push({ kappa: ku, M: signo * u.M, epsSup: u.epsSup, x: xu });
+    const xu = profundidad(sec, u2.epsSup, u2.kappa, signo);
+    if (puntos.at(-1)?.kappa < ku * (1 - 1e-9)) puntos.push({ kappa: ku, M: signo * u2.M, epsSup: u2.epsSup, x: xu });
     const aceros = sec.barras.filter((b) => b.mat.tipo === "acero");
     const exceso = (k) => {
       const e2 = planoCon(sec, signo * k, Nd, yref);
@@ -9205,7 +9248,7 @@ tr.et-act td { font-weight: 650; }
         }
       }
     }
-    return { converge: true, puntos, plastifica, ultimo: { kappa: ku, M: signo * u.M, x: xu } };
+    return { converge: true, puntos, plastifica, ultimo: { kappa: ku, M: signo * u2.M, x: xu } };
   }
 
   // src/io/importDXF.js
@@ -9214,24 +9257,24 @@ tr.et-act td { font-weight: 650; }
   function grupos(texto) {
     if (/^AutoCAD Binary DXF/.test(texto)) throw new ErrorClave("dxf.binario");
     const lineas = texto.split(/\r\n|\r|\n/);
-    const g = [];
+    const g2 = [];
     for (let i = 0; i + 1 < lineas.length; i += 2) {
       const c = Number(lineas[i].trim());
       if (!Number.isInteger(c)) throw new ErrorClave("dxf.codigo", i + 1);
-      g.push([c, lineas[i + 1].trim()]);
+      g2.push([c, lineas[i + 1].trim()]);
     }
-    return g;
+    return g2;
   }
-  function entidades(g) {
-    let i = g.findIndex(([c, v2], k) => c === 2 && v2 === "ENTITIES" && g[k - 1]?.[0] === 0 && g[k - 1][1] === "SECTION");
+  function entidades(g2) {
+    let i = g2.findIndex(([c, v2], k) => c === 2 && v2 === "ENTITIES" && g2[k - 1]?.[0] === 0 && g2[k - 1][1] === "SECTION");
     if (i < 0) throw new ErrorClave("dxf.sinEntidades");
     const lista = [];
-    for (i++; i < g.length; i++) {
-      const [c, v2] = g[i];
+    for (i++; i < g2.length; i++) {
+      const [c, v2] = g2[i];
       if (c !== 0) continue;
       if (v2 === "ENDSEC" || v2 === "EOF") break;
       const e2 = { tipo: v2, g: [] };
-      while (i + 1 < g.length && g[i + 1][0] !== 0) e2.g.push(g[++i]);
+      while (i + 1 < g2.length && g2[i + 1][0] !== 0) e2.g.push(g2[++i]);
       lista.push(e2);
     }
     return lista;
@@ -9268,16 +9311,16 @@ tr.et-act td { font-weight: 650; }
       if (dist(puntos[0], puntos.at(-1)) <= tolerancia) throw new ErrorClave("dxf.tramoCerrado", capa2);
       anadir(porCapa, capa2, puntos);
     }
-    function discretizarArco(centro, radio, inicio, barrido) {
-      if (!(radio > 0) || !Number.isFinite(inicio) || !(Math.abs(barrido) >= 1e-12) || Math.abs(barrido) > DOS_PI + 1e-9) {
+    function discretizarArco(centro, radio2, inicio, barrido) {
+      if (!(radio2 > 0) || !Number.isFinite(inicio) || !(Math.abs(barrido) >= 1e-12) || Math.abs(barrido) > DOS_PI + 1e-9) {
         throw new ErrorClave("dxf.arco");
       }
-      const maxPaso = Math.min(cuerdaMaxima >= 2 * radio ? Math.PI : 2 * Math.asin(cuerdaMaxima / (2 * radio)), DOS_PI / 96);
+      const maxPaso = Math.min(cuerdaMaxima >= 2 * radio2 ? Math.PI : 2 * Math.asin(cuerdaMaxima / (2 * radio2)), DOS_PI / 96);
       const n = Math.max(puntosMinimosArco - 1, Math.ceil(Math.abs(barrido) / maxPaso));
       const pts = [];
       for (let i = 0; i <= n; i++) {
         const a = inicio + barrido * i / n;
-        pts.push({ x: centro.x + radio * Math.cos(a), y: centro.y + radio * Math.sin(a) });
+        pts.push({ x: centro.x + radio2 * Math.cos(a), y: centro.y + radio2 * Math.sin(a) });
       }
       return pts;
     }
@@ -9286,13 +9329,13 @@ tr.et-act td { font-weight: 650; }
       if (L <= tolerancia) throw new ErrorClave("dxf.tramoNulo", capa2);
       if (Math.abs(bulge) < 1e-12) return [a, b];
       const barrido = 4 * Math.atan(bulge);
-      const radio = L * (1 + bulge * bulge) / (4 * Math.abs(bulge));
+      const radio2 = L * (1 + bulge * bulge) / (4 * Math.abs(bulge));
       const offset = L * (1 - bulge * bulge) / (4 * bulge);
       const centro = {
         x: (a.x + b.x) / 2 - offset * (b.y - a.y) / L,
         y: (a.y + b.y) / 2 + offset * (b.x - a.x) / L
       };
-      const pts = discretizarArco(centro, radio, Math.atan2(a.y - centro.y, a.x - centro.x), barrido);
+      const pts = discretizarArco(centro, radio2, Math.atan2(a.y - centro.y, a.x - centro.x), barrido);
       pts[0] = a;
       pts[pts.length - 1] = b;
       return pts;
@@ -9594,8 +9637,8 @@ tr.et-act td { font-weight: 650; }
   var VIDAS = [50, 100];
   function deshabilitadas(sel, tipo = "armado") {
     const no = /* @__PURE__ */ new Set();
-    for (const g of GRUPOS) if (g.some((c) => sel.includes(c))) {
-      for (const c of g) if (!sel.includes(c)) no.add(c);
+    for (const g2 of GRUPOS) if (g2.some((c) => sel.includes(c))) {
+      for (const c of g2) if (!sel.includes(c)) no.add(c);
     }
     if (tipo === "masa") {
       for (const c of GENERALES) if (c !== "I") no.add(c);
@@ -9604,8 +9647,8 @@ tr.et-act td { font-weight: 650; }
   }
   function normalizar(sel = [], tipo = "armado") {
     const out = [];
-    for (const g of GRUPOS) {
-      const v2 = sel.find((c) => g.includes(c) && !(tipo === "masa" && g === GENERALES && c !== "I"));
+    for (const g2 of GRUPOS) {
+      const v2 = sel.find((c) => g2.includes(c) && !(tipo === "masa" && g2 === GENERALES && c !== "I"));
       if (v2) out.push(v2);
     }
     if (tipo === "masa" && !out.includes("I")) out.unshift("I");
@@ -9801,9 +9844,9 @@ tr.et-act td { font-weight: 650; }
   var GRUPOS2 = [X0, XC, [...XD, ...XS], XF, XA, XM];
   function deshabilitadas2(sel, tipo = "armado") {
     const no = /* @__PURE__ */ new Set();
-    const hay = (g) => g.some((c) => sel.includes(c));
-    for (const g of GRUPOS2) if (hay(g)) {
-      for (const c of g) if (!sel.includes(c)) no.add(c);
+    const hay = (g2) => g2.some((c) => sel.includes(c));
+    for (const g2 of GRUPOS2) if (hay(g2)) {
+      for (const c of g2) if (!sel.includes(c)) no.add(c);
     }
     const corrosion = [...XC, ...XD, ...XS];
     if (sel.includes("X0")) for (const c of corrosion) no.add(c);
@@ -9813,8 +9856,8 @@ tr.et-act td { font-weight: 650; }
   }
   function normalizar2(sel = [], tipo = "armado") {
     const out = [];
-    for (const g of GRUPOS2) {
-      const v2 = sel.find((c) => g.includes(c) && !(tipo === "masa" && (XC.includes(c) || XD.includes(c) || XS.includes(c))));
+    for (const g2 of GRUPOS2) {
+      const v2 = sel.find((c) => g2.includes(c) && !(tipo === "masa" && (XC.includes(c) || XD.includes(c) || XS.includes(c))));
       if (v2) out.push(v2);
     }
     const corrosion = out.filter((c) => [...XC, ...XD, ...XS].includes(c));
@@ -10075,15 +10118,15 @@ tr.et-act td { font-weight: 650; }
       out.push(`<path class="corte" d="${zig(x0)}"/><path class="corte" d="${zig(x0 + bp)}"/>`);
     }
     const grupos2 = /* @__PURE__ */ new Set([...geo.barras.map((b2) => b2.grupo), ...geo.franjas.map((f) => f.grupo)]);
-    for (const g of grupos2) {
-      let txt = `<g class="grp-ac" data-ref="g${g}" clip-path="url(#${id}-rec)">`;
-      for (const b2 of geo.barras.filter((q2) => q2.grupo === g)) {
+    for (const g2 of grupos2) {
+      let txt = `<g class="grp-ac" data-ref="g${g2}" clip-path="url(#${id}-rec)">`;
+      for (const b2 of geo.barras.filter((q2) => q2.grupo === g2)) {
         const c = `<circle class="barra-ac" cx="${X(b2.x).toFixed(2)}" cy="${Y(b2.y).toFixed(2)}" r="${Math.max(1.8, b2.fi / 2e3 * s).toFixed(2)}"><title>\xF8${b2.fi}</title></circle>`;
         txt += b2.cara === void 0 ? c : `<g class="grp-ac" data-ref="c${b2.cara}">${c}</g>`;
       }
-      for (const f of geo.franjas.filter((q2) => q2.grupo === g)) {
+      for (const f of geo.franjas.filter((q2) => q2.grupo === g2)) {
         const esp = Math.max(1.5, f.A / Math.max(f.x2 - f.x1, 0.01) * s);
-        const hayBarras = geo.barras.some((q2) => q2.grupo === g);
+        const hayBarras = geo.barras.some((q2) => q2.grupo === g2);
         txt += `<rect class="franja-ac" x="${X(f.x1)}" y="${Y(f.y) + (hayBarras ? 5 : 0) - esp / 2}" width="${Math.max(2, (f.x2 - f.x1) * s)}" height="${esp}"><title>${fmt(f.A * 1e6, 0)}${ESP}mm\xB2</title></rect>`;
       }
       out.push(txt + "</g>");
@@ -10125,19 +10168,19 @@ tr.et-act td { font-weight: 650; }
     }
     if (sec.forma === "T") out.push(cotaV(x0 + bp + 14, y0, y0 + sec.geo.hf * s, `${sub15("h", "f")} = ${mm(sec.geo.hf)}`, x0 + bp + 4, "der"));
     let k = { inf: 0, sup: 0 };
-    for (const [i, g] of (cotasCapas ? sec.armado ?? [] : []).entries()) {
-      if (g.tipo !== "capa" || !g.texto) continue;
-      const n = g.cara === "inf" ? ++k.inf : ++k.sup;
-      const nombre = g.cara === "inf" ? n === 1 ? sub15("d", "1") : sub15("d", `1,${n}`) : n === 1 ? sub15("d", "2") : sub15("d", `2,${n}`);
-      const yCara = g.cara === "inf" ? y0 + hp : y0;
-      const yCapa = g.cara === "inf" ? yCara - g.d * s : yCara + g.d * s;
+    for (const [i, g2] of (cotasCapas ? sec.armado ?? [] : []).entries()) {
+      if (g2.tipo !== "capa" || !g2.texto) continue;
+      const n = g2.cara === "inf" ? ++k.inf : ++k.sup;
+      const nombre = g2.cara === "inf" ? n === 1 ? sub15("d", "1") : sub15("d", `1,${n}`) : n === 1 ? sub15("d", "2") : sub15("d", `2,${n}`);
+      const yCara = g2.cara === "inf" ? y0 + hp : y0;
+      const yCapa = g2.cara === "inf" ? yCara - g2.d * s : yCara + g2.d * s;
       const xc = x0 + bp + (sec.forma === "T" ? 104 : 14) + 22 * (n - 1);
-      out.push(`<g class="cota-capa" data-ref="g${i}"><line class="cota" x1="${xc}" y1="${Math.min(yCara, yCapa)}" x2="${xc}" y2="${Math.max(yCara, yCapa)}"/><line class="ref" x1="${x0 + bp + 2}" y1="${yCapa}" x2="${xc + 4}" y2="${yCapa}" stroke-dasharray="2 3"/><text x="${xc + 6}" y="${(yCara + yCapa) / 2 + 4}">${nombre} = ${mm(g.d)}</text></g>`);
+      out.push(`<g class="cota-capa" data-ref="g${i}"><line class="cota" x1="${xc}" y1="${Math.min(yCara, yCapa)}" x2="${xc}" y2="${Math.max(yCara, yCapa)}"/><line class="ref" x1="${x0 + bp + 2}" y1="${yCapa}" x2="${xc + 4}" y2="${yCapa}" stroke-dasharray="2 3"/><text x="${xc + 6}" y="${(yCara + yCapa) / 2 + 4}">${nombre} = ${mm(g2.d)}</text></g>`);
     }
     if (sec.forma === "circular" || sec.forma === "pilar") {
-      for (const [i, g] of (sec.armado ?? []).entries()) {
-        if (g.tipo !== "anillo" && g.tipo !== "perimetral") continue;
-        const dd = g.tipo === "anillo" ? g.r : g.d;
+      for (const [i, g2] of (sec.armado ?? []).entries()) {
+        if (g2.tipo !== "anillo" && g2.tipo !== "perimetral") continue;
+        const dd = g2.tipo === "anillo" ? g2.r : g2.d;
         const cx = x0 + bp / 2;
         const xc = x0 + bp + 14;
         const yB = y0 + dd * s;
@@ -10181,8 +10224,8 @@ tr.et-act td { font-weight: 650; }
   function borrador2(ctx2) {
     const b = est3.b[est3.forma];
     if (b && b.nombre !== null && !sucio2(b)) {
-      const g = ctx2.p.secciones.find((x) => x.nombre === b.nombre);
-      if (g && JSON.stringify(g) !== b.base) return cargar2(g);
+      const g2 = ctx2.p.secciones.find((x) => x.nombre === b.nombre);
+      if (g2 && JSON.stringify(g2) !== b.base) return cargar2(g2);
     }
     if (b) return b;
     const s0 = ctx2.p.secciones.find((x) => x.forma === est3.forma);
@@ -10238,35 +10281,35 @@ tr.et-act td { font-weight: 650; }
   var U3 = (mag) => `\xA0<span class="u u-cab">[${MAG[mag]?.ud ?? mag}]</span>`;
   var v = (x, mag) => q(x, mag, { ud: false });
   var resumenForma = (s) => {
-    const g = s.geo;
+    const g2 = s.geo;
     const m = (x) => fmt(x * 1e3, 0);
     switch (s.forma) {
       case "rectangular":
       case "pilar":
-        return `${m(g.b)} \xD7 ${m(g.h)}`;
+        return `${m(g2.b)} \xD7 ${m(g2.h)}`;
       case "T":
-        return `T ${m(g.b)} \xD7 ${m(g.h)}`;
+        return `T ${m(g2.b)} \xD7 ${m(g2.h)}`;
       case "circular":
-        return `\xF8${m(g.D)}`;
+        return `\xF8${m(g2.D)}`;
       default:
         return t("forma.generica");
     }
   };
   function resumenArmado(s) {
     const arm = s.armado ?? [];
-    const cara2 = (c) => arm.find((g) => g.tipo === "capa" && g.cara === c)?.texto?.trim() || "\u2014";
+    const cara2 = (c) => arm.find((g2) => g2.tipo === "capa" && g2.cara === c)?.texto?.trim() || "\u2014";
     switch (s.forma) {
       case "rectangular":
       case "T":
         return `${cara2("inf")} / ${cara2("sup")}`;
       case "pilar": {
-        const g = arm.find((x) => x.tipo === "perimetral");
-        return g ? `${2 * g.nx + 2 * Math.max(g.ny - 2, 0)}\xF8${g.fi}` : "";
+        const g2 = arm.find((x) => x.tipo === "perimetral");
+        return g2 ? `${2 * g2.nx + 2 * Math.max(g2.ny - 2, 0)}\xF8${g2.fi}` : "";
       }
       case "circular":
-        return arm.find((g) => g.tipo === "anillo")?.texto ?? "";
+        return arm.find((g2) => g2.tipo === "anillo")?.texto ?? "";
       default:
-        return arm.flatMap((g) => (g.textos ?? []).filter((x) => x?.trim())).join(" + ");
+        return arm.flatMap((g2) => (g2.textos ?? []).filter((x) => x?.trim())).join(" + ");
     }
   }
   function resumenSeccion(s) {
@@ -10288,9 +10331,9 @@ tr.et-act td { font-weight: 650; }
     );
   }
   function nombreGrupo(s, i) {
-    const g = s.armado[i];
-    if (g.tipo === "capa") return i < 2 ? g.cara === "inf" ? t("arm.inf") : t("arm.sup") : `${t("arm.importado")} ${i - 1}`;
-    return g.tipo === "anillo" ? t("arm.anillo") : g.tipo === "perimetral" ? t("arm.perimetral") : t("arm.puntual");
+    const g2 = s.armado[i];
+    if (g2.tipo === "capa") return i < 2 ? g2.cara === "inf" ? t("arm.inf") : t("arm.sup") : `${t("arm.importado")} ${i - 1}`;
+    return g2.tipo === "anillo" ? t("arm.anillo") : g2.tipo === "perimetral" ? t("arm.perimetral") : t("arm.puntual");
   }
   function datos4(ctx2, form) {
     const p = ctx2.p;
@@ -10496,13 +10539,13 @@ tr.et-act td { font-weight: 650; }
   }
   function datosSeccion(ctx2, form, s, cambio) {
     const p = ctx2.p;
-    const g = s.geo;
+    const g2 = s.geo;
     const nk = campoNum({ id: "p-n", etq: sub16("N", "k"), ref: t("prop.compPositiva"), valor: s.Nfis ?? 0, mag: "N", paso: 10, min: -1e5, max: 1e5, onCambio: (v2) => {
       s.Nfis = v2;
       cambio();
     } });
-    const L = (id, etq, k, { min = 0.02, max = 10, paso: paso2 = 10 } = {}) => campoNum({ id, etq, valor: g[k], mag: "long", paso: paso2, min, max, onCambio: (v2) => {
-      g[k] = v2;
+    const L = (id, etq, k, { min = 0.02, max = 10, paso: paso2 = 10 } = {}) => campoNum({ id, etq, valor: g2[k], mag: "long", paso: paso2, min, max, onCambio: (v2) => {
+      g2[k] = v2;
       cambio();
     } });
     const campos = {
@@ -10529,7 +10572,7 @@ tr.et-act td { font-weight: 650; }
             id: "g-cont",
             altoMax: 210,
             columnas: [{ titulo: "x [mm]", num: true }, { titulo: "y [mm]", num: true }, { titulo: t("geo.colArmado"), validar: validarCara }],
-            filas: g.contorno.map(([x, y], i) => [celdaMm(x), celdaMm(y), caras.textos[i] ?? ""]),
+            filas: g2.contorno.map(([x, y], i) => [celdaMm(x), celdaMm(y), caras.textos[i] ?? ""]),
             refFila: (i) => `c${i}`,
             numerar: true,
             // Longitud de la cara que sale de cada vértice (hasta el siguiente, y el último cierra con el primero)
@@ -10540,7 +10583,7 @@ tr.et-act td { font-weight: 650; }
               return Number.isFinite(L2) ? fmt(L2, 0) : "";
             } },
             onCambio: (f) => {
-              g.contorno = f.map((r) => [leerNumero(r[0]) / 1e3, leerNumero(r[1]) / 1e3]);
+              g2.contorno = f.map((r) => [leerNumero(r[0]) / 1e3, leerNumero(r[1]) / 1e3]);
               caras.textos = f.map((r) => r[2]);
               cambio();
             }
@@ -10549,14 +10592,14 @@ tr.et-act td { font-weight: 650; }
           h(
             "details",
             { class: "nota-plegada" },
-            h("summary", {}, g.huecos?.length ? t("geo.huecoN", g.huecos.length, g.huecos.reduce((n, q2) => n + q2.length, 0)) : t("geo.huecoOpc")),
+            h("summary", {}, g2.huecos?.length ? t("geo.huecoN", g2.huecos.length, g2.huecos.reduce((n, q2) => n + q2.length, 0)) : t("geo.huecoOpc")),
             rejilla({
               id: "g-hueco",
               altoMax: 80,
               columnas: [{ titulo: "x [mm]", num: true }, { titulo: "y [mm]", num: true }],
-              filas: (g.huecos?.[0] ?? []).map(([x, y]) => [celdaMm(x), celdaMm(y)]),
+              filas: (g2.huecos?.[0] ?? []).map(([x, y]) => [celdaMm(x), celdaMm(y)]),
               onCambio: (f) => {
-                g.huecos = f.length ? [f.map((r) => [leerNumero(r[0]) / 1e3, leerNumero(r[1]) / 1e3])] : [];
+                g2.huecos = f.length ? [f.map((r) => [leerNumero(r[0]) / 1e3, leerNumero(r[1]) / 1e3])] : [];
                 cambio();
               }
             })
@@ -10634,19 +10677,19 @@ tr.et-act td { font-weight: 650; }
   function armadura(ctx2, s, cambio, extra = null) {
     var _a;
     const fila6 = (arm, d) => h("div", { class: "fila-arm" }, arm, d);
-    const dist = (id, etq, g, k) => campoNum({ id, etq, valor: g[k], mag: "long", paso: 5, min: 5e-3, max: 1, onCambio: (v2) => {
-      g[k] = v2;
+    const dist = (id, etq, g2, k) => campoNum({ id, etq, valor: g2[k], mag: "long", paso: 5, min: 5e-3, max: 1, onCambio: (v2) => {
+      g2[k] = v2;
       cambio();
     } });
     if (s.forma === "rectangular" || s.forma === "T") {
       normalizarCaras(s, sepCapas(ctx2.p));
       const [sup3, inf, ...resto2] = s.armado;
-      const cara2 = (g, i, As, d, nombre) => fila6(
-        campoArmado({ id: `a-${i}`, etq: `${nombre} \xB7 ${sub16("A", As)}`, texto: g.texto, capas: {}, onCambio: (v2) => {
-          g.texto = v2;
+      const cara2 = (g2, i, As, d, nombre) => fila6(
+        campoArmado({ id: `a-${i}`, etq: `${nombre} \xB7 ${sub16("A", As)}`, texto: g2.texto, capas: {}, onCambio: (v2) => {
+          g2.texto = v2;
           cambio();
         } }),
-        dist(`a-${i}-d`, sub16("d", d), g, "d")
+        dist(`a-${i}-d`, sub16("d", d), g2, "d")
       );
       return [
         h("div", { "data-ref": "g0" }, cara2(sup3, 0, "s2", "2", t("arm.sup"))),
@@ -10664,10 +10707,10 @@ tr.et-act td { font-weight: 650; }
       ];
     }
     if (s.forma === "pilar") {
-      const g = s.armado.find((x) => x.tipo === "perimetral") ?? { tipo: "perimetral", nx: 3, ny: 3, fi: 16, d: 0.05 };
-      s.armado = [g];
-      const N = (id, etq, k) => campoNum({ id, etq, ref: t("arm.conEsquinas"), valor: g[k], mag: "n", paso: 1, min: 2, max: 40, onCambio: (v2) => {
-        g[k] = Math.round(v2);
+      const g2 = s.armado.find((x) => x.tipo === "perimetral") ?? { tipo: "perimetral", nx: 3, ny: 3, fi: 16, d: 0.05 };
+      s.armado = [g2];
+      const N = (id, etq, k) => campoNum({ id, etq, ref: t("arm.conEsquinas"), valor: g2[k], mag: "n", paso: 1, min: 2, max: 40, onCambio: (v2) => {
+        g2[k] = Math.round(v2);
         cambio();
       } });
       return [
@@ -10675,35 +10718,35 @@ tr.et-act td { font-weight: 650; }
         N("a-ny", t("arm.nVert"), "ny"),
         // El área total de las barras va en gris dentro de la caja del diámetro
         par(
-          selector({ id: "a-fi", etq: "\xF8", nota: ecoPilar(g), opciones: [.../* @__PURE__ */ new Set([...serieDiametros(), g.fi])].sort((a, b) => a - b).map((d) => [String(d), `\xF8${d}`]), valor: String(g.fi), onCambio: (v2) => {
-            g.fi = Number(v2);
+          selector({ id: "a-fi", etq: "\xF8", nota: ecoPilar(g2), opciones: [.../* @__PURE__ */ new Set([...serieDiametros(), g2.fi])].sort((a, b) => a - b).map((d) => [String(d), `\xF8${d}`]), valor: String(g2.fi), onCambio: (v2) => {
+            g2.fi = Number(v2);
             cambio();
           } }),
-          dist("a-0-d", "d", g, "d")
+          dist("a-0-d", "d", g2, "d")
         )
       ];
     }
     if (s.forma === "circular") {
-      const g = (_a = s.armado)[0] ?? (_a[0] = { tipo: "anillo", texto: "", r: 0.05 });
+      const g2 = (_a = s.armado)[0] ?? (_a[0] = { tipo: "anillo", texto: "", r: 0.05 });
       s.armado.splice(1);
       return [
         fila6(
-          campoArmado({ id: "a-0", etq: sub16("A", "s"), texto: g.texto, capas: { maxCapas: 1 }, soloBarras: true, onCambio: (v2) => {
-            g.texto = v2;
+          campoArmado({ id: "a-0", etq: sub16("A", "s"), texto: g2.texto, capas: { maxCapas: 1 }, soloBarras: true, onCambio: (v2) => {
+            g2.texto = v2;
             cambio();
           } }),
-          dist("a-0-d", "d", g, "r")
+          dist("a-0-d", "d", g2, "r")
         )
       ];
     }
     const caras = carasDe(s);
-    const resto = s.armado.filter((g) => g !== caras);
+    const resto = s.armado.filter((g2) => g2 !== caras);
     return [
       par(dist("a-0-d", "d", caras, "d"), extra),
       resto.length ? h(
         "div",
         { class: "aviso info" },
-        h("span", { html: t("arm.extraGen", resto.reduce((n, g) => n + (g.barras?.length ?? 0), 0)) }),
+        h("span", { html: t("arm.extraGen", resto.reduce((n, g2) => n + (g2.barras?.length ?? 0), 0)) }),
         " ",
         boton(t("arm.quitarExtra"), () => {
           s.armado = [caras];
@@ -10712,17 +10755,17 @@ tr.et-act td { font-weight: 650; }
       ) : null
     ];
   }
-  function ecoPilar(g) {
-    const n = 2 * g.nx + 2 * Math.max(0, g.ny - 2);
-    return `${fmt(n * Math.PI * g.fi ** 2 / 4, 0)}\xA0mm\xB2`;
+  function ecoPilar(g2) {
+    const n = 2 * g2.nx + 2 * Math.max(0, g2.ny - 2);
+    return `${fmt(n * Math.PI * g2.fi ** 2 / 4, 0)}\xA0mm\xB2`;
   }
   function carasDe(s) {
-    let g = s.armado.find((x) => x.tipo === "caras");
-    if (!g) {
-      g = { tipo: "caras", d: 0.04, textos: [] };
-      s.armado.unshift(g);
+    let g2 = s.armado.find((x) => x.tipo === "caras");
+    if (!g2) {
+      g2 = { tipo: "caras", d: 0.04, textos: [] };
+      s.armado.unshift(g2);
     }
-    return g;
+    return g2;
   }
   function datosMk(ctx2, form, s, cambio) {
     const Nu = axilUltimo(ctx2, s);
@@ -10868,14 +10911,14 @@ tr.et-act td { font-weight: 650; }
   function resultadosArmado(ctx2, s, geo, ac, tarjeta, props, mats) {
     const sep = sepCapas(ctx2.p);
     const filas = [];
-    s.armado.forEach((g, i) => {
-      if (g.tipo === "capa") {
-        const r = leerCapas(g.texto);
+    s.armado.forEach((g2, i) => {
+      if (g2.tipo === "capa") {
+        const r = leerCapas(g2.texto);
         (r?.capas ?? []).forEach((c, k) => {
           const f2 = [
             `${nombreGrupo(s, i)}${r.capas.length > 1 ? ` \xB7 ${t("arm.capaN", k + 1)}` : ""}`,
             c.n ? `${c.n}\xF8${c.fi}` : t("arm.soloArea"),
-            `${g.cara === "inf" ? sub16("d", "1") : sub16("d", "2")}${k ? ` + ${k > 1 ? `${k}\xB7` : ""}${fmt(sep * 1e3, 0)}` : ""} = ${v(g.d + k * sep, "long")}`,
+            `${g2.cara === "inf" ? sub16("d", "1") : sub16("d", "2")}${k ? ` + ${k > 1 ? `${k}\xB7` : ""}${fmt(sep * 1e3, 0)}` : ""} = ${v(g2.d + k * sep, "long")}`,
             v(c.A * 1e-6, "As")
           ];
           f2.ref = `g${i}`;
@@ -10883,23 +10926,23 @@ tr.et-act td { font-weight: 650; }
         });
         return;
       }
-      if (g.tipo === "caras") {
-        (g.textos ?? []).forEach((txt, k) => {
+      if (g2.tipo === "caras") {
+        (g2.textos ?? []).forEach((txt, k) => {
           const bs = geo.barras.filter((b) => b.grupo === i && b.cara === k);
           if (!String(txt ?? "").trim()) return;
           const c = leerCara(txt);
-          const f2 = [t("geo.caraN", k + 1), c?.sep ? `${bs.length}\xF8${c.fi}` : armadoBonito(leerArmado(txt)) || "\u2014", `d = ${v(g.d, "long")}`, v(bs.reduce((a, b) => a + b.A, 0), "As")];
+          const f2 = [t("geo.caraN", k + 1), c?.sep ? `${bs.length}\xF8${c.fi}` : armadoBonito(leerArmado(txt)) || "\u2014", `d = ${v(g2.d, "long")}`, v(bs.reduce((a, b) => a + b.A, 0), "As")];
           f2.ref = `c${k}`;
           filas.push(f2);
         });
         return;
       }
-      if (g.tipo === "perimetral") {
+      if (g2.tipo === "perimetral") {
         const bs = geo.barras.filter((b) => b.grupo === i);
         const fila6 = (etq, cara2) => {
           const n = bs.filter((b) => cara2.includes(b.cara)).length;
           if (!n) return;
-          const f2 = [etq, `${n}\xF8${g.fi}`, `d = ${v(g.d, "long")}`, v(n * Math.PI * (g.fi / 1e3) ** 2 / 4, "As")];
+          const f2 = [etq, `${n}\xF8${g2.fi}`, `d = ${v(g2.d, "long")}`, v(n * Math.PI * (g2.fi / 1e3) ** 2 / 4, "As")];
           f2.ref = `g${i}`;
           filas.push(f2);
         };
@@ -10909,8 +10952,8 @@ tr.et-act td { font-weight: 650; }
       }
       const f = [
         nombreGrupo(s, i),
-        g.tipo === "puntual" ? `${g.barras.length} ${t("arm.barras")}` : armadoBonito(leerArmado(g.texto)) || "\u2014",
-        g.tipo === "anillo" ? `d = ${v(g.r, "long")}` : "\u2014",
+        g2.tipo === "puntual" ? `${g2.barras.length} ${t("arm.barras")}` : armadoBonito(leerArmado(g2.texto)) || "\u2014",
+        g2.tipo === "anillo" ? `d = ${v(g2.r, "long")}` : "\u2014",
         v(areaGrupo(geo, i), "As")
       ];
       f.ref = `g${i}`;
@@ -11532,7 +11575,7 @@ tr.et-act td { font-weight: 650; }
     if (!r.cumpleFck) res.append(aviso(t("dur.avisoFckProy", D.hormigon, fmt(fck, 0), fmt(r.fckMin, 0)), "error"));
     if (r.fijaProyecto.length) res.append(aviso(t("ec.fijaProyecto", r.fijaProyecto.join(", ")), "info"));
     const centro = h("article", { class: "panel tarjeta" });
-    const g = (cl3, lista) => h("div", {}, h("h3", { title: t(`ec.g${cl3}Nota`) }, t(`ec.g${cl3}`)), chips(D, lista, no, alternar));
+    const g2 = (cl3, lista) => h("div", {}, h("h3", { title: t(`ec.g${cl3}Nota`) }, t(`ec.g${cl3}`)), chips(D, lista, no, alternar));
     poner(
       centro,
       h("div", { class: "cab-clases" }, h("h2", {}, t("dur.clases")), boton(t("eh.quitarTodo"), () => {
@@ -11540,7 +11583,7 @@ tr.et-act td { font-weight: 650; }
         ctx2.cambio();
       }, "secundario pequeno")),
       h("p", { class: "nota", html: t("ec.explica") }),
-      h("div", { class: "grupos-esp grupos-flex" }, g("X0", X0), g("XC", XC), g("XD", XD), g("XS", XS), g("XF", XF), g("XA", XA), g("XM", XM)),
+      h("div", { class: "grupos-esp grupos-flex" }, g2("X0", X0), g2("XC", XC), g2("XD", XD), g2("XS", XS), g2("XF", XF), g2("XA", XA), g2("XM", XM)),
       h("div", { class: "desc-clases" }, ...D.clasesEC.length ? D.clasesEC.map((c) => h("p", { class: "nota", html: `<b>${c}</b> \xB7 ${t(`ec.desc.${c}`)}` })) : [h("p", { class: "nota" }, t("eh.sinClases"))]),
       plegable(t("eh.tablaQuimica").replace("8.2.3.b", "CE 27.1.b"), tabla(
         [
@@ -12060,8 +12103,8 @@ tr.et-act td { font-weight: 650; }
     const { yg } = centroHomogeneizado(seccionRectangular(d));
     const redondear = (x) => x - Math.trunc(x) > 1e-6 ? Math.trunc(x) + 1 : Math.trunc(x);
     const util = (b) => {
-      const u = b - 2 * rlat;
-      return u <= 0 ? 0.8 * b : u;
+      const u2 = b - 2 * rlat;
+      return u2 <= 0 ? 0.8 * b : u2;
     };
     const bu = util(d.b);
     const nmax = Math.round(bu / espaciado) + 1;
@@ -12194,7 +12237,7 @@ tr.et-act td { font-weight: 650; }
     return p.secciones.map((s, i) => [s, i]).filter(([s]) => s.forma === "rectangular" || s.forma === "T");
   }
   function capa(s, cara2) {
-    let c = s.armado.find((g) => g.tipo === "capa" && g.cara === cara2);
+    let c = s.armado.find((g2) => g2.tipo === "capa" && g2.cara === cara2);
     if (!c) {
       c = { tipo: "capa", cara: cara2, texto: "", d: cara2 === "inf" ? 0.045 : 0.04 };
       s.armado.push(c);
@@ -12254,7 +12297,7 @@ tr.et-act td { font-weight: 650; }
     );
     const ct = capa(s, pos ? "inf" : "sup");
     const cc = capa(s, pos ? "sup" : "inf");
-    const otras = s.armado.filter((g) => g !== ct && g !== cc).length;
+    const otras = s.armado.filter((g2) => g2 !== ct && g2 !== cc).length;
     poner(form, grupo(
       t("g.armadura"),
       est4.modo === "comprobar" ? h(
@@ -12713,8 +12756,8 @@ tr.et-act td { font-weight: 650; }
       };
       const pts = [extremo(lo)];
       for (let i = 1; i < n; i++) {
-        const u = 0.5 - 0.5 * Math.cos(Math.PI * i / n);
-        const N = Ncomp + (Ntrac - Ncomp) * u;
+        const u2 = 0.5 - 0.5 * Math.cos(Math.PI * i / n);
+        const N = Ncomp + (Ntrac - Ncomp) * u2;
         const e2 = estadoUltimo(sec, -N, { signo, yref });
         if (!e2.converge) continue;
         pts.push({ N: -e2.N, M: e2.M, x: e2.x, epsSup: e2.epsSup, epsInf: e2.epsInf, kappa: e2.kappa });
@@ -12763,8 +12806,8 @@ tr.et-act td { font-weight: 650; }
       const den = NEd * ey - MEd * ex;
       if (Math.abs(den) < 1e-12) continue;
       const t2 = (x1 * ey - y1 * ex) / den;
-      const u = (x1 * MEd - y1 * NEd) / den;
-      if (t2 > 1e-12 && u >= -1e-9 && u <= 1 + 1e-9) lam = Math.min(lam, t2);
+      const u2 = (x1 * MEd - y1 * NEd) / den;
+      if (t2 > 1e-12 && u2 >= -1e-9 && u2 <= 1 + 1e-9) lam = Math.min(lam, t2);
     }
     const ratio = Number.isFinite(lam) ? 1 / lam : Infinity;
     return { dentro: ratio <= 1, MRd, ratio, Q: Number.isFinite(lam) ? [lam * NEd, lam * MEd] : null };
@@ -12867,7 +12910,7 @@ tr.et-act td { font-weight: 650; }
     return c;
   }
   var TOL = 2e-5;
-  var sigla = (g) => g === Infinity ? "\u221E" : fmt(g, 2);
+  var sigla = (g2) => g2 === Infinity ? "\u221E" : fmt(g2, 2);
   function datos9(ctx2, form) {
     const p = ctx2.p;
     const s = activa(p);
@@ -13241,23 +13284,23 @@ tr.et-act td { font-weight: 650; }
     const smin = Math.min(...s);
     return { ux, uy, vx, vy, smax, h: smax - smin };
   }
-  function seccionGirada(m, g) {
-    const cs = m.contornos.map((c) => ({ signo: c.signo, pts: c.pts.map(([x, y]) => [g.vx * x + g.vy * y, g.smax - (g.ux * x + g.uy * y)]) }));
+  function seccionGirada(m, g2) {
+    const cs = m.contornos.map((c) => ({ signo: c.signo, pts: c.pts.map(([x, y]) => [g2.vx * x + g2.vy * y, g2.smax - (g2.ux * x + g2.uy * y)]) }));
     return {
       trapecios: trapecios(cs).map((t2) => ({ ...t2, mat: m.hormigon })),
-      barras: m.puntos.map((p) => ({ y: g.smax - (g.ux * p.x + g.uy * p.y), A: p.A, mat: m.acero })),
-      h: g.h,
+      barras: m.puntos.map((p) => ({ y: g2.smax - (g2.ux * p.x + g2.uy * p.y), A: p.A, mat: m.acero })),
+      h: g2.h,
       epsC2: m.epsC2
     };
   }
   function esfuerzosPlano(m, theta, eps0, kappa) {
-    const g = giro(m, theta);
+    const g2 = giro(m, theta);
     const eps2 = (t2) => eps0 + kappa * t2;
     let F2 = 0;
     let Fy = 0;
     let Fx = 0;
     const tv = /* @__PURE__ */ new Set();
-    const tof = (p) => g.smax - (g.ux * p[0] + g.uy * p[1]);
+    const tof = (p) => g2.smax - (g2.ux * p[0] + g2.uy * p[1]);
     for (const c of m.contornos) for (const p of c.pts) tv.add(tof(p));
     const ts = [...tv];
     const t0 = Math.min(...ts);
@@ -13278,11 +13321,11 @@ tr.et-act td { font-weight: 650; }
         const t2 = mid + half * xi;
         const f = -sigma(m.hormigon, eps2(t2));
         if (f === 0) continue;
-        const p0 = g.smax - t2;
+        const p0 = g2.smax - t2;
         let ancho = 0;
         let mom = 0;
         for (const c of m.contornos) {
-          const rot = c.pts.map(([x, y]) => [g.vx * x + g.vy * y, g.smax - (g.ux * x + g.uy * y)]);
+          const rot = c.pts.map(([x, y]) => [g2.vx * x + g2.vy * y, g2.smax - (g2.ux * x + g2.uy * y)]);
           for (const [xa, xb] of cortesEn(rot, t2)) {
             ancho += c.signo * (xb - xa);
             mom += c.signo * (xb * xb - xa * xa) / 2;
@@ -13290,15 +13333,15 @@ tr.et-act td { font-weight: 650; }
         }
         const dt = w * half;
         const dF = f * ancho * dt;
-        const dFx = f * (g.ux * p0 * ancho + g.vx * mom) * dt;
-        const dFy = f * (g.uy * p0 * ancho + g.vy * mom) * dt;
+        const dFx = f * (g2.ux * p0 * ancho + g2.vx * mom) * dt;
+        const dFy = f * (g2.uy * p0 * ancho + g2.vy * mom) * dt;
         F2 += dF;
         Fx += dFx;
         Fy += dFy;
       }
     }
     for (const p of m.puntos) {
-      const t2 = g.smax - (g.ux * p.x + g.uy * p.y);
+      const t2 = g2.smax - (g2.ux * p.x + g2.uy * p.y);
       const f = -sigma(m.acero, eps2(t2));
       F2 += f * p.A;
       Fx += f * p.A * p.x;
@@ -13307,11 +13350,11 @@ tr.et-act td { font-weight: 650; }
     return { N: F2, Mx: m.yc * F2 - Fy, My: Fx - m.xc * F2 };
   }
   function estadoUltimoEsviada(m, N, theta) {
-    const g = giro(m, theta);
-    const e2 = estadoUltimo(seccionGirada(m, g), -N, { signo: 1 });
+    const g2 = giro(m, theta);
+    const e2 = estadoUltimo(seccionGirada(m, g2), -N, { signo: 1 });
     if (!e2.converge) return { converge: false, theta };
     const r = esfuerzosPlano(m, theta, e2.epsSup, e2.kappa);
-    return { converge: true, theta, N: r.N, Mx: r.Mx, My: r.My, x: e2.x, epsSup: e2.epsSup, kappa: e2.kappa, epsInf: e2.epsInf, h: g.h };
+    return { converge: true, theta, N: r.N, Mx: r.Mx, My: r.My, x: e2.x, epsSup: e2.epsSup, kappa: e2.kappa, epsInf: e2.epsInf, h: g2.h };
   }
   function axilesEsviada(m) {
     return axilesLimite(seccionGirada(m, giro(m, 0)));
@@ -13550,8 +13593,8 @@ tr.et-act td { font-weight: 650; }
       const den = N * dy - M2 * dx;
       if (Math.abs(den) < 1e-12) continue;
       const lam = (x1 * dy - y1 * dx) / den;
-      const u = (x1 * M2 - y1 * N) / den;
-      if (lam > 0 && u >= -1e-9 && u <= 1 + 1e-9) out.push({ lam, i });
+      const u2 = (x1 * M2 - y1 * N) / den;
+      if (lam > 0 && u2 >= -1e-9 && u2 <= 1 + 1e-9) out.push({ lam, i });
     }
     return out.sort((a, b) => a.lam - b.lam);
   }
@@ -13565,18 +13608,18 @@ tr.et-act td { font-weight: 650; }
     return menores.length ? { g: menores[menores.length - 1].lam, i: menores[menores.length - 1].i } : { g: 0, i: -1 };
   }
   function razonNM(m, S, corte, fijo, M0, N, M2) {
-    const { g, i } = cruceRayo(corte.curva, N, M2);
-    if (!(g > 0) || !Number.isFinite(g) || i < 0) return { g, Q: null, e: null };
+    const { g: g2, i } = cruceRayo(corte.curva, N, M2);
+    if (!(g2 > 0) || !Number.isFinite(g2) || i < 0) return { g: g2, Q: null, e: null };
     const rama = i < corte.N.length + (Math.abs(M0) < 1e-9 ? 1 : 0) ? "A" : "B";
     const var_ = fijo === "Mx" ? "My" : "Mx";
     const res = (lam) => {
       const e2 = estadoEnPlano(m, S, lam * N, fijo, M0, rama);
       return e2 ? { e: e2, r: e2[var_] - lam * M2 } : null;
     };
-    let l0 = g;
+    let l0 = g2;
     let r0 = res(l0);
-    if (!r0) return { g, Q: null, e: null };
-    let l1 = g * 1.01;
+    if (!r0) return { g: g2, Q: null, e: null };
+    let l1 = g2 * 1.01;
     let r1 = res(l1);
     for (let it = 0; it < 4 && r1 && Math.abs(r1.r) > 1e-4 * Math.max(1, Math.abs(M2)); it++) {
       const den = r1.r - r0.r;
@@ -13651,7 +13694,7 @@ tr.et-act td { font-weight: 650; }
   var nv2 = (txt) => leerNumero(txt);
   var ALTO_PTS = 32 + 11 * 27;
   var info = (tx2) => `<span class="info-i izq" tabindex="0" role="img" aria-label="${tx2}" data-tip="${tx2}">i</span>`;
-  var sigla2 = (g) => g === Infinity ? "\u221E" : fmt(g, 2);
+  var sigla2 = (g2) => g2 === Infinity ? "\u221E" : fmt(g2, 2);
   var TOLCONT = 72;
   function eMinimas(norma2, geo) {
     const div = norma2 === "EHE-08" ? 20 : 30;
@@ -13913,7 +13956,7 @@ tr.et-act td { font-weight: 650; }
     }
     if (!gs.length) return veredicto("atencion", t("fce.sinPuntos"), t("fcr.coefSeg"), "\u2014", etq);
     const gmin = Math.min(...gs);
-    const fuera = gs.filter((g) => g < 1 - 1e-6).length;
+    const fuera = gs.filter((g2) => g2 < 1 - 1e-6).length;
     const ok = fuera === 0;
     return veredicto(
       ok ? "cumple" : "nocumple",
@@ -13998,7 +14041,7 @@ tr.et-act td { font-weight: 650; }
       if (!Number.isFinite(N) || !Number.isFinite(Mv)) return;
       const Mx = f === "My" ? Mv : M0;
       const My = f === "My" ? M0 : Mv;
-      let g;
+      let g2;
       let e2 = null;
       if (exacto) {
         const clave = `${f}|${M0}|${N}|${Mv}`;
@@ -14006,9 +14049,9 @@ tr.et-act td { font-weight: 650; }
           const r2 = razonNM(c.m, S, co, f, M0, N, Mv);
           c.nmCache.set(clave, { g: r2.g, e: r2.e });
         }
-        ({ g, e: e2 } = c.nmCache.get(clave));
-      } else g = coeficienteNM2(co.curva, N, Mv);
-      pts.push({ i, N, Mx, My, g, e: e2 });
+        ({ g: g2, e: e2 } = c.nmCache.get(clave));
+      } else g2 = coeficienteNM2(co.curva, N, Mv);
+      pts.push({ i, N, Mx, My, g: g2, e: e2 });
     });
     return { S, co, pts };
   }
@@ -14045,7 +14088,7 @@ tr.et-act td { font-weight: 650; }
       const { co, pts } = puntosNM(c, M0, exacto);
       const trazo = trazoNM(co, S, M0);
       const xy = trazo.length ? [...trazo, trazo[0]] : [];
-      const g = h("div", { class: "lienzo" }, grafica({
+      const g2 = h("div", { class: "lienzo" }, grafica({
         series: [{ nombre: t("fce.serieM", f === "My" ? "My" : "Mx", fmt(M0, MAG.M.d)), clase: "s1", xy, tabla: co.curva }],
         lecturaXY: true,
         rango: rangoNM(c),
@@ -14068,7 +14111,7 @@ tr.et-act td { font-weight: 650; }
         pts.length ? tablaPuntos(ctx2, pts) : null
       );
       titulo.innerHTML = `${t("fce.contorno")} \xB7 ${nomF} = ${fmt(M0, MAG.M.d)} ${MAG.M.ud}${c.phi0 ? ` \xB7 \xF8${fmt(c.phiProp ?? est6.fi ?? c.phi0, 0)} mm` : ""}`;
-      return g;
+      return g2;
     };
     let graf = dibujar(est6.Mdiag[f], true);
     caja.append(graf);
@@ -14082,9 +14125,9 @@ tr.et-act td { font-weight: 650; }
       texto: (v2) => `${fmt(v2, MAG.M.d)} ${MAG.M.ud}`,
       onInput: (v2) => {
         est6.Mdiag[f] = v2;
-        const g = dibujar(v2, false);
-        graf.replaceWith(g);
-        graf = g;
+        const g2 = dibujar(v2, false);
+        graf.replaceWith(g2);
+        graf = g2;
       },
       onChange: (v2) => {
         est6.Mdiag[f] = v2;
@@ -14119,7 +14162,7 @@ tr.et-act td { font-weight: 650; }
       });
       const trac = N < 0;
       const xy = cont.length ? [...cont, cont[0]].map((v2) => [v2.My, v2.Mx]) : [];
-      const g = h("div", { class: "lienzo" }, grafica({
+      const g2 = h("div", { class: "lienzo" }, grafica({
         series: [{ nombre: t("fce.serieN", fmt(N, MAG.N.d)), clase: `s1${trac ? " trac" : ""}`, xy }],
         escalaIgual: true,
         lecturaXY: true,
@@ -14146,7 +14189,7 @@ tr.et-act td { font-weight: 650; }
       );
       titulo.innerHTML = tituloGraf(c, s, { N });
       if (rg) rg.classList.toggle("trac", trac);
-      return g;
+      return g2;
     };
     let graf = dibujar(est6.Ndiag, TOLCONT);
     caja.append(graf);
@@ -14162,15 +14205,15 @@ tr.et-act td { font-weight: 650; }
       clase: `rg-dual${est6.Ndiag < 0 ? " trac" : ""}`,
       onInput: (N) => {
         est6.Ndiag = N;
-        const g = dibujar(N, 36);
-        graf.replaceWith(g);
-        graf = g;
+        const g2 = dibujar(N, 36);
+        graf.replaceWith(g2);
+        graf = g2;
       },
       onChange: (N) => {
         est6.Ndiag = N;
-        const g = dibujar(N, TOLCONT);
-        graf.replaceWith(g);
-        graf = g;
+        const g2 = dibujar(N, TOLCONT);
+        graf.replaceWith(g2);
+        graf = g2;
         ctx2.cambio();
       }
     });
@@ -14371,9 +14414,9 @@ tr.et-act td { font-weight: 650; }
     };
   }
   function aceroServicio(mat, gammaS) {
-    const g = gammaS ?? mat.gamma ?? 1;
+    const g2 = gammaS ?? mat.gamma ?? 1;
     const car = caracteristico(mat);
-    return g === 1 ? car : caracteristico({ ...car, gamma: 1 / g, alfa: 1 });
+    return g2 === 1 ? car : caracteristico({ ...car, gamma: 1 / g2, alfa: 1 });
   }
   function modeloTensional(geo, hormigonMat, aceroMat, o) {
     const ley = leyServicio(hormigonMat, o);
@@ -14402,10 +14445,10 @@ tr.et-act td { font-weight: 650; }
     return esfuerzosPlano(m, theta, -eTop, k);
   }
   function planoDeSup(mod, eSup, beta2, x) {
-    const g = x === Infinity || x === -Infinity ? 0 : eSup / x;
-    if (g < 0 || !Number.isFinite(g)) return null;
-    const e0 = eSup - g * distanciaCdg(mod, beta2);
-    return { e0, kx: g * Math.sin(beta2), ky: g * Math.cos(beta2) };
+    const g2 = x === Infinity || x === -Infinity ? 0 : eSup / x;
+    if (g2 < 0 || !Number.isFinite(g2)) return null;
+    const e0 = eSup - g2 * distanciaCdg(mod, beta2);
+    return { e0, kx: g2 * Math.sin(beta2), ky: g2 * Math.cos(beta2) };
   }
   function resuelve3(J, r) {
     const M2 = [0, 1, 2].map((i) => [J[0][i], J[1][i], J[2][i], r[i]]);
@@ -14492,8 +14535,8 @@ tr.et-act td { font-weight: 650; }
     const eInf = Math.min(...es);
     let beta2 = k < 1e-12 ? null : (Math.atan2(pl.kx, pl.ky) + 2 * Math.PI) % (2 * Math.PI);
     if (beta2 !== null && beta2 > 2 * Math.PI - 1e-9) beta2 = 0;
-    const g = k;
-    const x = k < 1e-12 ? eSup >= 0 ? Infinity : -Infinity : eSup / g;
+    const g2 = k;
+    const x = k < 1e-12 ? eSup >= 0 ? Infinity : -Infinity : eSup / g2;
     const fz = esfuerzosDe(m, mod, pl);
     const ext = extremosHormigon(m.hormigon, eInf, eSup);
     const sAc = (e2) => -sigma(mod.acero, -e2) / 1e3;
@@ -14757,7 +14800,7 @@ tr.et-act td { font-weight: 650; }
   function dibujo(c, r) {
     const { geo, mod } = c;
     const bet = r.beta ?? Math.PI / 2;
-    const u = [Math.cos(bet), -Math.sin(bet)];
+    const u2 = [Math.cos(bet), -Math.sin(bet)];
     const v2 = [Math.sin(bet), Math.cos(bet)];
     const xc = mod.xc;
     const yc = mod.yc;
@@ -14768,9 +14811,9 @@ tr.et-act td { font-weight: 650; }
     const T = (p) => {
       const dx = p[0] - xc;
       const dy = p[1] - yc;
-      return [cx + S * (dx * v2[0] + dy * v2[1]), cy - S * (dx * u[0] + dy * u[1])];
+      return [cx + S * (dx * v2[0] + dy * v2[1]), cy - S * (dx * u2[0] + dy * u2[1])];
     };
-    const prof = (p) => (p[0] - xc) * u[0] + (p[1] - yc) * u[1];
+    const prof = (p) => (p[0] - xc) * u2[0] + (p[1] - yc) * u2[1];
     const lat = (p) => (p[0] - xc) * v2[0] + (p[1] - yc) * v2[1];
     const vs = mod.vertices;
     const smax = Math.max(...vs.map(prof));
@@ -15524,7 +15567,7 @@ tr.et-act td { font-weight: 650; }
       r.opciones.length > 1 ? `${t("fu.combinacion")} ${i + 1}` : t("fu.minimos"),
       `${sub25(r.dimEtq, "min")} = <b>${fmt(x.d, 0)}</b>${x.a == null ? "" : `, ${sub25("a", "min")} = <b>${fmt(x.a, 0)}</b>`}${ESP}mm${x.geom ? ` <span class="nota">(${t("fu.geom")})</span>` : ""}${x.barras8 ? ` <span class="nota">(${t("fu.barras8")})</span>` : ""}`
     ]);
-    const ex = r.extra.map(([k, v2, u = "mm"]) => [t(k), `${v2}${ESP}${u}`]);
+    const ex = r.extra.map(([k, v2, u2 = "mm"]) => [t(k), `${v2}${ESP}${u2}`]);
     poner(centro, h("h2", {}, t("fu.requisitos", `${r.crit} ${D.R}`)), sinValor ? h("p", { class: "nota" }, t("fu.sinValor")) : tabla([...lista, ...ex]));
     poner(
       dcha,
@@ -15579,7 +15622,7 @@ tr.et-act td { font-weight: 650; }
     const { fck, fyk, phi } = p;
     const bueno = p.adherencia !== "deficiente";
     const comp = p.esfuerzo === "compresion";
-    const patilla = p.forma === "patilla" && !comp;
+    const patilla2 = p.forma === "patilla" && !comp;
     const r = p.r ?? 1;
     const n = norma(p.norma);
     const fyd = fyk / n.gammaS;
@@ -15587,7 +15630,7 @@ tr.et-act td { font-weight: 650; }
       const m = coefM(fck, fyk);
       const lb2 = bueno ? Math.max(m * phi * phi, fyk / 20 * phi) : Math.max(1.4 * m * phi * phi, fyk / 14 * phi);
       const rec = p.recPerp ?? p.cd;
-      const beta2 = patilla ? rec != null && rec > 3 * phi ? 0.7 : 1 : 1;
+      const beta2 = patilla2 ? rec != null && rec > 3 * phi ? 0.7 : 1 : 1;
       const lbMin2 = Math.max(10 * phi, 150, (comp ? 2 : 1) * lb2 / 3);
       const lbd2 = Math.max(lb2 * beta2 * r, lbMin2);
       return { lb: lb2, lbd: lbd2, lbMin: lbMin2, coef: { m, beta: beta2 }, ref: "EHE-08 69.5.1.2 (ensayo de la viga) = CE 49.5.1.2", norma: p.norma };
@@ -15596,8 +15639,8 @@ tr.et-act td { font-weight: 650; }
       const f = fbd(n, fck, phi, bueno);
       const lb2 = phi / 4 * (r * fyd / f);
       const cd = p.cd ?? phi;
-      const a1 = patilla ? cd > 3 * phi ? 0.7 : 1 : 1;
-      const a2 = comp ? 1 : patilla ? 1 : clamp(1 - 0.15 * (cd - phi) / phi, 0.7, 1);
+      const a1 = patilla2 ? cd > 3 * phi ? 0.7 : 1 : 1;
+      const a2 = comp ? 1 : patilla2 ? 1 : clamp(1 - 0.15 * (cd - phi) / phi, 0.7, 1);
       let lbd2;
       let lbMin2;
       if (p.norma === "EC2-2004") {
@@ -15617,7 +15660,7 @@ tr.et-act td { font-weight: 650; }
     const lb = 50 * kcp * phi * Math.pow(clamp(r * fyd / 435, 0, 10), 1.5) * Math.sqrt(rc) * Math.cbrt(rf) * Math.sqrt(1.5 * phi / cdE);
     const lbMin = 10 * phi;
     let lbd = Math.max(lb, lbMin);
-    if (patilla) lbd = Math.max(lb - 15 * phi, lbMin);
+    if (patilla2) lbd = Math.max(lb - 15 * phi, lbMin);
     return { lb, lbd, lbMin, coef: { kcp, cd: cdE }, ref: "EN 1992-1-1:2023 11.4.2(3), 11.4.4(1)", norma: p.norma };
   }
   function solape(p) {
@@ -15642,31 +15685,45 @@ tr.et-act td { font-weight: 650; }
 
   // src/ui/dibujoAnclaje.js
   var sub26 = (b, s) => `${b}<tspan baseline-shift="sub" font-size="75%">${s}</tspan>`;
-  var cotaH3 = (x1, x2, y, texto) => `<line class="cota" x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" marker-start="url(#tic)" marker-end="url(#tic)"/><text x="${(x1 + x2) / 2}" y="${y + 13}" text-anchor="middle" class="fuerte">${texto}</text>`;
-  var ref2 = (x, y1, y2) => `<line class="ref" x1="${x}" y1="${y1}" x2="${x}" y2="${y2}"/>`;
+  var tic = '<defs><marker id="tic" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M2 8L8 2" class="tic"/></marker></defs>';
+  var cotaH3 = (x1, x2, y, texto, dy = 13) => `<line class="cota" x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" marker-start="url(#tic)" marker-end="url(#tic)"/>` + (texto ? `<text x="${(x1 + x2) / 2}" y="${y + dy}" text-anchor="middle" class="fuerte">${texto}</text>` : "");
+  var cotaV3 = (x, y1, y2) => `<line class="cota" x1="${x}" y1="${y1}" x2="${x}" y2="${y2}" marker-start="url(#tic)" marker-end="url(#tic)"/>`;
+  var ref2 = (x1, y1, x2, y2) => `<line class="ref" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`;
   var tit = (x, y, s) => `<text class="tit" x="${x}" y="${y}">${s}</text>`;
   var barra2 = (d) => `<path class="barra-lin" d="${d}"/>`;
+  var g = (x, y, s) => `<g transform="translate(${x} ${y})">${s}</g>`;
+  var hor = (x, y, w, h2) => `<rect class="hor" x="${x}" y="${y}" width="${w}" height="${h2}"/>`;
+  var radio = (cx, cy, r, tx2, ty) => `<line class="cota" x1="${cx}" y1="${cy}" x2="${(cx + r * 0.7).toFixed(1)}" y2="${(cy - r * 0.7).toFixed(1)}"/><text x="${tx2}" y="${ty}" class="nota-d">r</text>`;
+  var recta = () => tit(0, 10, t("an.dib.t.recta")) + hor(10, 16, 180, 40) + barra2("M0 36 H170") + ref2(10, 56, 10, 72) + ref2(170, 56, 170, 72) + cotaH3(10, 170, 68, sub26("l", "bd"));
+  var patilla = () => tit(0, 10, t("an.dib.t.patilla")) + hor(10, 16, 170, 64) + barra2("M0 30 H120 A14 14 0 0 1 134 44 V68") + radio(120, 44, 14, 109, 54) + cotaV3(148, 44, 68) + `<text x="153" y="60" class="nota-d">\u2265 5 \xF8</text><text x="140" y="34" class="nota-d">90\xB0</text>` + ref2(10, 80, 10, 96) + ref2(134, 68, 134, 96) + cotaH3(10, 134, 92, sub26("l", "bd"));
+  var gancho = () => tit(0, 10, t("an.dib.t.gancho")) + hor(10, 16, 180, 64) + barra2("M0 30 H132 A14 14 0 0 1 132 58 H106") + radio(132, 44, 14, 121, 52) + cotaH3(106, 132, 70, null) + `<text x="138" y="73" class="nota-d">\u2265 5 \xF8</text><text x="152" y="48" class="nota-d">\u03B1 \u2265 150\xB0</text>` + ref2(10, 80, 10, 96) + ref2(132, 60, 132, 96) + cotaH3(10, 132, 92, sub26("l", "bd"));
+  var u = () => tit(0, 10, t("an.dib.t.u")) + hor(10, 16, 180, 46) + barra2("M0 26 H128 A12 12 0 0 1 128 50 H0") + radio(128, 38, 12, 116, 44) + ref2(10, 62, 10, 78) + ref2(128, 50, 128, 78) + cotaH3(10, 128, 74, sub26("l", "bd"));
+  var solapo = (w) => tit(0, 10, t("an.dib.t.solapo")) + hor(10, 16, w - 10, 46) + barra2(`M0 31 H${w * 0.62}`) + barra2(`M${w * 0.32} 47 H${w}`) + cotaV3(24, 31, 47) + `<text x="30" y="45" class="nota-d">${t("an.dib.sep")}</text>` + ref2(w * 0.32, 62, w * 0.32, 78) + ref2(w * 0.62, 62, w * 0.62, 78) + cotaH3(w * 0.32, w * 0.62, 74, sub26("l", "s"));
   function dibujoAnclaje({ esfuerzo }) {
     const comp = esfuerzo === "compresion";
-    let s = "";
-    s += tit(12, 14, t("an.dib.anclaje"));
-    s += `<rect class="hor" x="12" y="20" width="236" height="34"/>`;
-    s += barra2("M12 37 H236") + `<circle class="barra-ac" cx="236" cy="37" r="0"/>`;
-    s += ref2(24, 54, 70) + ref2(236, 54, 70) + cotaH3(24, 236, 66, sub26("l", "bd"));
-    if (!comp) {
-      s += tit(12, 106, t("an.dib.gancho"));
-      s += `<rect class="hor" x="12" y="112" width="236" height="52"/>`;
-      s += barra2("M12 128 H200 Q216 128 216 144 V156");
-      s += ref2(24, 164, 178) + ref2(216, 164, 178) + cotaH3(24, 216, 174, sub26("l", "bd"));
+    let s;
+    let alto;
+    if (comp) {
+      s = g(0, 0, recta()) + g(0, 100, solapo(400));
+      alto = 200;
+    } else {
+      s = g(0, 0, recta()) + g(210, 0, patilla()) + g(0, 112, gancho()) + g(210, 112, u()) + g(0, 224, solapo(400));
+      alto = 322;
     }
-    const y0 = comp ? 112 : 208;
-    s += tit(12, y0 - 6, t("an.dib.solapo"));
-    s += `<rect class="hor" x="12" y="${y0}" width="236" height="46"/>`;
-    s += barra2(`M12 ${y0 + 15} H176`) + barra2(`M84 ${y0 + 29} H248`);
-    s += `<line class="cota" x1="28" y1="${y0 + 15}" x2="28" y2="${y0 + 29}" marker-start="url(#tic)" marker-end="url(#tic)"/><text x="34" y="${y0 + 26}" class="nota-d">${t("an.dib.sep")}</text>`;
-    s += ref2(84, y0 + 46, y0 + 60) + ref2(176, y0 + 46, y0 + 60) + cotaH3(84, 176, y0 + 56, sub26("l", "s"));
-    const alto = comp ? 190 : 288;
-    return `<svg class="dib dib-anclaje" viewBox="0 0 260 ${alto}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${t("an.dib.aria")}"><defs><marker id="tic" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M2 8L8 2" class="tic"/></marker></defs>${s}</svg>`;
+    return `<svg class="dib dib-anclaje" viewBox="0 0 400 ${alto}" preserveAspectRatio="xMidYMin meet" role="img" aria-label="${t("an.dib.aria")}">${tic}${s}</svg>`;
+  }
+  function dibujoRecubrimiento() {
+    const bar = (cx, cy, extra = "") => `<circle class="barra-ac${extra}" cx="${cx}" cy="${cy}" r="10"/>`;
+    let s = tit(0, 10, t("an.dib.t.esquina"));
+    s += `<rect class="hor" x="50" y="18" width="240" height="152"/>`;
+    s += `<path class="cerco" d="M280 40 H76 Q66 40 66 50 V144 Q66 154 76 154 H280"/>`;
+    s += bar(77.5, 142.5, " an-ancla") + bar(127.5, 142.5);
+    s += ref2(50, 170, 50, 188) + ref2(67.5, 152.5, 67.5, 188) + cotaH3(50, 67.5, 184, null) + `<text x="46" y="188" text-anchor="end" class="fuerte">${sub26("c", "x")}</text>`;
+    s += ref2(22, 170, 50, 170) + ref2(22, 152.5, 77.5, 152.5) + cotaV3(28, 152.5, 170) + `<text x="22" y="164" text-anchor="end" class="fuerte">${sub26("c", "y")}</text>`;
+    s += ref2(87.5, 142.5, 87.5, 126) + ref2(117.5, 142.5, 117.5, 126) + cotaH3(87.5, 117.5, 130, null) + `<text x="102.5" y="123" text-anchor="middle" class="fuerte">a</text>`;
+    s += `<line class="cota" x1="150" y1="96" x2="84" y2="133"/><text x="152" y="96" class="nota-d">${t("an.dib.long1")}</text><text x="152" y="109" class="nota-d">${t("an.dib.long2")}</text>`;
+    s += `<text x="190" y="33" class="nota-d">${t("an.dib.cerco")}</text>`;
+    return `<svg class="dib dib-cd" viewBox="0 0 296 202" preserveAspectRatio="xMidYMin meet" role="img" aria-label="${t("an.dib.ariaCd")}">${tic}${s}</svg>`;
   }
 
   // src/ui/vistas/anclaje.js
@@ -15701,7 +15758,6 @@ tr.et-act td { font-weight: 650; }
         e2.disabled = true;
         e2.title = motivo;
       });
-      c.append(h("span", { class: "an-hint", html: motivo }));
       return c;
     };
     const seg = (k, opciones, etq, est13 = true, motivo = null) => inactivo(h(
@@ -15716,7 +15772,7 @@ tr.et-act td { font-weight: 650; }
     const noEHE = ehe ? null : t("an.no.ehe");
     const noDist = ehe ? comp ? t("an.no.comp") : null : t("an.no.dist");
     const noPct = n === "EC2-2023" ? t("an.no.pct23") : ehe && comp ? t("an.no.comp") : null;
-    poner(form, h("div", { class: "cab" }, h("h1", {}, t("m.anclaje")), h("p", {}, t("an.subtitulo"))));
+    poner(form, h("div", { class: "cab" }, h("h1", {}, t("m.anclaje"))));
     poner(
       form,
       grupo(t("an.materiales"), par(
@@ -15754,13 +15810,13 @@ tr.et-act td { font-weight: 650; }
       lejos: !!D.lejos
     };
   }
-  var cdDe = (phi) => Math.max(25, 1.5 * phi);
+  var cdDe = (phi) => Math.round(Math.max(25, 1.5 * phi));
   var sobre5 = (x) => Math.ceil(x / 5 - 1e-9) * 5;
   function calcular5(p, D) {
-    const hor = p.hormigones.find((m) => m.nombre === D.hormigon);
+    const hor2 = p.hormigones.find((m) => m.nombre === D.hormigon);
     const ace = p.aceros.find((m) => m.nombre === D.acero);
-    if (!hor || !ace) return null;
-    const b = base(p, D, hor.fck, ace.fyk);
+    if (!hor2 || !ace) return null;
+    const b = base(p, D, hor2.fck, ace.fyk);
     const comp = D.esfuerzo === "compresion";
     const ehe = b.norma === "EHE-08";
     const filas = serieDiametros().map((phi) => {
@@ -15796,7 +15852,7 @@ tr.et-act td { font-weight: 650; }
         return x;
       });
     }
-    return { hor, ace, filas, ce, b };
+    return { hor: hor2, ace, filas, ce, b };
   }
   function articulo(p, D) {
     const n = idNorma(p);
@@ -15804,10 +15860,14 @@ tr.et-act td { font-weight: 650; }
     if (n === "EC2-2004") return "UNE-EN 1992-1-1 \xB7 8.4 y 8.7";
     return "EN 1992-1-1:2023 \xB7 11.4 y 11.5";
   }
-  var num2 = (c, tipo) => {
+  var num2 = (c) => {
     if (!c) return "\u2014";
     if (c.est) return "est.";
     return `${fmt(c.v, 0)}${c.min ? "*" : ""}${c.g ? "\u2020" : ""}`;
+  };
+  var celdaTd = (c) => {
+    const hint = !c ? null : c.est ? t("an.hint.est") : c.g ? t("an.hint.g") : c.min ? t("an.hint.min") : null;
+    return h("td", hint ? { title: hint.replace(/&gt;/g, ">") } : {}, num2(c));
   };
   function resultados13(ctx2, res) {
     const p = ctx2.p;
@@ -15847,11 +15907,12 @@ tr.et-act td { font-weight: 650; }
       g2(th(posC("I"), { rowspan: comp ? "2" : "2" })),
       th(posC("II"), { rowspan: "2" })
     );
-    const fila32 = comp ? null : h("tr", {}, th(t("an.col.l3r")), th(t("an.col.l3p")), g2(th(t("an.col.l3r"))), th(t("an.col.l3p")));
+    const n3 = { class: "n3" };
+    const fila32 = comp ? null : h("tr", {}, th(t("an.col.l3r"), n3), th(t("an.col.l3p"), n3), g2(th(t("an.col.l3r"), n3)), th(t("an.col.l3p"), n3));
     const cab = h("thead", {}, fila1, fila22, fila32);
     const cuerpo = h("tbody", {}, ...r.filas.map((f) => {
       const cel = comp ? [f.I[0], f.II[0], f.sI, f.sII] : [f.I[0], f.I[1], f.II[0], f.II[1], f.sI, f.sII];
-      const tr = h("tr", {}, h("th", { scope: "row" }, String(f.phi)), h("td", { class: "an-cd" }, fmt(cdDe(f.phi), cdDe(f.phi) % 1 ? 1 : 0)), ...cel.map((c) => h("td", {}, num2(c))));
+      const tr = h("tr", {}, h("th", { scope: "row" }, String(f.phi)), h("td", { class: "an-cd" }, fmt(cdDe(f.phi), 0)), ...cel.map(celdaTd));
       (comp ? [3, 4] : [4, 6]).forEach((i) => tr.cells[i].classList.add("g2"));
       return tr;
     }));
@@ -15878,7 +15939,8 @@ tr.et-act td { font-weight: 650; }
         ctx2.avisar(t("graf.error"));
       }
     };
-    const tablaEl = h("table", { class: "tabla-dur tabla-an", id: "an-tabla" }, cab, cuerpo);
+    const cols = h("colgroup", {}, h("col", { class: "c-phi" }), h("col", { class: "c-cd" }), ...Array.from({ length: comp ? 4 : 6 }, () => h("col")));
+    const tablaEl = h("table", { class: "tabla-dur tabla-an", id: "an-tabla" }, cols, cab, cuerpo);
     tablaEl.addEventListener("copy", (e2) => {
       e2.preventDefault();
       e2.clipboardData.setData("text/plain", texto());
@@ -15894,14 +15956,19 @@ tr.et-act td { font-weight: 650; }
       ),
       h("p", { class: "nota", html: `${t("an.titulo")}. ${t("an.sub", art5)}` }),
       h("div", { class: "tabla-scroll" }, tablaEl),
-      h("p", { class: "fu-leyenda", html: t("an.leyenda") }),
-      h("p", { class: "nota an-ficha", id: "an-ficha", html: ficha })
+      h("p", { class: "nota an-ficha", id: "an-ficha", html: ficha }),
+      h(
+        "div",
+        { class: "an-cd-dib" },
+        h("div", { class: "an-cd-fig", html: dibujoRecubrimiento() }),
+        h("p", { class: "nota" }, h("b", { html: t("an.cdDef") }), h("br"), h("span", { html: t("an.cdLey") }))
+      )
     );
     const n = idNorma(p);
     const pos = n === "EHE-08" ? "an.pos.ehe" : n === "EC2-2004" ? "an.pos.ec2" : "an.pos.ec23";
     const mn = n === "EHE-08" ? "an.min.ehe" : n === "EC2-2004" ? "an.min.ec2" : "an.min.ec23";
     const tv = n === "EHE-08" ? "an.transv.ehe" : n === "EC2-2004" ? "an.transv.ec2" : "an.transv.ec23";
-    const claves = [["an.n.pos", pos], ["an.n.min", mn], ["an.n.transv", tv], ["an.n.cd", "an.cdTxt"], ["an.n.falta", "an.falta"]];
+    const claves = [["an.n.pos", pos], ["an.n.min", mn], ["an.n.transv", tv], ["an.n.cd", "an.cdTxt"], ["an.n.patilla", n === "EHE-08" ? "an.patilla.ehe" : n === "EC2-2004" ? "an.patilla.ec2" : "an.patilla.ec23"], ["an.n.falta", "an.falta"]];
     const tbNotas = tabla(claves.map(([k]) => [t(k)]));
     filasPlegables(tbNotas, claves.map(([, v2]) => `<span>${t(v2)}</span>`));
     poner(dcha, h("div", { class: "an-dib", html: dibujoAnclaje({ esfuerzo: D.esfuerzo }) }), h("h3", {}, t("an.notas")), tbNotas);
@@ -15971,8 +16038,8 @@ tr.et-act td { font-weight: 650; }
   var REDUCCION_CIRCULAR = 0.85;
   var S_TABLA_MAX = 300;
   var S_TABLA_PASO = 50;
-  var rad = (g) => g * Math.PI / 180;
-  var cot = (g) => 1 / Math.tan(rad(g));
+  var rad = (g2) => g2 * Math.PI / 180;
+  var cot = (g2) => 1 / Math.tan(rad(g2));
   function parametros(x) {
     const { fck, fykCercos, b0, d } = x;
     if (!(fck > 0) || !(b0 > 0) || !(d > 0) || !(x.Ac > 0)) throw new ErrorClave("cor.errDatos");
@@ -16189,8 +16256,8 @@ tr.et-act td { font-weight: 650; }
     thetaDe: () => thetaDe
   });
   var ID = "EC2-2004";
-  var rad2 = (g) => g * Math.PI / 180;
-  var cot2 = (g) => 1 / Math.tan(rad2(g));
+  var rad2 = (g2) => g2 * Math.PI / 180;
+  var cot2 = (g2) => 1 / Math.tan(rad2(g2));
   function parametros2(x) {
     const { fck, fykCercos, b0, d } = x;
     if (!(fck > 0) || !(b0 > 0) || !(d > 0) || !(x.Ac > 0)) throw new ErrorClave("cor.errDatos");
@@ -16393,8 +16460,8 @@ tr.et-act td { font-weight: 650; }
   var COT_MAX2 = 2.5;
   var NU = 0.5;
   var DLOWER_DEFECTO = 20;
-  var rad3 = (g) => g * Math.PI / 180;
-  var cot3 = (g) => 1 / Math.tan(rad3(g));
+  var rad3 = (g2) => g2 * Math.PI / 180;
+  var cot3 = (g2) => 1 / Math.tan(rad3(g2));
   function ddgDe(fck, Dlower = DLOWER_DEFECTO) {
     return Math.min(40, fck <= 60 ? 16 + Dlower : 16 + Dlower * (60 / fck) ** 2);
   }
@@ -16628,9 +16695,9 @@ tr.et-act td { font-weight: 650; }
       const forma = sec.forma;
       if (forma === "circular") out.push(`<circle class="cerco" cx="${x0 + bp / 2}" cy="${y0 + hp / 2}" r="${Math.max(2, bp / 2 - r)}"/>`);
       else if (forma === "T") {
-        const g = sec.geo;
-        const xa = x0 + (g.b - g.bw) / 2 * sc2 + r;
-        out.push(`<rect class="cerco" x="${xa}" y="${y0 + r}" width="${Math.max(2, g.bw * sc2 - 2 * r)}" height="${Math.max(2, hp - 2 * r)}" rx="3"/>`);
+        const g2 = sec.geo;
+        const xa = x0 + (g2.b - g2.bw) / 2 * sc2 + r;
+        out.push(`<rect class="cerco" x="${xa}" y="${y0 + r}" width="${Math.max(2, g2.bw * sc2 - 2 * r)}" height="${Math.max(2, hp - 2 * r)}" rx="3"/>`);
       } else out.push(`<rect class="cerco" x="${x0 + r}" y="${y0 + r}" width="${Math.max(2, bp - 2 * r)}" height="${Math.max(2, hp - 2 * r)}" rx="3"/>`);
     }
     const arriba = !c.neg;
@@ -17367,15 +17434,15 @@ tr.et-act td { font-weight: 650; }
     const cRed = id === "EC2-2023" && bmax / bmin < 1.5 && c > 0.07 * bmin;
     const cEf = cRed ? 0.07 * bmin : c;
     const A = b * h2;
-    const u = 2 * (b + h2);
-    const heNom = A / u;
+    const u2 = 2 * (b + h2);
+    const heNom = A / u2;
     const heMin = 2 * cEf;
     const heMax = Math.max(heNom, heMin);
     const he = Math.min(Math.max(heUsuario ?? heMax, heMin), heMax, bmin / 2 - 1e-6);
     if (!(he > 0) || he > bmin / 2) throw new ErrorClave("tor.errHe");
     const bk = b - he;
     const hk = h2 - he;
-    return { b, h: h2, c, cEf, cRed, A, u, heNom, heMin, heMax, he, heTopado: heUsuario == null && heMin > heNom, bk, hk, Ae: bk * hk, ue: 2 * (bk + hk) };
+    return { b, h: h2, c, cEf, cRed, A, u: u2, heNom, heMin, heMax, he, heTopado: heUsuario == null && heMin > heNom, bk, hk, Ae: bk * hk, ue: 2 * (bk + hk) };
   }
   function parametros4(id, x) {
     const { fck, fykCercos, fykLong } = x;
@@ -17468,32 +17535,32 @@ tr.et-act td { font-weight: 650; }
   }
 
   // src/ui/dibujoTorsion.js
-  function dibujoTorsion(g) {
-    const sc2 = Math.min(210 / Math.max(g.b, g.h), 1);
-    const bp = g.b * sc2;
-    const hp = g.h * sc2;
-    const he = g.he * sc2;
+  function dibujoTorsion(g2) {
+    const sc2 = Math.min(210 / Math.max(g2.b, g2.h), 1);
+    const bp = g2.b * sc2;
+    const hp = g2.h * sc2;
+    const he = g2.he * sc2;
     const x0 = 54;
     const y0 = 22;
     const out = [DEFS];
     out.push(`<rect class="hor" x="${x0}" y="${y0}" width="${bp}" height="${hp}"/>`);
     out.push(`<path class="pared-tor" fill-rule="evenodd" d="M${x0},${y0}h${bp}v${hp}h${-bp}z M${x0 + he},${y0 + he}v${hp - 2 * he}h${bp - 2 * he}v${-(hp - 2 * he)}z"/>`);
     out.push(`<rect class="en" fill="none" x="${x0 + he / 2}" y="${y0 + he / 2}" width="${bp - he}" height="${hp - he}"/>`);
-    const r = Math.max(2.2, Math.min(5, (g.fi ?? 14) * sc2 / 2));
-    const cp = Math.min(g.c * sc2, Math.min(bp, hp) / 2 - r);
+    const r = Math.max(2.2, Math.min(5, (g2.fi ?? 14) * sc2 / 2));
+    const cp = Math.min(g2.c * sc2, Math.min(bp, hp) / 2 - r);
     out.push(`<rect class="cerco" x="${x0 + cp - r}" y="${y0 + cp - r}" width="${bp - 2 * cp + 2 * r}" height="${hp - 2 * cp + 2 * r}" rx="${r + 1}"/>`);
     for (const [cx, cy] of [[x0 + cp, y0 + cp], [x0 + bp - cp, y0 + cp], [x0 + cp, y0 + hp - cp], [x0 + bp - cp, y0 + hp - cp]]) out.push(`<circle class="barra-ac" cx="${cx}" cy="${cy}" r="${r}"/>`);
     const yb = y0 + hp + 18;
-    out.push(`<line class="cota" x1="${x0}" y1="${yb}" x2="${x0 + bp}" y2="${yb}" marker-start="url(#tic)" marker-end="url(#tic)"/><line class="ref" x1="${x0}" y1="${y0 + hp}" x2="${x0}" y2="${yb + 4}"/><line class="ref" x1="${x0 + bp}" y1="${y0 + hp}" x2="${x0 + bp}" y2="${yb + 4}"/><text x="${x0 + bp / 2}" y="${yb + 16}" text-anchor="middle">b = ${fmt(g.b, 0)}</text>`);
+    out.push(`<line class="cota" x1="${x0}" y1="${yb}" x2="${x0 + bp}" y2="${yb}" marker-start="url(#tic)" marker-end="url(#tic)"/><line class="ref" x1="${x0}" y1="${y0 + hp}" x2="${x0}" y2="${yb + 4}"/><line class="ref" x1="${x0 + bp}" y1="${y0 + hp}" x2="${x0 + bp}" y2="${yb + 4}"/><text x="${x0 + bp / 2}" y="${yb + 16}" text-anchor="middle">b = ${fmt(g2.b, 0)}</text>`);
     const xh = x0 - 14;
-    out.push(`<line class="cota" x1="${xh}" y1="${y0}" x2="${xh}" y2="${y0 + hp}" marker-start="url(#tic)" marker-end="url(#tic)"/><line class="ref" x1="${x0}" y1="${y0}" x2="${xh - 4}" y2="${y0}"/><line class="ref" x1="${x0}" y1="${y0 + hp}" x2="${xh - 4}" y2="${y0 + hp}"/><text x="${xh - 6}" y="${y0 + hp / 2}" text-anchor="middle" transform="rotate(-90 ${xh - 6} ${y0 + hp / 2})">h = ${fmt(g.h, 0)}</text>`);
+    out.push(`<line class="cota" x1="${xh}" y1="${y0}" x2="${xh}" y2="${y0 + hp}" marker-start="url(#tic)" marker-end="url(#tic)"/><line class="ref" x1="${x0}" y1="${y0}" x2="${xh - 4}" y2="${y0}"/><line class="ref" x1="${x0}" y1="${y0 + hp}" x2="${xh - 4}" y2="${y0 + hp}"/><text x="${xh - 6}" y="${y0 + hp / 2}" text-anchor="middle" transform="rotate(-90 ${xh - 6} ${y0 + hp / 2})">h = ${fmt(g2.h, 0)}</text>`);
     const xr = x0 + bp + 22;
-    out.push(`<line class="cota" x1="${x0 + bp - he}" y1="${y0 - 8}" x2="${x0 + bp}" y2="${y0 - 8}" marker-start="url(#tic)" marker-end="url(#tic)"/><text class="fuerte" x="${xr}" y="${y0 + 4}">h<tspan baseline-shift="sub" font-size="75%">e</tspan> = ${fmt(g.he, 0)}</text><text x="${xr}" y="${y0 + 22}">c = ${fmt(g.c, 0)}</text>`);
+    out.push(`<line class="cota" x1="${x0 + bp - he}" y1="${y0 - 8}" x2="${x0 + bp}" y2="${y0 - 8}" marker-start="url(#tic)" marker-end="url(#tic)"/><text class="fuerte" x="${xr}" y="${y0 + 4}">h<tspan baseline-shift="sub" font-size="75%">e</tspan> = ${fmt(g2.he, 0)}</text><text x="${xr}" y="${y0 + 22}">c = ${fmt(g2.c, 0)}</text>`);
     const yl = yb + 34;
     out.push(`<g class="alz-leyenda"><rect class="pared-tor" x="${x0}" y="${yl - 9}" width="18" height="10"/><text x="${x0 + 24}" y="${yl}">${t("tor.dib.pared")}</text><line class="en" x1="${x0 + 150}" y1="${yl - 4}" x2="${x0 + 168}" y2="${yl - 4}"/><text x="${x0 + 174}" y="${yl}">${t("tor.dib.lm")}</text></g>`);
     const W2 = Math.max(xr + 70, x0 + 290);
     const H2 = yl + 14;
-    return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${W2.toFixed(0)} ${H2.toFixed(0)}"${topeEscala(W2, H2)} role="img" aria-label="${t("tor.dib.aria", fmt(g.b, 0), fmt(g.h, 0))}">${out.join("")}</svg>`;
+    return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${W2.toFixed(0)} ${H2.toFixed(0)}"${topeEscala(W2, H2)} role="img" aria-label="${t("tor.dib.aria", fmt(g2.b, 0), fmt(g2.h, 0))}">${out.join("")}</svg>`;
   }
 
   // src/ui/vistas/torsion.js
@@ -17559,16 +17626,16 @@ tr.et-act td { font-weight: 650; }
     const sec = datosCortante(p, s, { signo: 1, dir: "h" });
     return { sec, b: est9.ov.b ?? sec.b0 * 1e3, h: est9.ov.h ?? sec.h * 1e3, c: est9.ov.c ?? (sec.h - sec.d) * 1e3 };
   }
-  function entrada3(p, s, sec, g) {
+  function entrada3(p, s, sec, g2) {
     const acero2 = p.aceros.find((m) => m.nombre === (est9.aceroCercos ?? s.acero)) ?? p.aceros[0];
     return {
       fck: sec.fck,
       ktc: sec.ktc,
       fykCercos: acero2.fyk,
       fykLong: sec.fyk,
-      b: g.b,
-      h: g.h,
-      c: g.c,
+      b: g2.b,
+      h: g2.h,
+      c: g2.c,
       he: est9.he ?? void 0,
       cotTheta: est9.cot,
       AtS: areaRama2(est9.fi) / est9.s,
@@ -17600,9 +17667,9 @@ tr.et-act td { font-weight: 650; }
         ctx2.pintar();
       }
     } }));
-    let g;
+    let g2;
     try {
-      g = efectivos2(p, s);
+      g2 = efectivos2(p, s);
     } catch (e2) {
       return poner(form, aviso(String(e2.message ?? e2), "error"));
     }
@@ -17634,7 +17701,7 @@ tr.et-act td { font-weight: 650; }
       gauge.querySelector("input").value = thetaDe4(est9.cot);
       gauge.refrescar();
     };
-    const Gx = nuc2(p).geometria(entrada3(p, s, g.sec, g));
+    const Gx = nuc2(p).geometria(entrada3(p, s, g2.sec, g2));
     const heFijo = Gx.heMax - Gx.heMin < 0.5;
     const heGauge = regleta({ etq: t("tor.he"), min: Gx.heMin, max: Math.max(Gx.heMax, Gx.heMin + 0.1), step: 0.01, valor: Gx.he, texto: (v2) => `${fmt(v2, 0)} mm`, onInput: (v2) => {
       est9.he = v2;
@@ -17661,9 +17728,9 @@ tr.et-act td { font-weight: 650; }
       grupo(
         t("tor.datosCalc"),
         ...parejas2([
-          campoNum({ id: "t-b", etq: t("tor.b"), valor: mmEnt2(g.b / 1e3), mag: "long", paso: 5, min: 0.01, max: 20, onCambio: nuevo2("b") }),
-          campoNum({ id: "t-h", etq: t("tor.h"), valor: mmEnt2(g.h / 1e3), mag: "long", paso: 5, min: 0.01, max: 20, onCambio: nuevo2("h") }),
-          campoNum({ id: "t-c", etq: t("tor.c"), valor: mmEnt2(g.c / 1e3), mag: "long", paso: 5, min: 0, max: 20, info: t("tor.cAyuda"), onCambio: nuevo2("c") })
+          campoNum({ id: "t-b", etq: t("tor.b"), valor: mmEnt2(g2.b / 1e3), mag: "long", paso: 5, min: 0.01, max: 20, onCambio: nuevo2("b") }),
+          campoNum({ id: "t-h", etq: t("tor.h"), valor: mmEnt2(g2.h / 1e3), mag: "long", paso: 5, min: 0.01, max: 20, onCambio: nuevo2("h") }),
+          campoNum({ id: "t-c", etq: t("tor.c"), valor: mmEnt2(g2.c / 1e3), mag: "long", paso: 5, min: 0, max: 20, info: t("tor.cAyuda"), onCambio: nuevo2("c") })
         ]),
         heGauge
       ),
@@ -17964,15 +18031,15 @@ tr.et-act td { font-weight: 650; }
     if (x.pos === "borde") return a * (Math.PI + 2 * beta(a, R));
     return R > a * Math.SQRT2 ? a * (Math.PI / 2 + 2 * beta(a, R)) : arcoEsquinaNumerico(a, R) / R * a;
   }
-  function deltaDePerimetro(x, u, tope3d = 0) {
+  function deltaDePerimetro(x, u2, tope3d = 0) {
     const u00 = perimetro(x, 0, tope3d);
-    if (u <= u00) return 0;
+    if (u2 <= u00) return 0;
     let lo = 0;
     let hi = 1;
-    while (perimetro(x, hi, tope3d) < u && hi < 1e7) hi *= 2;
+    while (perimetro(x, hi, tope3d) < u2 && hi < 1e7) hi *= 2;
     for (let i = 0; i < 80; i++) {
       const m = (lo + hi) / 2;
-      if (perimetro(x, m, tope3d) < u) lo = m;
+      if (perimetro(x, m, tope3d) < u2) lo = m;
       else hi = m;
     }
     return (lo + hi) / 2;
@@ -18136,9 +18203,9 @@ tr.et-act td { font-weight: 650; }
     const w = x.tipo === "rect" ? [[0, 0], [x.c1, 0], [x.c1, x.c2], [0, x.c2]] : [];
     const cand = [...w];
     for (const [px, py] of centros) {
-      for (let g = 0; g < 360; g += 5) cand.push([px + kd * Math.cos(g * Math.PI / 180), py + kd * Math.sin(g * Math.PI / 180)]);
+      for (let g2 = 0; g2 < 360; g2 += 5) cand.push([px + kd * Math.cos(g2 * Math.PI / 180), py + kd * Math.sin(g2 * Math.PI / 180)]);
     }
-    if (x.tipo === "circ") for (let g = 0; g < 360; g += 5) cand.push([hx + hx * Math.cos(g * Math.PI / 180), hy + hy * Math.sin(g * Math.PI / 180)]);
+    if (x.tipo === "circ") for (let g2 = 0; g2 < 360; g2 += 5) cand.push([hx + hx * Math.cos(g2 * Math.PI / 180), hy + hy * Math.sin(g2 * Math.PI / 180)]);
     const rec = cand.map(([px, py]) => [x.pos === "esquina" ? Math.max(px, 0) : px, x.pos === "interior" ? py : Math.max(py, 0)]);
     const casco = cascoConvexo(rec);
     const enBorde = ([px, py]) => x.pos !== "interior" && py <= 1e-6 || x.pos === "esquina" && px <= 1e-6;
@@ -18216,16 +18283,16 @@ tr.et-act td { font-weight: 650; }
     const P = parametros5(x);
     const beta2 = x.beta ?? 1;
     const VEd = x.VEd ?? NaN;
-    const u = perimetros(x);
+    const u2 = perimetros(x);
     const t2 = tauRd(P);
     const avisos4 = [];
     if (P.topada) avisos4.push({ clave: "pun.av.fyd400", args: [P.fydLibre.toFixed(1)] });
     if (P.rhoTopado) avisos4.push({ clave: "pun.av.rho", args: [(P.rhoBruta * 1e3).toFixed(1)] });
     if (P.sigCd > 0.3 * P.fcd + 1e-9 || P.sigCd > 12) avisos4.push({ clave: "pun.av.sigCd", args: [P.sigCd.toFixed(2), Math.min(0.3 * P.fcd, 12).toFixed(2)] });
     const sin = !!x.sinArmadura || !x.arm || !(x.arm.ramas > 0);
-    const F0 = t2.tau * u.u1 * x.d / 1e3;
-    const Fmax = 0.5 * P.f1cd * u.u0 * x.d / 1e3;
-    const r = { norma: ID3, P, u, tau: t2, beta: beta2, VEd, F0, Fmax, Vc: F0 / beta2, Vmax: Fmax / beta2, sinArmadura: sin, avisos: avisos4, disp: [] };
+    const F0 = t2.tau * u2.u1 * x.d / 1e3;
+    const Fmax = 0.5 * P.f1cd * u2.u0 * x.d / 1e3;
+    const r = { norma: ID3, P, u: u2, tau: t2, beta: beta2, VEd, F0, Fmax, Vc: F0 / beta2, Vmax: Fmax / beta2, sinArmadura: sin, avisos: avisos4, disp: [] };
     if (sin) {
       r.Vu = Math.min(r.Vc, r.Vmax);
       r.manda = r.Vc <= r.Vmax ? "hormigon" : "biela";
@@ -18248,7 +18315,7 @@ tr.et-act td { font-weight: 650; }
       r.manda = r.Vu === r.Vmax ? "biela" : r.Vu === r.Vext ? "exterior" : "cercos";
       if (a.a1 > A1_MAX * x.d + 1e-9) r.disp.push({ clave: "pun.disp.a1", ok: false, args: [a.a1, A1_MAX * x.d, ID3] });
       if (a.sr > SR_MAX * x.d + 1e-9) r.disp.push({ clave: "pun.disp.sr", ok: false, args: [a.sr, SR_MAX * x.d, ID3] });
-      const st = u.u1 / a.ramas;
+      const st = u2.u1 / a.ramas;
       r.st = st;
       if (st > ST_MAX * x.d + 1e-9) r.disp.push({ clave: "pun.disp.st", ok: false, args: [st, ST_MAX * x.d, ID3] });
     }
@@ -18263,13 +18330,13 @@ tr.et-act td { font-weight: 650; }
     if (!(VEd > 0)) throw new ErrorClave("pun.errVEd");
     const P = parametros5(x);
     const beta2 = x.beta ?? 1;
-    const u = perimetros(x);
+    const u2 = perimetros(x);
     const t2 = tauRd(P);
     const a = x.arm ?? { sr: 0.75 * x.d, a1: 0.5 * x.d };
     const Fef = beta2 * VEd;
-    const F0 = t2.tau * u.u1 * x.d / 1e3;
-    const Fmax = 0.5 * P.f1cd * u.u0 * x.d / 1e3;
-    const r = { norma: ID3, P, u, tau: t2, beta: beta2, VEd, F0, Fmax, Fef, avisos: [], Vc: F0 / beta2, Vmax: Fmax / beta2 };
+    const F0 = t2.tau * u2.u1 * x.d / 1e3;
+    const Fmax = 0.5 * P.f1cd * u2.u0 * x.d / 1e3;
+    const r = { norma: ID3, P, u: u2, tau: t2, beta: beta2, VEd, F0, Fmax, Fef, avisos: [], Vc: F0 / beta2, Vmax: Fmax / beta2 };
     if (P.topada) r.avisos.push({ clave: "pun.av.fyd400", args: [P.fydLibre.toFixed(1)] });
     if (P.rhoTopado) r.avisos.push({ clave: "pun.av.rho", args: [(P.rhoBruta * 1e3).toFixed(1)] });
     if (Fef > Fmax + 1e-9) {
@@ -18290,7 +18357,7 @@ tr.et-act td { font-weight: 650; }
     r.sr = a.sr;
     r.a1 = a.a1;
     r.caso = "calculo";
-    const nMinSt = Math.ceil(u.u1 / (ST_MAX * x.d) - 1e-9);
+    const nMinSt = Math.ceil(u2.u1 / (ST_MAX * x.d) - 1e-9);
     r.nMinSt = nMinSt;
     r.tabla = diametros2.map((fi) => {
       const Ab = areaRama(fi);
@@ -18299,7 +18366,7 @@ tr.et-act td { font-weight: 650; }
       const Asw = n * Ab;
       const Fcs = 0.75 * F0 + 1.5 * (x.d / a.sr) * Asw * P.fyd / 1e3;
       const nPer = nPerimetrosExt(x, { ...a, ramas: n }, 2 * x.d, r.unReq, 1);
-      return { fi, ramas: n, nx: gr.nx, ny: gr.ny, nPer, Asw, st: u.u1 / n, Vu: Math.min(Fcs / beta2, Fmax / beta2) };
+      return { fi, ramas: n, nx: gr.nx, ny: gr.ny, nPer, Asw, st: u2.u1 / n, Vu: Math.min(Fcs / beta2, Fmax / beta2) };
     });
     r.nPer = Math.max(...r.tabla.map((f) => f.nPer));
     return r;
@@ -18360,15 +18427,15 @@ tr.et-act td { font-weight: 650; }
     const P = parametros6(x);
     const beta2 = x.beta ?? 1;
     const VEd = x.VEd ?? NaN;
-    const u = perimetros2(x);
+    const u2 = perimetros2(x);
     const v2 = vRdc(P);
     const avisos4 = [];
     if (P.rhoTopado) avisos4.push({ clave: "pun.av.rho", args: [(P.rhoBruta * 1e3).toFixed(1)] });
     if (P.fck > 60) avisos4.push({ clave: "pun.av.fck60" });
     const sin = !!x.sinArmadura || !x.arm || !(x.arm.ramas > 0);
-    const F0 = v2.v * u.u1 * x.d / 1e3;
-    const Fmax = P.vRdMax * u.u0 * x.d / 1e3;
-    const r = { norma: ID4, P, u, v: v2, beta: beta2, VEd, F0, Fmax, Vc: F0 / beta2, Vmax: Fmax / beta2, sinArmadura: sin, avisos: avisos4, disp: [] };
+    const F0 = v2.v * u2.u1 * x.d / 1e3;
+    const Fmax = P.vRdMax * u2.u0 * x.d / 1e3;
+    const r = { norma: ID4, P, u: u2, v: v2, beta: beta2, VEd, F0, Fmax, Vc: F0 / beta2, Vmax: Fmax / beta2, sinArmadura: sin, avisos: avisos4, disp: [] };
     if (sin) {
       r.Vu = Math.min(r.Vc, r.Vmax);
       r.manda = r.Vc <= r.Vmax ? "hormigon" : "biela";
@@ -18389,7 +18456,7 @@ tr.et-act td { font-weight: 650; }
       r.Vext = v2.v * r.uOutEf * x.d / 1e3 / beta2;
       r.Vu = Math.min(r.Vcs, r.Vmax, r.Vext);
       r.manda = r.Vu === r.Vmax ? "biela" : r.Vu === r.Vext ? "exterior" : "cercos";
-      const st = u.u1 / a.ramas;
+      const st = u2.u1 / a.ramas;
       r.st = st;
       const rhoW = 1.5 * Ab / (a.sr * st);
       const rhoMin = 0.08 * Math.sqrt(P.fck) / P.fyk;
@@ -18416,13 +18483,13 @@ tr.et-act td { font-weight: 650; }
     if (!(VEd > 0)) throw new ErrorClave("pun.errVEd");
     const P = parametros6(x);
     const beta2 = x.beta ?? 1;
-    const u = perimetros2(x);
+    const u2 = perimetros2(x);
     const v2 = vRdc(P);
     const a = x.arm ?? { sr: 0.75 * x.d, a1: 0.5 * x.d };
     const Fef = beta2 * VEd;
-    const F0 = v2.v * u.u1 * x.d / 1e3;
-    const Fmax = P.vRdMax * u.u0 * x.d / 1e3;
-    const r = { norma: ID4, P, u, v: v2, beta: beta2, VEd, F0, Fmax, Fef, avisos: [], Vc: F0 / beta2, Vmax: Fmax / beta2 };
+    const F0 = v2.v * u2.u1 * x.d / 1e3;
+    const Fmax = P.vRdMax * u2.u0 * x.d / 1e3;
+    const r = { norma: ID4, P, u: u2, v: v2, beta: beta2, VEd, F0, Fmax, Fef, avisos: [], Vc: F0 / beta2, Vmax: Fmax / beta2 };
     if (P.rhoTopado) r.avisos.push({ clave: "pun.av.rho", args: [(P.rhoBruta * 1e3).toFixed(1)] });
     if (Fef > Fmax + 1e-9) {
       r.caso = "biela";
@@ -18441,18 +18508,18 @@ tr.et-act td { font-weight: 650; }
     r.sr = a.sr;
     r.a1 = a.a1;
     r.caso = "calculo";
-    const nMinSt = Math.ceil(u.u1 / (ST_MAX2 * x.d) - 1e-9);
+    const nMinSt = Math.ceil(u2.u1 / (ST_MAX2 * x.d) - 1e-9);
     r.nMinSt = nMinSt;
     const rhoMin = 0.08 * Math.sqrt(P.fck) / P.fyk;
     r.tabla = diametros2.map((fi) => {
       const Ab = areaRama(fi);
-      const nMin = Math.ceil(rhoMin * a.sr * u.u1 / (1.5 * Ab) - 1e-9);
+      const nMin = Math.ceil(rhoMin * a.sr * u2.u1 / (1.5 * Ab) - 1e-9);
       const gr = ramasDe(a, x.pos, Math.max(Math.ceil(AswNec / Ab - 1e-9), nMinSt, nMin, 2));
       const n = gr.ramas;
       const Asw = n * Ab;
       const Fcs = 0.75 * F0 + 1.5 * (x.d / a.sr) * Asw * P.fywdEf / 1e3;
       const nPer = nPerimetrosExt(x, { ...a, ramas: n }, K_EXT * x.d, r.uOutReq, 2);
-      return { fi, ramas: n, nx: gr.nx, ny: gr.ny, nPer, Asw, st: u.u1 / n, mandaMin: nMin > Math.ceil(AswNec / Ab - 1e-9) && nMin >= nMinSt, Vu: Math.min(Fcs / beta2, Fmax / beta2) };
+      return { fi, ramas: n, nx: gr.nx, ny: gr.ny, nPer, Asw, st: u2.u1 / n, mandaMin: nMin > Math.ceil(AswNec / Ab - 1e-9) && nMin >= nMinSt, Vu: Math.min(Fcs / beta2, Fmax / beta2) };
     });
     r.nPer = Math.max(...r.tabla.map((f) => f.nPer));
     return r;
@@ -18503,14 +18570,14 @@ tr.et-act td { font-weight: 650; }
     const b0 = perimetroCara(x, ID5, dv);
     return { b05, b0, u1: b05, u0: b0 };
   }
-  function resistenciaSin(P, u) {
-    const kpbBruto = 3.6 * (1 - u.b0 / u.b05);
+  function resistenciaSin(P, u2) {
+    const kpbBruto = 3.6 * (1 - u2.b0 / u2.b05);
     const kpb = Math.min(2.5, Math.max(1, kpbBruto));
     const conc = 0.6 / P.gv * kpb * Math.cbrt(100 * P.rho * P.fck * (P.ddg / P.dv));
     const tope = 0.5 / P.gv * Math.sqrt(P.fck);
     const tau = Math.min(conc, tope);
-    const f = u.b05 * P.dv / 1e3;
-    const etaSys = Math.max(1, (P.tipo === "studs" ? 0.7 : 0.5) + 0.63 * Math.pow(u.b0 / P.dv, 0.25));
+    const f = u2.b05 * P.dv / 1e3;
+    const etaSys = Math.max(1, (P.tipo === "studs" ? 0.7 : 0.5) + 0.63 * Math.pow(u2.b0 / P.dv, 0.25));
     return { kpb, kpbBruto, conc, tope, tau, topeManda: conc > tope, VRdc: tau * f, etaSys, VRdMax: etaSys * tau * f };
   }
   function etas(P, s, fiW, Vef) {
@@ -18547,13 +18614,13 @@ tr.et-act td { font-weight: 650; }
     const P = parametros7(x);
     const beta2 = x.beta ?? 1;
     const VEd = x.VEd ?? NaN;
-    const u = perimetros3(x);
-    const s = resistenciaSin(P, u);
+    const u2 = perimetros3(x);
+    const s = resistenciaSin(P, u2);
     const avisos4 = [];
     if (P.fck > 60) avisos4.push({ clave: "pun.av.fck60" });
-    if (u.b0 / u.b05 > 1) avisos4.push({ clave: "pun.av.b0" });
+    if (u2.b0 / u2.b05 > 1) avisos4.push({ clave: "pun.av.b0" });
     const sin = !!x.sinArmadura || !x.arm || !(x.arm.ramas > 0);
-    const r = { norma: ID5, P, u, s, beta: beta2, VEd, Vc: s.VRdc / beta2, Vmax: s.VRdMax / beta2, sinArmadura: sin, avisos: avisos4, disp: [] };
+    const r = { norma: ID5, P, u: u2, s, beta: beta2, VEd, Vc: s.VRdc / beta2, Vmax: s.VRdMax / beta2, sinArmadura: sin, avisos: avisos4, disp: [] };
     if (sin) {
       r.VuEf = s.VRdc;
       r.Vu = s.VRdc / beta2;
@@ -18565,16 +18632,16 @@ tr.et-act td { font-weight: 650; }
       const Asw = a.ramas * Ab;
       const srEf = Math.max(a.a1 + a.sr / 2, a.sr);
       const Vw = Asw * P.fywd * P.dv / srEf / 1e3;
-      const st = u.b05 / a.ramas;
+      const st = u2.b05 / a.ramas;
       const rhoW = Ab / (srEf * st);
-      const u2 = VuConArmadura(P, s, a.fi, Vw);
+      const u22 = VuConArmadura(P, s, a.fi, Vw);
       r.Asw = Asw;
       r.srEf = srEf;
       r.st = st;
       r.rhoW = rhoW;
       r.Vw = Vw;
-      r.VuEf = u2.V;
-      r.manda = u2.manda === "biela" ? "biela" : "cercos";
+      r.VuEf = u22.V;
+      r.manda = u22.manda === "biela" ? "biela" : "cercos";
       const Vef = Number.isFinite(VEd) ? beta2 * VEd : r.VuEf;
       const c = VRdcs(P, s, a.fi, Vw, Vef);
       r.etaC = c.etaC;
@@ -18583,14 +18650,14 @@ tr.et-act td { font-weight: 650; }
       const dvOut = P.dv - a.fi;
       const etaCEf = Math.min(1, s.VRdc / Vef);
       r.dvOut = dvOut;
-      r.b05out = u.b05 * Math.pow(P.dv / dvOut / etaCEf, 2);
+      r.b05out = u2.b05 * Math.pow(P.dv / dvOut / etaCEf, 2);
       r.deltaOut = deltaDePerimetro(x, r.b05out, 3 * P.dv);
       r.deltaExtReq = r.deltaOut;
       r.deltaUltimo = anillos(a).at(-1);
       r.extOk = r.deltaUltimo >= r.deltaOut - 0.5 * dvOut - 1e-9;
       const bExt = uExterior(x, a, r.deltaUltimo, 0.5 * dvOut, 3 * P.dv);
       r.bExt = bExt;
-      const q2 = Math.sqrt(bExt / u.b05) * (dvOut / P.dv);
+      const q2 = Math.sqrt(bExt / u2.b05) * (dvOut / P.dv);
       r.etaCMinExt = 1 / q2;
       r.VuExtEf = Math.max(s.VRdc, s.VRdc * q2);
       if (r.VuExtEf < r.VuEf) {
@@ -18613,11 +18680,11 @@ tr.et-act td { font-weight: 650; }
     if (!(VEd > 0)) throw new ErrorClave("pun.errVEd");
     const P = parametros7(x);
     const beta2 = x.beta ?? 1;
-    const u = perimetros3(x);
-    const s = resistenciaSin(P, u);
+    const u2 = perimetros3(x);
+    const s = resistenciaSin(P, u2);
     const a = x.arm ?? { sr: 0.75 * x.d, a1: 0.5 * x.d };
     const Vef = beta2 * VEd;
-    const r = { norma: ID5, P, u, s, beta: beta2, VEd, Vef, avisos: [], Vc: s.VRdc / beta2, Vmax: s.VRdMax / beta2 };
+    const r = { norma: ID5, P, u: u2, s, beta: beta2, VEd, Vef, avisos: [], Vc: s.VRdc / beta2, Vmax: s.VRdMax / beta2 };
     if (Vef > s.VRdMax + 1e-9) {
       r.caso = "biela";
       return r;
@@ -18629,7 +18696,7 @@ tr.et-act td { font-weight: 650; }
     r.sr = a.sr;
     r.a1 = a.a1;
     r.srEf = Math.max(a.a1 + a.sr / 2, a.sr);
-    const nMinSt = Math.ceil(u.b05 / (ST_PRIMERO * P.dv) - 1e-9);
+    const nMinSt = Math.ceil(u2.b05 / (ST_PRIMERO * P.dv) - 1e-9);
     r.nMinSt = nMinSt;
     r.caso = "calculo";
     r.etaCEf = s.VRdc / Vef;
@@ -18645,9 +18712,9 @@ tr.et-act td { font-weight: 650; }
       const VwR = Asw * P.fywd * P.dv / r.srEf / 1e3;
       const c = VRdcs(P, s, fi, VwR, Vef);
       const dvOut = P.dv - fi;
-      const b05out = u.b05 * Math.pow(P.dv / dvOut / Math.min(1, etaC), 2);
+      const b05out = u2.b05 * Math.pow(P.dv / dvOut / Math.min(1, etaC), 2);
       const nPer = nPerimetrosExt(x, { ...a, ramas: n }, 0.5 * dvOut, b05out, 2, 3 * P.dv);
-      return { fi, fiOk: fi <= (FI_MAX_K[P.tipo] ?? 11) * Math.sqrt(P.dv / 200) + 1e-9, ramas: n, nx: gr.nx, ny: gr.ny, Asw, st: u.b05 / n, etaC, etaS, AswNec, nPer, b05out, Vu: VuConArmadura(P, s, fi, VwR).V / beta2, ok: c.VRdcs >= Vef - 1e-9 };
+      return { fi, fiOk: fi <= (FI_MAX_K[P.tipo] ?? 11) * Math.sqrt(P.dv / 200) + 1e-9, ramas: n, nx: gr.nx, ny: gr.ny, Asw, st: u2.b05 / n, etaC, etaS, AswNec, nPer, b05out, Vu: VuConArmadura(P, s, fi, VwR).V / beta2, ok: c.VRdcs >= Vef - 1e-9 };
     });
     r.nPer = Math.max(...r.tabla.map((f) => f.nPer));
     return r;
@@ -18818,40 +18885,40 @@ tr.et-act td { font-weight: 650; }
       const hs = o.h * sv3;
       const stub = 16;
       const f = (v2) => v2.toFixed(1);
-      const g = [];
-      g.push(`<text class="tit" x="${x0}" y="${i * EH + 10}">${t(eje2 === "x" ? "pun.dib.alzX" : "pun.dib.alzY")}</text>`);
-      g.push(`<rect class="hor" x="${f(U7(lo))}" y="${f(y0)}" width="${f(U7(hi) - U7(lo))}" height="${f(hs)}"/>`);
-      if (libre) g.push(`<line class="borde-libre" x1="${f(U7(0))}" y1="${f(y0 - 4)}" x2="${f(U7(0))}" y2="${f(y0 + hs + 4)}"/>`);
+      const g2 = [];
+      g2.push(`<text class="tit" x="${x0}" y="${i * EH + 10}">${t(eje2 === "x" ? "pun.dib.alzX" : "pun.dib.alzY")}</text>`);
+      g2.push(`<rect class="hor" x="${f(U7(lo))}" y="${f(y0)}" width="${f(U7(hi) - U7(lo))}" height="${f(hs)}"/>`);
+      if (libre) g2.push(`<line class="borde-libre" x1="${f(U7(0))}" y1="${f(y0 - 4)}" x2="${f(U7(0))}" y2="${f(y0 + hs + 4)}"/>`);
       const xa = U7(0);
       const xb = U7(0) + dim * se;
       const xm = (xa + xb) / 2;
       const corte = (yy) => `M${f(xa)} ${f(yy)}H${f(xm - 7)}L${f(xm - 2.5)} ${f(yy - 6)}L${f(xm + 2.5)} ${f(yy + 6)}L${f(xm + 7)} ${f(yy)}H${f(xb)}`;
-      g.push(`<rect class="pilar-alz" x="${f(xa)}" y="${f(y0 - stub)}" width="${f(xb - xa)}" height="${f(hs + 2 * stub)}"/>`);
-      g.push(`<path class="arista" d="M${f(xa)} ${f(y0 - stub)}V${f(y0 + hs + stub)}M${f(xb)} ${f(y0 - stub)}V${f(y0 + hs + stub)}"/>`);
-      g.push(`<path class="corte-fino" d="${corte(y0 - stub)}${corte(y0 + hs + stub)}"/>`);
+      g2.push(`<rect class="pilar-alz" x="${f(xa)}" y="${f(y0 - stub)}" width="${f(xb - xa)}" height="${f(hs + 2 * stub)}"/>`);
+      g2.push(`<path class="arista" d="M${f(xa)} ${f(y0 - stub)}V${f(y0 + hs + stub)}M${f(xb)} ${f(y0 - stub)}V${f(y0 + hs + stub)}"/>`);
+      g2.push(`<path class="corte-fino" d="${corte(y0 - stub)}${corte(y0 + hs + stub)}"/>`);
       const banda = o.esq === "cruz" ? Math.max(0, w[1 - k] - 2 * 25) / 2 + 1 : 0.75 * o.sl;
       const yz = (z) => y0 + (o.h - z) * sv3;
       const dd = Math.min(o.d ?? o.h, o.h);
       const pos = studs.map((q2) => [q2[k], Math.abs(q2[1 - k] - c[1 - k]) <= banda]);
       const vistos = /* @__PURE__ */ new Set();
-      for (const [u, en] of pos.sort((a, b) => a[1] - b[1])) {
-        const key = `${u.toFixed(0)}${en}`;
+      for (const [u2, en] of pos.sort((a, b) => a[1] - b[1])) {
+        const key = `${u2.toFixed(0)}${en}`;
         if (vistos.has(key)) continue;
         vistos.add(key);
-        g.push(`<line class="${en ? "cerco-v" : "cerco-v tenue"}" x1="${f(U7(u))}" y1="${f(yz(o.h - (o.h - dd)))}" x2="${f(U7(u))}" y2="${f(yz(o.h - dd))}"/>`);
+        g2.push(`<line class="${en ? "cerco-v" : "cerco-v tenue"}" x1="${f(U7(u2))}" y1="${f(yz(o.h - (o.h - dd)))}" x2="${f(U7(u2))}" y2="${f(yz(o.h - dd))}"/>`);
       }
       const per = [[ctrlD, "perim-ctrl", o.nombres?.ctrl], o.ext ? [o.ext.dl + o.ext.kd, "perim-ext", o.nombres?.ext] : null].filter((p) => p && p[0]);
       for (const [dl, cl3, nm] of per) {
-        for (const [u, lado] of [[-dl, "i"], [dim + dl, "d"]]) {
+        for (const [u2, lado] of [[-dl, "i"], [dim + dl, "d"]]) {
           if (lado === "i" && libre) continue;
-          g.push(`<line class="perim ${cl3}" x1="${f(U7(u))}" y1="${f(y0 - stub - (cl3 === "perim-ext" ? 24 : 8))}" x2="${f(U7(u))}" y2="${f(y0 + hs + 8)}"/>`);
-          if (nm) g.push(`<text class="halo halo-alz" x="${f(U7(u))}" y="${f(y0 - stub - (cl3 === "perim-ext" ? 24 : 8))}" text-anchor="middle">${nm}</text>`);
+          g2.push(`<line class="perim ${cl3}" x1="${f(U7(u2))}" y1="${f(y0 - stub - (cl3 === "perim-ext" ? 24 : 8))}" x2="${f(U7(u2))}" y2="${f(y0 + hs + 8)}"/>`);
+          if (nm) g2.push(`<text class="halo halo-alz" x="${f(U7(u2))}" y="${f(y0 - stub - (cl3 === "perim-ext" ? 24 : 8))}" text-anchor="middle">${nm}</text>`);
         }
       }
       const xe = U7(hi) + 12;
-      g.push(`<line class="cota" x1="${f(xe)}" y1="${f(y0)}" x2="${f(xe)}" y2="${f(y0 + hs)}"/><line class="cota" x1="${f(xe - 4)}" y1="${f(y0)}" x2="${f(xe + 4)}" y2="${f(y0)}"/><line class="cota" x1="${f(xe - 4)}" y1="${f(y0 + hs)}" x2="${f(xe + 4)}" y2="${f(y0 + hs)}"/>`);
-      g.push(`<text x="${f(xe + 7)}" y="${f(y0 + hs / 2 + 4)}">h = ${mm4(o.h)}</text>`);
-      salida.push(...g);
+      g2.push(`<line class="cota" x1="${f(xe)}" y1="${f(y0)}" x2="${f(xe)}" y2="${f(y0 + hs)}"/><line class="cota" x1="${f(xe - 4)}" y1="${f(y0)}" x2="${f(xe + 4)}" y2="${f(y0)}"/><line class="cota" x1="${f(xe - 4)}" y1="${f(y0 + hs)}" x2="${f(xe + 4)}" y2="${f(y0 + hs)}"/>`);
+      g2.push(`<text x="${f(xe + 7)}" y="${f(y0 + hs / 2 + 4)}">h = ${mm4(o.h)}</text>`);
+      salida.push(...g2);
     });
     return salida.join("");
   }
@@ -18904,9 +18971,9 @@ tr.et-act td { font-weight: 650; }
   var diametrosEntrada2 = () => serieDiametros().filter((x) => x >= 6 && x <= 25);
   var diametrosTabla2 = () => serieDiametros().filter((x) => x >= 8 && x <= 16);
   function entrada4(p, D, { dimensionando = false } = {}) {
-    const hor = p.hormigones.find((m) => m.nombre === D.hormigon);
+    const hor2 = p.hormigones.find((m) => m.nombre === D.hormigon);
     const ace = p.aceros.find((m) => m.nombre === D.aceroCercos);
-    if (!hor || !ace) return null;
+    if (!hor2 || !ace) return null;
     const N = nuc3(p);
     const x = {
       tipo: D.tipo,
@@ -18915,7 +18982,7 @@ tr.et-act td { font-weight: 650; }
       c2: D.c2,
       D: D.D,
       d: D.d,
-      fck: hor.fck,
+      fck: hor2.fck,
       fykCercos: ace.fyk,
       rhoX: D.rhoX,
       rhoY: D.rhoY,
@@ -19198,8 +19265,8 @@ tr.et-act td { font-weight: 650; }
       arm = { ramas: f.ramas, nx: f.nx, ny: f.ny, an: anillos({ a1: r.a1, sr: r.sr, nPer: f.nPer }), fi: f.fi };
     }
     const perimetros4 = [{ delta: ctrl, clase: "ctrl" }];
-    const u = e23 ? r.u?.b05 : r.u?.u1;
-    const leyenda3 = [["pilar", rectTexto(x)], ["ctrl", t(e23 ? "pun.dib.b05" : "pun.dib.u1", fmt(ctrl, 0), fmt(u ?? 0, 0))]];
+    const u2 = e23 ? r.u?.b05 : r.u?.u1;
+    const leyenda3 = [["pilar", rectTexto(x)], ["ctrl", t(e23 ? "pun.dib.b05" : "pun.dib.u1", fmt(ctrl, 0), fmt(u2 ?? 0, 0))]];
     let ext = null;
     if (arm) {
       const dl = arm.an[arm.an.length - 1];
@@ -19207,7 +19274,7 @@ tr.et-act td { font-weight: 650; }
       ext = { dl, kd };
       const a = { ...x.arm ?? {}, esq, sr: comp ? x.arm.sr : r.sr, ramas: arm.ramas };
       const uProv = uExterior(x, a, dl, kd, e23 ? 3 * x.d : 0);
-      const uReq = e23 ? r.b05out ?? r.tabla?.find((g) => g.fi === arm.fi)?.b05out : r.uOutReq ?? r.unReq;
+      const uReq = e23 ? r.b05out ?? r.tabla?.find((g2) => g2.fi === arm.fi)?.b05out : r.uOutReq ?? r.unReq;
       leyenda3.push(["cercos", t(esq === "cruz" ? "pun.dib.cercosCruz" : "pun.dib.cercosRet", fmt(arm.ramas, 0), fmt(arm.an.length, 0), arm.fi, esq === "ret" ? `${arm.nx}\xD7${arm.ny}` : "")]);
       leyenda3.push(["ext", t(e23 ? "pun.dib.ext23" : ec ? "pun.dib.extEC" : "pun.dib.extEHE", fmt(dl + kd, 0), fmt(uProv, 0), Number.isFinite(uReq) ? fmt(uReq, 0) : "\u2014")]);
     }
@@ -19530,7 +19597,7 @@ tr.et-act td { font-weight: 650; }
   var S_TABLA_MAX3 = 300;
   var S_TABLA_PASO3 = 25;
   var S_TABLA_MIN = 50;
-  var rad4 = (g) => g * Math.PI / 180;
+  var rad4 = (g2) => g2 * Math.PI / 180;
   var tauDe = (REd, b, L) => REd * 1e3 / (b * L);
   var esfuerzoDe = (tau, b, L) => tau * b * L / 1e3;
   function rhoDe(arm, b) {
@@ -20102,9 +20169,9 @@ tr.et-act td { font-weight: 650; }
     var _a;
     const D = (_a = p.calculos).rasante ?? (_a.rasante = {});
     for (const [k, v2] of Object.entries(INICIAL4())) if (D[k] === void 0) D[k] = v2;
-    const hor = (re) => (p.hormigones.find((m) => re.test(m.nombre)) ?? p.hormigones[0])?.nombre ?? null;
-    if (!p.hormigones.some((m) => m.nombre === D.hormigon1)) D.hormigon1 = hor(/30/);
-    if (!p.hormigones.some((m) => m.nombre === D.hormigon2)) D.hormigon2 = hor(/25/);
+    const hor2 = (re) => (p.hormigones.find((m) => re.test(m.nombre)) ?? p.hormigones[0])?.nombre ?? null;
+    if (!p.hormigones.some((m) => m.nombre === D.hormigon1)) D.hormigon1 = hor2(/30/);
+    if (!p.hormigones.some((m) => m.nombre === D.hormigon2)) D.hormigon2 = hor2(/25/);
     if (!p.aceros.some((m) => m.nombre === D.aceroCosido)) D.aceroCosido = (p.aceros.find((m) => /500/.test(m.nombre)) ?? p.aceros[0])?.nombre ?? null;
     if (N && !(D.rug in N.RUGOSIDADES)) D.rug = N.id === "EHE-08" ? "alta" : "rugosa";
     if (N && N.id !== "EC2-2023" && D.anclaje === "parcial") D.anclaje = "total";
@@ -20450,8 +20517,8 @@ tr.et-act td { font-weight: 650; }
   function longitudEficaz(L, k1, k2, traslacional) {
     const f = (k) => Number.isFinite(k) ? k / (1 + k) : 1;
     if (!traslacional) {
-      const g = (k) => Number.isFinite(k) ? 1 + k / (0.45 + k) : 2;
-      return 0.5 * L * Math.sqrt(g(k1) * g(k2));
+      const g2 = (k) => Number.isFinite(k) ? 1 + k / (0.45 + k) : 2;
+      return 0.5 * L * Math.sqrt(g2(k1) * g2(k2));
     }
     const prodSuma = Number.isFinite(k1) && Number.isFinite(k2) ? k1 * k2 / (k1 + k2) : Number.isFinite(k1) ? k1 : Number.isFinite(k2) ? k2 : Infinity;
     const a = Number.isFinite(prodSuma) ? Math.sqrt(1 + 10 * prodSuma) : Infinity;
@@ -20548,7 +20615,7 @@ tr.et-act td { font-weight: 650; }
   var TOL2 = 2e-5;
   var sub31 = (a, b) => `${a}<sub>${b}</sub>`;
   var ind3 = (a, b) => `${a}<tspan class="ind" dy="3">${b}</tspan>`;
-  var sigla3 = (g) => g === Infinity ? "\u221E" : fmt(g, 2);
+  var sigla3 = (g2) => g2 === Infinity ? "\u221E" : fmt(g2, 2);
   var est12 = { i: null, modo: "comprobar", pagina: "soporte", lado: "res", abiertos: /* @__PURE__ */ new Set(), filas: [["800", "20", "40"], ["1500", "30", "60"], ["300", "10", "20"], ["2500", "50", "100"]] };
   var nv3 = (x) => leerNumero(x);
   function reiniciar12() {
@@ -20636,8 +20703,8 @@ tr.et-act td { font-weight: 650; }
     let phiProp = null;
     if (est12.modo === "dimensionar" && As0 > 0) {
       const ok = (kk2) => {
-        const g2 = gammaDe(kk2).g;
-        return Number.isFinite(g2) && g2 >= 1;
+        const g3 = gammaDe(kk2).g;
+        return Number.isFinite(g3) && g3 >= 1;
       };
       if (!ok(40)) kEstricto = Infinity;
       else if (ok(0.02)) kEstricto = 0.02;
@@ -20659,13 +20726,13 @@ tr.et-act td { font-weight: 650; }
       }
     }
     const kk = Number.isFinite(k) ? k : 1;
-    const g = gammaDe(kk);
-    const dBase = g.d ?? diagramaNM(escalarArmadura(sec, kk), { n: 100, simetrica: true, tol: TOL2 });
+    const g2 = gammaDe(kk);
+    const dBase = g2.d ?? diagramaNM(escalarArmadura(sec, kk), { n: 100, simetrica: true, tol: TOL2 });
     const res = casos.map((cs, i) => ({ i, ...cs, ...gammaDe(kk, cs, dBase) }));
     const secD = escalarArmadura(sec, kk);
     const dH = diagramaNM(soloHormigon(sec), { n: 100, simetrica: true, tol: TOL2 });
-    const reducido = g.r.valido && g.r.segundoOrden && dBase ? contornoReducido(entradaCaso(kk, casos[0]), dBase.pos) : null;
-    const c = { ...c0, As0, phi0, Amin: cm.A, k, kEstricto, phiEstricto, phiProp, gamma: g.g, r: g.r, d: dBase, dH, secD, reducido, kk, res };
+    const reducido = g2.r.valido && g2.r.segundoOrden && dBase ? contornoReducido(entradaCaso(kk, casos[0]), dBase.pos) : null;
+    const c = { ...c0, As0, phi0, Amin: cm.A, k, kEstricto, phiEstricto, phiProp, gamma: g2.g, r: g2.r, d: dBase, dH, secD, reducido, kk, res };
     memo4 = { clave, c };
     return c;
   }
@@ -20891,8 +20958,8 @@ tr.et-act td { font-weight: 650; }
     return h("div", { class: "fcr-sec" }, h("div", { class: "lienzo", html: e2?.converge ? dibujoRotura(c.geo, s, { secD: c.secD }, e2) : dibujoSeccionPeq(c.geo, s) }));
   }
   function coeficienteQ(c) {
-    const g = c.gamma;
-    return Number.isFinite(g) && g > 0 && Number.isFinite(c.r.MEd) ? [g * c.r.N, g * c.r.MEd] : null;
+    const g2 = c.gamma;
+    return Number.isFinite(g2) && g2 > 0 && Number.isFinite(c.r.MEd) ? [g2 * c.r.N, g2 * c.r.MEd] : null;
   }
   function cifrasDe3(c, D, p, dim) {
     const r = c.r;
@@ -20968,20 +21035,20 @@ tr.et-act td { font-weight: 650; }
     const tinta = "var(--tinta)";
     const trazo = `fill="none" stroke="${tinta}" stroke-width="1.5"`;
     const extremo = (ext, y, arriba, psi, nombre) => {
-      const g = [];
+      const g2 = [];
       const dir = arriba ? -1 : 1;
       if (ext.tipo === "empotrado") {
-        g.push(`<line x1="${cx - 40}" y1="${y}" x2="${cx + 40}" y2="${y}" stroke="${tinta}" stroke-width="2.5"/>`);
-        for (let x = cx - 40; x <= cx + 32; x += 8) g.push(`<line x1="${x}" y1="${y}" x2="${x + 8}" y2="${y - dir * 8}" stroke="${tinta}" stroke-width="1"/>`);
+        g2.push(`<line x1="${cx - 40}" y1="${y}" x2="${cx + 40}" y2="${y}" stroke="${tinta}" stroke-width="2.5"/>`);
+        for (let x = cx - 40; x <= cx + 32; x += 8) g2.push(`<line x1="${x}" y1="${y}" x2="${x + 8}" y2="${y - dir * 8}" stroke="${tinta}" stroke-width="1"/>`);
       } else if (ext.tipo === "articulado") {
-        g.push(`<path d="M${cx} ${y} l-12 ${-dir * 18} h24 z" ${trazo}/>`, `<line x1="${cx - 30}" y1="${y - dir * 18}" x2="${cx + 30}" y2="${y - dir * 18}" stroke="${tinta}" stroke-width="2"/>`);
+        g2.push(`<path d="M${cx} ${y} l-12 ${-dir * 18} h24 z" ${trazo}/>`, `<line x1="${cx - 30}" y1="${y - dir * 18}" x2="${cx + 30}" y2="${y - dir * 18}" stroke="${tinta}" stroke-width="2"/>`);
       } else {
         const v2 = (lado, e2) => e2.L > 0 && e2.b > 0 && e2.h > 0 ? `<rect x="${lado < 0 ? cx - ancho / 2 - 62 : cx + ancho / 2}" y="${y - 6}" width="62" height="12" fill="var(--hormigon)" stroke="var(--hormigon-borde)"/>` : "";
-        g.push(v2(-1, ext.vigas[0]), v2(1, ext.vigas[1]));
-        if (ext.pilar.L > 0) g.push(`<rect x="${cx - ancho / 2}" y="${arriba ? y - 36 : y}" width="${ancho}" height="36" fill="var(--hormigon)" stroke="var(--hormigon-borde)" stroke-dasharray="3 3"/>`);
+        g2.push(v2(-1, ext.vigas[0]), v2(1, ext.vigas[1]));
+        if (ext.pilar.L > 0) g2.push(`<rect x="${cx - ancho / 2}" y="${arriba ? y - 36 : y}" width="${ancho}" height="36" fill="var(--hormigon)" stroke="var(--hormigon-borde)" stroke-dasharray="3 3"/>`);
       }
-      g.push(`<text x="${cx + 80}" y="${y + (arriba ? -12 : 24)}" class="fuerte">${nombre}: \u03A8 = ${sigla3(psi)}</text>`);
-      return g.join("");
+      g2.push(`<text x="${cx + 80}" y="${y + (arriba ? -12 : 24)}" class="fuerte">${nombre}: \u03A8 = ${sigla3(psi)}</text>`);
+      return g2.join("");
     };
     out.push(extremo(D.B, y0, true, c.psiB, "B"), extremo(D.A, y1, false, c.psiA, "A"));
     out.push(`<rect x="${cx - ancho / 2}" y="${y0}" width="${ancho}" height="${y1 - y0}" fill="var(--hormigon)" stroke="var(--hormigon-borde)"/>`);
@@ -20990,8 +21057,8 @@ tr.et-act td { font-weight: 650; }
       const amp = 26;
       const pts = [];
       for (let i = 0; i <= 40; i++) {
-        const u = i / 40;
-        pts.push(`${cx + (D.trasl ? amp * u : amp * Math.sin(Math.PI * u)) * (f > 0.9 ? 1 : 0.7)},${y1 - u * (y1 - y0)}`);
+        const u2 = i / 40;
+        pts.push(`${cx + (D.trasl ? amp * u2 : amp * Math.sin(Math.PI * u2)) * (f > 0.9 ? 1 : 0.7)},${y1 - u2 * (y1 - y0)}`);
       }
       out.push(`<polyline points="${pts.join(" ")}" fill="none" stroke="var(--acento)" stroke-width="1.5" stroke-dasharray="5 3"/>`);
     }
@@ -21057,13 +21124,13 @@ tr.et-act td { font-weight: 650; }
   function aporte(c, x) {
     if (c.tipo === "puntual") {
       if (x < c.a) return [0, 0, 0, 0];
-      const u = x - c.a;
-      return [-c.P, -c.P * u, -c.P * u * u / 2, -c.P * u ** 3 / 6];
+      const u2 = x - c.a;
+      return [-c.P, -c.P * u2, -c.P * u2 * u2 / 2, -c.P * u2 ** 3 / 6];
     }
     if (c.tipo === "momento") {
       if (x < c.a) return [0, 0, 0, 0];
-      const u = x - c.a;
-      return [0, c.C, c.C * u, c.C * u * u / 2];
+      const u2 = x - c.a;
+      return [0, c.C, c.C * u2, c.C * u2 * u2 / 2];
     }
     if (x <= c.a) return [0, 0, 0, 0];
     const e2 = Math.min(x, c.b);
@@ -21073,11 +21140,11 @@ tr.et-act td { font-weight: 650; }
       const s = c.a + (e2 - c.a) * (GP[i] + 1) / 2;
       const w = GW[i] * (e2 - c.a) / 2;
       const q2 = c.q1 + k * (s - c.a);
-      const u = x - s;
+      const u2 = x - s;
       r[0] -= w * q2;
-      r[1] -= w * q2 * u;
-      r[2] -= w * q2 * u * u / 2;
-      r[3] -= w * q2 * u ** 3 / 6;
+      r[1] -= w * q2 * u2;
+      r[2] -= w * q2 * u2 * u2 / 2;
+      r[3] -= w * q2 * u2 ** 3 / 6;
     }
     return r;
   }
@@ -21157,8 +21224,8 @@ tr.et-act td { font-weight: 650; }
     const en_x = (x) => {
       const a = sumar(x);
       const F2 = lineal2(x);
-      const u = [R0, M0, T0, Y0];
-      return F2.map((f, i) => f.reduce((s, v2, j) => s + v2 * u[j], 0) + a[i]);
+      const u2 = [R0, M0, T0, Y0];
+      return F2.map((f, i) => f.reduce((s, v2, j) => s + v2 * u2[j], 0) + a[i]);
     };
     const xs = /* @__PURE__ */ new Set();
     for (let i = 0; i <= n; i++) xs.add(L * i / n);
@@ -21238,24 +21305,24 @@ tr.et-act td { font-weight: 650; }
     if (txt !== void 0) el.textContent = txt;
     return el;
   };
-  function apoyo(g, x, y, tp, pequeno) {
+  function apoyo(g2, x, y, tp, pequeno) {
     const s = pequeno ? 0.55 : 1;
-    if (tp === "apoyo") g.append(e("path", { d: `M${x} ${y + 1} l${-9 * s} ${15 * s} h${18 * s} z`, class: "vl-apoyo" }));
+    if (tp === "apoyo") g2.append(e("path", { d: `M${x} ${y + 1} l${-9 * s} ${15 * s} h${18 * s} z`, class: "vl-apoyo" }));
     else if (tp === "empotramiento") {
       const lado = x < 200 ? -1 : 1;
       const a = 20 * s;
-      g.append(e("path", { d: `M${x} ${y - a} v${2 * a}`, class: "vl-empot" }));
-      for (let i = 0; i < 5; i++) g.append(e("path", { d: `M${x} ${y - a + i * (2 * a / 4)} l${lado * 8 * s} ${8 * s}`, class: "vl-empot fino" }));
+      g2.append(e("path", { d: `M${x} ${y - a} v${2 * a}`, class: "vl-empot" }));
+      for (let i = 0; i < 5; i++) g2.append(e("path", { d: `M${x} ${y - a + i * (2 * a / 4)} l${lado * 8 * s} ${8 * s}`, class: "vl-empot fino" }));
     }
   }
-  function esquema(g, D, r, W2, top, h2, X) {
+  function esquema(g2, D, r, W2, top, h2, X) {
     const rotulo = top;
     top += 16;
     h2 -= 16;
     const nMomR = D.der === "empotramiento" || D.izq === "empotramiento";
     const yv = top + h2 - (nMomR ? 52 : 40);
     const alto = Math.max(20, Math.min(46, yv - top - 20));
-    g.append(e("text", { x: PAD - 30, y: rotulo + 12, class: "vl-tit" }, `${t("vig.esquema")} \xB7 L = ${fmt(D.L, 2)} m`));
+    g2.append(e("text", { x: PAD - 30, y: rotulo + 12, class: "vl-tit" }, `${t("vig.esquema")} \xB7 L = ${fmt(D.L, 2)} m`));
     const dist = D.cargas.filter((c) => c.tipo === "distribuida");
     const qmax = Math.max(1e-9, ...dist.map((c) => Math.max(Math.abs(c.q1), Math.abs(c.q2))));
     const yb = yv - 3;
@@ -21265,40 +21332,40 @@ tr.et-act td { font-weight: 650; }
       const ha = hs(c.q1), hb = hs(c.q2);
       if (c.q1 * c.q2 < 0) {
         const xc = a + (b - a) * Math.abs(c.q1) / (Math.abs(c.q1) + Math.abs(c.q2));
-        g.append(e("path", { d: `M${a} ${yb} V${yb - ha} L${xc} ${yb} z`, class: "vl-distr" }));
-        g.append(e("path", { d: `M${xc} ${yb} L${b} ${yb - hb} V${yb} z`, class: "vl-distr" }));
-      } else g.append(e("path", { d: `M${a} ${yb} V${yb - ha} L${b} ${yb - hb} V${yb} z`, class: "vl-distr" }));
+        g2.append(e("path", { d: `M${a} ${yb} V${yb - ha} L${xc} ${yb} z`, class: "vl-distr" }));
+        g2.append(e("path", { d: `M${xc} ${yb} L${b} ${yb - hb} V${yb} z`, class: "vl-distr" }));
+      } else g2.append(e("path", { d: `M${a} ${yb} V${yb - ha} L${b} ${yb - hb} V${yb} z`, class: "vl-distr" }));
       const fuera = (hh) => hh >= 0 ? yb - hh - 4 : yb - hh + 13;
-      if (c.q1 === c.q2) g.append(e("text", { x: (a + b) / 2, y: fuera(ha), "text-anchor": "middle", class: "vl-num carga" }, `${dato2(c.q1)} kN/m`));
+      if (c.q1 === c.q2) g2.append(e("text", { x: (a + b) / 2, y: fuera(ha), "text-anchor": "middle", class: "vl-num carga" }, `${dato2(c.q1)} kN/m`));
       else {
-        g.append(e("text", { x: a, y: fuera(ha), "text-anchor": "start", class: "vl-num carga" }, `${dato2(c.q1)} kN/m`));
-        g.append(e("text", { x: b, y: fuera(hb), "text-anchor": "end", class: "vl-num carga" }, `${dato2(c.q2)} kN/m`));
+        g2.append(e("text", { x: a, y: fuera(ha), "text-anchor": "start", class: "vl-num carga" }, `${dato2(c.q1)} kN/m`));
+        g2.append(e("text", { x: b, y: fuera(hb), "text-anchor": "end", class: "vl-num carga" }, `${dato2(c.q2)} kN/m`));
       }
     }
     const palto = Math.max(alto + 6, Math.min(yv - top - 22, alto + 24));
     for (const c of D.cargas.filter((z) => z.tipo === "puntual")) {
       const x = X(c.a), s = c.P >= 0 ? 1 : -1;
-      g.append(e("path", { d: `M${x} ${yv - 3 - s * palto} V${yv - 3} m-4.5 ${-8 * s} l4.5 ${8 * s} l4.5 ${-8 * s}`, class: "vl-carga puntual" }));
-      g.append(e("text", { x, y: s > 0 ? yv - palto - 8 : yv + palto + 12, "text-anchor": "middle", class: "vl-num carga" }, `${dato2(c.P)} kN`));
+      g2.append(e("path", { d: `M${x} ${yv - 3 - s * palto} V${yv - 3} m-4.5 ${-8 * s} l4.5 ${8 * s} l4.5 ${-8 * s}`, class: "vl-carga puntual" }));
+      g2.append(e("text", { x, y: s > 0 ? yv - palto - 8 : yv + palto + 12, "text-anchor": "middle", class: "vl-num carga" }, `${dato2(c.P)} kN`));
     }
     for (const c of D.cargas.filter((z) => z.tipo === "momento")) {
       const x = X(c.a), s = c.C >= 0 ? 1 : -1;
       const r2 = 17, cy = yv - 8;
-      g.append(e("path", { d: `M${x - r2 * s} ${cy} a${r2} ${r2} 0 1 1 ${2 * r2 * s} 0 m${-4 * s} ${-5} l${4 * s} 5 l${-5 * s} 2`, class: "vl-carga", fill: "none" }));
+      g2.append(e("path", { d: `M${x - r2 * s} ${cy} a${r2} ${r2} 0 1 1 ${2 * r2 * s} 0 m${-4 * s} ${-5} l${4 * s} 5 l${-5 * s} 2`, class: "vl-carga", fill: "none" }));
       const cerca = D.cargas.filter((z) => z.tipo === "puntual").map((z) => X(z.a) - x).filter((d) => Math.abs(d) < 70);
       const anc = cerca.some((d) => d > 0) ? "end" : cerca.some((d) => d < 0) ? "start" : "middle";
-      g.append(e("text", { x: anc === "end" ? x + 10 : anc === "start" ? x - 10 : x, y: yv - 3 - alto - 18, "text-anchor": anc, class: "vl-num carga" }, `${dato2(c.C)} kN\xB7m`));
+      g2.append(e("text", { x: anc === "end" ? x + 10 : anc === "start" ? x - 10 : x, y: yv - 3 - alto - 18, "text-anchor": anc, class: "vl-num carga" }, `${dato2(c.C)} kN\xB7m`));
     }
-    g.append(e("path", { d: `M${X(0)} ${yv} H${X(D.L)}`, class: "vl-viga" }));
-    apoyo(g, X(0), yv, D.izq);
-    apoyo(g, X(D.L), yv, D.der);
+    g2.append(e("path", { d: `M${X(0)} ${yv} H${X(D.L)}`, class: "vl-viga" }));
+    apoyo(g2, X(0), yv, D.izq);
+    apoyo(g2, X(D.L), yv, D.der);
     for (const [lado, x, tp] of [["izq", X(0), D.izq], ["der", X(D.L), D.der]]) {
       if (tp === "libre") continue;
       const R = r.reacciones[lado];
       const anc = x < W2 / 2 ? "start" : "end";
       const xt = anc === "start" ? x - 8 : x + 8;
-      g.append(e("text", { x: xt, y: yv + 30, "text-anchor": anc, class: "vl-num rea" }, `R = ${fmt(R.R, MAG.F.d)} kN`));
-      if (tp === "empotramiento") g.append(e("text", { x: xt, y: yv + 44, "text-anchor": anc, class: "vl-num rea" }, `M = ${fmt(R.M, MAG.M.d)} kN\xB7m`));
+      g2.append(e("text", { x: xt, y: yv + 30, "text-anchor": anc, class: "vl-num rea" }, `R = ${fmt(R.R, MAG.F.d)} kN`));
+      if (tp === "empotramiento") g2.append(e("text", { x: xt, y: yv + 44, "text-anchor": anc, class: "vl-num rea" }, `M = ${fmt(R.M, MAG.M.d)} kN\xB7m`));
     }
   }
   function etiquetas(dat, claves, ymap, W2, f, d) {
@@ -21329,25 +21396,25 @@ tr.et-act td { font-weight: 650; }
     const hEje = 26;
     const resto = H2 - hEsq - gap * 4 - hEje;
     const pesoTot = BANDAS.reduce((s, b) => s + b.peso, 0);
-    const g = e("g");
-    svg.append(g);
-    esquema(g, D, r, W2, 0, hEsq, X);
+    const g2 = e("g");
+    svg.append(g2);
+    esquema(g2, D, r, W2, 0, hEsq, X);
     const claves = [0, D.L, ...D.cargas.flatMap((c) => c.tipo === "distribuida" ? [c.a, c.b] : [c.a])];
     const lecturas = {};
     let y0 = hEsq + gap;
     const yEje = H2 - hEje + 4;
-    for (const x of [X(0), X(D.L)]) g.append(e("path", { d: `M${x} ${y0} V${yEje}`, class: "vl-guia" }));
+    for (const x of [X(0), X(D.L)]) g2.append(e("path", { d: `M${x} ${y0} V${yEje}`, class: "vl-guia" }));
     const pxM = (W2 - 2 * PAD) / D.L;
     const paso2 = (D.L >= 3 ? [1, 2, 5, 10, 20, 50, 100, 200, 500, 1e3] : [0.1, 0.2, 0.5, 1, 2, 5]).find((p) => p * pxM >= 24) ?? 1e3;
     const marcas = [];
     for (let v2 = 0; v2 <= D.L + 1e-9; v2 += paso2) marcas.push(+v2.toFixed(6));
     if (D.L - marcas.at(-1) > 0.3 * paso2) marcas.push(D.L);
-    g.append(e("path", { d: `M${X(0)} ${yEje} H${X(D.L)}`, class: "vl-eje" }));
+    g2.append(e("path", { d: `M${X(0)} ${yEje} H${X(D.L)}`, class: "vl-eje" }));
     for (const v2 of marcas) {
-      g.append(e("path", { d: `M${X(v2)} ${yEje} v5`, class: "vl-eje" }));
-      g.append(e("text", { x: X(v2), y: yEje + 17, "text-anchor": "middle", class: "vl-eje-n" }, fmt(v2, paso2 < 1 ? 1 : Number.isInteger(v2) ? 0 : 2)));
+      g2.append(e("path", { d: `M${X(v2)} ${yEje} v5`, class: "vl-eje" }));
+      g2.append(e("text", { x: X(v2), y: yEje + 17, "text-anchor": "middle", class: "vl-eje-n" }, fmt(v2, paso2 < 1 ? 1 : Number.isInteger(v2) ? 0 : 2)));
     }
-    g.append(e("text", { x: W2 - 2, y: yEje + 17, "text-anchor": "end", class: "vl-eje-n" }, "[m]"));
+    g2.append(e("text", { x: W2 - 2, y: yEje + 17, "text-anchor": "end", class: "vl-eje-n" }, "[m]"));
     BANDAS.forEach((B) => {
       const h2 = resto * B.peso / pesoTot;
       const top = y0, bot = y0 + h2;
@@ -21358,23 +21425,23 @@ tr.et-act td { font-weight: 650; }
       const tope = top + 30, fondo = bot - 16;
       const ymap = (v2) => hi === lo ? (tope + fondo) / 2 : tope + (sg * v2 - lo) / (hi - lo) * (fondo - tope);
       const y00 = ymap(0);
-      g.append(e("path", { d: `M${PAD - 30} ${bot + gap / 2 - 0.5} H${W2 - PAD + 30}`, class: "vl-sep" }));
+      g2.append(e("path", { d: `M${PAD - 30} ${bot + gap / 2 - 0.5} H${W2 - PAD + 30}`, class: "vl-sep" }));
       const tit2 = e("text", { x: PAD - 30, y: top + 13, class: `vl-tit vl-${B.k}` });
       tit2.textContent = `${TIT[B.k]} [${B.ud}]`;
-      g.append(tit2);
+      g2.append(tit2);
       const lee = e("text", { x: PAD + 100, y: top + 13, "text-anchor": "start", class: `vl-tit vl-${B.k} lectura` });
-      g.append(lee);
+      g2.append(lee);
       lecturas[B.k] = { el: lee, f: B.f, d: B.d, k: B.k };
       const linea = dat.map((p, i) => `${i ? "L" : "M"}${p.px.toFixed(1)} ${ymap(p.v).toFixed(1)}`).join(" ");
-      if (B.rayado) g.append(e("path", { d: `${linea} L${dat.at(-1).px.toFixed(1)} ${y00} L${dat[0].px.toFixed(1)} ${y00} Z`, class: `vl-area vl-${B.k}`, fill: `url(#vl-h-${B.k})` }));
-      g.append(e("path", { d: linea, class: `vl-curva vl-${B.k}` }));
-      g.append(e("path", { d: `M${X(0)} ${y00} H${X(D.L)}`, class: "vl-viga fina" }));
-      g.append(e("path", { d: marcas.map((v2) => `M${X(v2)} ${y00 - 4} v8`).join(" "), class: "vl-marcas" }));
-      apoyo(g, X(0), y00, D.izq, true);
-      apoyo(g, X(D.L), y00, D.der, true);
+      if (B.rayado) g2.append(e("path", { d: `${linea} L${dat.at(-1).px.toFixed(1)} ${y00} L${dat[0].px.toFixed(1)} ${y00} Z`, class: `vl-area vl-${B.k}`, fill: `url(#vl-h-${B.k})` }));
+      g2.append(e("path", { d: linea, class: `vl-curva vl-${B.k}` }));
+      g2.append(e("path", { d: `M${X(0)} ${y00} H${X(D.L)}`, class: "vl-viga fina" }));
+      g2.append(e("path", { d: marcas.map((v2) => `M${X(v2)} ${y00 - 4} v8`).join(" "), class: "vl-marcas" }));
+      apoyo(g2, X(0), y00, D.izq, true);
+      apoyo(g2, X(D.L), y00, D.der, true);
       for (const l of etiquetas(dat, claves, ymap, W2, B.f, B.d)) {
         const sobre = l.py <= y00;
-        g.append(e("text", { x: Math.min(W2 - 4, Math.max(4, l.px)), y: sobre ? l.py - 5 : l.py + 14, "text-anchor": "middle", class: `vl-num vl-${B.k}` }, l.txt));
+        g2.append(e("text", { x: Math.min(W2 - 4, Math.max(4, l.px)), y: sobre ? l.py - 5 : l.py + 14, "text-anchor": "middle", class: `vl-num vl-${B.k}` }, l.txt));
       }
     });
     const defs = e("defs");
@@ -21593,18 +21660,18 @@ tr.et-act td { font-weight: 650; }
     return globo;
   }
   function poner2(icono2) {
-    const g = asegurar();
-    g.textContent = icono2.dataset.tip ?? "";
-    g.hidden = false;
+    const g2 = asegurar();
+    g2.textContent = icono2.dataset.tip ?? "";
+    g2.hidden = false;
     actual = icono2;
     const r = icono2.getBoundingClientRect();
-    const w = g.offsetWidth;
-    const alto = g.offsetHeight;
+    const w = g2.offsetWidth;
+    const alto = g2.offsetHeight;
     const arriba = r.top - alto - MARGEN3 >= MARGEN3;
     const y = arriba ? r.top - alto - MARGEN3 : Math.min(r.bottom + MARGEN3, window.innerHeight - alto - MARGEN3);
     const x = Math.min(Math.max(r.left + r.width / 2 - w / 2, MARGEN3), window.innerWidth - w - MARGEN3);
-    g.style.left = `${Math.round(x)}px`;
-    g.style.top = `${Math.round(Math.max(y, MARGEN3))}px`;
+    g2.style.left = `${Math.round(x)}px`;
+    g2.style.top = `${Math.round(Math.max(y, MARGEN3))}px`;
     icono2.setAttribute("aria-describedby", "globo-i");
   }
   function quitar() {

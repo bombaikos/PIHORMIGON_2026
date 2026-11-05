@@ -1,38 +1,75 @@
-// Esquema (sin escala) del módulo Anclaje y solapo: barra recta anclada, barra con patilla y solapo de dos barras,
-// con las cotas l_bd y l_s y la separación máxima entre barras solapadas.
+// Esquemas (sin escala) del módulo Anclaje y solapo: formas de anclaje (prolongación recta, patilla, gancho, U) y solapo,
+// con las cotas que da la norma, y la esquina de una viga con la definición del recubrimiento cd.
 
 import { t } from './i18n.js';
 
 const sub = (b, s) => `${b}<tspan baseline-shift="sub" font-size="75%">${s}</tspan>`;
-const cotaH = (x1, x2, y, texto) => `<line class="cota" x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" marker-start="url(#tic)" marker-end="url(#tic)"/>`
-  + `<text x="${(x1 + x2) / 2}" y="${y + 13}" text-anchor="middle" class="fuerte">${texto}</text>`;
-const ref = (x, y1, y2) => `<line class="ref" x1="${x}" y1="${y1}" x2="${x}" y2="${y2}"/>`;
+const tic = '<defs><marker id="tic" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M2 8L8 2" class="tic"/></marker></defs>';
+const cotaH = (x1, x2, y, texto, dy = 13) => `<line class="cota" x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" marker-start="url(#tic)" marker-end="url(#tic)"/>`
+  + (texto ? `<text x="${(x1 + x2) / 2}" y="${y + dy}" text-anchor="middle" class="fuerte">${texto}</text>` : '');
+const cotaV = (x, y1, y2) => `<line class="cota" x1="${x}" y1="${y1}" x2="${x}" y2="${y2}" marker-start="url(#tic)" marker-end="url(#tic)"/>`;
+const ref = (x1, y1, x2, y2) => `<line class="ref" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`;
 const tit = (x, y, s) => `<text class="tit" x="${x}" y="${y}">${s}</text>`;
 const barra = (d) => `<path class="barra-lin" d="${d}"/>`;
+const g = (x, y, s) => `<g transform="translate(${x} ${y})">${s}</g>`;
+const hor = (x, y, w, h) => `<rect class="hor" x="${x}" y="${y}" width="${w}" height="${h}"/>`;
+/** Radio interior de la curva: de su centro a un punto de la curva a 45°. */
+const radio = (cx, cy, r, tx, ty) => `<line class="cota" x1="${cx}" y1="${cy}" x2="${(cx + r * 0.7).toFixed(1)}" y2="${(cy - r * 0.7).toFixed(1)}"/><text x="${tx}" y="${ty}" class="nota-d">r</text>`;
+
+const recta = () => tit(0, 10, t('an.dib.t.recta')) + hor(10, 16, 180, 40) + barra('M0 36 H170')
+  + ref(10, 56, 10, 72) + ref(170, 56, 170, 72) + cotaH(10, 170, 68, sub('l', 'bd'));
+
+const patilla = () => tit(0, 10, t('an.dib.t.patilla')) + hor(10, 16, 170, 64) + barra('M0 30 H120 A14 14 0 0 1 134 44 V68')
+  + radio(120, 44, 14, 109, 54) + cotaV(148, 44, 68) + `<text x="153" y="60" class="nota-d">≥ 5 ø</text>`
+  + `<text x="140" y="34" class="nota-d">90°</text>`
+  + ref(10, 80, 10, 96) + ref(134, 68, 134, 96) + cotaH(10, 134, 92, sub('l', 'bd'));
+
+const gancho = () => tit(0, 10, t('an.dib.t.gancho')) + hor(10, 16, 180, 64) + barra('M0 30 H132 A14 14 0 0 1 132 58 H106')
+  + radio(132, 44, 14, 121, 52) + cotaH(106, 132, 70, null) + `<text x="138" y="73" class="nota-d">≥ 5 ø</text>`
+  + `<text x="152" y="48" class="nota-d">α ≥ 150°</text>`
+  + ref(10, 80, 10, 96) + ref(132, 60, 132, 96) + cotaH(10, 132, 92, sub('l', 'bd'));
+
+const u = () => tit(0, 10, t('an.dib.t.u')) + hor(10, 16, 180, 46) + barra('M0 26 H128 A12 12 0 0 1 128 50 H0')
+  + radio(128, 38, 12, 116, 44) + ref(10, 62, 10, 78) + ref(128, 50, 128, 78) + cotaH(10, 128, 74, sub('l', 'bd'));
+
+const solapo = (w) => tit(0, 10, t('an.dib.t.solapo')) + hor(10, 16, w - 10, 46) + barra(`M0 31 H${w * 0.62}`) + barra(`M${w * 0.32} 47 H${w}`)
+  + cotaV(24, 31, 47) + `<text x="30" y="45" class="nota-d">${t('an.dib.sep')}</text>`
+  + ref(w * 0.32, 62, w * 0.32, 78) + ref(w * 0.62, 62, w * 0.62, 78) + cotaH(w * 0.32, w * 0.62, 74, sub('l', 's'));
 
 export function dibujoAnclaje({ esfuerzo }) {
   const comp = esfuerzo === 'compresion';
-  let s = '';
-  // 1. Anclaje en prolongación recta
-  s += tit(12, 14, t('an.dib.anclaje'));
-  s += `<rect class="hor" x="12" y="20" width="236" height="34"/>`;
-  s += barra('M12 37 H236') + `<circle class="barra-ac" cx="236" cy="37" r="0"/>`;
-  s += ref(24, 54, 70) + ref(236, 54, 70) + cotaH(24, 236, 66, sub('l', 'bd'));
-  // 2. Patilla (solo en tracción)
-  if (!comp) {
-    s += tit(12, 106, t('an.dib.gancho'));
-    s += `<rect class="hor" x="12" y="112" width="236" height="52"/>`;
-    s += barra('M12 128 H200 Q216 128 216 144 V156');
-    s += ref(24, 164, 178) + ref(216, 164, 178) + cotaH(24, 216, 174, sub('l', 'bd'));
+  let s;
+  let alto;
+  if (comp) {
+    // En compresión las patillas, ganchos y U no contribuyen (EC-2 8.4.1(3))
+    s = g(0, 0, recta()) + g(0, 100, solapo(400));
+    alto = 200;
+  } else {
+    s = g(0, 0, recta()) + g(210, 0, patilla()) + g(0, 112, gancho()) + g(210, 112, u()) + g(0, 224, solapo(400));
+    alto = 322;
   }
-  // 3. Solapo
-  const y0 = comp ? 112 : 208;
-  s += tit(12, y0 - 6, t('an.dib.solapo'));
-  s += `<rect class="hor" x="12" y="${y0}" width="236" height="46"/>`;
-  s += barra(`M12 ${y0 + 15} H176`) + barra(`M84 ${y0 + 29} H248`);
-  s += `<line class="cota" x1="28" y1="${y0 + 15}" x2="28" y2="${y0 + 29}" marker-start="url(#tic)" marker-end="url(#tic)"/><text x="34" y="${y0 + 26}" class="nota-d">${t('an.dib.sep')}</text>`;
-  s += ref(84, y0 + 46, y0 + 60) + ref(176, y0 + 46, y0 + 60) + cotaH(84, 176, y0 + 56, sub('l', 's'));
-  const alto = comp ? 190 : 288;
-  return `<svg class="dib dib-anclaje" viewBox="0 0 260 ${alto}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${t('an.dib.aria')}">`
-    + `<defs><marker id="tic" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M2 8L8 2" class="tic"/></marker></defs>${s}</svg>`;
+  return `<svg class="dib dib-anclaje" viewBox="0 0 400 ${alto}" preserveAspectRatio="xMidYMin meet" role="img" aria-label="${t('an.dib.aria')}">${tic}${s}</svg>`;
+}
+
+/**
+ * Esquina inferior de una viga en sección: cerco, la armadura longitudinal que se ancla y la contigua, con el recubrimiento lateral,
+ * el inferior y la separación libre entre barras, de los que sale cd = mín(a/2; cx; cy).
+ */
+export function dibujoRecubrimiento() {
+  const bar = (cx, cy, extra = '') => `<circle class="barra-ac${extra}" cx="${cx}" cy="${cy}" r="10"/>`;
+  let s = tit(0, 10, t('an.dib.t.esquina'));
+  s += `<rect class="hor" x="50" y="18" width="240" height="152"/>`;
+  s += `<path class="cerco" d="M280 40 H76 Q66 40 66 50 V144 Q66 154 76 154 H280"/>`;
+  s += bar(77.5, 142.5, ' an-ancla') + bar(127.5, 142.5);
+  // recubrimiento lateral cx e inferior cy (a la superficie de la barra) y separación libre a
+  s += ref(50, 170, 50, 188) + ref(67.5, 152.5, 67.5, 188) + cotaH(50, 67.5, 184, null)
+    + `<text x="46" y="188" text-anchor="end" class="fuerte">${sub('c', 'x')}</text>`;
+  s += ref(22, 170, 50, 170) + ref(22, 152.5, 77.5, 152.5) + cotaV(28, 152.5, 170)
+    + `<text x="22" y="164" text-anchor="end" class="fuerte">${sub('c', 'y')}</text>`;
+  s += ref(87.5, 142.5, 87.5, 126) + ref(117.5, 142.5, 117.5, 126) + cotaH(87.5, 117.5, 130, null)
+    + `<text x="102.5" y="123" text-anchor="middle" class="fuerte">a</text>`;
+  // etiquetas con guía
+  s += `<line class="cota" x1="150" y1="96" x2="84" y2="133"/><text x="152" y="96" class="nota-d">${t('an.dib.long1')}</text><text x="152" y="109" class="nota-d">${t('an.dib.long2')}</text>`;
+  s += `<text x="190" y="33" class="nota-d">${t('an.dib.cerco')}</text>`;
+  return `<svg class="dib dib-cd" viewBox="0 0 296 202" preserveAspectRatio="xMidYMin meet" role="img" aria-label="${t('an.dib.ariaCd')}">${tic}${s}</svg>`;
 }
