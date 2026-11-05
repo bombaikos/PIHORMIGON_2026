@@ -1240,11 +1240,17 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
 .regleta.fuera .rg-v { color: var(--no); }
 .et-lienzo { flex: 0 0 auto !important; }
 .regleta.rg-gauge .rg-et { min-width: 3.4em; }
-.et-lienzo svg.dib { max-height: 50vh; }
+.et-lienzo svg.dib { max-height: calc(100vh - 410px) !important; }
 .regleta.rg-gauge { margin: 1px auto; } .et-reglas { gap: 0; }
 .tick.no-aplica { color: var(--tinta-3); cursor: not-allowed; } .tick.no-aplica input { cursor: not-allowed; } .et-der.no-aplica { color: var(--tinta-3); opacity: .7; }
 .et-reglas:has(.rg-gauge) { width: 100%; }
 .regleta.rg-gauge { width: 100%; margin: 1px 0; padding: 0 6px; box-sizing: border-box; }
+
+/* Análisis tensional: esfuerzos siempre sobre la figura */
+.et-esf { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--e2) var(--e5, 28px); padding: 2px 0 4px; font-size: calc(20px + var(--mas, 0px)); color: var(--tinta); flex: 0 0 auto; }
+.et-esf-v b { font-variant-numeric: tabular-nums; font-weight: 700; }
+.et-esf-u { color: var(--tinta-3); font-size: var(--t-s); }
+.et-esf-v.trac, .et-esf-v.trac .et-esf-u { color: var(--rosa); }
 </style>
 
 <header class="barra">
@@ -15147,34 +15153,6 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
     } catch {
     }
     if (c) resuelve(c, s);
-    const cambio = () => ctx2.cambio();
-    const vis = (k) => k === "x" && !Number.isFinite(est7.x) ? Math.sign(est7.x) * X_INF : est7[k];
-    const redondeo = (x, mag) => {
-      const m = MAG[mag];
-      const k = 10 ** (m.d ?? 0);
-      return Math.round(x * m.f * k) / k / m.f;
-    };
-    const num4 = (id, etq, k, mag, o = {}) => campoNum({ id: `et-${id}`, etq, valor: redondeo(vis(k), mag), mag, paso: o.paso, min: o.min ?? -1e9, max: o.max ?? 1e9, nombre: o.nombre, ref: o.ref, info: o.info, onCambio: (v2) => {
-      est7[k] = k === "x" && Math.abs(v2) >= X_INF ? Math.sign(v2) * Infinity : v2;
-      cambio();
-    } });
-    const campos = {
-      NM: [
-        num4("N", sub23("N", ""), "N", "N", { paso: 10, nombre: t("est.nombreN"), ref: t("fcr.compPos") }),
-        num4("Mx", sub23("M", "x"), "Mx", "M", { paso: 5, nombre: t("est.nombreMx"), ref: t("est.refMx") }),
-        num4("My", sub23("M", "y"), "My", "M", { paso: 5, nombre: t("est.nombreMy"), ref: t("est.refMy") })
-      ],
-      eK: [
-        num4("e0", sub23("\u03B5", "cdg"), "e0", "def", { paso: 5e-5, nombre: t("est.nombreE0") }),
-        num4("kx", sub23("\u03BA", "x"), "kx", "curv", { paso: 1e-4, nombre: t("est.nombreKx") }),
-        num4("ky", sub23("\u03BA", "y"), "ky", "curv", { paso: 1e-4, nombre: t("est.nombreKy") })
-      ],
-      sup: [
-        num4("es", sub23("\u03B5", "sup"), "eSup", "def", { paso: 5e-5, nombre: t("est.nombreESup"), info: t("est.infoSup") }),
-        num4("b", "\u03B2", "beta", "ang1", { paso: 1, min: 0, max: 360, nombre: t("est.nombreBeta") }),
-        num4("x", "x", "x", "long", { paso: 0.01, nombre: t("est.nombreX"), ref: t("est.refX") })
-      ]
-    };
     const gamma = (id, etq, k, defecto) => {
       const valor = V()[k] ?? defecto;
       const dist = c && Math.abs(valor - c.esperado[k]) > 1e-9;
@@ -15199,7 +15177,6 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
         est7.modo = m;
         ctx2.pintar();
       } }),
-      grupo(est7.modo === "NM" ? t("est.gEsfuerzos") : t("est.gPlano"), ...campos[est7.modo]),
       grupo(
         t("est.gHormigon"),
         h("div", { class: "fila-campos et-fc" }, c ? gamma("gc", t("est.gammaC"), "gammaC", c.gammaC) : null, c ? gamma("ac", t("est.alfaCC"), "alfaCC", c.alfaCC) : null),
@@ -15307,7 +15284,6 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
     const x1 = x0 + comp * escE + 120;
     const aT = [x0 + r.eSup * escE, yTop];
     const aB = [x0 + r.eInf * escE, yBot];
-    out.push(`<text class="tit" x="${x1 - 20}" y="${yTop - 22}" text-anchor="end">${t("est.planoDef")}</text>`);
     out.push(`<line class="eje" x1="${x0}" y1="${yTop}" x2="${x0}" y2="${yBot}"/>`);
     const yCero = r.eSup === r.eInf ? yTop : yTop + (yBot - yTop) * r.eSup / (r.eSup - r.eInf);
     if (r.eSup > 0 && r.eInf < 0) {
@@ -15326,7 +15302,6 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
     const sTop = mu[0].s;
     const sBot = mu[NS4].s;
     const sEsc = SIG_W / Math.max(Math.abs(sTop), Math.abs(sBot), 1e-6);
-    out.push(`<text class="tit" x="${x1 - 8}" y="${yTop - 22}">${t("est.tensiones")}</text>`);
     out.push(`<line class="eje" x1="${x1}" y1="${yTop}" x2="${x1}" y2="${yBot}"/>`);
     const cP = mu.filter((q2) => q2.s > 1e-9);
     const tP = mu.filter((q2) => q2.s < -1e-9);
@@ -15386,7 +15361,7 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
       out.push(`<line class="en" x1="${ix - w[0] * 50}" y1="${iy - w[1] * 50}" x2="${ix + w[0] * 50}" y2="${iy + w[1] * 50}"/>`);
       out.push(`<path class="cota" d="M${ix + 26} ${iy}A26 26 0 ${bn > Math.PI ? 1 : 0} 0 ${ix + 26 * w[0]} ${iy + 26 * w[1]}"/><text x="${ix + 30}" y="${iy - 6}">\u03B2</text>`);
     }
-    return `<svg class="dib et-svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${W} ${H}"${topeEscala(W, H)} role="img" aria-label="${t("est.dibujoAria")}">${out.join("")}</svg>`;
+    return `<svg class="dib et-svg" preserveAspectRatio="xMidYMin meet" viewBox="0 0 ${W} ${H}"${topeEscala(W, H)} role="img" aria-label="${t("est.dibujoAria")}">${out.join("")}</svg>`;
   }
   var mm2 = (x) => fmt(x * 1e3, 0);
   var grados = (b) => b === null ? "\u2014" : fmt(deMotor(b), 1);
@@ -15463,6 +15438,10 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
     const ley = t(`est.ley.${c.lector}`);
     return veredicto(r.fisurada ? "atencion" : "neutro", sello, t("est.sigmaC"), qh(r.sigmaMax, "tension"), `${ley} \xB7 n = ${fmt(r.n, 1)}`);
   }
+  function cabeceraEsfuerzos(r) {
+    const par2 = (etq, v2, ud, clase = "") => h("span", { class: `et-esf-v ${clase}`.trim() }, h("span", { class: "et-esf-e", html: etq }), " = ", h("b", {}, v2), h("span", { class: "et-esf-u" }, ` ${ud}`));
+    return [par2("N", fmt(r.N, MAG.N.d), "kN", r.N < 0 ? "trac" : ""), par2(sub23("M", "x"), fmt(r.Mx, MAG.M.d), "kN\xB7m"), par2(sub23("M", "y"), fmt(r.My, MAG.M.d), "kN\xB7m")];
+  }
   function notaEC2() {
     return h(
       "details",
@@ -15487,6 +15466,7 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
     const dom = admisible(c.mod, c.lim, r.plano);
     if (!dom.ok) res.append(aviso(t(`est.fuera.${dom.limita}`, est7.estado, fmt(-dom.holgura * 1e3, 2)), "error"));
     if (c.els) res.append(notaEC2());
+    const esf = h("div", { class: "et-esf", role: "status" }, ...cabeceraEsfuerzos(r));
     const lienzo = h("div", { class: "lienzo et-lienzo", html: dibujo(c, r) });
     const derecha = h("article", { class: "panel tarjeta et-der-card" });
     const llena = (rr) => derecha.replaceChildren(tablaEstado(rr), h("h3", {}, t("est.tFibras")), tablaFibras(rr), tablaBarras(ctx2, rr));
@@ -15497,14 +15477,11 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
       if (!rr.ok) return;
       r = rr;
       lienzo.innerHTML = dibujo(c, rr);
+      esf.replaceChildren(...cabeceraEsfuerzos(rr));
       llena(rr);
       const nuevo2 = pastilla(c, rr);
       res.querySelector(":scope > .veredicto").replaceWith(nuevo2);
       rotulaSeccion(res, nombre);
-    };
-    const sincro = (id, mag, v2) => {
-      const el = document.getElementById(`et-${id}`);
-      if (el) el.value = mag === "ang1" ? String(+v2.toFixed(1)) : String(+(v2 * MAG[mag].f).toFixed(MAG[mag].d ?? 0));
     };
     const reg = (id, etq, k, mag, min, max, step, texto, aVar = (v2) => v2, deVar = (v2) => v2) => regleta({
       clase: k === "N" && est7.N < 0 ? "trac" : "",
@@ -15518,7 +15495,6 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
       texto,
       onInput: (v2) => {
         est7[k] = aVar(v2);
-        sincro(id, mag, est7[k]);
         if (k === "N") document.querySelector(".et-reglas .regleta")?.classList.toggle("trac", est7.N < 0);
         refresca();
       },
@@ -15534,7 +15510,7 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
       regs.push(reg("Mx", sub23("M", "x"), "Mx", "M", -c.rg.Mx, c.rg.Mx, 1, unidad("M")));
       regs.push(reg("My", sub23("M", "y"), "My", "M", -c.rg.My, c.rg.My, 1, unidad("M")));
     } else if (est7.modo === "eK") {
-      regs.push(...gaugesEK(c, refresca, sincro, ctx2));
+      regs.push(...gaugesEK(c, refresca, ctx2));
     } else {
       regs.push(reg("es", sub23("\u03B5", "sup"), "eSup", "def", -1.5, 3.5, 0.01, (v2) => `${fmt(v2, 2)} \u2030`, (v2) => v2 / 1e3, (v2) => v2 * 1e3));
       regs.push(reg("b", "\u03B2", "beta", "ang1", 0, 360, 0.5, (v2) => `${fmt(v2, 1)} \xB0`));
@@ -15559,7 +15535,6 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
         texto: (q2) => q2 >= 0.999 ? "\u221E" : `${fmt(X02 + XM2 * q2 / (1 - q2), 0)} mm`,
         onInput: (q2) => {
           est7.x = aX(q2);
-          sincro("x", "long", Number.isFinite(est7.x) ? est7.x : X_INF);
           refresca();
         },
         onChange: (q2) => {
@@ -15569,12 +15544,12 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
       }));
     }
     const reglas = h("div", { class: "et-reglas" }, ...regs);
-    res.append(h("div", { class: "cuerpo dib-ancho" }, h("article", { class: "panel tarjeta et-izq" }, lienzo, reglas), derecha));
+    res.append(h("div", { class: "cuerpo dib-ancho" }, h("article", { class: "panel tarjeta et-izq" }, esf, lienzo, reglas), derecha));
     rotulaSeccion(res, nombre);
   }
   var EK = ["e0", "kx", "ky"];
   var RETARDO = 90;
-  function gaugesEK(c, refresca, sincro, ctx2) {
+  function gaugesEK(c, refresca, ctx2) {
     const esc2 = [5e-3, c.rg.kx, c.rg.ky];
     const en = (u) => admisible(c.mod, c.lim, { e0: u[0] * esc2[0], kx: u[1] * esc2[1], ky: u[2] * esc2[2] }).ok;
     const cand = () => EK.map((k) => est7.lock[k]);
@@ -15625,7 +15600,6 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
         if (q2) aEst(q2);
         else est7[f[j].k] = Math.min(b[1], Math.max(b[0], nuevo2)) * esc2[j];
       }
-      EK.forEach((k) => sincro(k, k === "e0" ? "def" : "curv", est7[k]));
       regs.forEach((rg, m) => rg.poner(est7[EK[m]] * 1e3));
       refresca();
       clearTimeout(timer);
