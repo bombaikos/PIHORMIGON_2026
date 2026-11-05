@@ -67,9 +67,9 @@ export function dibujoRecubrimiento() {
   s += ref(22, 170, 50, 170) + ref(22, 152.5, 77.5, 152.5) + cotaV(28, 152.5, 170)
     + `<text x="22" y="164" text-anchor="end" class="fuerte">${sub('c', 'y')}</text>`;
   s += ref(87.5, 142.5, 87.5, 126) + ref(117.5, 142.5, 117.5, 126) + cotaH(87.5, 117.5, 130, null)
-    + `<text x="102.5" y="123" text-anchor="middle" class="fuerte">a</text>`;
+    + `<text x="105" y="123" text-anchor="middle" class="fuerte">a</text>`;
   // etiquetas con guía
-  s += `<line class="cota" x1="112" y1="106" x2="84" y2="133"/><text x="116" y="84">${t('an.dib.long1')}</text><text x="116" y="100">${t('an.dib.long2')}</text>`;
+  s += `<line class="cota" x1="110" y1="103" x2="72" y2="134"/><text x="116" y="84">${t('an.dib.long1')}</text><text x="116" y="100">${t('an.dib.long2')}</text>`;
   s += `<text x="180" y="33">${t('an.dib.cerco')}</text>`;
   return `<svg class="dib dib-cd" viewBox="0 12 296 190" preserveAspectRatio="xMidYMin meet" role="img" aria-label="${t('an.dib.ariaCd')}">${tic}${s}</svg>`;
 }
