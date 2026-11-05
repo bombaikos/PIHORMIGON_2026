@@ -46,4 +46,8 @@ export default {
   'fis.min.ala': 'The minimum steel of a tensioned T flange (EC-2 2004, 7.3.2, expression 7.3) is not checked.',
   'fis.r.min': 'Minimum steel',
   'fis.min.dispuesta': 'provided',
+  'fis.gArmadura': 'Design reinforcement',
+  'fis.armInfo': 'Reinforcement of the tension face for this calculation (342 mm², 5D16, 5D16+2D16…). It starts from Sections and can be changed here without modifying it; bars without ø (area only) do not work for cracking.',
+  'fis.armPilar': 'The column uses the perimeter reinforcement from Sections: it cannot be changed here.',
+  'fis.armDim': 'In Design the tension-face reinforcement is the result.',
 };

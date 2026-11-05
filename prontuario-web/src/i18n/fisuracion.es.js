@@ -67,4 +67,8 @@ export default {
   'fis.f.min.EHE08': 'A<sub>s,mín</sub> = W·f<sub>ct,m,fl</sub>/(0,8h·f<sub>yd</sub>) (mínima mecánica de flexión)',
   'fis.f.min.EC2-2004': 'A<sub>s,mín</sub> = k<sub>c</sub>·k·f<sub>ct,eff</sub>·A<sub>ct</sub>/σ<sub>s</sub>, con σ<sub>s</sub> = f<sub>yk</sub> y f<sub>ct,eff</sub> = f<sub>ctm</sub>',
   'fis.f.min.EC2-2023': 'A<sub>s,mín</sub> ≥ 0,2·k<sub>h</sub>·f<sub>ct,eff</sub>·A<sub>c</sub>/f<sub>yk</sub> (flexión); con axil, 9.4',
+  'fis.gArmadura': 'Armadura de cálculo',
+  'fis.armInfo': 'Armadura de la cara traccionada para este cálculo (342 mm², 5D16, 5D16+2D16…). Parte de la de Secciones y se puede cambiar aquí sin modificarla; las barras sin ø (solo área) no sirven para fisuración.',
+  'fis.armPilar': 'El pilar usa la armadura perimetral de Secciones: aquí no se cambia.',
+  'fis.armDim': 'En Dimensionar la armadura de la cara traccionada es el resultado.',
 };

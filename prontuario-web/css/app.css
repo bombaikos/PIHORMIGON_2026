@@ -1268,3 +1268,4 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
 .et-reglas { width: 100%; }
 .regleta.rg-edit:not(.rg-gauge) { width: 100%; padding: 0 6px; box-sizing: border-box; margin: 1px 0; }
 .dib .eps-p { fill: color-mix(in oklch, var(--compr) 14%, transparent); stroke: var(--tinta); stroke-width: 1.4; }
+.tarjeta .fis-lienzo { flex: 0 0 auto !important; }

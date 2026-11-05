@@ -9,7 +9,7 @@ import { datosViga, geometriaDe, materialesSeccion, sepCapas } from '../../io/pr
 import { t } from '../i18n.js';
 import { fmt, q, qh, MAG, serieDiametros, decimalAlCopiar } from '../formato.js';
 import { grupoSeccion, rotulaSeccion } from './secciones.js';
-import { h, poner, campoNum, selector, segmentado, grupo, aviso, cifras, tabla } from '../campos.js';
+import { h, poner, campoNum, campoArmado, selector, segmentado, grupo, aviso, cifras, tabla } from '../campos.js';
 import { grafica } from '../grafica.js';
 import { veredicto } from './flexion.js';
 import { dibujoFisuracion } from '../dibujoFisuracion.js';
@@ -18,9 +18,9 @@ import { dibujoSeccionPeq } from './flexRecta.js';
 const FORMAS = ['rectangular', 'T', 'pilar'];
 const est = {
   i: null, modo: 'comprobar', M: 80, N: 0, larga: true, directa: true, buenaAdh: true,
-  clase: {}, wmax: null, abiertos: new Set(),
+  clase: {}, wmax: null, arm: {}, abiertos: new Set(),
 };
-export function reiniciar() { est.i = null; est.wmax = null; }
+export function reiniciar() { est.i = null; est.wmax = null; est.arm = {}; }
 
 const sub = (a, b) => `${a}<sub>${b}</sub>`;
 const ind = (a, b) => `${a}<tspan class="ind" dy="3">${b}</tspan>`;
@@ -41,6 +41,18 @@ function datosFis(p, s, signo) {
   if (s.forma !== 'pilar') return datosViga(p, s, signo);
   const { b, h: alto } = s.geo;
   return { b, h: alto, trapecios: [{ y1: 0, y2: alto, b1: b, b2: b }], Ac: b * alto, Ib: (b * alto ** 3) / 12, W: (b * alto * alto) / 6, signo, forma: 'pilar' };
+}
+
+const caraTrac = (signo) => (signo > 0 ? 'inf' : 'sup');
+const grupoTrac = (s, signo) => s.armado.find((a) => a.tipo === 'capa' && a.cara === caraTrac(signo));
+/** Sección con la armadura de cálculo de la cara traccionada (dato propio de este módulo; la de Secciones solo es el valor inicial). */
+function seccionCalculo(s, signo) {
+  const g = grupoTrac(s, signo);
+  const ov = est.arm[`${s.nombre}|${caraTrac(signo)}`];
+  if (!g || ov === undefined || ov === g.texto) return s;
+  const c = structuredClone(s);
+  grupoTrac(c, signo).texto = ov;
+  return c;
 }
 
 let memo = { clave: '', c: null };
@@ -93,6 +105,7 @@ export function datos(ctx, form) {
     grupo(t('fis.gEsfuerzo'),
       campoNum({ id: 'fi-m', etq: t('fis.M'), ref: t('fis.refM'), valor: est.M, mag: 'M', paso: 5, min: -1e6, max: 1e6, nombre: t('fis.nombreM'), onCambio: (v) => { est.M = v; cambio(); } }),
       campoNum({ id: 'fi-n', etq: t('fis.N'), ref: t('fis.refN'), valor: est.N, mag: 'N', paso: 10, min: -1e6, max: 1e6, nombre: t('fis.nombreN'), onCambio: (v) => { est.N = v; cambio(); } })),
+    grupo(t('fis.gArmadura'), campoArmadura(ctx, s)),
     grupo(t('fis.gAccion'),
       selector({ id: 'fi-clase', linea: true, etq: t('fis.clase'), opciones: clases.map((c) => [c, c]), valor: claseDe(id), onCambio: (v) => { est.clase[id] = v; est.wmax = null; ctx.pintar(); } }),
       conInfo(campoNum({ id: 'fi-wmax', etq: t('fis.wmax'), valor: wmaxDeNorma(id), mag: 'wk', paso: 0.05, min: 0.01, max: 5, onCambio: (v) => { est.wmax = v; cambio(); } }), t('fis.infoWmax')),
@@ -103,6 +116,16 @@ export function datos(ctx, form) {
       id === 'EC2-2023'
         ? selector({ id: 'fi-adh', linea: true, etq: t('fis.adherencia'), opciones: [['buena', t('fis.buena')], ['mala', t('fis.mala')]], valor: est.buenaAdh ? 'buena' : 'mala', onCambio: (v) => { est.buenaAdh = v === 'buena'; cambio(); } })
         : apaga(selector({ id: 'fi-adh', linea: true, etq: t('fis.adherencia'), opciones: [['buena', t('fis.buena')]], valor: 'buena', onCambio: () => {} }), t('fis.adhSolo23'))));
+}
+
+function campoArmadura(ctx, s) {
+  const signo = est.M >= 0 ? 1 : -1;
+  const g = grupoTrac(s, signo);
+  const key = `${s.nombre}|${caraTrac(signo)}`;
+  const c = campoArmado({ id: 'fi-arm', etq: `${sub('A', 's')}`, texto: est.arm[key] ?? g?.texto ?? '', capas: {}, onCambio: (v) => { est.arm[key] = v; ctx.cambio(); } });
+  if (!g) return apaga(c, t('fis.armPilar'));
+  if (est.modo === 'dimensionar') return apaga(c, t('fis.armDim'));
+  return conInfo(c, t('fis.armInfo'));
 }
 
 export function resultados(ctx, res) {
@@ -120,8 +143,9 @@ function resultadosFis(ctx, res) {
   if (!s) return;
   const id = normaId(p);
   const signo = est.M >= 0 ? 1 : -1;
+  const sc = seccionCalculo(s, signo);
   let c;
-  try { c = calculo(p, s, signo); } catch (e) { return fallo(res, String(e.message ?? e)); }
+  try { c = calculo(p, sc, signo); } catch (e) { return fallo(res, String(e.message ?? e)); }
   const o = { M: est.M, N: est.N, norma: id, larga: est.larga, directa: est.directa, buenaAdh: est.buenaAdh };
   const r = fisuraSeccion(c, o);
   const wmax = wmaxDeNorma(id);
@@ -151,7 +175,7 @@ function resultadosFis(ctx, res) {
   else if (mn && mn.req !== null && !mn.ok) res.append(aviso(t('fis.min.no', fmt(mn.dis, 0), fmt(mn.req, 0), NOMBRE(id), mn.ref)));
   const centro = h('article', { class: 'panel tarjeta' });
   const dcha = h('article', { class: 'panel tarjeta' });
-  poner(centro, h('h2', {}, t('fis.t.dibujo')), h('div', { class: 'lienzo', html: dibujoFisuracion(c.geo, s, r, r.det?.[id]?.hef ?? null) }), cifrasArmadura(r), pie());
+  poner(centro, h('h2', {}, t('fis.t.dibujo')), h('div', { class: 'lienzo fis-lienzo', html: dibujoFisuracion(c.geo, sc, r, r.det?.[id]?.hef ?? null) }), cifrasArmadura(r), pie());
   poner(dcha, h('h2', {}, t('fis.t.res')));
   if (!r.sinFisurar) poner(dcha, cifras([[t('fis.c.Mfis'), qh(r.Mfis, 'M')], [t('fis.c.x'), qh(r.e.x / 1000, 'long')], [t('fis.c.ss'), `${fmt(r.e.ss, 0)}<span class="u"> MPa</span>`], [t('fis.c.ssr'), `${fmt(r.e.ssr, 0)}<span class="u"> MPa</span>`]]));
   else poner(dcha, cifras([[t('fis.c.Mfis'), qh(r.Mfis, 'M')]]));

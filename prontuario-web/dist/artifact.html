@@ -1270,6 +1270,7 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
 .et-reglas { width: 100%; }
 .regleta.rg-edit:not(.rg-gauge) { width: 100%; padding: 0 6px; box-sizing: border-box; margin: 1px 0; }
 .dib .eps-p { fill: color-mix(in oklch, var(--compr) 14%, transparent); stroke: var(--tinta); stroke-width: 1.4; }
+.tarjeta .fis-lienzo { flex: 0 0 auto !important; }
 </style>
 
 <header class="barra">
@@ -6153,7 +6154,11 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
     "fis.f.Mfis.EC2": "M<sub>fis</sub> = W\xB7(f<sub>ctm</sub> + N/A), con la secci\xF3n bruta; fct,eff = f<sub>ctm</sub>",
     "fis.f.min.EHE08": "A<sub>s,m\xEDn</sub> = W\xB7f<sub>ct,m,fl</sub>/(0,8h\xB7f<sub>yd</sub>) (m\xEDnima mec\xE1nica de flexi\xF3n)",
     "fis.f.min.EC2-2004": "A<sub>s,m\xEDn</sub> = k<sub>c</sub>\xB7k\xB7f<sub>ct,eff</sub>\xB7A<sub>ct</sub>/\u03C3<sub>s</sub>, con \u03C3<sub>s</sub> = f<sub>yk</sub> y f<sub>ct,eff</sub> = f<sub>ctm</sub>",
-    "fis.f.min.EC2-2023": "A<sub>s,m\xEDn</sub> \u2265 0,2\xB7k<sub>h</sub>\xB7f<sub>ct,eff</sub>\xB7A<sub>c</sub>/f<sub>yk</sub> (flexi\xF3n); con axil, 9.4"
+    "fis.f.min.EC2-2023": "A<sub>s,m\xEDn</sub> \u2265 0,2\xB7k<sub>h</sub>\xB7f<sub>ct,eff</sub>\xB7A<sub>c</sub>/f<sub>yk</sub> (flexi\xF3n); con axil, 9.4",
+    "fis.gArmadura": "Armadura de c\xE1lculo",
+    "fis.armInfo": "Armadura de la cara traccionada para este c\xE1lculo (342 mm\xB2, 5D16, 5D16+2D16\u2026). Parte de la de Secciones y se puede cambiar aqu\xED sin modificarla; las barras sin \xF8 (solo \xE1rea) no sirven para fisuraci\xF3n.",
+    "fis.armPilar": "El pilar usa la armadura perimetral de Secciones: aqu\xED no se cambia.",
+    "fis.armDim": "En Dimensionar la armadura de la cara traccionada es el resultado."
   };
 
   // src/i18n/fisuracion.en.js
@@ -6231,7 +6236,11 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
     "fis.min.no": (dis, req, nombre, ref3) => `Tension steel provided ${dis} mm\xB2 is below the minimum for crack control ${req} mm\xB2 (${nombre}, ${ref3}).`,
     "fis.min.ala": "The minimum steel of a tensioned T flange (EC-2 2004, 7.3.2, expression 7.3) is not checked.",
     "fis.r.min": "Minimum steel",
-    "fis.min.dispuesta": "provided"
+    "fis.min.dispuesta": "provided",
+    "fis.gArmadura": "Design reinforcement",
+    "fis.armInfo": "Reinforcement of the tension face for this calculation (342 mm\xB2, 5D16, 5D16+2D16\u2026). It starts from Sections and can be changed here without modifying it; bars without \xF8 (area only) do not work for cracking.",
+    "fis.armPilar": "The column uses the perimeter reinforcement from Sections: it cannot be changed here.",
+    "fis.armDim": "In Design the tension-face reinforcement is the result."
   };
 
   // src/i18n/rasante.es.js
@@ -19056,11 +19065,13 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
     buenaAdh: true,
     clase: {},
     wmax: null,
+    arm: {},
     abiertos: /* @__PURE__ */ new Set()
   };
   function reiniciar10() {
     est10.i = null;
     est10.wmax = null;
+    est10.arm = {};
   }
   var sub31 = (a, b) => `${a}<sub>${b}</sub>`;
   var ind3 = (a, b) => `${a}<tspan class="ind" dy="3">${b}</tspan>`;
@@ -19078,6 +19089,16 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
     if (s.forma !== "pilar") return datosViga(p, s, signo);
     const { b, h: alto } = s.geo;
     return { b, h: alto, trapecios: [{ y1: 0, y2: alto, b1: b, b2: b }], Ac: b * alto, Ib: b * alto ** 3 / 12, W: b * alto * alto / 6, signo, forma: "pilar" };
+  }
+  var caraTrac = (signo) => signo > 0 ? "inf" : "sup";
+  var grupoTrac = (s, signo) => s.armado.find((a) => a.tipo === "capa" && a.cara === caraTrac(signo));
+  function seccionCalculo(s, signo) {
+    const g = grupoTrac(s, signo);
+    const ov = est10.arm[`${s.nombre}|${caraTrac(signo)}`];
+    if (!g || ov === void 0 || ov === g.texto) return s;
+    const c = structuredClone(s);
+    grupoTrac(c, signo).texto = ov;
+    return c;
   }
   var memo4 = { clave: "", c: null };
   var memoCurva = { clave: "", pts: null };
@@ -19137,6 +19158,7 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
           cambio();
         } })
       ),
+      grupo(t("fis.gArmadura"), campoArmadura(ctx2, s)),
       grupo(
         t("fis.gAccion"),
         selector({ id: "fi-clase", linea: true, etq: t("fis.clase"), opciones: clases.map((c) => [c, c]), valor: claseDe(id), onCambio: (v2) => {
@@ -19165,6 +19187,18 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
       )
     );
   }
+  function campoArmadura(ctx2, s) {
+    const signo = est10.M >= 0 ? 1 : -1;
+    const g = grupoTrac(s, signo);
+    const key = `${s.nombre}|${caraTrac(signo)}`;
+    const c = campoArmado({ id: "fi-arm", etq: `${sub31("A", "s")}`, texto: est10.arm[key] ?? g?.texto ?? "", capas: {}, onCambio: (v2) => {
+      est10.arm[key] = v2;
+      ctx2.cambio();
+    } });
+    if (!g) return apaga3(c, t("fis.armPilar"));
+    if (est10.modo === "dimensionar") return apaga3(c, t("fis.armDim"));
+    return conInfo2(c, t("fis.armInfo"));
+  }
   function resultados16(ctx2, res) {
     resultadosFis(ctx2, res);
     rotulaSeccion(res, activa6(ctx2.p)?.nombre);
@@ -19179,9 +19213,10 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
     if (!s) return;
     const id = normaId(p);
     const signo = est10.M >= 0 ? 1 : -1;
+    const sc2 = seccionCalculo(s, signo);
     let c;
     try {
-      c = calculo4(p, s, signo);
+      c = calculo4(p, sc2, signo);
     } catch (e2) {
       return fallo(res, String(e2.message ?? e2));
     }
@@ -19214,7 +19249,7 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
     else if (mn && mn.req !== null && !mn.ok) res.append(aviso(t("fis.min.no", fmt(mn.dis, 0), fmt(mn.req, 0), NOMBRE(id), mn.ref)));
     const centro = h("article", { class: "panel tarjeta" });
     const dcha = h("article", { class: "panel tarjeta" });
-    poner(centro, h("h2", {}, t("fis.t.dibujo")), h("div", { class: "lienzo", html: dibujoFisuracion(c.geo, s, r, r.det?.[id]?.hef ?? null) }), cifrasArmadura3(r), pie());
+    poner(centro, h("h2", {}, t("fis.t.dibujo")), h("div", { class: "lienzo fis-lienzo", html: dibujoFisuracion(c.geo, sc2, r, r.det?.[id]?.hef ?? null) }), cifrasArmadura3(r), pie());
     poner(dcha, h("h2", {}, t("fis.t.res")));
     if (!r.sinFisurar) poner(dcha, cifras([[t("fis.c.Mfis"), qh(r.Mfis, "M")], [t("fis.c.x"), qh(r.e.x / 1e3, "long")], [t("fis.c.ss"), `${fmt(r.e.ss, 0)}<span class="u"> MPa</span>`], [t("fis.c.ssr"), `${fmt(r.e.ssr, 0)}<span class="u"> MPa</span>`]]));
     else poner(dcha, cifras([[t("fis.c.Mfis"), qh(r.Mfis, "M")]]));
