@@ -1231,3 +1231,5 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
 .et-lienzo svg.dib { max-height: 50vh; }
 .regleta.rg-gauge { margin: 1px auto; } .et-reglas { gap: 0; }
 .tick.no-aplica { color: var(--tinta-3); cursor: not-allowed; } .tick.no-aplica input { cursor: not-allowed; } .et-der.no-aplica { color: var(--tinta-3); opacity: .7; }
+.et-reglas:has(.rg-gauge) { width: 100%; }
+.regleta.rg-gauge { width: 100%; margin: 1px 0; padding: 0 6px; box-sizing: border-box; }
