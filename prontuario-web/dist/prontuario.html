@@ -6981,9 +6981,9 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
     };
     return { c, marcar };
   }
-  function campoNum({ id, etq, ref: ref3, valor, mag, paso: paso2, min = -Infinity, max = Infinity, nombre, onCambio, ayuda, info: info2, sinUd = false }) {
+  function campoNum({ id, etq, ref: ref3, valor: valor2, mag, paso: paso2, min = -Infinity, max = Infinity, nombre, onCambio, ayuda, info: info2, sinUd = false }) {
     const m = MAG[mag] ?? { ud: "", f: 1, d: 3 };
-    const input = h("input", { id, inputmode: "decimal", value: mag ? paraCampo(valor, mag) : String(valor ?? ""), "data-paso": paso2, autocomplete: "off", title: ayuda, "aria-describedby": `${id}-eco` });
+    const input = h("input", { id, inputmode: "decimal", value: mag ? paraCampo(valor2, mag) : String(valor2 ?? ""), "data-paso": paso2, autocomplete: "off", title: ayuda, "aria-describedby": `${id}-eco` });
     const caja = h("div", { class: "caja" }, input, m.ud && !sinUd ? h("span", { class: "ud" }, m.ud) : null);
     const { c, marcar } = marco(id, etq, ref3, caja);
     if (info2) c.insertBefore(h("span", { class: "info-i izq", tabindex: 0, role: "img", "aria-label": info2, "data-tip": info2 }, "i"), caja);
@@ -7007,8 +7007,8 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
     input._leer = leer;
     return c;
   }
-  function campoTexto({ id, etq, valor, onCambio }) {
-    const input = h("input", { id, class: "texto", value: valor ?? "", autocomplete: "off", spellcheck: "false" });
+  function campoTexto({ id, etq, valor: valor2, onCambio }) {
+    const input = h("input", { id, class: "texto", value: valor2 ?? "", autocomplete: "off", spellcheck: "false" });
     input.addEventListener("change", () => onCambio(input.value));
     return marco(id, etq, null, h("div", { class: "caja" }, input)).c;
   }
@@ -7048,8 +7048,8 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
     queueMicrotask(() => leer(false));
     return c;
   }
-  function selector({ id, etq, opciones, valor, onCambio, nota, linea = false }) {
-    const opt = ([v2, e2]) => h("option", { value: v2, selected: String(v2) === String(valor), html: e2 });
+  function selector({ id, etq, opciones, valor: valor2, onCambio, nota, linea = false }) {
+    const opt = ([v2, e2]) => h("option", { value: v2, selected: String(v2) === String(valor2), html: e2 });
     const grupos2 = /* @__PURE__ */ new Map();
     for (const o of opciones) {
       const g2 = o[2] ?? "";
@@ -7062,11 +7062,11 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
     if (!linea) c.classList.add("apilado");
     return c;
   }
-  function segmentado({ opciones, valor, onCambio, ancho = false, capsula = false, etiqueta }) {
+  function segmentado({ opciones, valor: valor2, onCambio, ancho = false, capsula = false, etiqueta }) {
     return h(
       "div",
       { class: `seg${ancho ? " ancho" : ""}${capsula ? " capsula" : ""}`, role: "radiogroup", "aria-label": etiqueta },
-      ...opciones.map(([v2, e2, extra = {}]) => h("button", { type: "button", role: "radio", "aria-checked": String(v2 === valor), html: e2, ...extra, onclick: () => onCambio(v2) }))
+      ...opciones.map(([v2, e2, extra = {}]) => h("button", { type: "button", role: "radio", "aria-checked": String(v2 === valor2), html: e2, ...extra, onclick: () => onCambio(v2) }))
     );
   }
   function casillas({ id, etq, opciones, marcadas, onCambio }) {
@@ -7092,8 +7092,8 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
       )
     );
   }
-  function regleta({ etq, min, max, step = 1, valor, texto, etiqueta, onInput, onChange, clase = "", reinicio, gauge, entrada: entrada6 }) {
-    const input = h("input", { type: "range", min: String(min), max: String(max), step: String(step), value: String(valor), "aria-label": etiqueta ?? etq ?? "" });
+  function regleta({ etq, min, max, step = 1, valor: valor2, texto, etiqueta, onInput, onChange, clase = "", reinicio, gauge, entrada: entrada6 }) {
+    const input = h("input", { type: "range", min: String(min), max: String(max), step: String(step), value: String(valor2), "aria-label": etiqueta ?? etq ?? "" });
     let caja = null;
     let campo = null;
     if (entrada6) {
@@ -7158,6 +7158,7 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
     let cand = null;
     if (gauge) {
       const franja = h("span", { class: "rg-banda" });
+      const extra = [];
       const lo = h("span", { class: "rg-ext izq" });
       const hi = h("span", { class: "rg-ext der" });
       riel = h("div", { class: "rg-riel" }, input, franja, lo, hi);
@@ -7176,11 +7177,21 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
         const v2 = Number(input.value);
         input.value = String(Math.min(b, Math.max(a, v2)));
         const f = (x) => b > a ? (x - a) / (b - a) : 0;
-        franja.hidden = !banda;
-        if (banda) {
-          franja.style.setProperty("--b0", String(Math.max(0, f(banda[0]))));
-          franja.style.setProperty("--b1", String(Math.min(1, f(banda[1]))));
-          input.title = `${t("rg.banda")}: ${fmtExt(banda[0])} \u2026 ${fmtExt(banda[1])}${reinicio !== void 0 ? `. ${t("rg.cero")}` : ""}`;
+        const tramos = !banda ? [] : Array.isArray(banda[0]) ? banda : [banda];
+        franja.hidden = !tramos.length;
+        while (extra.length < tramos.length - 1) {
+          const e2 = h("span", { class: "rg-banda" });
+          extra.push(e2);
+          franja.after(e2);
+        }
+        [franja, ...extra].forEach((fr, i) => {
+          fr.hidden = i >= tramos.length;
+          if (i >= tramos.length) return;
+          fr.style.setProperty("--b0", String(Math.max(0, f(tramos[i][0]))));
+          fr.style.setProperty("--b1", String(Math.min(1, f(tramos[i][1]))));
+        });
+        if (tramos.length) {
+          input.title = `${t("rg.banda")}: ${tramos.map((tr) => `${fmtExt(tr[0])} \u2026 ${fmtExt(tr[1])}`).join(" ; ")}${reinicio !== void 0 ? `. ${t("rg.cero")}` : ""}`;
         } else input.title = reinicio !== void 0 ? t("rg.cero") : "";
         lo.textContent = fmtExt(a);
         hi.textContent = fmtExt(b);
@@ -9147,9 +9158,9 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
   var art = (N, k) => `<span class="art">${N.corto} \xB7 ${N.art[k]}</span>`;
   var F = (s) => `<span class="f">${s}</span>`;
   var Nn = (s) => `<span class="n">${s}</span>`;
-  function fctmCuenta(N, fck, fcm, valor) {
+  function fctmCuenta(N, fck, fcm, valor2) {
     const alta = fck > 50;
-    const v2 = fmt(valor, 2);
+    const v2 = fmt(valor2, 2);
     const ft = sub15("f", "ct,m");
     if (N.id === "EHE-08") return alta ? [`${ft} = 0.58\xB7\u221A${sub15("f", "ck")}`, `= 0.58\xB7\u221A${fck} = ${v2}`] : [`${ft} = 0.30\xB7${sup(sub15("f", "ck"), "2/3")}`, `= 0.30\xB7${fck}<sup>2/3</sup> = ${v2}`];
     if (N.id === "EC2-2004") return alta ? [`${ft} = 2.12\xB7ln(1 + ${sub15("f", "cm")}/10)`, `= 2.12\xB7ln(1 + ${fcm}/10) = ${v2}`] : [`${ft} = 0.30\xB7${sup(sub15("f", "ck"), "2/3")}`, `= 0.30\xB7${fck}<sup>2/3</sup> = ${v2}`];
@@ -12965,7 +12976,7 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
     const en = `<line class="en" x1="${x0 - 8}" y1="${yn}" x2="${x0 + bp + 8}" y2="${yn}"/><text x="${x0 + bp + 12}" y="${yn + 4}" style="fill:var(--acento)">x = ${fmt(r.x * 1e3, 0)}</text>`;
     return `<svg class="dib" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${x0 + bp + 70} ${y0 + hp + 44}"${topeEscala(x0 + bp + 70, y0 + hp + 44)} role="img" aria-label="${t("g.seccion")}">${DEFS}${svg}${en}</svg>`;
   }
-  function veredicto(clase, sello, etq, valor, ecu, barra3) {
+  function veredicto(clase, sello, etq, valor2, ecu, barra3) {
     const icos = {
       cumple: '<path d="M2.5 7.5l3 3 6-7"/>',
       nocumple: '<path d="M3 3l8 8M11 3l-8 8"/>',
@@ -12976,7 +12987,7 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
     return h(
       "div",
       { class: `veredicto ${clase}${barra3 === void 0 ? " sin-barra" : ""}` },
-      h("div", { class: "ratio" }, h("span", { class: "etq", html: etq }), h("span", { class: "v", html: valor })),
+      h("div", { class: "ratio" }, h("span", { class: "etq", html: etq }), h("span", { class: "v", html: valor2 })),
       h(
         "div",
         { class: "medidor" },
@@ -15313,6 +15324,186 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
     const p0 = p1.slice();
     return f(p0) ? p0 : mejor;
   }
+  var NB = 64;
+  var NG = 16;
+  var valor = (d, k, N) => d.lo + (d.hi - d.lo) * k / (d.cic ? N : N - 1 || 1);
+  function tramosEje(en, dom, p, j, N = NB) {
+    const d = dom[j];
+    const eval1 = (x) => {
+      const q2 = p.slice();
+      q2[j] = x;
+      return en(q2);
+    };
+    const xs = Array.from({ length: N }, (_2, k) => valor(d, k, N));
+    const ok = xs.map(eval1);
+    const afina = (bueno, malo) => {
+      for (let i = 0; i < 30; i++) {
+        const m = (bueno + malo) / 2;
+        if (eval1(m)) bueno = m;
+        else malo = m;
+      }
+      return bueno;
+    };
+    const out = [];
+    let ini = null;
+    for (let k = 0; k < N; k++) {
+      if (ok[k] && ini === null) ini = k;
+      if ((!ok[k] || k === N - 1) && ini !== null) {
+        const fin = ok[k] ? k : k - 1;
+        const a = ini > 0 ? afina(xs[ini], xs[ini - 1]) : xs[ini];
+        let b = fin < N - 1 ? afina(xs[fin], xs[fin + 1]) : xs[fin];
+        if (fin === N - 1 && d.cic) b = d.hi;
+        out.push({ a, b });
+        ini = null;
+      }
+    }
+    if (d.cic && out.length > 1 && ok[0] && ok[N - 1]) {
+      out[0].a = d.lo;
+    }
+    return out;
+  }
+  function tramosContiene(tr, x, d) {
+    const dentro2 = tr.filter((t2) => x >= t2.a - 1e-9 && x <= t2.b + 1e-9);
+    if (d.cic && dentro2.length) {
+      const ext = [...dentro2];
+      if (dentro2.some((t2) => t2.a <= d.lo + 1e-9)) ext.push(...tr.filter((t2) => t2.b >= d.hi - 1e-9 && !dentro2.includes(t2)));
+      if (dentro2.some((t2) => t2.b >= d.hi - 1e-9)) ext.push(...tr.filter((t2) => t2.a <= d.lo + 1e-9 && !dentro2.includes(t2)));
+      return [...new Set(ext)];
+    }
+    return dentro2;
+  }
+  function rangosGeneral(en, dom, p, bloqueo) {
+    const dentro2 = en(p);
+    const libres = [0, 1, 2].filter((j) => !bloqueo[j]);
+    const banda = dentro2 ? [0, 1, 2].map((j) => {
+      if (bloqueo[j]) return [[p[j], p[j]]];
+      return tramosContiene(tramosEje(en, dom, p, j), p[j], dom[j]).map((t2) => [t2.a, t2.b]);
+    }) : null;
+    const total = [0, 1, 2].map((j) => {
+      if (bloqueo[j]) return [p[j], p[j]];
+      if (dom[j].cic) return [dom[j].lo, dom[j].hi];
+      const otras = libres.filter((k) => k !== j);
+      let lo = Infinity;
+      let hi = -Infinity;
+      let mejorHi = null;
+      let mejorLo = null;
+      const barre = (q2) => {
+        for (const t2 of tramosEje(en, dom, q2, j, NB)) {
+          if (t2.a < lo) {
+            lo = t2.a;
+            mejorLo = q2;
+          }
+          if (t2.b > hi) {
+            hi = t2.b;
+            mejorHi = q2;
+          }
+        }
+      };
+      const grid = (k) => Array.from({ length: NG }, (_2, m) => valor(dom[k], m, NG));
+      if (!otras.length) barre(p);
+      else if (otras.length === 1) for (const x of grid(otras[0])) {
+        const q2 = p.slice();
+        q2[otras[0]] = x;
+        barre(q2);
+      }
+      else for (const x of grid(otras[0])) for (const y of grid(otras[1])) {
+        const q2 = p.slice();
+        q2[otras[0]] = x;
+        q2[otras[1]] = y;
+        barre(q2);
+      }
+      for (const [sent, q0] of [[1, mejorHi], [-1, mejorLo]]) {
+        if (!q0 || !otras.length) continue;
+        let q2 = q0;
+        let paso2 = otras.map((k) => (dom[k].hi - dom[k].lo) / NG);
+        let mejor = sent > 0 ? hi : lo;
+        for (let ronda = 0; ronda < 6; ronda++) {
+          const vecinos = [];
+          for (const [i, k] of otras.entries()) for (const s of [-1, 1]) {
+            const v2 = q2.slice();
+            v2[k] = q2[k] + s * paso2[i];
+            if (dom[k].cic) v2[k] = ((v2[k] - dom[k].lo) % (dom[k].hi - dom[k].lo) + (dom[k].hi - dom[k].lo)) % (dom[k].hi - dom[k].lo) + dom[k].lo;
+            else v2[k] = Math.min(dom[k].hi, Math.max(dom[k].lo, v2[k]));
+            vecinos.push(v2);
+          }
+          if (otras.length === 2) for (const sa of [-1, 1]) for (const sb of [-1, 1]) {
+            const v2 = q2.slice();
+            v2[otras[0]] += sa * paso2[0];
+            v2[otras[1]] += sb * paso2[1];
+            if (otras.every((k) => dom[k].cic || v2[k] >= dom[k].lo && v2[k] <= dom[k].hi)) vecinos.push(v2);
+          }
+          for (const v2 of vecinos) {
+            for (const t2 of tramosEje(en, dom, v2, j, 48)) {
+              const val = sent > 0 ? t2.b : t2.a;
+              if (sent * (val - mejor) > 1e-12) {
+                mejor = val;
+                q2 = v2;
+              }
+            }
+          }
+          paso2 = paso2.map((x) => x * 0.5);
+        }
+        if (sent > 0) hi = Math.max(hi, mejor);
+        else lo = Math.min(lo, mejor);
+      }
+      return Number.isFinite(lo) ? [lo, hi] : [p[j], p[j]];
+    });
+    return { total, banda, dentro: dentro2 };
+  }
+  function reajustaGeneral(en, dom, p, i, nuevo2, bloqueo, r) {
+    if (bloqueo[i]) return null;
+    const libres = [0, 1, 2].filter((j) => !bloqueo[j]);
+    const otras = libres.filter((j) => j !== i);
+    const lim = r.total?.[i];
+    const v2 = lim && !dom[i].cic ? Math.min(lim[1], Math.max(lim[0], nuevo2)) : nuevo2;
+    const p1 = p.slice();
+    p1[i] = v2;
+    if (en(p1)) return p1;
+    if (!otras.length) return null;
+    const R = (j) => Math.max(r.total ? r.total[j][1] - r.total[j][0] : dom[j].hi - dom[j].lo, 1e-9);
+    const dist = (a) => Math.sqrt(otras.reduce((s, j) => {
+      let dj = a[j] - p[j];
+      if (dom[j].cic) {
+        const L = dom[j].hi - dom[j].lo;
+        dj = ((dj + L / 2) % L + L) % L - L / 2;
+      }
+      return s + (dj / R(j)) ** 2;
+    }, 0));
+    const N = otras.length === 1 ? 400 : 48;
+    const val = (a, j) => valor(dom[j], a, N);
+    let q2 = null;
+    let mejor = Infinity;
+    for (let a = 0; a < N; a++) for (let b = 0; b < (otras.length === 1 ? 1 : N); b++) {
+      const c = p1.slice();
+      c[otras[0]] = val(a, otras[0]);
+      if (otras.length === 2) c[otras[1]] = val(b, otras[1]);
+      const e2 = dist(c);
+      if (e2 < mejor && en(c)) {
+        mejor = e2;
+        q2 = c;
+      }
+    }
+    if (!q2) return null;
+    let paso2 = otras.map((j) => (dom[j].hi - dom[j].lo) / N);
+    for (let ronda = 0; ronda < 8; ronda++) {
+      for (const j of otras) for (const s of [-1, 1]) {
+        const c = q2.slice();
+        c[j] = q2[j] + s * paso2[otras.indexOf(j)];
+        if (en(c) && dist(c) < dist(q2)) q2 = c;
+      }
+      const lado = { ...q2 };
+      void lado;
+      paso2 = paso2.map((x) => x * 0.55);
+    }
+    let ok = q2;
+    let mal = p1;
+    for (let k = 0; k < 30; k++) {
+      const m = ok.map((x, j) => otras.includes(j) ? (x + mal[j]) / 2 : x);
+      if (en(m)) ok = m;
+      else mal = m;
+    }
+    return ok;
+  }
 
   // src/ui/vistas/estadoTensional.js
   var FORMAS4 = ["rectangular", "pilar", "T", "circular", "generica"];
@@ -15337,8 +15528,8 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
     x: Infinity,
     // absoluta, grados (de la fibra neutra), m
     estado: "ELS",
-    lock: { e0: false, kx: false, ky: false },
-    // candados del modo ε, κ
+    lock: { e0: false, kx: false, ky: false, eSup: false, beta: false, x: false },
+    // candados de los modos ε, κ y ε_sup, β, x
     // Cada estado límite guarda sus propios datos; ninguno se traduce al otro (null = el valor de la ley del material).
     // ELS: γ = 1 y αcc = 1 (sin cansancio con σc ≤ 0,6·fck); ELU: los de la ley.
     v: {
@@ -15478,10 +15669,10 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
     }
     if (c) resuelve(c, s);
     const gamma = (id, etq, k, defecto) => {
-      const valor = V()[k] ?? defecto;
-      const dist = c && Math.abs(valor - c.esperado[k]) > 1e-9;
+      const valor2 = V()[k] ?? defecto;
+      const dist = c && Math.abs(valor2 - c.esperado[k]) > 1e-9;
       const info2 = dist ? t("est.infoDist", fmt(c.esperado[k], 2), est7.estado) : id === "gc" ? t("est.infoGamma") : id === "gs" ? t("est.infoGammaS") : void 0;
-      const e2 = campoNum({ id: `et-${id}`, etq, valor: fmt(valor, 2), mag: null, paso: 0.05, min: 0.01, max: 10, sinUd: true, nombre: etq.replace(/<[^>]+>/g, ""), info: info2, onCambio: (v2) => {
+      const e2 = campoNum({ id: `et-${id}`, etq, valor: fmt(valor2, 2), mag: null, paso: 0.05, min: 0.01, max: 10, sinUd: true, nombre: etq.replace(/<[^>]+>/g, ""), info: info2, onCambio: (v2) => {
         V()[k] = v2;
         ctx2.pintar();
       } });
@@ -15838,41 +16029,7 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
     } else if (est7.modo === "eK") {
       regs.push(...gaugesEK(c, refresca, ctx2));
     } else {
-      regs.push(reg("es", sub25("\u03B5", "sup"), "eSup", "def", -1.5, 3.5, 0.01, (v2) => `${fmt(v2, 2)} \u2030`, (v2) => v2 / 1e3, (v2) => v2 * 1e3));
-      regs.push(reg("b", "\u03B2", "beta", "ang1", 0, 360, 0.5, (v2) => `${fmt(v2, 1)} \xB0`));
-      const X02 = 30;
-      const XM2 = 600;
-      const aX = (q2) => {
-        const m = q2 >= 0.999 ? Infinity : (X02 + XM2 * q2 / (1 - q2)) / 1e3;
-        return est7.eSup < 0 ? -m : m;
-      };
-      const deX = (x) => Number.isFinite(x) && Math.abs(x) < X_INF ? (() => {
-        const m = Math.abs(x) * 1e3 - X02;
-        return Math.max(0, m / (m + XM2));
-      })() : 1;
-      regs.push(regleta({
-        entrada: { ud: "mm", mostrar: (q2) => q2 >= 0.999 ? "\u221E" : fmt(X02 + XM2 * q2 / (1 - q2), 0), leer: (txt) => {
-          if (/^\s*(∞|inf)/i.test(txt)) return 1;
-          const m = leerNumero(txt);
-          return m <= X02 ? 0 : (m - X02) / (m - X02 + XM2);
-        } },
-        etq: "x",
-        min: 0,
-        max: 1,
-        step: 1e-3,
-        valor: deX(est7.x),
-        etiqueta: t("est.nombreX"),
-        reinicio: 1,
-        texto: (q2) => q2 >= 0.999 ? "\u221E" : `${fmt(X02 + XM2 * q2 / (1 - q2), 0)} mm`,
-        onInput: (q2) => {
-          est7.x = aX(q2);
-          refresca();
-        },
-        onChange: (q2) => {
-          est7.x = aX(q2);
-          ctx2.cambio();
-        }
-      }));
+      regs.push(...gaugesSup(c, refresca, ctx2));
     }
     const reglas = h("div", { class: "et-reglas" }, ...regs);
     res.append(h("div", { class: "cuerpo dib-ancho" }, h("article", { class: "panel tarjeta et-izq" }, esf, lienzo, reglas), derecha));
@@ -15937,6 +16094,141 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
       clearTimeout(timer);
       timer = setTimeout(() => {
         R = rangos(en, uDe(), cand());
+        pinta();
+      }, RETARDO);
+    };
+    pinta();
+    return regs;
+  }
+  var X02 = 30;
+  var XM2 = 600;
+  var xDeQ = (q2, eSup) => {
+    const m = q2 >= 0.999 ? Infinity : (X02 + XM2 * q2 / (1 - q2)) / 1e3;
+    return eSup < 0 ? -m : m;
+  };
+  var qDeX = (x) => Number.isFinite(x) && Math.abs(x) < X_INF ? (() => {
+    const m = Math.abs(x) * 1e3 - X02;
+    return Math.max(0, m / (m + XM2));
+  })() : 1;
+  var xTexto = (q2) => q2 >= 0.999 ? "\u221E" : fmt(X02 + XM2 * q2 / (1 - q2), 0);
+  function gaugesSup(c, refresca, ctx2) {
+    const ESC = 5e-3;
+    const SUP2 = ["eSup", "beta", "x"];
+    const dom = [{ lo: -TOPE, hi: TOPE }, { lo: 0, hi: 360, cic: true }, { lo: 0, hi: 1 }];
+    const en = (u2) => {
+      const pl = planoDeSup(c.mod, u2[0] * ESC, aMotor(u2[1]), xDeQ(u2[2], u2[0]));
+      return !!pl && admisible(c.mod, c.lim, pl).ok;
+    };
+    const cand = () => SUP2.map((k) => est7.lock[k]);
+    const pDe = () => [est7.eSup / ESC, est7.beta, qDeX(est7.x)];
+    const aEst = (p) => {
+      est7.eSup = p[0] * ESC;
+      est7.beta = p[1];
+      est7.x = xDeQ(p[2], est7.eSup);
+    };
+    let R = rangosGeneral(en, dom, pDe(), cand());
+    let timer = 0;
+    const por = (j) => ({
+      0: { ud: "\u2030", d: 2, fmtExt: (x) => fmt(x * ESC * 1e3, 2), a: (p) => p * ESC * 1e3 },
+      1: { ud: "\xB0", d: 1, fmtExt: (x) => fmt(x, 1), a: (p) => p },
+      2: { ud: "mm", fmtExt: (x) => xTexto(x), a: (p) => p }
+    })[j];
+    const regs = [
+      regleta({
+        entrada: { ud: "\u2030", d: 2 },
+        etq: sub25("\u03B5", "sup"),
+        min: -1.5,
+        max: 3.5,
+        step: 0.01,
+        valor: est7.eSup * 1e3,
+        reinicio: 0,
+        etiqueta: "eSup",
+        texto: (v2) => `${fmt(v2, 2)} \u2030`,
+        gauge: { bloqueado: est7.lock.eSup, onCandado: () => {
+          est7.lock.eSup = !est7.lock.eSup;
+          ctx2.cambio();
+        } },
+        onInput: (v2) => mueve(0, v2 / 1e3 / ESC),
+        onChange: () => {
+          clearTimeout(timer);
+          ctx2.cambio();
+        }
+      }),
+      regleta({
+        entrada: { ud: "\xB0", d: 1 },
+        etq: "\u03B2",
+        min: 0,
+        max: 360,
+        step: 0.5,
+        valor: est7.beta,
+        reinicio: 0,
+        etiqueta: "beta",
+        texto: (v2) => `${fmt(v2, 1)} \xB0`,
+        gauge: { bloqueado: est7.lock.beta, onCandado: () => {
+          est7.lock.beta = !est7.lock.beta;
+          ctx2.cambio();
+        } },
+        onInput: (v2) => mueve(1, v2),
+        onChange: () => {
+          clearTimeout(timer);
+          ctx2.cambio();
+        }
+      }),
+      regleta({
+        entrada: { ud: "mm", mostrar: (q2) => xTexto(q2), leer: (txt) => {
+          if (/^\s*(∞|inf)/i.test(txt)) return 1;
+          const m = leerNumero(txt);
+          return m <= X02 ? 0 : (m - X02) / (m - X02 + XM2);
+        } },
+        etq: "x",
+        min: 0,
+        max: 1,
+        step: 1e-3,
+        valor: qDeX(est7.x),
+        etiqueta: t("est.nombreX"),
+        reinicio: 1,
+        texto: (q2) => `${xTexto(q2)} mm`,
+        gauge: { bloqueado: est7.lock.x, onCandado: () => {
+          est7.lock.x = !est7.lock.x;
+          ctx2.cambio();
+        } },
+        onInput: (q2) => mueve(2, q2),
+        onChange: () => {
+          clearTimeout(timer);
+          ctx2.cambio();
+        }
+      })
+    ];
+    const poner3 = () => {
+      regs[0].poner(est7.eSup * 1e3);
+      regs[1].poner(est7.beta);
+      regs[2].poner(qDeX(est7.x));
+    };
+    const pinta = () => {
+      const p = pDe();
+      regs.forEach((rg, j) => {
+        const tot = R.total ? R.total[j] : [dom[j].lo, dom[j].hi];
+        const cv = (x) => por(j).a(x);
+        rg.rango({ min: cv(Math.min(tot[0], p[j])), max: cv(Math.max(tot[1], p[j])), banda: R.banda ? R.banda[j].map((t2) => t2.map(cv)) : null, fuera: !R.dentro, bloqueado: est7.lock[SUP2[j]], fmtExt: por(j).fmtExt });
+      });
+      poner3();
+    };
+    const mueve = (j, v2) => {
+      const p = pDe();
+      const tr = R.banda?.[j];
+      const dentroBanda = tr && tr.some(([a, b]) => v2 >= a - 1e-9 && v2 <= b + 1e-9);
+      if (dentroBanda || !R.dentro) {
+        p[j] = v2;
+        aEst(p);
+      } else {
+        const q2 = reajustaGeneral(en, dom, p, j, v2, cand(), R);
+        if (q2) aEst(q2);
+      }
+      poner3();
+      refresca();
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        R = rangosGeneral(en, dom, pDe(), cand());
         pinta();
       }, RETARDO);
     };
@@ -16403,11 +16695,11 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
     const sinValor = r.opciones.length === 0;
     const o = r.opciones[0];
     const etqD = sub27(r.dimEtq, "min");
-    const valor = sinValor ? "\u2014" : o.a == null ? `${fmt(o.d, 0)}<span class="u">${ESP}mm</span>` : `${fmt(o.d, 0)} / ${fmt(o.a, 0)}<span class="u">${ESP}mm</span>`;
+    const valor2 = sinValor ? "\u2014" : o.a == null ? `${fmt(o.d, 0)}<span class="u">${ESP}mm</span>` : `${fmt(o.d, 0)} / ${fmt(o.a, 0)}<span class="u">${ESP}mm</span>`;
     res.append(h(
       "div",
       { class: `veredicto sin-barra${sinValor ? " atencion" : ""}` },
-      h("div", { class: "ratio" }, h("span", { class: "etq", html: o?.a == null ? `${t("fu.minimo")} ${etqD}` : `${etqD} / ${sub27("a", "min")}` }), h("span", { class: "v", html: valor })),
+      h("div", { class: "ratio" }, h("span", { class: "etq", html: o?.a == null ? `${t("fu.minimo")} ${etqD}` : `${etqD} / ${sub27("a", "min")}` }), h("span", { class: "v", html: valor2 })),
       h("div", { class: "medidor" }, h("div", { class: "ecu", html: sinValor ? t("fu.sinValor") : `${r.crit} ${D.R} \xB7 ${r.opciones.length > 1 ? t("fu.opciones", r.opciones.length) : ""}<span class="art">${art6}</span>` })),
       h("span", {}, "")
     ));
@@ -17081,19 +17373,19 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
     let mejor = null;
     for (let c = COT_MIN; c <= COT_MAX + 1e-9; c += 0.01) {
       const cotTheta = Math.round(c * 100) / 100;
-      let valor;
+      let valor2;
       try {
         if (dim) {
           const n = AswSNecesaria({ ...x, cotTheta }, VEd);
           if (VEd > n.Vu1) continue;
-          valor = -n.usar;
+          valor2 = -n.usar;
         } else {
-          valor = comprobar2({ ...x, cotTheta, VEd }).Vu;
+          valor2 = comprobar2({ ...x, cotTheta, VEd }).Vu;
         }
       } catch {
         continue;
       }
-      if (!mejor || valor > mejor.valor + 1e-9 || Math.abs(valor - mejor.valor) <= 1e-9 && Math.abs(cotTheta - 1) < Math.abs(mejor.cotTheta - 1)) mejor = { cotTheta, valor };
+      if (!mejor || valor2 > mejor.valor + 1e-9 || Math.abs(valor2 - mejor.valor) <= 1e-9 && Math.abs(cotTheta - 1) < Math.abs(mejor.cotTheta - 1)) mejor = { cotTheta, valor: valor2 };
     }
     return mejor?.cotTheta ?? 1;
   }
@@ -17278,19 +17570,19 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
     let mejor = null;
     for (let c = COT_MIN; c <= COT_MAX + 1e-9; c += 0.01) {
       const cotTheta = Math.round(c * 100) / 100;
-      let valor;
+      let valor2;
       try {
         if (dim) {
           const n = AswSNecesaria2({ ...x, cotTheta }, VEd);
           if (VEd > n.Vu1) continue;
-          valor = -n.usar;
+          valor2 = -n.usar;
         } else {
-          valor = comprobar3({ ...x, cotTheta, VEd }).Vu;
+          valor2 = comprobar3({ ...x, cotTheta, VEd }).Vu;
         }
       } catch {
         continue;
       }
-      if (!mejor || valor > mejor.valor + 1e-9 || Math.abs(valor - mejor.valor) <= 1e-9 && Math.abs(cotTheta - 1) < Math.abs(mejor.cotTheta - 1)) mejor = { cotTheta, valor };
+      if (!mejor || valor2 > mejor.valor + 1e-9 || Math.abs(valor2 - mejor.valor) <= 1e-9 && Math.abs(cotTheta - 1) < Math.abs(mejor.cotTheta - 1)) mejor = { cotTheta, valor: valor2 };
     }
     return mejor?.cotTheta ?? 1;
   }
@@ -17521,19 +17813,19 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
     let mejor = null;
     for (let c = Math.ceil(min * 100 - 1e-9); c <= Math.floor(max * 100 + 1e-9); c++) {
       const cotTheta = c / 100;
-      let valor;
+      let valor2;
       try {
         if (dim) {
           const n = AswSNecesaria3({ ...x, cotTheta }, VEd);
           if (VEd > n.Vu1) continue;
-          valor = -n.usar;
+          valor2 = -n.usar;
         } else {
-          valor = comprobar4({ ...x, cotTheta, VEd }).Vu;
+          valor2 = comprobar4({ ...x, cotTheta, VEd }).Vu;
         }
       } catch {
         continue;
       }
-      if (!mejor || valor > mejor.valor + 1e-9 || Math.abs(valor - mejor.valor) <= 1e-9 && Math.abs(cotTheta - 1) < Math.abs(mejor.cotTheta - 1)) mejor = { cotTheta, valor };
+      if (!mejor || valor2 > mejor.valor + 1e-9 || Math.abs(valor2 - mejor.valor) <= 1e-9 && Math.abs(cotTheta - 1) < Math.abs(mejor.cotTheta - 1)) mejor = { cotTheta, valor: valor2 };
     }
     return mejor?.cotTheta ?? min;
   }
@@ -19581,11 +19873,11 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
     const cerrado = x.pos === "interior";
     if (x.tipo === "rect") {
       const { c1, c2 } = x;
-      const X02 = 0;
+      const X03 = 0;
       const X1 = c1;
       const Y0 = 0;
       const Y1 = c2;
-      const cx2 = (X02 + X1) / 2;
+      const cx2 = (X03 + X1) / 2;
       const tramo2 = (ax, ay, bx, by) => {
         const n2 = Math.max(1, Math.ceil(Math.hypot(bx - ax, by - ay) / paso2));
         for (let i = 0; i < n2; i++) pts.push([ax + (bx - ax) * i / n2, ay + (by - ay) * i / n2]);
@@ -19601,11 +19893,11 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
       arco(X1, Y0, -Math.PI / 2, 0);
       tramo2(X1 + delta, Y0, X1 + delta, Y1);
       arco(X1, Y1, 0, Math.PI / 2);
-      tramo2(X1, Y1 + delta, X02, Y1 + delta);
-      arco(X02, Y1, Math.PI / 2, Math.PI);
-      tramo2(X02 - delta, Y1, X02 - delta, Y0);
-      arco(X02, Y0, Math.PI, 1.5 * Math.PI);
-      tramo2(X02, Y0 - delta, cx2, Y0 - delta);
+      tramo2(X1, Y1 + delta, X03, Y1 + delta);
+      arco(X03, Y1, Math.PI / 2, Math.PI);
+      tramo2(X03 - delta, Y1, X03 - delta, Y0);
+      arco(X03, Y0, Math.PI, 1.5 * Math.PI);
+      tramo2(X03, Y0 - delta, cx2, Y0 - delta);
       return recortar2(pts, x.pos, cerrado);
     }
     const a = x.D / 2;
@@ -22998,7 +23290,7 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
     const capa2 = e("rect", { x: PAD - 30, y: hEsq, width: W2 - 2 * PAD + 60, height: H2 - hEsq, fill: "transparent" });
     svg.append(capa2);
     const pts = r.puntos;
-    const valor = (k, x) => {
+    const valor2 = (k, x) => {
       let i = 1;
       while (i < pts.length - 1 && pts[i].x < x) i++;
       const a = pts[i - 1], b = pts[i];
@@ -23011,7 +23303,7 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
       if (x < 0 || x > D.L) return salir();
       cruz.setAttribute("d", `M${px} ${hEsq} V${H2}`);
       cruz.style.display = "";
-      for (const L of Object.values(lecturas)) L.el.textContent = `x = ${fmt(x, 2)} m \xB7 ${fmt(valor(L.k, x) * L.f, L.d)}`;
+      for (const L of Object.values(lecturas)) L.el.textContent = `x = ${fmt(x, 2)} m \xB7 ${fmt(valor2(L.k, x) * L.f, L.d)}`;
     };
     const salir = () => {
       cruz.style.display = "none";
