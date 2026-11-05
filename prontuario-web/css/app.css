@@ -1207,10 +1207,11 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
 .et-fc .campo > label { overflow: visible; white-space: nowrap; text-overflow: clip; }
 
 /* Gauges con rango total, banda compatible y candado (Análisis tensional, modo ε, κ) */
-.regleta.rg-gauge { grid-template-columns: 22px max-content minmax(0, 1fr) 9ch; --banda: color-mix(in oklch, var(--acento) 55%, var(--tinta)); }
+.regleta.rg-gauge { grid-template-columns: 22px max-content minmax(0, 1fr) 9ch; --banda: color-mix(in oklch, var(--acento) 50%, transparent); }
 .regleta.rg-gauge.sin-etq { grid-template-columns: 22px minmax(0, 1fr) 9ch; }
 .rg-riel { position: relative; min-width: 0; padding-bottom: 13px; }
-.rg-banda { position: absolute; left: calc(8px + (100% - 16px) * var(--b0, 0)); width: calc((100% - 16px) * (var(--b1, 1) - var(--b0, 0))); top: 17px; height: 3px; border-radius: 2px; background: var(--banda); pointer-events: none; }
+.rg-banda { position: absolute; left: calc(8px + (100% - 16px) * var(--b0, 0) - 4px); width: calc((100% - 16px) * (var(--b1, 1) - var(--b0, 0)) + 8px); top: 4px; height: 14px; border-radius: 7px; background: var(--banda); pointer-events: none; }
+.rg-riel > input[type=range] { position: relative; z-index: 1; }
 .rg-ext { position: absolute; top: 22px; font-size: 10px; line-height: 12px; color: var(--tinta-3); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .rg-ext.izq { left: 0; }
 .rg-ext.der { right: 0; }
@@ -1229,3 +1230,4 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
 .regleta.rg-gauge .rg-et { min-width: 3.4em; }
 .et-lienzo svg.dib { max-height: 50vh; }
 .regleta.rg-gauge { margin: 1px auto; } .et-reglas { gap: 0; }
+.tick.no-aplica { color: var(--tinta-3); cursor: not-allowed; } .tick.no-aplica input { cursor: not-allowed; } .et-der.no-aplica { color: var(--tinta-3); opacity: .7; }

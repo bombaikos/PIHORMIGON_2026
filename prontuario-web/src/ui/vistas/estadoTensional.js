@@ -137,6 +137,14 @@ function resuelve(c, s) {
 
 // ---------------------------------------------------------------- datos
 
+/** Un dato que no procede en este estado se queda en su sitio, desactivado, y su (i) o su rótulo dicen por qué (guía: nada aparece y desaparece). */
+function apaga(el, motivo) {
+  for (const i of el.querySelectorAll('input, select')) i.disabled = true;
+  el.title = motivo;
+  el.classList.add('no-aplica');
+  return el;
+}
+
 export function datos(ctx, form) {
   const p = ctx.p;
   const s = activa(p);
@@ -191,16 +199,20 @@ export function datos(ctx, form) {
     grupo(est.modo === 'NM' ? t('est.gEsfuerzos') : t('est.gPlano'), ...campos[est.modo]),
     grupo(t('est.gHormigon'),
       h('div', { class: 'fila-campos et-fc' }, c ? gamma('gc', t('est.gammaC'), 'gammaC', c.gammaC) : null, c ? gamma('ac', t('est.alfaCC'), 'alfaCC', c.alfaCC) : null),
-      els ? h('div', { class: 'fila-campos et-fc' },
-        campoNum({ id: 'et-phi', etq: t('est.phi'), valor: fmt(V().phi, 2), mag: null, paso: 0.1, min: 0, max: 10, sinUd: true, info: t('est.infoPhi'), onCambio: (v) => { V().phi = v; ctx.pintar(); } }),
-        campoNum({ id: 'et-kc', etq: t('est.kc'), valor: fmt(V().kc, 2), mag: null, paso: 0.05, min: 0.05, max: 1, sinUd: true, info: t('est.infoKc'), onCambio: (v) => { V().kc = v; ctx.pintar(); } })) : null,
-      els ? h('label', { class: 'tick' }, h('input', { type: 'checkbox', id: 'et-lineal', checked: V().lineal, onchange: (e) => { V().lineal = e.target.checked; ctx.pintar(); } }), h('span', { html: t('est.lineal') })) : null,
-      c && els ? h('div', { class: 'et-der' },
-        h('span', {}, 'E', h('sub', {}, 'c,eff'), ` ${fmt(c.mod.ley.pendiente / 1000, 0)} MPa`),
-        h('span', {}, `n = ${fmt(c.mod.acero.E / c.mod.ley.pendiente, 1)}`)) : null),
+      h('div', { class: 'fila-campos et-fc' },
+        els ? campoNum({ id: 'et-phi', etq: t('est.phi'), valor: fmt(V().phi, 2), mag: null, paso: 0.1, min: 0, max: 10, sinUd: true, info: t('est.infoPhi'), onCambio: (v) => { V().phi = v; ctx.pintar(); } })
+          : apaga(campoNum({ id: 'et-phi', etq: t('est.phi'), valor: '—', mag: null, sinUd: true, info: t('est.noELU.phi'), onCambio: () => {} }), t('est.noELU.phi')),
+        els ? campoNum({ id: 'et-kc', etq: t('est.kc'), valor: fmt(V().kc, 2), mag: null, paso: 0.05, min: 0.05, max: 1, sinUd: true, info: t('est.infoKc'), onCambio: (v) => { V().kc = v; ctx.pintar(); } })
+          : apaga(campoNum({ id: 'et-kc', etq: t('est.kc'), valor: '—', mag: null, sinUd: true, info: t('est.noELU.k'), onCambio: () => {} }), t('est.noELU.k'))),
+      els ? h('label', { class: 'tick' }, h('input', { type: 'checkbox', id: 'et-lineal', checked: V().lineal, onchange: (e) => { V().lineal = e.target.checked; ctx.pintar(); } }), h('span', { html: t('est.lineal') }))
+        : apaga(h('label', { class: 'tick' }, h('input', { type: 'checkbox', id: 'et-lineal', checked: false }), h('span', { html: t('est.lineal') })), t('est.noELU.lineal')),
+      c ? h('div', { class: `et-der${els ? '' : ' no-aplica'}` },
+        h('span', {}, 'E', h('sub', {}, 'c,eff'), els ? ` ${fmt(c.mod.ley.pendiente / 1000, 0)} MPa` : ' —'),
+        h('span', {}, els ? `n = ${fmt(c.mod.acero.E / c.mod.ley.pendiente, 1)}` : 'n = —')) : null),
     grupo(t('est.gAcero'),
       h('div', { class: 'fila-campos et-fc' }, c ? gamma('gs', t('est.gammaS'), 'gammaS', c.gammaS) : null,
-        els ? campoNum({ id: 'et-ks', etq: t('est.ks'), valor: fmt(V().ks, 2), mag: null, paso: 0.05, min: 0.05, max: 1.5, sinUd: true, info: t('est.infoKs'), onCambio: (v) => { V().ks = v; ctx.pintar(); } }) : null),
+        els ? campoNum({ id: 'et-ks', etq: t('est.ks'), valor: fmt(V().ks, 2), mag: null, paso: 0.05, min: 0.05, max: 1.5, sinUd: true, info: t('est.infoKs'), onCambio: (v) => { V().ks = v; ctx.pintar(); } })
+          : apaga(campoNum({ id: 'et-ks', etq: t('est.ks'), valor: '—', mag: null, sinUd: true, info: t('est.noELU.k'), onCambio: () => {} }), t('est.noELU.k'))),
       c ? h('div', { class: 'et-der', html: limTxt }) : null));
 }
 

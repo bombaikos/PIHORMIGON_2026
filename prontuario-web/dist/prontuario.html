@@ -1216,10 +1216,11 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
 .et-fc .campo > label { overflow: visible; white-space: nowrap; text-overflow: clip; }
 
 /* Gauges con rango total, banda compatible y candado (Análisis tensional, modo ε, κ) */
-.regleta.rg-gauge { grid-template-columns: 22px max-content minmax(0, 1fr) 9ch; --banda: color-mix(in oklch, var(--acento) 55%, var(--tinta)); }
+.regleta.rg-gauge { grid-template-columns: 22px max-content minmax(0, 1fr) 9ch; --banda: color-mix(in oklch, var(--acento) 50%, transparent); }
 .regleta.rg-gauge.sin-etq { grid-template-columns: 22px minmax(0, 1fr) 9ch; }
 .rg-riel { position: relative; min-width: 0; padding-bottom: 13px; }
-.rg-banda { position: absolute; left: calc(8px + (100% - 16px) * var(--b0, 0)); width: calc((100% - 16px) * (var(--b1, 1) - var(--b0, 0))); top: 17px; height: 3px; border-radius: 2px; background: var(--banda); pointer-events: none; }
+.rg-banda { position: absolute; left: calc(8px + (100% - 16px) * var(--b0, 0) - 4px); width: calc((100% - 16px) * (var(--b1, 1) - var(--b0, 0)) + 8px); top: 4px; height: 14px; border-radius: 7px; background: var(--banda); pointer-events: none; }
+.rg-riel > input[type=range] { position: relative; z-index: 1; }
 .rg-ext { position: absolute; top: 22px; font-size: 10px; line-height: 12px; color: var(--tinta-3); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .rg-ext.izq { left: 0; }
 .rg-ext.der { right: 0; }
@@ -1238,6 +1239,7 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
 .regleta.rg-gauge .rg-et { min-width: 3.4em; }
 .et-lienzo svg.dib { max-height: 50vh; }
 .regleta.rg-gauge { margin: 1px auto; } .et-reglas { gap: 0; }
+.tick.no-aplica { color: var(--tinta-3); cursor: not-allowed; } .tick.no-aplica input { cursor: not-allowed; } .et-der.no-aplica { color: var(--tinta-3); opacity: .7; }
 </style>
 
 <header class="barra">
@@ -5906,6 +5908,9 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
     "est.pFibras": "Fibras",
     "est.infinito": "\u221E",
     "p.estadoTensional": "An\xE1lisis tensional ELS ELU",
+    "est.noELU.phi": "En ELU no interviene la fluencia: la ley es la de c\xE1lculo del material.",
+    "est.noELU.k": "En ELU no se limitan las tensiones: los l\xEDmites son las deformaciones \xFAltimas (\u03B5_ud, \u03B5_cu y el pivote C).",
+    "est.noELU.lineal": "En ELU no se usa la ley lineal: la ley es la de c\xE1lculo del material.",
     "est.estadoLimite": "Estado l\xEDmite",
     "est.gLimites": "L\xEDmites del estado",
     "est.kc": "k<sub>c</sub>",
@@ -5985,6 +5990,9 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
     "est.p.estado": "Section state in service",
     "est.p.estadoSub": "Computed with the uncracked section and, if tension exceeds f_ctm, with no tensile strength.",
     "p.estadoTensional": "Stress analysis SLS ULS",
+    "est.noELU.phi": "At ULS creep does not apply: the law is the material design law.",
+    "est.noELU.k": "At ULS stresses are not limited: the limits are the ultimate strains (\u03B5_ud, \u03B5_cu and pivot C).",
+    "est.noELU.lineal": "At ULS the linear law is not used: the law is the material design law.",
     "est.estadoLimite": "Limit state",
     "est.gLimites": "State limits",
     "est.kc": "k<sub>c</sub>",
@@ -15109,6 +15117,12 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
     }
     return estadoTensional(c.mod, dato());
   }
+  function apaga(el, motivo) {
+    for (const i of el.querySelectorAll("input, select")) i.disabled = true;
+    el.title = motivo;
+    el.classList.add("no-aplica");
+    return el;
+  }
   function datos11(ctx2, form) {
     const p = ctx2.p;
     const s = activa3(p);
@@ -15184,27 +15198,29 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
       grupo(
         t("est.gHormigon"),
         h("div", { class: "fila-campos et-fc" }, c ? gamma("gc", t("est.gammaC"), "gammaC", c.gammaC) : null, c ? gamma("ac", t("est.alfaCC"), "alfaCC", c.alfaCC) : null),
-        els ? h(
+        h(
           "div",
           { class: "fila-campos et-fc" },
-          campoNum({ id: "et-phi", etq: t("est.phi"), valor: fmt(V().phi, 2), mag: null, paso: 0.1, min: 0, max: 10, sinUd: true, info: t("est.infoPhi"), onCambio: (v2) => {
+          els ? campoNum({ id: "et-phi", etq: t("est.phi"), valor: fmt(V().phi, 2), mag: null, paso: 0.1, min: 0, max: 10, sinUd: true, info: t("est.infoPhi"), onCambio: (v2) => {
             V().phi = v2;
             ctx2.pintar();
-          } }),
-          campoNum({ id: "et-kc", etq: t("est.kc"), valor: fmt(V().kc, 2), mag: null, paso: 0.05, min: 0.05, max: 1, sinUd: true, info: t("est.infoKc"), onCambio: (v2) => {
+          } }) : apaga(campoNum({ id: "et-phi", etq: t("est.phi"), valor: "\u2014", mag: null, sinUd: true, info: t("est.noELU.phi"), onCambio: () => {
+          } }), t("est.noELU.phi")),
+          els ? campoNum({ id: "et-kc", etq: t("est.kc"), valor: fmt(V().kc, 2), mag: null, paso: 0.05, min: 0.05, max: 1, sinUd: true, info: t("est.infoKc"), onCambio: (v2) => {
             V().kc = v2;
             ctx2.pintar();
-          } })
-        ) : null,
+          } }) : apaga(campoNum({ id: "et-kc", etq: t("est.kc"), valor: "\u2014", mag: null, sinUd: true, info: t("est.noELU.k"), onCambio: () => {
+          } }), t("est.noELU.k"))
+        ),
         els ? h("label", { class: "tick" }, h("input", { type: "checkbox", id: "et-lineal", checked: V().lineal, onchange: (e2) => {
           V().lineal = e2.target.checked;
           ctx2.pintar();
-        } }), h("span", { html: t("est.lineal") })) : null,
-        c && els ? h(
+        } }), h("span", { html: t("est.lineal") })) : apaga(h("label", { class: "tick" }, h("input", { type: "checkbox", id: "et-lineal", checked: false }), h("span", { html: t("est.lineal") })), t("est.noELU.lineal")),
+        c ? h(
           "div",
-          { class: "et-der" },
-          h("span", {}, "E", h("sub", {}, "c,eff"), ` ${fmt(c.mod.ley.pendiente / 1e3, 0)} MPa`),
-          h("span", {}, `n = ${fmt(c.mod.acero.E / c.mod.ley.pendiente, 1)}`)
+          { class: `et-der${els ? "" : " no-aplica"}` },
+          h("span", {}, "E", h("sub", {}, "c,eff"), els ? ` ${fmt(c.mod.ley.pendiente / 1e3, 0)} MPa` : " \u2014"),
+          h("span", {}, els ? `n = ${fmt(c.mod.acero.E / c.mod.ley.pendiente, 1)}` : "n = \u2014")
         ) : null
       ),
       grupo(
@@ -15216,7 +15232,8 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
           els ? campoNum({ id: "et-ks", etq: t("est.ks"), valor: fmt(V().ks, 2), mag: null, paso: 0.05, min: 0.05, max: 1.5, sinUd: true, info: t("est.infoKs"), onCambio: (v2) => {
             V().ks = v2;
             ctx2.pintar();
-          } }) : null
+          } }) : apaga(campoNum({ id: "et-ks", etq: t("est.ks"), valor: "\u2014", mag: null, sinUd: true, info: t("est.noELU.k"), onCambio: () => {
+          } }), t("est.noELU.k"))
         ),
         c ? h("div", { class: "et-der", html: limTxt }) : null
       )
@@ -18104,7 +18121,7 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
     for (let i = 0; i < c.length; i += 2) filas.push(h("div", { class: "par2" }, ...c.slice(i, i + 2)));
     return filas;
   };
-  var apaga = (c, motivo) => {
+  var apaga2 = (c, motivo) => {
     for (const el of c.querySelectorAll("input, select")) el.disabled = true;
     c.classList.add("no-aplica");
     return conInfo(c, motivo);
@@ -18265,8 +18282,8 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
           } })
         ].map((c) => {
           const id = c.dataset.c;
-          if (!comp && ["t-fi", "t-s", "t-al"].includes(id)) return apaga(c, t("tor.soloComp"));
-          if (id === "t-alfa" && tn !== "ehe") return apaga(c, t("tor.soloEHE"));
+          if (!comp && ["t-fi", "t-s", "t-al"].includes(id)) return apaga2(c, t("tor.soloComp"));
+          if (id === "t-alfa" && tn !== "ehe") return apaga2(c, t("tor.soloEHE"));
           return id === "t-alfa" ? conInfo(c, t("tor.alfaAyuda")) : c;
         })),
         gauge
@@ -19583,7 +19600,7 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
     );
     function armaduraGrupo() {
       const motivoDim = t("pun.motivoDim");
-      const apaga2 = (c, motivo) => {
+      const apaga3 = (c, motivo) => {
         for (const el of c.querySelectorAll("input, select")) el.disabled = true;
         c.title = motivo;
         c.classList.add("no-aplica");
@@ -19600,23 +19617,23 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
             D.fi = Number(v2);
             cambio();
           } });
-          return comp ? c : apaga2(c, motivoDim);
+          return comp ? c : apaga3(c, motivoDim);
         })(),
         (() => {
           const c = campoNum2({ id: "p-nper", etq: t("pun.nPer"), valor: D.nPer, mag: "n", paso: 1, min: 1, max: 30, ayuda: t("pun.nPerAyuda"), onCambio: set("nPer") });
-          return comp ? c : apaga2(c, motivoDim);
+          return comp ? c : apaga3(c, motivoDim);
         })(),
         (() => {
           const c = campoNum2({ id: "p-ramas", etq: t("pun.ramas"), valor: D.ramas, mag: "n", paso: 1, min: nBrazos(D.pos), max: 200, ayuda: t("pun.ramasAyuda", nBrazos(D.pos)), onCambio: set("ramas") });
-          return comp && cruz ? c : apaga2(c, comp ? t("pun.motivoRet") : motivoDim);
+          return comp && cruz ? c : apaga3(c, comp ? t("pun.motivoRet") : motivoDim);
         })(),
         (() => {
           const c = campoNum2({ id: "p-nx", etq: sub28("n", "x"), valor: D.nx, mag: "n", paso: 1, min: 2, max: 40, ayuda: t("pun.nxAyuda"), onCambio: set("nx") });
-          return comp && !cruz ? c : apaga2(c, comp ? t("pun.motivoCruz") : motivoDim);
+          return comp && !cruz ? c : apaga3(c, comp ? t("pun.motivoCruz") : motivoDim);
         })(),
         (() => {
           const c = campoNum2({ id: "p-ny", etq: sub28("n", "y"), valor: D.ny, mag: "n", paso: 1, min: 2, max: 40, ayuda: t("pun.nyAyuda"), onCambio: set("ny") });
-          return comp && !cruz ? c : apaga2(c, comp ? t("pun.motivoCruz") : motivoDim);
+          return comp && !cruz ? c : apaga3(c, comp ? t("pun.motivoCruz") : motivoDim);
         })(),
         campoNum2({ id: "p-a1", etq: sub28("a", "1"), valor: D.a1, mag: "diam", paso: 5, min: 0, max: 2e3, ayuda: t("pun.a1Ayuda"), onCambio: set("a1") }),
         campoNum2({ id: "p-sr", etq: sub28("s", "r"), valor: D.sr, mag: "diam", paso: 5, min: 20, max: 2e3, ayuda: t("pun.srAyuda"), onCambio: set("sr") })
@@ -19633,7 +19650,7 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
             D.tipoRama = v2;
             cambio();
           } });
-          return e23 ? c : apaga2(c, t("pun.motivoTipo"));
+          return e23 ? c : apaga3(c, t("pun.motivoTipo"));
         })(),
         ...campos
       );
