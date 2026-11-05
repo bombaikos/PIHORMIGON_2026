@@ -670,7 +670,7 @@ span.bien { color: var(--ok); font-weight: 600; }
 .datos .campo .ver-axil { margin: 0 6px 0 0; accent-color: var(--acento); flex-shrink: 0; }
 .leyenda-nota { font-weight: 400; color: var(--tinta-3); font-size: var(--t-xs); margin-left: 6px; }
 .lienzo.mini { display: flex; justify-content: center; flex: 0 0 auto !important; overflow: hidden; margin-bottom: var(--e2); order: 0 !important; }
-.lienzo.mini svg { min-width: 0 !important; width: auto; max-width: 100%; max-height: 250px; }
+.lienzo.mini svg { min-width: 0 !important; width: auto; max-width: 100%; max-height: 41vh !important; }
 /* Carga de DXF en la genérica */
 .zona-dxf { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 5px 8px; border: 1px dashed var(--linea-fuerte); border-radius: var(--r-campo); color: var(--tinta-2); font-size: var(--t-s); cursor: pointer; background: var(--hundido); }
 .zona-dxf:hover, .zona-dxf:focus-visible, .zona-dxf.encima { border-color: var(--acento); background: var(--acento-suave); color: var(--tinta); outline: none; }
@@ -1073,6 +1073,7 @@ input[type="checkbox"]:disabled:checked::after { border-color: var(--tinta-3); }
 input[type="checkbox"]:focus-visible { outline: 2px solid var(--acento); outline-offset: 2px; }
 /* Regleta: deslizador común (guía §9.4). Ancho: 80 % del gráfico al que acompaña, centrada. */
 .regleta { display: grid; grid-template-columns: max-content minmax(0, 1fr) 9ch; align-items: center; gap: var(--e3); width: 80%; margin: 4px auto; flex-shrink: 0; font-size: var(--t-s); color: var(--tinta-2); }
+.regleta.rg-cor { margin: 2px auto; } /* Cortante: el panel de datos de la EC-2 2023 no cabe a 1536×730 con 4 px */
 .regleta.sin-etq { grid-template-columns: minmax(0, 1fr) 9ch; }
 .regleta .rg-et { white-space: nowrap; }
 .regleta .rg-v { text-align: right; font-weight: 600; color: var(--tinta); font-variant-numeric: tabular-nums; white-space: nowrap; }
@@ -16835,6 +16836,7 @@ tr.et-act td { font-weight: 650; }
       step: 0.1,
       valor: thetaDe2(est8.cot),
       texto: (v2) => `${fmt(v2, 1)}\xB0`,
+      clase: "rg-cor",
       onInput: (v2) => {
         est8.cot = 1 / Math.tan(v2 * RAD2);
         const c = document.getElementById("c-theta");
