@@ -21,14 +21,6 @@ export function dibujoFisuracion(geo, s, r, hef) {
   const xm = !r.sinFisurar && r.e && r.e.x > 0 ? r.e.x / 1000 : null;
   const { svg, hp, bp } = capasSeccion(geo, s, { e, x0, y0, x: xm, id: 'fis', cotasCapas: false, abajo: signo < 0 });
   const out = [DEFS, svg];
-  if (xm !== null && r.e.x < geo.h * 1000) {
-    const Xs = (xm_) => x0 + (xm_ - e.x0m) * e.s;
-    const Ys = (ym) => y0 + (ym - geo.caja.ymin) * e.s;
-    const cam = geo.contornos.map((c) => 'M' + c.pts.map(([px, py]) => `${Xs(px).toFixed(2)} ${Ys(py).toFixed(2)}`).join('L') + 'Z').join('');
-    const yn0 = signo > 0 ? y0 + xm * e.s : y0;
-    out.push(`<clipPath id="fis-tr"><path fill-rule="evenodd" d="${cam}"/></clipPath>`);
-    out.push(`<rect clip-path="url(#fis-tr)" fill="url(#rayado-t)" x="${x0}" y="${yn0}" width="${bp}" height="${hp - xm * e.s}"/>`);
-  }
   const sc = e.s;
   const yTrac = signo > 0 ? y0 + hp : y0;
   const dir = signo > 0 ? -1 : 1;
