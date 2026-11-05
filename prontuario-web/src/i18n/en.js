@@ -346,7 +346,7 @@ export default {
   'menu.pronto': 'Not migrated yet', 'menu.materiales': 'Create and edit', 'menu.reologicas': 'Rheological properties', 'menu.vigas1vano': 'Single-span beams',
   'menu.flexion': 'Simple bending', 'menu.flexRecta': 'Axial load + uniaxial bending', 'menu.flexEsviada': 'Axial load + biaxial bending',
   'menu.cortante': 'Shear', 'menu.torsion': 'Torsion', 'menu.punzonamiento': 'Punching shear', 'menu.anclaje': 'Anchorage and lap splices',
-  'menu.rasante': 'Shear at concrete interfaces', 'menu.inestabilidad': 'Column instability', 'menu.flechas': 'Deflections and cracking',
+  'menu.rasante': 'Shear at concrete interfaces', 'menu.inestabilidad': 'Column instability', 'menu.flechas': 'Deflections',
   'm.fuego': 'Fire', 'fu.subtitulo': 'Minimum dimension and axis distance of a concrete member for the required fire resistance time (tabulated method)',
   'fu.elemento': 'Member', 'fu.tipo': 'Member type', 'fu.el.pilar': 'Column', 'fu.el.muro': 'Wall', 'fu.el.viga': 'Beam', 'fu.el.losa': 'Solid slab',
   'fu.exposicion': 'Exposure', 'fu.tiempo': 'Required fire resistance', 'fu.arido': 'Aggregate', 'fu.siliceo': 'Siliceous', 'fu.calizo': 'Calcareous',

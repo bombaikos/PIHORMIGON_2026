@@ -355,7 +355,7 @@ export default {
   'menu.pronto': 'Pendiente de migrar', 'menu.materiales': 'Crear y editar', 'menu.reologicas': 'Propiedades reológicas', 'menu.vigas1vano': 'Vigas de un vano',
   'menu.flexion': 'Flexión simple', 'menu.flexRecta': 'Flexión compuesta recta', 'menu.flexEsviada': 'Flexión compuesta esviada',
   'menu.cortante': 'Cortante', 'menu.torsion': 'Torsión', 'menu.punzonamiento': 'Punzonamiento', 'menu.anclaje': 'Anclaje y solapo',
-  'menu.rasante': 'Rasante en juntas entre hormigones', 'menu.inestabilidad': 'Inestabilidad de soportes', 'menu.flechas': 'Flechas y fisuración',
+  'menu.rasante': 'Rasante en juntas entre hormigones', 'menu.inestabilidad': 'Inestabilidad de soportes', 'menu.flechas': 'Flechas',
   // Durabilidad con EHE-08 (módulo informativo)
   'eh.subtitulo': 'Qué recubrimiento y qué hormigón pide el ambiente (EHE-08)',
   'eh.hormigon': 'Hormigón', 'eh.tipo': 'Tipo de hormigón', 'eh.vida': 'Vida útil de proyecto', 'eh.anios': 'años', 'eh.cemento': 'Cemento',

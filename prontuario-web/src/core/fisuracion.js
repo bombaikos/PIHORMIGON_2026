@@ -57,7 +57,6 @@ export function fisurada(sec, M, N, fck) {
 export function calcula(norma, sec, o) {
   const { b, h, c, fi, n } = sec;
   const { M, N = 0, larga = true, directa = true, buenaAdh = true, fck = 30 } = o;
-  const m = propsHormigon(fck, h);
   const As1 = n * areaBarra(fi), d = h - c - fi / 2;
   const s2 = { b, h, As1, d, As2: (sec.nSup ?? 0) * areaBarra(sec.fiSup ?? 0), d2: c + (sec.fiSup ?? 0) / 2 };
   const Mf = Mfis(sec, N, fck);
@@ -66,22 +65,41 @@ export function calcula(norma, sec, o) {
   const F = fisurada(s2, M, N, fck);
   if (!F) return { ...r, error: 'fuera de modelo' };
   const Fr = fisurada(s2, Mf, N, fck);
-  const ss = F.ss, ssr = Fr ? Fr.ss : ss, x = F.x;
   const ay = c + fi / 2, s = n > 1 ? (b - 2 * ay) / (n - 1) : b;
-  Object.assign(r, { x, ss, ssr, sc: F.sc, ec: F.ec, e1: F.e1, As1, d, s });
+  const g = { b, h, c, ay, fi, n, As1, d, s };
+  const e = { x: F.x, ss: F.ss, ssr: Fr ? Fr.ss : F.ss, e1: F.e1, e2: 0 };
+  return { ...r, sc: F.sc, ec: F.ec, ...wkNorma(norma, g, e, { larga, directa, buenaAdh, fck }) };
+}
+
+/**
+ * wk de una sección con el estado fisurado ya conocido (lo aporta el motor de Estado tensional o `fisurada`).
+ * @param {{b:number,h:number,c:number,ay:number,fi:number,n:number,As1:number,d:number,s:number,areaEf?:(hef:number)=>number}} g
+ *   b = ancho de la zona traccionada, c = recubrimiento a la barra, ay = distancia de la cara traccionada al c.d.g. de la armadura
+ *   traccionada, fi = ø equivalente, s = separación entre barras, areaEf = área de hormigón a profundidad hef desde la cara traccionada
+ * @param {{x:number,ss:number,ssr:number,e1:number,e2?:number}} e  x desde la fibra más comprimida; ss, ssr en MPa; e1, e2 = alargamientos
+ *   de la fibra más traccionada y del límite opuesto de la zona traccionada
+ */
+export function wkNorma(norma, g, e, o) {
+  const { b, h, c, ay, fi, As1, d, s } = g;
+  const { larga = true, directa = true, buenaAdh = true, fck = 30 } = o;
+  const m = propsHormigon(fck, h);
+  const { ss, ssr } = e;
+  const x = Math.max(e.x, 0);
+  const area = g.areaEf ?? ((hef) => hef * b);
   const kt = larga ? 0.4 : 0.6;
+  const r = { x: e.x, ss, ssr, e1: e.e1, As1, d, s };
 
   if (norma === 'EHE08') {
-    // 49.2.4: Ac,ef (fig. 49.2.4.b, caso 1/2 con s ≤ 15φ); k1 = (ε1+ε2)/(8ε1) con ε2 = 0 en la neutra; k2 = 0,5 larga / 1,0 corta
-    const hef = Math.min(h / 2, ay + 7.5 * fi), Acef = hef * b;
-    const k1 = (F.e1 + 0) / (8 * F.e1), k2 = larga ? 0.5 : 1.0, beta = directa ? 1.7 : 1.3;
+    // 49.2.4: Ac,ef (fig. 49.2.4.b, caso 1/2 con s ≤ 15φ); k1 = (ε1+ε2)/(8ε1); k2 = 0,5 larga / 1,0 corta
+    const hef = Math.min(h / 2, ay + 7.5 * fi), Acef = area(hef);
+    const k1 = (e.e1 + (e.e2 ?? 0)) / (8 * e.e1), k2 = larga ? 0.5 : 1.0, beta = directa ? 1.7 : 1.3;
     const sm = 2 * c + 0.2 * Math.min(s, 15 * fi) + 0.4 * k1 * fi * Acef / As1;
     const esm = Math.max((ss / ES) * (1 - k2 * (ssr / ss) ** 2), 0.4 * ss / ES);
     return { ...r, hef, Acef, rho: As1 / Acef, k1, sr: sm, sm, esm, beta, wk: beta * sm * esm };
   }
   if (norma === 'EC2-2004') {
     // 7.3.4: hc,ef = mín{2,5(h−d); (h−x)/3; h/2}; k1 = 0,8; k2 = 0,5 flexión; k3 = 3,4 y k4 = 0,425 (AN); 7.14 si s > 5(c+φ/2)
-    const hef = Math.min(2.5 * (h - d), (h - x) / 3, h / 2), Acef = hef * b, rho = As1 / Acef;
+    const hef = Math.min(2.5 * (h - d), (h - x) / 3, h / 2), Acef = area(hef), rho = As1 / Acef;
     const sr = s > 5 * (c + fi / 2) ? 1.3 * (h - x) : 3.4 * c + (0.8 * 0.5 * 0.425 * fi) / rho;
     const esm = Math.max((ss - kt * m.fctm / rho * (1 + m.alfaE * rho)) / ES, 0.6 * ss / ES);
     return { ...r, hef, Acef, rho, sr, esm, wk: sr * esm };
@@ -89,12 +107,12 @@ export function calcula(norma, sec, o) {
   if (norma === 'EC2-2023') {
     // 9.2.3: hc,ef = mín{ay+5φ; 10φ; 3,5ay; h−x; h/2} (una capa); kfl (9.16); kb 0,9/1,2; kw = 1,7; k1/r (9.9)
     const kw = 1.7, kb = buenaAdh ? 0.9 : 1.2;
-    const hef = Math.min(ay + 5 * fi, 10 * fi, 3.5 * ay, h - x, h / 2), Acef = hef * b, rho = As1 / Acef;
+    const hef = Math.min(ay + 5 * fi, 10 * fi, 3.5 * ay, h - x, h / 2), Acef = area(hef), rho = As1 / Acef;
     const kfl = (h - hef) / h;
     const sr = Math.min(1.5 * c + (kfl * kb / 7.2) * fi / rho, (1.3 / kw) * (h - x));
     const esm = Math.max((ss - kt * m.fctm / rho * (1 + m.alfaE * rho)) / ES, (1 - kt) * ss / ES);
     const k1r = (h - x) / (h - ay - x);
-    return { ...r, hef, Acef, rho, sr, esm, k1r, kw, wk: kw * k1r * sr * esm };
+    return { ...r, hef, Acef, rho, sr, esm, k1r, kw, kb, wk: kw * k1r * sr * esm };
   }
   throw new Error(`Norma desconocida: ${norma}`);
 }
