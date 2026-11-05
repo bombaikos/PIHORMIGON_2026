@@ -18,7 +18,7 @@ export default {
   'an.favorable': 'favorable', 'an.desfavorable': 'desfavorable',
   'an.leyenda': 'patilla = patilla, gancho o U · * manda el mínimo normativo · est. = solo con estudio especial · † ø > 32 mm: reglas adicionales (EC-2 8.8)',
   'an.ficha': (h, a, e, r, cd, pct, extra) => `${h} · ${a} · ${e} · A<sub>s,nec</sub>/A<sub>s,disp</sub> = ${r} % · ${cd} · ${pct} % de barras solapadas${extra}`,
-  'an.cdFicha': 'c<sub>d</sub> = máx(25 mm; ø)',
+  'an.cdFicha': 'c<sub>d</sub> = máx(25 mm; 1,5 ø)',
   'an.aCerca': ' · a ≤ 10 ø', 'an.aLejos': ' · a > 10 ø',
   'an.fichaTit': 'Ficha para planos',
   'an.dib.aria': 'Esquema de anclaje recto, con patilla y de solapo',
@@ -46,6 +46,6 @@ export default {
   'an.no.pct23': 'No se aplica en esta norma: l<sub>s</sub> = 1,2·l<sub>b</sub> (11.5.2).',
   'an.no.comp': 'No se aplica en compresión (α = 1).',
   'an.n.cd': 'Recubrimiento c<sub>d</sub>',
-  'an.cdTxt': 'En todas las filas c<sub>d</sub> = máx(25 mm; ø) (columna c<sub>d</sub>): el mínimo por adherencia es ø (EC-2 4.4.1.2(3), Tabla 4.2; EHE-08 37.2.4.1) y 25 mm es un valor corriente. En EC-2 c<sub>d</sub> es el menor de a/2, el recubrimiento lateral y el inferior (con tope 3,75 ø en la 2023). Un c<sub>d</sub> mayor acorta el anclaje: en EC-2 2004 hasta 3 ø (α<sub>2</sub>; α<sub>1</sub> = 0,7 en patilla si c<sub>d</sub> &gt; 3 ø) y en EC-2 2023 hasta 3,75 ø; en la EHE-08 (ensayo de la viga) solo la patilla con recubrimiento &gt; 3 ø.',
+  'an.cdTxt': 'En todas las filas c<sub>d</sub> = máx(25 mm; 1,5 ø) (columna c<sub>d</sub>), el límite de la Tabla 11.1 del EC-2 2023: el proyecto debe garantizarlo (el mínimo por adherencia es ø: EC-2 4.4.1.2(3), Tabla 4.2; EHE-08 37.2.4.1). En EC-2 c<sub>d</sub> es el menor de a/2, el recubrimiento lateral y el inferior (con tope 3,75 ø en la 2023). Un c<sub>d</sub> mayor acorta aún más el anclaje: en EC-2 2004 hasta 3 ø (α<sub>2</sub>; α<sub>1</sub> = 0,7 en patilla si c<sub>d</sub> &gt; 3 ø) y en EC-2 2023 hasta 3,75 ø; en la EHE-08 (ensayo de la viga) solo la patilla con recubrimiento &gt; 3 ø.',
   'an.sinAcero': 'No hay acero en el proyecto',
 };

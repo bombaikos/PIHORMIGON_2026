@@ -18,7 +18,7 @@ export default {
   'an.favorable': 'good bond', 'an.desfavorable': 'poor bond',
   'an.leyenda': '* code minimum governs · est. = only with a special study · † ø > 32 mm: additional rules (EC-2 8.8)',
   'an.ficha': (h, a, e, r, cd, pct, extra) => `${h} · ${a} · ${e} · A<sub>s,req</sub>/A<sub>s,prov</sub> = ${r} % · ${cd} · ${pct} % of bars lapped${extra}`,
-  'an.cdFicha': 'c<sub>d</sub> = max(25 mm; ø)',
+  'an.cdFicha': 'c<sub>d</sub> = max(25 mm; 1.5 ø)',
   'an.fichaTit': 'Note for drawings',
   'an.dib.aria': 'Sketch of straight anchorage, hooked anchorage and lap splice',
   'an.dib.anclaje': 'Anchorage', 'an.dib.solapo': 'Lap', 'an.dib.gancho': 'Hook',
@@ -31,6 +31,6 @@ export default {
   'an.no.pct23': 'Not applicable in this code: l<sub>s</sub> = 1.2·l<sub>b</sub> (11.5.2).',
   'an.no.comp': 'Not applicable in compression (α = 1).',
   'an.n.cd': 'Cover c<sub>d</sub>',
-  'an.cdTxt': 'All rows use c<sub>d</sub> = max(25 mm; ø) (column c<sub>d</sub>): the minimum cover for bond is ø (EC-2 4.4.1.2(3), Table 4.2; EHE-08 37.2.4.1). In EC-2 c<sub>d</sub> is the smaller of a/2, side and bottom cover (capped at 3.75 ø in the 2023 edition). A larger c<sub>d</sub> shortens the anchorage: up to 3 ø in EC-2 2004 (α<sub>2</sub>; α<sub>1</sub> = 0.7 for hooks if c<sub>d</sub> &gt; 3 ø), up to 3.75 ø in EC-2 2023; in EHE-08 (beam test) only hooks with cover &gt; 3 ø.',
+  'an.cdTxt': 'All rows use c<sub>d</sub> = max(25 mm; 1.5 ø) (column c<sub>d</sub>), the limit of Table 11.1 of EC-2 2023: the design must ensure it (the minimum cover for bond is ø: EC-2 4.4.1.2(3), Table 4.2; EHE-08 37.2.4.1). In EC-2 c<sub>d</sub> is the smaller of a/2, side and bottom cover (capped at 3.75 ø in the 2023 edition). A larger c<sub>d</sub> shortens the anchorage further: up to 3 ø in EC-2 2004 (α<sub>2</sub>; α<sub>1</sub> = 0.7 for hooks if c<sub>d</sub> &gt; 3 ø), up to 3.75 ø in EC-2 2023; in EHE-08 (beam test) only hooks with cover &gt; 3 ø.',
   'an.sinAcero': 'There is no steel in the project',
 };

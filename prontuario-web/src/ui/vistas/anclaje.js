@@ -69,8 +69,8 @@ function base(p, D, fck, fyk) {
   };
 }
 
-/** Recubrimiento de cálculo cd que se usa en todas las filas: máx(25 mm; ø) (mínimo por adherencia ø, EC-2 4.4.1.2(3) Tabla 4.2; EHE-08 37.2.4.1). */
-const cdDe = (phi) => Math.max(25, phi);
+/** Recubrimiento de cálculo cd de todas las filas: máx(25 mm; 1,5 ø), el límite de la Tabla 11.1 del EC-2 2023 (cd ≥ 1,5 ø). El proyecto debe garantizarlo. */
+const cdDe = (phi) => Math.max(25, 1.5 * phi);
 const sobre5 = (x) => Math.ceil(x / 5 - 1e-9) * 5;
 
 /** Todas las casillas de la tabla (y del contraste con el CE). */
@@ -158,7 +158,7 @@ export function resultados(ctx, res) {
   const cab = h('thead', {}, fila1, fila2, fila3);
   const cuerpo = h('tbody', {}, ...r.filas.map((f) => {
     const cel = comp ? [f.I[0], f.II[0], f.sI, f.sII] : [f.I[0], f.I[1], f.II[0], f.II[1], f.sI, f.sII];
-    const tr = h('tr', {}, h('th', { scope: 'row' }, String(f.phi)), h('td', { class: 'an-cd' }, String(cdDe(f.phi))), ...cel.map((c) => h('td', {}, num(c))));
+    const tr = h('tr', {}, h('th', { scope: 'row' }, String(f.phi)), h('td', { class: 'an-cd' }, fmt(cdDe(f.phi), cdDe(f.phi) % 1 ? 1 : 0)), ...cel.map((c) => h('td', {}, num(c))));
     (comp ? [3, 4] : [4, 6]).forEach((i) => tr.cells[i].classList.add('g2'));
     return tr;
   }));
