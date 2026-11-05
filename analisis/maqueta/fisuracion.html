@@ -100,7 +100,7 @@ function datos(){const ne=NORMAS[S.norma].id;
  ${cj('A. inferior','arm','3D20','',true,'Se edita en Secciones')}${cj('A. superior','arm2','2D12','',true,'Se edita en Secciones')}${cj('c','c',S.c,'mm',true,'Recubrimiento de la sección')}
  <div class="sep"></div><div class="rot">Límite</div>
  <div class="fila"><label>Exposición</label><select class="caja" id="expo">${EXPO.map((e,i)=>`<option value="${i}"${i==S.expo?' selected':''}>${ne=='EHE'?e.ehe:e.ec}</option>`).join('')}</select></div>
- ${cj('w<sub>máx</sub>','wm',fmt(wmax(),1),'mm',true,'Tabla 5.1.1.2 (EHE-08) / Tabla AN/9 (EC-2) según la clase; cuasipermanente')}
+ ${cj('w<sub>máx</sub>','wm',fmt(wmax(),2),'mm',true,'Tabla 5.1.1.2 (EHE-08) / Tabla AN/9 (EC-2) según la clase; cuasipermanente')}
  <div class="fila" title="Solo EHE-08: β = 1,7 acciones directas, 1,3 solo indirectas"><label>Acción (β)</label><select class="caja" id="acc"${ne!='EHE'?' disabled':''}><option value="directa">Directa · 1.7</option><option value="indirecta"${S.accion=='indirecta'?' selected':''}>Indirecta · 1.3</option></select></div>
  <div class="fila" title="Solo EC-2 2023: k<sub>b</sub> = 0,9 buena, 1,2 mala"><label>Adherencia (k<sub>b</sub>)</label><select class="caja" id="adh"${ne!='EC23'?' disabled':''}><option value="buena">Buena · 0.9</option><option value="mala"${S.adh=='mala'?' selected':''}>Mala · 1.2</option></select></div>
  <div class="aviso" style="display:none" id="avi"></div>`;
@@ -110,7 +110,7 @@ function datos(){const ne=NORMAS[S.norma].id;
  document.querySelectorAll('#datos input:not(:disabled)').forEach(i=>i.onfocus=()=>i.select())}
 function veredicto(r){return r.err?{c:'in',t:'Fuera de modelo'}:r.sinfis?{c:'ok',t:'Sin fisurar'}:r.wk<=wmax()?{c:'ok',t:'Cumple'}:{c:'no',t:'No cumple'}}
 function resultados(){const act=NORMAS[S.norma].id,R=Object.fromEntries(NORMAS.map(n=>[n.id,calcula(n.id,S.M)])),ra=R[act],v=veredicto(ra);
- let h=`<div class="pastilla"><div><div class="rr">Sección</div><div class="nom">V-1</div></div><div class="gr"><div class="rr">w<sub>k</sub> / w<sub>máx</sub> ${NORMAS[S.norma].n}</div><b>${ra.err?'—':fmt(ra.wk,2)}</b> <span class="u">mm</span> <span class="u">/ ${fmt(wmax(),1)}</span></div></div>
+ let h=`<div class="pastilla"><div><div class="rr">Sección</div><div class="nom">V-1</div></div><div class="gr"><div class="rr">w<sub>k</sub> / w<sub>máx</sub> ${NORMAS[S.norma].n}</div><b>${ra.err?'—':fmt(ra.wk,2)}</b> <span class="u">mm</span> <span class="u">/ ${fmt(wmax(),2)}</span></div></div>
  <div><span class="sello ${v.c}">${v.t}</span> ${ra.sinfis?`<span class="u">M<sub>k</sub> ≤ M<sub>fis</sub> = ${fmt(ra.Mfis,0)} kN·m: no hace falta calcular w<sub>k</sub></span>`:''}</div>`;
  if(S.modo=='dim')h=dimRes(R);else{
   const cols=NORMAS.map(n=>`<th class="${n.id==act?'act':''} ${n.rojo?'nov':''}">${n.n}</th>`).join('');
@@ -129,7 +129,7 @@ function dimRes(R){const act=NORMAS[S.norma].id,out=[];
  for(const f of[12,16,20,25,32]){let sol=null;for(let n=2;n<=10;n++){if((S.b-2*(S.c+f/2))/(n-1)<Math.max(f,20)&&n>2)break;const r=calcula(act,S.M,n,f);if(r.sinfis||(!r.err&&r.wk<=wmax())){sol={n,r};break}}out.push({f,sol})}
  const best=out.filter(o=>o.sol).sort((a,b)=>a.sol.n*A(a.f)-b.sol.n*A(b.f))[0];
  let h=`<div class="pastilla"><div><div class="rr">Sección</div><div class="nom">V-1</div></div><div class="gr"><div class="rr">Armado mínimo · ${NORMAS[S.norma].n}</div><b>${best?best.sol.n+'D'+best.f:'—'}</b> <span class="u">${best?fmt(best.sol.n*A(best.f),0)+' mm²':''}</span></div></div>
- <div class="rot">Una capa inferior: mínimo de barras de cada diámetro para w<sub>k</sub> ≤ w<sub>máx</sub> = ${fmt(wmax(),1)} mm</div>
+ <div class="rot">Una capa inferior: mínimo de barras de cada diámetro para w<sub>k</sub> ≤ w<sub>máx</sub> = ${fmt(wmax(),2)} mm</div>
  <table><tr><th>φ [mm]</th><th>n</th><th>A<sub>s</sub> [mm²]</th><th>σ<sub>s</sub> [MPa]</th><th>w<sub>k</sub> [mm]</th></tr>
  ${out.map(o=>o.sol?`<tr class="${best&&o.f==best.f?'act':''}"><td class="${best&&o.f==best.f?'act':''}">${o.f}</td><td>${o.sol.n}</td><td>${fmt(o.sol.n*A(o.f),0)}</td><td>${o.sol.r.sinfis?'—':fmt(o.sol.r.ss,0)}</td><td>${fmt(o.sol.r.wk,2)}</td></tr>`:`<tr><td>${o.f}</td><td colspan="4" class="u">no cabe en una capa</td></tr>`).join('')}</table>
  <div class="nota">Dimensiona solo por fisuración: la armadura de ELU y la mínima se comprueban aparte. Alternativa: M<sub>máx</sub> que admite el armado actual (3D20): ${fmt(mMax(act),0)} kN·m.</div>`;return h}
@@ -164,7 +164,7 @@ function diagrama(){$('centro').innerHTML=`<svg class="dib" id="svg" viewBox="0 
  for(let w=0;w<=.8;w+=.2)g+=`<path d="M${X0-5} ${wx(w)}h5" stroke="var(--tinta-3)"/><text x="${X0-9}" y="${wx(w)+4}" text-anchor="end">${fmt(w,1)}</text>`;
  g+=`<path d="M${X0} ${Y0}V${Y0+Hd}H${X0+Wd}" fill="none" stroke="var(--linea-fuerte)"/><text x="${X0+Wd/2}" y="${Y0+Hd+40}" text-anchor="middle">M<tspan baseline-shift="sub" font-size="9">k</tspan> [kN·m]</text><text x="${X0}" y="${Y0-10}" fill="var(--tinta)" font-weight="600">w<tspan baseline-shift="sub" font-size="9">k</tspan> [mm]</text>`;
  const Mf=Mfis();g+=`<path d="M${mx(Mf)} ${Y0}V${Y0+Hd}" stroke="var(--tinta-3)" stroke-dasharray="2 3"/><text x="${mx(Mf)+4}" y="${Y0+14}">M<tspan baseline-shift="sub" font-size="9">fis</tspan> = ${fmt(Mf,0)}</text>`;
- g+=`<path d="M${X0} ${wx(wmax())}H${X0+Wd}" stroke="var(--no)" stroke-width="1.5"/><text x="${X0+Wd-4}" y="${wx(wmax())-6}" text-anchor="end" fill="var(--no)">w<tspan baseline-shift="sub" font-size="9">máx</tspan> = ${fmt(wmax(),1)} mm</text>`;
+ g+=`<path d="M${X0} ${wx(wmax())}H${X0+Wd}" stroke="var(--tinta)" stroke-width="1.5"/><text x="${X0+Wd-4}" y="${wx(wmax())-6}" text-anchor="end" fill="var(--tinta)">w<tspan baseline-shift="sub" font-size="9">máx</tspan> = ${fmt(wmax(),2)} mm</text>`;
  const trazo={EHE:'',EC2:'9 5',EC23:'2 4'};
  for(const n of NORMAS){let p='';for(let m=0;m<=Mx;m+=2){const r=calcula(n.id,m);const w=r.err?null:Math.min(r.wk,Wx);if(w===null)continue;p+=(p?'L':'M')+mx(m)+' '+wx(w)}
   g+=`<path d="${p}" fill="none" stroke="${n.id==NORMAS[S.norma].id?'var(--acento)':'var(--tinta-2)'}" stroke-width="${n.id==NORMAS[S.norma].id?2.4:2}" stroke-dasharray="${trazo[n.id]}" stroke-linecap="round"/>`;

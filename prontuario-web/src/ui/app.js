@@ -22,6 +22,7 @@ import * as fuego from './vistas/fuego.js';
 import * as anclaje from './vistas/anclaje.js';
 import * as cortante from './vistas/cortante.js';
 import * as torsion from './vistas/torsion.js';
+import * as fisuracion from './vistas/fisuracion.js';
 import * as punzonamiento from './vistas/punzonamiento.js';
 import * as rasante from './vistas/rasante.js';
 import * as inestabilidad from './vistas/inestabilidad.js';
@@ -41,15 +42,15 @@ function vistaSecciones(m, propia) {
   const v = { cabeza: fijar(secciones.cabeza), datos: fijar(secciones.datos), resultados: fijar(secciones.resultados) };
   return propia ? { ...secciones, ...v } : v;
 }
-const VISTAS = { proyecto, materiales, reologicas, secciones: vistaSecciones('seccion', true), durabilidad, diagramas: vistaSecciones('mk', false), vigas1vano, flexion, flexRecta, flexEsviada, estadoTensional, fuego, anclaje, cortante, torsion, punzonamiento, rasante, inestabilidad };
+const VISTAS = { proyecto, materiales, reologicas, secciones: vistaSecciones('seccion', true), durabilidad, diagramas: vistaSecciones('mk', false), vigas1vano, flexion, flexRecta, flexEsviada, estadoTensional, fisuracion, fuego, anclaje, cortante, torsion, punzonamiento, rasante, inestabilidad };
 // Menú principal. Una entrada es un módulo suelto o un grupo con submenú; '|' separa familias dentro del
 // submenú. Lo que aún no está en VISTAS sale atenuado y sin acción, y se activa solo al migrarlo.
 const MENU = [
   { grupo: 'materiales', vistas: ['materiales', 'reologicas'] },
-  { grupo: 'secciones', vistas: ['secciones', 'durabilidad', 'diagramas'] },
+  { grupo: 'secciones', vistas: ['secciones', 'durabilidad', 'diagramas', 'estadoTensional'] },
   { grupo: 'analisis', vistas: ['vigas1vano'] },
   { grupo: 'elu', siempre: true, vistas: ['flexion', 'flexRecta', 'flexEsviada', '|', 'cortante', 'torsion', 'punzonamiento', 'anclaje', 'rasante', '|', 'inestabilidad'] },
-  { grupo: 'els', siempre: true, vistas: ['estadoTensional', 'flechas'] },
+  { grupo: 'els', siempre: true, vistas: ['fisuracion', 'flechas'] },
   'fuego', 'bielas', 'ejecucion', 'ayuda',
 ];
 const ORDEN = ['proyecto', ...MENU.flatMap((m) => (typeof m === 'string' ? [m] : m.vistas))].filter((v) => v in VISTAS);

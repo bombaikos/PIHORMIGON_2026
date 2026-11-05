@@ -13,7 +13,7 @@ export default {
   norma: 'Norma',
   pie: 'Prontuario web, versión de prueba. Atajos: Ctrl K comandos · Ctrl Z deshacer fuera de un campo · Alt 1…4 módulos.',
   pendiente: 'Pendiente de migrar del Prontuario 3.1',
-  'rg.cero': 'Doble clic: llevar a cero',
+  'rg.cero': 'Doble clic: llevar a cero', 'rg.bloquear': 'Bloquear: la variable no se mueve y estrecha los rangos de las demás', 'rg.desbloquear': 'Desbloquear', 'rg.banda': 'Banda compatible',
   'm.proyecto': 'Datos de proyecto', 'm.materiales': 'Materiales', 'm.secciones': 'Secciones', 'm.flexion': 'Flexión simple',
   nombre: 'Nombre', forma: 'Forma', seccion: 'Sección', hormigon: 'Hormigón', acero: 'Acero', elemento: 'Elemento',
   viga: 'Viga', losa: 'Losa', muro: 'Muro', pilar: 'Pilar',
@@ -355,7 +355,7 @@ export default {
   'menu.pronto': 'Pendiente de migrar', 'menu.materiales': 'Crear y editar', 'menu.reologicas': 'Propiedades reológicas', 'menu.vigas1vano': 'Vigas de un vano',
   'menu.flexion': 'Flexión simple', 'menu.flexRecta': 'Flexión compuesta recta', 'menu.flexEsviada': 'Flexión compuesta esviada',
   'menu.cortante': 'Cortante', 'menu.torsion': 'Torsión', 'menu.punzonamiento': 'Punzonamiento', 'menu.anclaje': 'Anclaje y solapo',
-  'menu.rasante': 'Rasante en juntas entre hormigones', 'menu.inestabilidad': 'Inestabilidad de soportes', 'menu.flechas': 'Flechas y fisuración',
+  'menu.rasante': 'Rasante en juntas entre hormigones', 'menu.inestabilidad': 'Inestabilidad de soportes', 'menu.flechas': 'Flechas',
   // Durabilidad con EHE-08 (módulo informativo)
   'eh.subtitulo': 'Qué recubrimiento y qué hormigón pide el ambiente (EHE-08)',
   'eh.hormigon': 'Hormigón', 'eh.tipo': 'Tipo de hormigón', 'eh.vida': 'Vida útil de proyecto', 'eh.anios': 'años', 'eh.cemento': 'Cemento',

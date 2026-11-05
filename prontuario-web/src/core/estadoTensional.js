@@ -89,7 +89,7 @@ export function modeloTensional(geo, hormigonMat, aceroMat, o) {
   const mI = modeloEsviada(geo, ley.integra, ac);
   const mF = modeloEsviada(geo, ley.fisurada, ac);
   const pts = geo.contornos.flatMap((c) => (c.signo > 0 ? c.pts : []));
-  return { ley, acero: ac, mI, mF, xc: mI.xc, yc: mI.yc, vertices: pts, puntos: mI.puntos, Ac: mI.Ac, armadura: { barras: geo.barras, franjas: geo.franjas ?? [] } };
+  return { mat: { hormigon: hormigonMat, acero: aceroMat }, ley, acero: ac, mI, mF, xc: mI.xc, yc: mI.yc, vertices: pts, puntos: mI.puntos, Ac: mI.Ac, armadura: { barras: geo.barras, franjas: geo.franjas ?? [] } };
 }
 
 // ---------------------------------------------------------------- planos
@@ -206,18 +206,18 @@ function extremosHormigon(mat, eMin, eMax) {
  * @returns {{ok:boolean, motivo?:string, ...}}  con ok = true: plano (e0, kx, ky), N, Mx, My, eSup, eInf, beta, x,
  *   fisurada, tensiones del hormigón (sigmaMax compresión, sigmaMin tracción, MPa), barras [{x, y, eps, sigma}] y avisos.
  */
-export function estadoTensional(mod, dato) {
+export function estadoTensional(mod, dato, { fisurada: forzar = false, ini } = {}) {
   const intenta = (m) => {
     if (dato.tipo === 'eK') return { e0: dato.e0, kx: dato.kx, ky: dato.ky };
     if (dato.tipo === 'sup') return planoDeSup(mod, dato.eSup, dato.beta, dato.x);
-    return equilibrio(m, mod, dato.N, dato.Mx, dato.My);
+    return equilibrio(m, mod, dato.N, dato.Mx, dato.My, ini);
   };
   // Regla de estado: primero la sección íntegra (tracción elástica); si la tracción supera la de fisuración, sin tracción.
   let fisurada = false;
   let m = mod.mI;
-  let pl = intenta(m);
+  let pl = forzar ? null : intenta(m);
   const traccion = (p) => -Math.min(...mod.vertices.map(([x, y]) => eps(mod, p, x, y)));
-  if (!pl || traccion(pl) > mod.ley.epsCr * (1 + 1e-9)) {
+  if (forzar || !pl || traccion(pl) > mod.ley.epsCr * (1 + 1e-9)) {
     fisurada = true;
     m = mod.mF;
     pl = intenta(m);
