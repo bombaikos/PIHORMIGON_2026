@@ -42,4 +42,8 @@ export default {
   'fis.graf.wmax': (w) => `w<sub>max</sub> ${w}`,
   'fis.graf.tit': 'Crack width against moment',
   'fis.cmdComprobar': 'Cracking: check', 'fis.cmdDimensionar': 'Cracking: design', 'fis.cmdDiagrama': 'Cracking: w_k–M diagram',
+  'fis.min.no': (dis, req, nombre, ref) => `Tension steel provided ${dis} mm² is below the minimum for crack control ${req} mm² (${nombre}, ${ref}).`,
+  'fis.min.ala': 'The minimum steel of a tensioned T flange (EC-2 2004, 7.3.2, expression 7.3) is not checked.',
+  'fis.r.min': 'Minimum steel',
+  'fis.min.dispuesta': 'provided',
 };

@@ -40,7 +40,7 @@ function activa(p) {
 function datosFis(p, s, signo) {
   if (s.forma !== 'pilar') return datosViga(p, s, signo);
   const { b, h: alto } = s.geo;
-  return { b, h: alto, trapecios: [{ y1: 0, y2: alto, b1: b, b2: b }], Ac: b * alto, W: (b * alto * alto) / 6, signo };
+  return { b, h: alto, trapecios: [{ y1: 0, y2: alto, b1: b, b2: b }], Ac: b * alto, Ib: (b * alto ** 3) / 12, W: (b * alto * alto) / 6, signo, forma: 'pilar' };
 }
 
 let memo = { clave: '', c: null };
@@ -122,7 +122,7 @@ function resultadosFis(ctx, res) {
   const signo = est.M >= 0 ? 1 : -1;
   let c;
   try { c = calculo(p, s, signo); } catch (e) { return fallo(res, String(e.message ?? e)); }
-  const o = { M: est.M, N: est.N, larga: est.larga, directa: est.directa, buenaAdh: est.buenaAdh };
+  const o = { M: est.M, N: est.N, norma: id, larga: est.larga, directa: est.directa, buenaAdh: est.buenaAdh };
   const r = fisuraSeccion(c, o);
   const wmax = wmaxDeNorma(id);
   if (r.error) return fallo(res, textoError(r.error));
@@ -146,6 +146,9 @@ function resultadosFis(ctx, res) {
     const ok = wk <= wmax + 1e-9;
     res.append(veredicto(ok ? 'cumple' : 'nocumple', ok ? t('fis.ver.cumple') : t('fis.ver.no'), t('fis.aprov'), fmt(wk / wmax, 2), t('fis.ver.ecu', q(wk, 'wk'), q(wmax, 'wk'), ok, NOMBRE(id)), Math.min(wk / wmax / 1.25, 1)));
   }
+  const mn = r.minima;
+  if (mn && mn.motivo === 'ala') res.append(aviso(t('fis.min.ala'), 'info'));
+  else if (mn && mn.req !== null && !mn.ok) res.append(aviso(t('fis.min.no', fmt(mn.dis, 0), fmt(mn.req, 0), NOMBRE(id), mn.ref)));
   const centro = h('article', { class: 'panel tarjeta' });
   const dcha = h('article', { class: 'panel tarjeta' });
   poner(centro, h('h2', {}, t('fis.t.dibujo')), h('div', { class: 'lienzo', html: dibujoFisuracion(c.geo, s, r, r.det?.[id]?.hef ?? null) }), cifrasArmadura(r), pie());
@@ -165,7 +168,7 @@ function resultadosFis(ctx, res) {
   res.append(h('div', { class: 'cuerpo' }, centro, dcha));
 }
 
-/** Armadura traccionada que usa el cálculo: primer lecho junto a la cara traccionada. */
+/** Armadura traccionada que usa el cálculo: primera capa junto a la cara traccionada. */
 function cifrasArmadura(r) {
   if (r.sinFisurar || !r.g) return null;
   const g = r.g;
@@ -218,7 +221,7 @@ function trazas(r, id) {
   const D = r.det;
   const f = [];
   f.push({ id: 'mfis', nom: t('fis.r.Mfis'), val: q(r.Mfis, 'M'),
-    cuenta: `<span class="f">${t('fis.f.Mfis')}</span><span class="n">f<sub>ct,m,fl</sub> = ${n(r.m.fctfl)} MPa · b·h = ${n(r.b, 0)}×${n(r.h, 0)} mm</span><span class="art">EHE-08 · 39.1 · EC-2 · (3.23)</span>` });
+    cuenta: `<span class="f">${t(id === 'EHE08' ? 'fis.f.Mfis.EHE08' : 'fis.f.Mfis.EC2')}</span><span class="n">${id === 'EHE08' ? `f<sub>ct,m,fl</sub> = ${n(r.m.fctfl)}` : `f<sub>ctm</sub> = ${n(r.m.fctm)}`} MPa · b·h = ${n(r.b, 0)}×${n(r.h, 0)} mm</span>${art(id, id === 'EHE08' ? '49.2.3, 39.1' : id === 'EC2-2004' ? '7.1(2)' : '9.1(2)-(3)')}` });
   f.push({ id: 'estado', nom: t('fis.r.estado'), val: `x ${n(r.e.x, 0)} mm`,
     cuenta: `<span class="f">${t('fis.f.estado')}</span><span class="n">σ<sub>s</sub> = ${n(r.e.ss, 1)} MPa · σ<sub>sr</sub> = ${n(r.e.ssr, 1)} MPa · ε<sub>1</sub> = ${n(r.e.e1 * 1000, 2)} ‰</span><span class="n">ø = ${n(r.g.fi, 1)} mm · n = ${r.g.n} · A<sub>s</sub> = ${n(r.g.As1, 0)} mm² · c = ${n(r.g.c, 0)} mm · s = ${n(r.g.s, 0)} mm</span>` });
   f.push({ id: 'ac', nom: t('fis.r.ac'), val: `${n(D[id].Acef, 0)} mm²`,
@@ -229,6 +232,11 @@ function trazas(r, id) {
     cuenta: [id].map((nn) => `<span class="f">${t(nn === 'EHE08' ? 'fis.f.esm.EHE08' : nn === 'EC2-2023' ? 'fis.f.esm.EC2-2023' : 'fis.f.esm.EC2')}</span><span class="n">ε<sub>sm</sub>${nn === 'EHE08' ? '' : ' − ε<sub>cm</sub>'} = ${n(D[nn].esm * 1000, 2)} ‰</span>${art(nn, REF[nn].esm)}`).join('') });
   f.push({ id: 'wk', nom: t('fis.r.wk'), val: q(r.wk[id], 'wk'),
     cuenta: [id].map((nn) => `<span class="f">${t(`fis.f.wk.${nn}`)}</span><span class="n">w<sub>k</sub> = ${n(r.wk[nn], 2)} mm${nn === 'EHE08' ? ` · β = ${n(D[nn].beta, 1)}` : ''}${nn === 'EC2-2023' ? ` · k<sub>1/r</sub> = ${n(D[nn].k1r, 3)}` : ''}</span>${art(nn, REF[nn].wk)}`).join('') });
+  const mn = r.minima;
+  if (mn && mn.req !== null) {
+    f.push({ id: 'min', nom: t('fis.r.min'), val: `${n(mn.dis, 0)} ${mn.ok ? '≥' : '<'} ${n(mn.req, 0)} mm²`,
+      cuenta: `<span class="f">${t(`fis.f.min.${id}`)}</span><span class="n">A<sub>s</sub> ${t('fis.min.dispuesta')} = ${n(mn.dis, 0)} mm² · A<sub>s,mín</sub> = ${n(mn.req, 0)} mm²</span>${art(id, mn.ref)}` });
+  }
   return f;
 }
 
