@@ -12,7 +12,7 @@ export default {
   norma: 'Code',
   pie: 'Web handbook, test version. Shortcuts: Ctrl K commands · Ctrl Z undo outside a field · Alt 1…4 modules.',
   pendiente: 'Not yet ported from Prontuario 3.1',
-  'rg.cero': 'Double-click: reset to zero',
+  'rg.cero': 'Double-click: reset to zero', 'rg.bloquear': 'Lock: the variable stays put and narrows the ranges of the others', 'rg.desbloquear': 'Unlock', 'rg.banda': 'Compatible band',
   'm.proyecto': 'Project data', 'm.materiales': 'Materials', 'm.secciones': 'Sections', 'm.flexion': 'Bending',
   nombre: 'Name', forma: 'Shape', seccion: 'Section', hormigon: 'Concrete', acero: 'Steel', elemento: 'Member',
   viga: 'Beam', losa: 'Slab', muro: 'Wall', pilar: 'Column',

@@ -89,7 +89,7 @@ export function modeloTensional(geo, hormigonMat, aceroMat, o) {
   const mI = modeloEsviada(geo, ley.integra, ac);
   const mF = modeloEsviada(geo, ley.fisurada, ac);
   const pts = geo.contornos.flatMap((c) => (c.signo > 0 ? c.pts : []));
-  return { ley, acero: ac, mI, mF, xc: mI.xc, yc: mI.yc, vertices: pts, puntos: mI.puntos, Ac: mI.Ac, armadura: { barras: geo.barras, franjas: geo.franjas ?? [] } };
+  return { mat: { hormigon: hormigonMat, acero: aceroMat }, ley, acero: ac, mI, mF, xc: mI.xc, yc: mI.yc, vertices: pts, puntos: mI.puntos, Ac: mI.Ac, armadura: { barras: geo.barras, franjas: geo.franjas ?? [] } };
 }
 
 // ---------------------------------------------------------------- planos

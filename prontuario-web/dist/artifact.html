@@ -1207,6 +1207,60 @@ tr.et-act td { font-weight: 650; }
 .fis-pie { order: 4; }
 .fis-tabla { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
 .fis-tabla .tabla-scroll { width: 100%; }
+
+/* Análisis tensional: valor distinto del esperado en el estado límite (rojo, con su (i)) y nota de EC-2 con fondo ámbar */
+.campo.disc .caja { border-color: var(--no); background: var(--no-fondo); }
+.campo.disc > label, .campo.disc .etq { color: var(--no); }
+details.pleg.pleg-amb { background: var(--atencion-fondo); border-color: color-mix(in oklch, var(--atencion) 35%, transparent); }
+details.pleg.pleg-amb > summary { color: var(--atencion); }
+details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
+.et-fc .campo > label { overflow: visible; white-space: nowrap; text-overflow: clip; }
+
+/* Gauges con rango total, banda compatible y candado (Análisis tensional, modo ε, κ) */
+.regleta.rg-gauge { grid-template-columns: 22px max-content minmax(0, 1fr) 9ch; --banda: color-mix(in oklch, var(--acento) 50%, transparent); }
+.regleta.rg-gauge.sin-etq { grid-template-columns: 22px minmax(0, 1fr) 9ch; }
+.rg-riel { position: relative; min-width: 0; padding-bottom: 13px; }
+.rg-banda { position: absolute; left: calc(8px + (100% - 16px) * var(--b0, 0) - 4px); width: calc((100% - 16px) * (var(--b1, 1) - var(--b0, 0)) + 8px); top: 4px; height: 14px; border-radius: 7px; background: var(--banda); pointer-events: none; }
+.rg-riel > input[type=range] { position: relative; z-index: 1; }
+.rg-ext { position: absolute; top: 22px; font-size: 10px; line-height: 12px; color: var(--tinta-3); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.rg-ext.izq { left: 0; }
+.rg-ext.der { right: 0; }
+.rg-cand { width: 22px; height: 22px; padding: 0; display: grid; place-items: center; background: none; border: 0; border-radius: 6px; cursor: pointer; color: var(--tinta-3); }
+.rg-cand svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; }
+.rg-cand:hover { background: var(--suelo); color: var(--tinta); }
+.rg-cand[aria-pressed="true"] { color: var(--acento); background: var(--acento-suave); }
+.rg-cand[aria-pressed="true"] svg rect { fill: currentColor; }
+.regleta.bloq input[type=range] { opacity: .55; cursor: not-allowed; }
+/* Gauge sin relleno: pista neutra uniforme; el valor lo da el cursor y lo azul es solo la banda compatible */
+.regleta.rg-gauge input[type=range]::-webkit-slider-runnable-track { background: oklch(88% 0.008 250); }
+.regleta.rg-gauge input[type=range]::-moz-range-track { background: oklch(88% 0.008 250); }
+.regleta.fuera input[type=range]::-webkit-slider-runnable-track { background: var(--no-fondo); border-color: var(--no); }
+.regleta.fuera input[type=range]::-moz-range-track { background: var(--no-fondo); border-color: var(--no); }
+.regleta.fuera input[type=range]::-webkit-slider-thumb { background: var(--no); box-shadow: 0 0 0 1px var(--no); }
+.regleta.fuera input[type=range]::-moz-range-thumb { background: var(--no); box-shadow: 0 0 0 1px var(--no); }
+.regleta.fuera .rg-v { color: var(--no); }
+.et-lienzo { flex: 0 0 auto !important; }
+.regleta.rg-gauge .rg-et { min-width: 3.4em; }
+.et-lienzo svg.dib { max-height: calc(100vh - 410px) !important; }
+.regleta.rg-gauge { margin: 1px auto; } .et-reglas { gap: 0; }
+.tick.no-aplica { color: var(--tinta-3); cursor: not-allowed; } .tick.no-aplica input { cursor: not-allowed; } .et-der.no-aplica { color: var(--tinta-3); opacity: .7; }
+.et-reglas:has(.rg-gauge) { width: 100%; }
+.regleta.rg-gauge { width: 100%; margin: 1px 0; padding: 0 6px; box-sizing: border-box; }
+
+/* Análisis tensional: esfuerzos siempre sobre la figura */
+.et-esf { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--e2) var(--e5, 28px); padding: 2px 0 4px; font-size: calc(20px + var(--mas, 0px)); color: var(--tinta); flex: 0 0 auto; }
+.et-esf-v b { font-variant-numeric: tabular-nums; font-weight: 700; }
+.et-esf-u { color: var(--tinta-3); font-size: var(--t-s); }
+.et-esf-v.trac, .et-esf-v.trac .et-esf-u { color: var(--rosa); }
+
+/* Valor del cursor como caja de datos editable */
+.regleta.rg-edit { grid-template-columns: max-content minmax(0, 1fr) 14ch; }
+.regleta.rg-edit.sin-etq { grid-template-columns: minmax(0, 1fr) 14ch; }
+.regleta.rg-gauge.rg-edit { grid-template-columns: 22px max-content minmax(0, 1fr) 14ch; }
+.regleta.rg-gauge.rg-edit.sin-etq { grid-template-columns: 22px minmax(0, 1fr) 14ch; }
+.rg-caja { height: 26px; }
+.rg-caja input { font-weight: 600; font-variant-numeric: tabular-nums; color: var(--tinta); }
+.regleta.fuera .rg-caja input { color: var(--no); }
 </style>
 
 <header class="barra">
@@ -1506,8 +1560,8 @@ tr.et-act td { font-weight: 650; }
   var IDS_NORMAS = Object.keys(EXTRAS);
 
   // src/core/materiales.js
-  function hormigon({ nombre = "", fck, norma: norma2 = "EHE-98", gammaC, alfa: alfa2, alfaCC, ktc, kE, coefArido, tramos = 10, diag = "PR", refDiag = "fcm", puntos, tracc = false, calculo: calculo6 = false }) {
-    const n = normaMat(norma2);
+  function hormigon({ nombre = "", fck, norma: norma3 = "EHE-98", gammaC, alfa: alfa2, alfaCC, ktc, kE, coefArido, tramos = 10, diag = "PR", refDiag = "fcm", puntos, tracc = false, calculo: calculo6 = false }) {
+    const n = normaMat(norma3);
     if (!(fck > 0)) throw new Error("fck debe ser positivo");
     if (fck > n.fckMax) throw new Error(`${n.nombre}: esta versi\xF3n solo admite fck \u2264 ${n.fckMax} MPa`);
     const g = gammaC ?? n.gammaC;
@@ -1515,7 +1569,7 @@ tr.et-act td { font-weight: 650; }
     if (diag === "EC2" || diag === "puntos") {
       const E = n.Ec(fck, { kE, coefArido }) * 1e3;
       const fcd2 = a * fck / g;
-      const comp2 = diag === "EC2" ? compSargin(fck, norma2, { kE, coefArido, refDiag: calculo6 ? "fcd" : refDiag, fcd: fcd2 }) : compPuntos(puntos);
+      const comp2 = diag === "EC2" ? compSargin(fck, norma3, { kE, coefArido, refDiag: calculo6 ? "fcd" : refDiag, fcd: fcd2 }) : compPuntos(puntos);
       return {
         tipo: "hormigon",
         nombre,
@@ -1603,8 +1657,8 @@ tr.et-act td { font-weight: 650; }
     if (pts.some((p) => p[1] < 0)) throw new Error("Diagrama por puntos: las tensiones se dan en positivo (compresi\xF3n)");
     return pts.map(([e2, s]) => [-e2 / 1e3, -s * 1e3]);
   }
-  function acero({ nombre = "", fyk, norma: norma2 = "EHE-98", gammaS, Es, epsUd, ductilidad, rama = "horizontal", epsUdModo, k }) {
-    const n = normaMat(norma2);
+  function acero({ nombre = "", fyk, norma: norma3 = "EHE-98", gammaS, Es, epsUd, ductilidad, rama = "horizontal", epsUdModo, k }) {
+    const n = normaMat(norma3);
     if (!(fyk > 0)) throw new Error("fyk debe ser positivo");
     const g = gammaS ?? n.gammaS;
     const E = (Es ?? n.Es) * 1e3;
@@ -1668,15 +1722,15 @@ tr.et-act td { font-weight: 650; }
   function quiebros(mat) {
     return [...mat.comp.map((p) => p[0]), ...mat.tracc.map((p) => p[0])];
   }
-  function sigma(mat, eps2) {
-    const pts = eps2 < 0 ? mat.comp : mat.tracc;
+  function sigma(mat, eps3) {
+    const pts = eps3 < 0 ? mat.comp : mat.tracc;
     for (let j = 1; j < pts.length; j++) {
       const [e0, s0] = pts[j - 1];
       const [e1, s1] = pts[j];
-      const dentro2 = eps2 < 0 ? eps2 <= e0 && eps2 >= e1 : eps2 >= e0 && eps2 <= e1;
+      const dentro2 = eps3 < 0 ? eps3 <= e0 && eps3 >= e1 : eps3 >= e0 && eps3 <= e1;
       if (dentro2) {
         if (e1 === e0) return s1;
-        return s0 + (s1 - s0) * (eps2 - e0) / (e1 - e0);
+        return s0 + (s1 - s0) * (eps3 - e0) / (e1 - e0);
       }
     }
     return 0;
@@ -2380,9 +2434,9 @@ tr.et-act td { font-weight: 650; }
   function fisuradaArriba(geo, Ec2, Es, N, h2, Mfis) {
     const sec = seccionMotor(geo, lineal(Ec2, false), lineal(Es, true));
     const kappa = N === 0 || !(Mfis > 0) ? 1e-4 : Mfis / (Ec2 * h2.Ix);
-    const eps2 = planoLineal(sec, N, kappa, h2.yg);
-    const { M: M2 } = esfuerzos(sec, eps2, kappa, h2.yg);
-    const x = eps2 < 0 ? -eps2 / kappa : 0;
+    const eps3 = planoLineal(sec, N, kappa, h2.yg);
+    const { M: M2 } = esfuerzos(sec, eps3, kappa, h2.yg);
+    const x = eps3 < 0 ? -eps3 / kappa : 0;
     return { Ifis: M2 / (kappa * Ec2), x: Math.min(x, geo.h) };
   }
   var fctmFlexotraccion = (fctm, h2) => Math.max((1.6 - h2) * fctm, fctm);
@@ -2646,6 +2700,9 @@ tr.et-act td { font-weight: 650; }
     pie: "Prontuario web, versi\xF3n de prueba. Atajos: Ctrl K comandos \xB7 Ctrl Z deshacer fuera de un campo \xB7 Alt 1\u20264 m\xF3dulos.",
     pendiente: "Pendiente de migrar del Prontuario 3.1",
     "rg.cero": "Doble clic: llevar a cero",
+    "rg.bloquear": "Bloquear: la variable no se mueve y estrecha los rangos de las dem\xE1s",
+    "rg.desbloquear": "Desbloquear",
+    "rg.banda": "Banda compatible",
     "m.proyecto": "Datos de proyecto",
     "m.materiales": "Materiales",
     "m.secciones": "Secciones",
@@ -3687,6 +3744,9 @@ tr.et-act td { font-weight: 650; }
     pie: "Web handbook, test version. Shortcuts: Ctrl K commands \xB7 Ctrl Z undo outside a field \xB7 Alt 1\u20264 modules.",
     pendiente: "Not yet ported from Prontuario 3.1",
     "rg.cero": "Double-click: reset to zero",
+    "rg.bloquear": "Lock: the variable stays put and narrows the ranges of the others",
+    "rg.desbloquear": "Unlock",
+    "rg.banda": "Compatible band",
     "m.proyecto": "Project data",
     "m.materiales": "Materials",
     "m.secciones": "Sections",
@@ -4674,12 +4734,12 @@ tr.et-act td { font-weight: 650; }
     "cor.ver.min": "Cuant\xEDa m\xEDnima",
     "cor.ver.valida": "Armadura calculada",
     "cor.ver.aum": "Aumentar la secci\xF3n",
-    "cor.ver.ecu": (V, Vu, ok, manda) => `${sub5("V", "Ed")} <b>${V}</b> ${ok ? "\u2264" : ">"} ${sub5("V", "u")} <b>${Vu}</b> \xB7 ${manda}`,
+    "cor.ver.ecu": (V2, Vu, ok, manda) => `${sub5("V", "Ed")} <b>${V2}</b> ${ok ? "\u2264" : ">"} ${sub5("V", "u")} <b>${Vu}</b> \xB7 ${manda}`,
     "cor.manda.biela": "manda la compresi\xF3n oblicua V<sub>u1</sub>",
     "cor.manda.arm": "manda la tracci\xF3n en el alma V<sub>u2</sub>",
     "cor.manda.sin": "pieza sin armadura de cortante",
-    "cor.ver.nec": (V, Vu1) => `V<sub>Ed</sub> <b>${V}</b> con V<sub>u1</sub> <b>${Vu1}</b>`,
-    "cor.ver.necAum": (V, Vu1) => `V<sub>Ed</sub> <b>${V}</b> &gt; V<sub>u1</sub> <b>${Vu1}</b>: la biela comprimida agota la secci\xF3n`,
+    "cor.ver.nec": (V2, Vu1) => `V<sub>Ed</sub> <b>${V2}</b> con V<sub>u1</sub> <b>${Vu1}</b>`,
+    "cor.ver.necAum": (V2, Vu1) => `V<sub>Ed</sub> <b>${V2}</b> &gt; V<sub>u1</sub> <b>${Vu1}</b>: la biela comprimida agota la secci\xF3n`,
     "cor.aprov": "Aprovechamiento",
     "cor.armNec": "A<sub>sw</sub>/s necesaria",
     "cor.c.Vu1": sub5("V", "u1"),
@@ -4720,7 +4780,7 @@ tr.et-act td { font-weight: 650; }
     "cor.f.min": "A<sub>sw</sub>/s \xB7 f<sub>y\u03B1,d</sub>/sen \u03B1 \u2265 f<sub>ct,m</sub>/7,5 \xB7 b<sub>0</sub>",
     "cor.f.sep": "s<sub>t</sub> \u2264 0,75 d(1 + cotg \u03B1) \u2264 600 mm si V<sub>Ed</sub> \u2264 V<sub>u1</sub>/5 \xB7 \u2264 0,60 d(1 + cotg \u03B1) \u2264 450 si \u2264 2/3 V<sub>u1</sub> \xB7 \u2264 0,30 d(1 + cotg \u03B1) \u2264 300 en los dem\xE1s \xB7 entre ramas \u2264 d y \u2264 500 mm",
     "cor.f.long": "\u0394T = V<sub>rd</sub>\xB7cotg \u03B8 \u2212 (V<sub>su</sub>/2)(cotg \u03B8 + cotg \u03B1) \xB7 decalaje s<sub>d</sub> = z\xB7\u0394T/V<sub>rd</sub>",
-    "cor.v.Vu1": (K, f1cd, V) => `K = ${K} \xB7 f<sub>1cd</sub> = ${f1cd} MPa \u2192 ${V}`,
+    "cor.v.Vu1": (K, f1cd, V2) => `K = ${K} \xB7 f<sub>1cd</sub> = ${f1cd} MPa \u2192 ${V2}`,
     "cor.v.concMin": (c, m) => `F\xF3rmula general ${c} kN \xB7 m\xEDnimo ${m} kN: vale el mayor`,
     "cor.sinReduccion": "sin reducir",
     "cor.cmdComprobar": "Cortante: comprobar",
@@ -4729,7 +4789,7 @@ tr.et-act td { font-weight: 650; }
     "cor.noOk": "no cumple",
     "cor.avs.sep": (s, smax, art6 = "44.2.3.4.1") => `La separaci\xF3n s = ${s} mm supera el m\xE1ximo ${smax} mm de ${art6} para este cortante`,
     "cor.avs.trans": (m) => `La separaci\xF3n entre ramas no puede pasar de ${m} mm (d y 500 mm); comprueba el n\xFAmero de ramas`,
-    "cor.avs.noCumple": (V, Vu) => `V<sub>Ed</sub> ${V} es mayor que V<sub>u</sub> ${Vu}`,
+    "cor.avs.noCumple": (V2, Vu) => `V<sub>Ed</sub> ${V2} es mayor que V<sub>u</sub> ${Vu}`,
     // Avisos del núcleo
     "cor.av.fyd400": (f) => `f<sub>y\u03B1,d</sub> se limita a 400 MPa en los cercos (40.2; el acero dar\xEDa ${f} MPa)`,
     "cor.av.rho": (r) => `\u03C1<sub>l</sub> = ${r} \u2030 se limita a 20 \u2030 en las f\xF3rmulas`,
@@ -4766,9 +4826,9 @@ tr.et-act td { font-weight: 650; }
     "cor.ec.manda.biela": "manda la biela V<sub>Rd,m\xE1x</sub>",
     "cor.ec.manda.arm": "manda la armadura V<sub>Rd,s</sub>",
     "cor.ec.manda.sin": "pieza sin armadura de cortante (V<sub>Rd,c</sub>)",
-    "cor.ec.ver.ecu": (V, Vu, ok, manda) => `${sub5("V", "Ed")} <b>${V}</b> ${ok ? "\u2264" : ">"} ${sub5("V", "Rd")} <b>${Vu}</b> \xB7 ${manda}`,
-    "cor.ec.ver.nec": (V, Vu1) => `V<sub>Ed</sub> <b>${V}</b> con V<sub>Rd,m\xE1x</sub> <b>${Vu1}</b>`,
-    "cor.ec.ver.necAum": (V, Vu1) => `V<sub>Ed</sub> <b>${V}</b> &gt; V<sub>Rd,m\xE1x</sub> <b>${Vu1}</b>: la biela comprimida agota la secci\xF3n`,
+    "cor.ec.ver.ecu": (V2, Vu, ok, manda) => `${sub5("V", "Ed")} <b>${V2}</b> ${ok ? "\u2264" : ">"} ${sub5("V", "Rd")} <b>${Vu}</b> \xB7 ${manda}`,
+    "cor.ec.ver.nec": (V2, Vu1) => `V<sub>Ed</sub> <b>${V2}</b> con V<sub>Rd,m\xE1x</sub> <b>${Vu1}</b>`,
+    "cor.ec.ver.necAum": (V2, Vu1) => `V<sub>Ed</sub> <b>${V2}</b> &gt; V<sub>Rd,m\xE1x</sub> <b>${Vu1}</b>: la biela comprimida agota la secci\xF3n`,
     "cor.ec.c.vmax": sub5("V", "Rd,m\xE1x"),
     "cor.ec.c.vs": sub5("V", "Rd,s"),
     "cor.ec.c.vc": sub5("V", "Rd,c"),
@@ -4896,8 +4956,8 @@ tr.et-act td { font-weight: 650; }
     "cor.manda.biela": "web crushing V<sub>u1</sub> governs",
     "cor.manda.arm": "web tension V<sub>u2</sub> governs",
     "cor.manda.sin": "member without shear reinforcement",
-    "cor.ver.nec": (V, Vu1) => `V<sub>Ed</sub> <b>${V}</b> with V<sub>u1</sub> <b>${Vu1}</b>`,
-    "cor.ver.necAum": (V, Vu1) => `V<sub>Ed</sub> <b>${V}</b> &gt; V<sub>u1</sub> <b>${Vu1}</b>: the compression strut fails`,
+    "cor.ver.nec": (V2, Vu1) => `V<sub>Ed</sub> <b>${V2}</b> with V<sub>u1</sub> <b>${Vu1}</b>`,
+    "cor.ver.necAum": (V2, Vu1) => `V<sub>Ed</sub> <b>${V2}</b> &gt; V<sub>u1</sub> <b>${Vu1}</b>: the compression strut fails`,
     "cor.armNec": "Required A<sub>sw</sub>/s",
     "cor.t.dibujo": "Section and truss",
     "cor.t.res": "Results",
@@ -4949,9 +5009,9 @@ tr.et-act td { font-weight: 650; }
     "cor.ec.manda.biela": "the strut V<sub>Rd,max</sub> governs",
     "cor.ec.manda.arm": "the reinforcement V<sub>Rd,s</sub> governs",
     "cor.ec.manda.sin": "member without shear reinforcement (V<sub>Rd,c</sub>)",
-    "cor.ec.ver.ecu": (V, Vu, ok, manda) => `${sub6("V", "Ed")} <b>${V}</b> ${ok ? "\u2264" : ">"} ${sub6("V", "Rd")} <b>${Vu}</b> \xB7 ${manda}`,
-    "cor.ec.ver.nec": (V, Vu1) => `V<sub>Ed</sub> <b>${V}</b> with V<sub>Rd,max</sub> <b>${Vu1}</b>`,
-    "cor.ec.ver.necAum": (V, Vu1) => `V<sub>Ed</sub> <b>${V}</b> &gt; V<sub>Rd,max</sub> <b>${Vu1}</b>: the compression strut is exhausted`,
+    "cor.ec.ver.ecu": (V2, Vu, ok, manda) => `${sub6("V", "Ed")} <b>${V2}</b> ${ok ? "\u2264" : ">"} ${sub6("V", "Rd")} <b>${Vu}</b> \xB7 ${manda}`,
+    "cor.ec.ver.nec": (V2, Vu1) => `V<sub>Ed</sub> <b>${V2}</b> with V<sub>Rd,max</sub> <b>${Vu1}</b>`,
+    "cor.ec.ver.necAum": (V2, Vu1) => `V<sub>Ed</sub> <b>${V2}</b> &gt; V<sub>Rd,max</sub> <b>${Vu1}</b>: the compression strut is exhausted`,
     "cor.ec.c.vmax": sub6("V", "Rd,max"),
     "cor.ec.c.vs": sub6("V", "Rd,s"),
     "cor.ec.c.vc": sub6("V", "Rd,c"),
@@ -5316,11 +5376,11 @@ tr.et-act td { font-weight: 650; }
     "pun.nPerAyuda": "N\xFAmero de per\xEDmetros de cercos (al menos 2 en EC-2)",
     // Veredicto y cifras
     "pun.armNec": "A<sub>sw</sub> necesaria",
-    "pun.ver.ecu": (V, Vu, ok, manda) => `${sub9("V", "Ed")} <b>${V}</b> ${ok ? "\u2264" : ">"} ${sub9("V", "u")} <b>${Vu}</b> \xB7 ${manda}`,
-    "pun.ver.necAum": (V, Vmax) => `${sub9("V", "Ed")} <b>${V}</b> &gt; ${sub9("V", "m\xE1x")} <b>${Vmax}</b>: la compresi\xF3n junto al pilar agota la losa`,
+    "pun.ver.ecu": (V2, Vu, ok, manda) => `${sub9("V", "Ed")} <b>${V2}</b> ${ok ? "\u2264" : ">"} ${sub9("V", "u")} <b>${Vu}</b> \xB7 ${manda}`,
+    "pun.ver.necAum": (V2, Vmax) => `${sub9("V", "Ed")} <b>${V2}</b> &gt; ${sub9("V", "m\xE1x")} <b>${Vmax}</b>: la compresi\xF3n junto al pilar agota la losa`,
     "pun.ver.sinArm": "No hace falta armadura",
-    "pun.ver.sin": (V, Vc) => `${sub9("V", "Ed")} <b>${V}</b> \u2264 ${sub9("V", "u")} sin armadura <b>${Vc}</b>`,
-    "pun.ver.nec": (n, V) => `${n} per\xEDmetro${n === "1" ? "" : "s"} de cercos para ${sub9("V", "Ed")} <b>${V}</b>`,
+    "pun.ver.sin": (V2, Vc) => `${sub9("V", "Ed")} <b>${V2}</b> \u2264 ${sub9("V", "u")} sin armadura <b>${Vc}</b>`,
+    "pun.ver.nec": (n, V2) => `${n} per\xEDmetro${n === "1" ? "" : "s"} de cercos para ${sub9("V", "Ed")} <b>${V2}</b>`,
     "pun.manda.hormigon": "losa sin armadura",
     "pun.manda.biela": "manda la compresi\xF3n junto al pilar",
     "pun.manda.cercos": "mandan los cercos",
@@ -5528,10 +5588,10 @@ tr.et-act td { font-weight: 650; }
     "pun.nPer": "Perim.",
     "pun.nPerAyuda": "Number of link perimeters (at least 2 in EC-2)",
     "pun.armNec": "Required A<sub>sw</sub>",
-    "pun.ver.necAum": (V, Vmax) => `${sub10("V", "Ed")} <b>${V}</b> &gt; ${sub10("V", "max")} <b>${Vmax}</b>: compression next to the column crushes the slab`,
+    "pun.ver.necAum": (V2, Vmax) => `${sub10("V", "Ed")} <b>${V2}</b> &gt; ${sub10("V", "max")} <b>${Vmax}</b>: compression next to the column crushes the slab`,
     "pun.ver.sinArm": "No reinforcement needed",
-    "pun.ver.sin": (V, Vc) => `${sub10("V", "Ed")} <b>${V}</b> \u2264 ${sub10("V", "u")} without reinforcement <b>${Vc}</b>`,
-    "pun.ver.nec": (n, V) => `${n} link perimeter${n === "1" ? "" : "s"} for ${sub10("V", "Ed")} <b>${V}</b>`,
+    "pun.ver.sin": (V2, Vc) => `${sub10("V", "Ed")} <b>${V2}</b> \u2264 ${sub10("V", "u")} without reinforcement <b>${Vc}</b>`,
+    "pun.ver.nec": (n, V2) => `${n} link perimeter${n === "1" ? "" : "s"} for ${sub10("V", "Ed")} <b>${V2}</b>`,
     "pun.manda.hormigon": "slab without reinforcement",
     "pun.manda.biela": "compression next to the column governs",
     "pun.manda.cercos": "the links govern",
@@ -5671,7 +5731,7 @@ tr.et-act td { font-weight: 650; }
     "pun.f.vmaxEHE": "F<sub>sd,ef</sub> = \u03B2\xB7V<sub>Ed</sub> \u2264 0.5\xB7f<sub>1cd</sub>\xB7u<sub>0</sub>\xB7d",
     "pun.r.vRdc": "v<sub>Rd,c</sub> / V<sub>Rd,c</sub>",
     "pun.v.minVal": (a, b) => `\u03C1<sub>w</sub> = ${a} \u2030 \u2265 \u03C1<sub>w,min</sub> = ${b} \u2030`,
-    "pun.ver.ecu": (V, Vu, ok, manda) => `${sub10("V", "Ed")} <b>${V}</b> ${ok ? "\u2264" : ">"} ${sub10("V", "u")} <b>${Vu}</b> \xB7 ${manda}`,
+    "pun.ver.ecu": (V2, Vu, ok, manda) => `${sub10("V", "Ed")} <b>${V2}</b> ${ok ? "\u2264" : ">"} ${sub10("V", "u")} <b>${Vu}</b> \xB7 ${manda}`,
     "pun.tipoRama": "Reinforcement type",
     "pun.tipoCerrado": "Closed stirrups",
     "pun.tipoAbierto": "Open stirrups or single legs",
@@ -5793,13 +5853,13 @@ tr.et-act td { font-weight: 650; }
 
   // src/i18n/estadoTensional.es.js
   var estadoTensional_es_default = {
-    "menu.estadoTensional": "Estado tensional",
-    "est.subtitulo": "Deformaciones y tensiones de la secci\xF3n en servicio, dado el estado en esfuerzos o en deformaciones",
+    "menu.estadoTensional": "An\xE1lisis tensional",
+    "est.subtitulo": "Deformaciones y tensiones de la secci\xF3n en ELS o en ELU, dado el estado en esfuerzos o en deformaciones",
     "est.modo": "Datos del estado",
     "est.m.NM": "N, M<sub>x</sub>, M<sub>y</sub>",
     "est.m.eK": "\u03B5<sub>cdg</sub>, \u03BA<sub>x</sub>, \u03BA<sub>y</sub>",
     "est.m.sup": "\u03B5<sub>sup</sub>, \u03B2, x",
-    "est.gEsfuerzos": "Esfuerzos de servicio",
+    "est.gEsfuerzos": "Esfuerzos",
     "est.gPlano": "Plano de deformaciones",
     "est.nombreN": "Axil",
     "est.nombreMx": "Momento respecto al eje horizontal",
@@ -5814,15 +5874,16 @@ tr.et-act td { font-weight: 650; }
     "est.nombreX": "Profundidad de la fibra neutra",
     "est.infoSup": "\u03B5_sup es la deformaci\xF3n de la fibra m\xE1s comprimida, \u03B2 el \xE1ngulo (antihorario desde +x) de la fibra neutra (\u03B2 = 0: neutra horizontal, comprime la cara superior) y x la profundidad de la fibra neutra medida desde ella. x = \u221E es compresi\xF3n uniforme. Si toda la secci\xF3n est\xE1 en tracci\xF3n, x sale negativa y \u03B5_sup tambi\xE9n.",
     "est.refX": "\u2265 100 000 mm: compresi\xF3n uniforme",
-    "est.gHormigon": "Hormig\xF3n en servicio",
-    "est.gAcero": "Acero en servicio",
-    "est.gammaS": "\u03B3<sub>S</sub> [\u2014]",
+    "est.tensiones": "TENSIONES",
+    "est.gHormigon": "Hormig\xF3n",
+    "est.gAcero": "Acero",
+    "est.gammaS": "\u03B3<sub>S</sub>",
     "est.infoGammaS": "Acero: se usa la ley de su material (bilineal), con su \u03B3S. Con \u03B3S = 1,00 la meseta es f_yk; con el de c\xE1lculo, f_yk/\u03B3S. Se parte del \u03B3S del material de la secci\xF3n.",
     "est.avPlast": "La armadura ha llegado a la meseta de su ley (plastifica): el estado no es de servicio.",
     "est.avEud": "La armadura supera la deformaci\xF3n \xFAltima de su ley (ah\xED la tensi\xF3n es nula): el estado no es de servicio.",
-    "est.gammaC": "\u03B3<sub>C</sub> [\u2014]",
-    "est.alfaCC": "\u03B1<sub>cc</sub> [\u2014]",
-    "est.phi": "\u03C6(t,t<sub>0</sub>) [\u2014]",
+    "est.gammaC": "\u03B3<sub>C</sub>",
+    "est.alfaCC": "\u03B1<sub>cc</sub>",
+    "est.phi": "\u03C6",
     "est.infoGamma": "Propiedades del hormig\xF3n: con \u03B3C = 1,00 y \u03B1cc = 1,00 se usan las caracter\xEDsticas; con los valores de c\xE1lculo, las minoradas. Se parte de los del material de la secci\xF3n.",
     "est.infoPhi": "Coeficiente de fluencia que estira el eje de deformaciones del diagrama (m\xE9todo del m\xF3dulo efectivo). 0 = carga instant\xE1nea.",
     "est.lineal": "Ley lineal (E<sub>cm</sub>)",
@@ -5867,15 +5928,34 @@ tr.et-act td { font-weight: 650; }
     "est.p.estadoSub": "Se calcula con la secci\xF3n \xEDntegra y, si la tracci\xF3n supera f_ctm, sin resistencia a tracci\xF3n.",
     "est.pFibras": "Fibras",
     "est.infinito": "\u221E",
-    "p.estadoTensional": "Estado tensional ELS"
+    "p.estadoTensional": "An\xE1lisis tensional ELS ELU",
+    "est.noELU.phi": "En ELU no interviene la fluencia: la ley es la de c\xE1lculo del material.",
+    "est.noELU.k": "En ELU no se limitan las tensiones: los l\xEDmites son las deformaciones \xFAltimas (\u03B5_ud, \u03B5_cu y el pivote C).",
+    "est.noELU.lineal": "En ELU no se usa la ley lineal: la ley es la de c\xE1lculo del material.",
+    "est.estadoLimite": "Estado l\xEDmite",
+    "est.gLimites": "L\xEDmites del estado",
+    "est.kc": "k<sub>c</sub>",
+    "est.ks": "k<sub>s</sub>",
+    "est.infoKc": "L\xEDmite de compresi\xF3n del hormig\xF3n en servicio, como fracci\xF3n de f_ck (0,60 por defecto, EC-2 7.2(2)). Se pasa a deformaci\xF3n con la ley del hormig\xF3n.",
+    "est.infoKs": "L\xEDmite de tracci\xF3n del acero en servicio, como fracci\xF3n de f_yk (0,80 por defecto, EC-2 7.2(5); 1,00 si la tracci\xF3n viene de una deformaci\xF3n impuesta). Se pasa a deformaci\xF3n con la ley del acero.",
+    "est.infoDist": (v2, e2) => `Distinto de ${v2}, el valor esperado en ${e2}. Se usa el que has puesto, sin cambiar la ley del material.`,
+    "est.leyNo.hormigon": "Este m\xF3dulo solo admite hormig\xF3n con par\xE1bola-rect\xE1ngulo o Sargin: con otra ley no se calcula (a\xFAn no implementado).",
+    "est.leyNo.acero": "Este m\xF3dulo solo admite acero con ley bilineal: con otra ley no se calcula (a\xFAn no implementado).",
+    "est.fuera.hormigon": (e2, d) => `Fuera de ${e2}: la fibra m\xE1s comprimida pasa en ${d} \u2030 del l\xEDmite de deformaci\xF3n del hormig\xF3n.`,
+    "est.fuera.acero": (e2, d) => `Fuera de ${e2}: la armadura pasa en ${d} \u2030 del l\xEDmite de deformaci\xF3n del acero.`,
+    "est.fuera.pivote": (e2, d) => `Fuera de ${e2}: el plano pasa en ${d} \u2030 del pivote C (deformaci\xF3n de pico del hormig\xF3n).`,
+    "est.ec2.titulo": "L\xEDmites de tensi\xF3n en servicio (EC-2, 7.2)",
+    "est.ec2.c": "<b>7.2(2)</b> Para evitar fisuras longitudinales, microfisuraci\xF3n y fluencia elevada, la compresi\xF3n del hormig\xF3n se limita a k<sub>1</sub>\xB7f<sub>ck</sub> (k<sub>1</sub> = 0,60 recomendado) en las clases de exposici\xF3n XD, XF y XS.",
+    "est.ec2.k": "<b>7.2(3)</b> Si la tensi\xF3n en el hormig\xF3n bajo cargas cuasipermanentes es menor que k<sub>2</sub>\xB7f<sub>ck</sub> (0,45), la fluencia es lineal y puede aceptarse el coeficiente \u03C6. Con \u03B1<sub>cc</sub> = 1 y \u03B3<sub>C</sub> = 1 este m\xF3dulo trabaja con el valor caracter\xEDstico.",
+    "est.ec2.s": "<b>7.2(5)</b> La tensi\xF3n de tracci\xF3n de la armadura bajo la combinaci\xF3n caracter\xEDstica se limita a k<sub>3</sub>\xB7f<sub>yk</sub> (0,80); si la tracci\xF3n proviene de una deformaci\xF3n impuesta, a k<sub>4</sub>\xB7f<sub>yk</sub> (1,00)."
   };
 
   // src/i18n/estadoTensional.en.js
   var estadoTensional_en_default = {
-    "menu.estadoTensional": "Stress state",
-    "est.subtitulo": "Strains and stresses of the section in service, given the state in forces or in strains",
+    "menu.estadoTensional": "Stress analysis",
+    "est.subtitulo": "Strains and stresses of the section at SLS or ULS, given the state in forces or in strains",
     "est.modo": "State data",
-    "est.gEsfuerzos": "Service forces",
+    "est.gEsfuerzos": "Forces",
     "est.gPlano": "Strain plane",
     "est.nombreN": "Axial force",
     "est.nombreMx": "Moment about the horizontal axis",
@@ -5890,9 +5970,10 @@ tr.et-act td { font-weight: 650; }
     "est.nombreX": "Neutral axis depth",
     "est.infoSup": "\u03B5_sup is the strain of the most compressed fibre, \u03B2 the angle (counter-clockwise from +x) of the neutral axis (\u03B2 = 0: horizontal neutral axis, top face compressed) and x the neutral axis depth measured from it. x = \u221E is uniform compression. If the whole section is in tension, x and \u03B5_sup are negative.",
     "est.refX": "\u2265 100 000 mm: uniform compression",
-    "est.gHormigon": "Concrete in service",
-    "est.gAcero": "Steel in service",
-    "est.gammaS": "\u03B3<sub>S</sub> [\u2014]",
+    "est.tensiones": "STRESSES",
+    "est.gHormigon": "Concrete",
+    "est.gAcero": "Steel",
+    "est.gammaS": "\u03B3<sub>S</sub>",
     "est.infoGammaS": "Steel: the law of its material (bilinear) is used, with its \u03B3S. With \u03B3S = 1.00 the plateau is f_yk; with the design value, f_yk/\u03B3S. It starts from the \u03B3S of the section material.",
     "est.avPlast": "The reinforcement has reached the plateau of its law (it yields): this is not a service state.",
     "est.avEud": "The reinforcement exceeds the ultimate strain of its law (stress is zero there): this is not a service state.",
@@ -5929,7 +6010,26 @@ tr.et-act td { font-weight: 650; }
     "est.der": "right",
     "est.p.estado": "Section state in service",
     "est.p.estadoSub": "Computed with the uncracked section and, if tension exceeds f_ctm, with no tensile strength.",
-    "p.estadoTensional": "SLS stress state"
+    "p.estadoTensional": "Stress analysis SLS ULS",
+    "est.noELU.phi": "At ULS creep does not apply: the law is the material design law.",
+    "est.noELU.k": "At ULS stresses are not limited: the limits are the ultimate strains (\u03B5_ud, \u03B5_cu and pivot C).",
+    "est.noELU.lineal": "At ULS the linear law is not used: the law is the material design law.",
+    "est.estadoLimite": "Limit state",
+    "est.gLimites": "State limits",
+    "est.kc": "k<sub>c</sub>",
+    "est.ks": "k<sub>s</sub>",
+    "est.infoKc": "Service compression limit of the concrete as a fraction of f_ck (0.60 by default, EC-2 7.2(2)). Converted to strain with the concrete law.",
+    "est.infoKs": "Service tension limit of the steel as a fraction of f_yk (0.80 by default, EC-2 7.2(5); 1.00 if the tension comes from an imposed deformation). Converted to strain with the steel law.",
+    "est.infoDist": (v2, e2) => `Different from ${v2}, the expected value at ${e2}. The value you entered is used; the material law is not changed.`,
+    "est.leyNo.hormigon": "This module only supports concrete with parabola-rectangle or Sargin laws: with another law it does not calculate (not implemented yet).",
+    "est.leyNo.acero": "This module only supports steel with a bilinear law: with another law it does not calculate (not implemented yet).",
+    "est.fuera.hormigon": (e2, d) => `Outside ${e2}: the most compressed fibre exceeds the concrete strain limit by ${d} \u2030.`,
+    "est.fuera.acero": (e2, d) => `Outside ${e2}: the reinforcement exceeds the steel strain limit by ${d} \u2030.`,
+    "est.fuera.pivote": (e2, d) => `Outside ${e2}: the plane exceeds pivot C (peak concrete strain) by ${d} \u2030.`,
+    "est.ec2.titulo": "Service stress limits (EC-2, 7.2)",
+    "est.ec2.c": "<b>7.2(2)</b> To avoid longitudinal cracks, microcracking and high creep, concrete compression is limited to k<sub>1</sub>\xB7f<sub>ck</sub> (k<sub>1</sub> = 0.60 recommended) in exposure classes XD, XF and XS.",
+    "est.ec2.k": "<b>7.2(3)</b> If the concrete stress under quasi-permanent loads is below k<sub>2</sub>\xB7f<sub>ck</sub> (0.45), creep is linear and the coefficient \u03C6 may be accepted. With \u03B1<sub>cc</sub> = 1 and \u03B3<sub>C</sub> = 1 this module works with the characteristic value.",
+    "est.ec2.s": "<b>7.2(5)</b> The tensile stress in the reinforcement under the characteristic combination is limited to k<sub>3</sub>\xB7f<sub>yk</sub> (0.80); if the tension comes from an imposed deformation, to k<sub>4</sub>\xB7f<sub>yk</sub> (1.00)."
   };
 
   // src/i18n/fisuracion.es.js
@@ -6896,14 +6996,52 @@ tr.et-act td { font-weight: 650; }
       )
     );
   }
-  function regleta({ etq, min, max, step = 1, valor, texto, etiqueta, onInput, onChange, clase = "", reinicio }) {
+  function regleta({ etq, min, max, step = 1, valor, texto, etiqueta, onInput, onChange, clase = "", reinicio, gauge, entrada: entrada6 }) {
     const input = h("input", { type: "range", min: String(min), max: String(max), step: String(step), value: String(valor), "aria-label": etiqueta ?? etq ?? "" });
-    const out = h("output", { class: "rg-v" });
+    let caja = null;
+    let campo = null;
+    if (entrada6) {
+      campo = h("input", { class: "rg-in", inputmode: "decimal", autocomplete: "off", "aria-label": `${etiqueta ?? etq ?? ""} (${entrada6.ud})` });
+      caja = h("div", { class: "caja rg-caja" }, campo, entrada6.ud ? h("span", { class: "ud" }, entrada6.ud) : null);
+    }
+    const out = caja ?? h("output", { class: "rg-v" });
+    const mostrar2 = entrada6?.mostrar ?? ((v2) => fmt(v2, entrada6?.d ?? 0));
+    const leer = entrada6?.leer ?? ((txt) => {
+      try {
+        return leerNumero(txt);
+      } catch {
+        return NaN;
+      }
+    });
     const pinta = () => {
       const v2 = Number(input.value);
       input.style.setProperty("--p", `${(v2 - Number(input.min)) / (Number(input.max) - Number(input.min) || 1) * 100}%`);
-      out.innerHTML = texto ? texto(v2) : String(v2);
+      if (campo) {
+        if (document.activeElement !== campo) campo.value = mostrar2(v2);
+      } else out.innerHTML = texto ? texto(v2) : String(v2);
     };
+    if (campo) {
+      const aplica = () => {
+        const x = leer(campo.value);
+        if (!Number.isFinite(x)) {
+          campo.value = mostrar2(Number(input.value));
+          return;
+        }
+        input.value = String(x);
+        campo.blur();
+        pinta();
+        onInput?.(Number(input.value));
+        onChange?.(Number(input.value));
+      };
+      campo.addEventListener("change", aplica);
+      campo.addEventListener("keydown", (e2) => {
+        if (e2.key === "Enter") {
+          e2.preventDefault();
+          campo.blur();
+        }
+      });
+      campo.addEventListener("focus", () => campo.select());
+    }
     input.addEventListener("input", () => {
       pinta();
       onInput?.(Number(input.value));
@@ -6919,9 +7057,53 @@ tr.et-act td { font-weight: 650; }
       });
     }
     pinta();
-    const el = h("div", { class: `regleta ${clase}`.trim() }, etq ? h("span", { class: "rg-et", html: etq }) : null, input, out);
+    let riel = input;
+    let rango = null;
+    let cand = null;
+    if (gauge) {
+      const franja = h("span", { class: "rg-banda" });
+      const lo = h("span", { class: "rg-ext izq" });
+      const hi = h("span", { class: "rg-ext der" });
+      riel = h("div", { class: "rg-riel" }, input, franja, lo, hi);
+      cand = h("button", {
+        type: "button",
+        class: "rg-cand",
+        "aria-pressed": String(!!gauge.bloqueado),
+        title: gauge.bloqueado ? t("rg.desbloquear") : t("rg.bloquear"),
+        onclick: () => gauge.onCandado?.(),
+        html: gauge.bloqueado ? '<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5 7V5a3 3 0 0 1 6 0v2"/></svg>' : '<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5 7V5a3 3 0 0 1 5.6-1.5"/></svg>'
+      });
+      rango = ({ min: a, max: b, banda, fuera, bloqueado, fmtExt }) => {
+        input.min = String(a);
+        input.max = String(b);
+        input.disabled = !!bloqueado;
+        const v2 = Number(input.value);
+        input.value = String(Math.min(b, Math.max(a, v2)));
+        const f = (x) => b > a ? (x - a) / (b - a) : 0;
+        franja.hidden = !banda;
+        if (banda) {
+          franja.style.setProperty("--b0", String(Math.max(0, f(banda[0]))));
+          franja.style.setProperty("--b1", String(Math.min(1, f(banda[1]))));
+          input.title = `${t("rg.banda")}: ${fmtExt(banda[0])} \u2026 ${fmtExt(banda[1])}${reinicio !== void 0 ? `. ${t("rg.cero")}` : ""}`;
+        } else input.title = reinicio !== void 0 ? t("rg.cero") : "";
+        lo.textContent = fmtExt(a);
+        hi.textContent = fmtExt(b);
+        el.classList.toggle("fuera", !!fuera);
+        el.classList.toggle("bloq", !!bloqueado);
+        pinta();
+      };
+    }
+    const el = h("div", { class: `regleta ${clase}${gauge ? " rg-gauge" : ""}${entrada6 ? " rg-edit" : ""}`.trim() }, cand, etq ? h("span", { class: "rg-et", html: etq }) : null, riel, out);
     if (!etq) el.classList.add("sin-etq");
     el.refrescar = () => pinta();
+    el.poner = (v2) => {
+      input.value = String(v2);
+      pinta();
+    };
+    if (rango) {
+      el.rango = rango;
+      if (gauge.bloqueado) el.classList.add("bloq");
+    }
     return el;
   }
   var apilado = (c) => {
@@ -7787,17 +7969,17 @@ tr.et-act td { font-weight: 650; }
     const i = fck <= 35 ? 0 : fck < 60 ? 1 : 2;
     return { S: [0.6, 0.5, 0.4], N: [0.5, 0.4, 0.3], R: [0.3, 0.2, 0.1] }[cemento][i];
   }
-  function evolucionEdad(norma2, { fck, fcm, fctm, Ecm, cemento = "N", t: t2 }) {
+  function evolucionEdad(norma3, { fck, fcm, fctm, Ecm, cemento = "N", t: t2 }) {
     const x = Math.sqrt(28 / t2);
-    const s = norma2 === "EC2-2023" ? sC2023(cemento, fck) : S_EDAD[cemento];
+    const s = norma3 === "EC2-2023" ? sC2023(cemento, fck) : S_EDAD[cemento];
     const beta2 = Math.exp(s * (1 - x));
     let alfa2;
     let Et;
-    if (norma2 === "EC2-2023") {
+    if (norma3 === "EC2-2023") {
       alfa2 = 0.6;
       Et = Math.cbrt(beta2) * Ecm;
     } else {
-      alfa2 = t2 < 28 ? 1 : norma2 === "EHE-08" && fck >= 50 ? 0.5 : 2 / 3;
+      alfa2 = t2 < 28 ? 1 : norma3 === "EHE-08" && fck >= 50 ? 0.5 : 2 / 3;
       Et = Math.pow(beta2, 0.3) * Ecm;
     }
     return { t: t2, beta: beta2, fcm: beta2 * fcm, fctm: Math.pow(beta2, alfa2) * fctm, Ecm: Et, alfa: alfa2 };
@@ -7813,13 +7995,13 @@ tr.et-act td { font-weight: 650; }
     return 0.7;
   }
   var t0Cemento = (t0, cemento) => Math.max(t0 * Math.pow(9 / (2 + Math.pow(t0, 1.2)) + 1, EXP_CEMENTO[cemento]), 0.5);
-  function fluencia2004(norma2, { fck, HR, h0, t0, t: t2 = Infinity, cemento = "N" }) {
+  function fluencia2004(norma3, { fck, HR, h0, t0, t: t2 = Infinity, cemento = "N" }) {
     const fcm = fck + 8;
     const a1 = Math.pow(35 / fcm, 0.7);
     const a2 = Math.pow(35 / fcm, 0.2);
     const a3 = Math.pow(35 / fcm, 0.5);
     const alta = fcm > 35;
-    const t0e = norma2 === "EC2-2004" ? t0Cemento(t0, cemento) : t0;
+    const t0e = norma3 === "EC2-2004" ? t0Cemento(t0, cemento) : t0;
     const dHR = (1 - HR / 100) / (0.1 * Math.cbrt(h0));
     const phiRH = alta ? (1 + dHR * a1) * a2 : 1 + dHR;
     const bfcm = 16.8 / Math.sqrt(fcm);
@@ -7830,10 +8012,10 @@ tr.et-act td { font-weight: 650; }
     const phi0 = phiRH * bfcm * bt0;
     return { phi: phi0 * bc, phi0, bc, phiRH, bfcm, bt0, bH, t0e };
   }
-  function retraccion2004(norma2, { fck, HR, h0, t: t2 = Infinity, ts = 7, cemento = "N" }) {
+  function retraccion2004(norma3, { fck, HR, h0, t: t2 = Infinity, ts = 7, cemento = "N" }) {
     const fcm = fck + 8;
     const [a1, a2] = ALFA_DS[cemento];
-    const sumergida = norma2 === "EHE-08" && HR >= 99;
+    const sumergida = norma3 === "EHE-08" && HR >= 99;
     const bRH = sumergida ? -0.25 : 1.55 * (1 - Math.pow(HR / 100, 3));
     const eCd0 = 0.85 * (220 + 110 * a1) * Math.exp(-a2 * fcm / 10) * 1e-6 * bRH;
     const k = kh(h0);
@@ -7866,9 +8048,9 @@ tr.et-act td { font-weight: 650; }
   }
   function retraccion2023({ fck, HR, h0, t: t2 = Infinity, ts = 1, cemento = "N" }) {
     const fcm = fck + 8;
-    const [abs, ads] = AB_AD[cemento];
+    const [abs2, ads] = AB_AD[cemento];
     if (esFin(t2)) t2 = T_FINAL_2023;
-    const eBs = abs * Math.pow(fcm / (60 + fcm), 2.5) * 1e-6;
+    const eBs = abs2 * Math.pow(fcm / (60 + fcm), 2.5) * 1e-6;
     const bBs = 1 - Math.exp(-0.2 * Math.sqrt(t2));
     const eDs = (220 + 110 * ads) * Math.exp(-0.012 * fcm) * 1e-6;
     const RHeq = Math.min(99 * Math.pow(35 / fcm, 0.1), 99);
@@ -7878,11 +8060,11 @@ tr.et-act td { font-weight: 650; }
     const cd = -eDs * bRH * bDs;
     return { total: ca + cd, secado: cd, autogena: ca, bRH };
   }
-  function fluencia(norma2, o) {
-    return norma2 === "EC2-2023" ? fluencia2023(o) : fluencia2004(norma2, o);
+  function fluencia(norma3, o) {
+    return norma3 === "EC2-2023" ? fluencia2023(o) : fluencia2004(norma3, o);
   }
-  function retraccion(norma2, o) {
-    return norma2 === "EC2-2023" ? retraccion2023(o) : retraccion2004(norma2, o);
+  function retraccion(norma3, o) {
+    return norma3 === "EC2-2023" ? retraccion2023(o) : retraccion2004(norma3, o);
   }
   function humedadEn(tabla3, t2) {
     const T = tabla3.slice().sort((a, b) => a[0] - b[0]);
@@ -7893,9 +8075,9 @@ tr.et-act td { font-weight: 650; }
     }
     return T.at(-1)[1];
   }
-  function historia(norma2, { fck, fcm, fctm, Ecm, Ec28, cemento = "N", h0, ts, cargas, humedad, tiempos }) {
+  function historia(norma3, { fck, fcm, fctm, Ecm, Ec28, cemento = "N", h0, ts, cargas, humedad, tiempos }) {
     const Ec0 = Ec28 ?? 1.05 * Ecm;
-    const E0 = cargas.map(([t0]) => evolucionEdad(norma2, { fck, fcm, fctm, Ecm, cemento, t: t0 }).Ecm);
+    const E0 = cargas.map(([t0]) => evolucionEdad(norma3, { fck, fcm, fctm, Ecm, cemento, t: t0 }).Ecm);
     return tiempos.map((t2) => {
       const HR = humedadEn(humedad, t2);
       let elastica = 0;
@@ -7903,15 +8085,15 @@ tr.et-act td { font-weight: 650; }
       cargas.forEach(([t0, ds], j) => {
         if (t2 < t0) return;
         elastica += ds / E0[j];
-        if (t2 > t0) diferida += ds * fluencia(norma2, { fck, HR, h0, t0, t: t2, cemento }).phi / Ec0;
+        if (t2 > t0) diferida += ds * fluencia(norma3, { fck, HR, h0, t0, t: t2, cemento }).phi / Ec0;
       });
-      const r = retraccion(norma2, { fck, HR, h0, t: t2, ts, cemento });
+      const r = retraccion(norma3, { fck, HR, h0, t: t2, ts, cemento });
       const rc = -r.total;
       return { t: t2, HR, elastica, diferida, retraccion: rc, autogena: -r.autogena, tension: cargas.reduce((a, [t0, ds]) => t2 >= t0 ? a + ds : a, 0), total: elastica + diferida + rc };
     });
   }
-  function tablaFluencia(norma2, { fck, cemento = "N", h0, humedad }, t0s, ts) {
-    return t0s.map((t0) => ts.map((t2) => t2 > t0 ? fluencia(norma2, { fck, HR: humedadEn(humedad, t2), h0, t0, t: t2, cemento }).phi : null));
+  function tablaFluencia(norma3, { fck, cemento = "N", h0, humedad }, t0s, ts) {
+    return t0s.map((t0) => ts.map((t2) => t2 > t0 ? fluencia(norma3, { fck, HR: humedadEn(humedad, t2), h0, t0, t: t2, cemento }).phi : null));
   }
 
   // src/ui/filasPlegables.js
@@ -8463,13 +8645,13 @@ tr.et-act td { font-weight: 650; }
     ctx2.avisar(t("mat.borradoAviso", b.nombre));
   }
   function resumen(ctx2, m) {
-    const norma2 = ctx2.p.norma;
+    const norma3 = ctx2.p.norma;
     try {
       if (m.tipo === "hormigon") {
-        const q3 = propiedadesHormigon(m.fck, norma2, opcionesHormigon(m, norma2));
+        const q3 = propiedadesHormigon(m.fck, norma3, opcionesHormigon(m, norma3));
         return `${sub15("f", "ck")} ${fmt(m.fck, 0)}${ESP}MPa \xB7 ${sub15("f", "cd")} ${fmt(q3.fcd, 1)}${ESP}MPa \xB7 ${sub15("E", "cm")} ${fmt(q3.Ec, 0)}${ESP}MPa`;
       }
-      const q2 = propiedadesAcero(m.fyk, norma2, opcionesAcero(m));
+      const q2 = propiedadesAcero(m.fyk, norma3, opcionesAcero(m));
       return `${sub15("f", "yk")} ${fmt(m.fyk, 0)}${ESP}MPa \xB7 ${sub15("f", "yd")} ${fmt(q2.fyd, 1)}${ESP}MPa \xB7 ${sub15("\u03B5", "ud")} ${fmt(q2.epsUd * 1e3, 2)}${ESP}\u2030`;
     } catch {
       return "";
@@ -8878,8 +9060,8 @@ tr.et-act td { font-weight: 650; }
     return alta ? [`${ft} = 1.1\xB7${sup(sub15("f", "ck"), "1/3")}`, `= 1.1\xB7${fck}<sup>1/3</sup> = ${v2}`] : [`${ft} = 0.3\xB7${sup(sub15("f", "ck"), "2/3")}`, `= 0.3\xB7${fck}<sup>2/3</sup> = ${v2}`];
   }
   function resultadosHormigon(ctx2, m, N, tarjeta) {
-    const norma2 = ctx2.p.norma;
-    const q2 = propiedadesHormigon(m.fck, norma2, opcionesHormigon(m, norma2));
+    const norma3 = ctx2.p.norma;
+    const q2 = propiedadesHormigon(m.fck, norma3, opcionesHormigon(m, norma3));
     const ec2023 = N.id === "EC2-2023";
     const R = {};
     const fila6 = (id, etq, val, cuenta) => {
@@ -8939,8 +9121,8 @@ tr.et-act td { font-weight: 650; }
     return h("div", { class: "edad" }, tb, h("details", { class: "nota-plegada" }, h("summary", {}, t("mat.aEdades")), h("p", { class: "formula", html: nota })));
   }
   function resultadosAcero(ctx2, m, N, tarjeta) {
-    const norma2 = ctx2.p.norma;
-    const q2 = propiedadesAcero(m.fyk, norma2, opcionesAcero(m));
+    const norma3 = ctx2.p.norma;
+    const q2 = propiedadesAcero(m.fyk, norma3, opcionesAcero(m));
     const filas = [];
     const cuentas = [];
     const fila6 = (etq, val, cuenta) => {
@@ -9059,7 +9241,7 @@ tr.et-act td { font-weight: 650; }
   function datos3(ctx2, form) {
     const L = ctx2.p.hormigones;
     const m = hormigonActivo(ctx2);
-    const norma2 = ctx2.p.norma;
+    const norma3 = ctx2.p.norma;
     if (!m) return poner(form, aviso(t("rg.sinHormigon"), ""));
     const cem = est2.cemento ?? m.cemento ?? "N";
     const cambio = () => ctx2.pintar();
@@ -9127,11 +9309,11 @@ tr.et-act td { font-weight: 650; }
     return { filas, ok, orden };
   }
   function entradas(ctx2, m) {
-    const norma2 = ctx2.p.norma;
-    const q2 = propiedadesHormigon(m.fck, norma2, opcionesHormigon(m, norma2));
+    const norma3 = ctx2.p.norma;
+    const q2 = propiedadesHormigon(m.fck, norma3, opcionesHormigon(m, norma3));
     const cemento = est2.cemento ?? m.cemento ?? "N";
     const ts = est2.ts ?? 1;
-    return { norma: norma2, q: q2, cemento, ts };
+    return { norma: norma3, q: q2, cemento, ts };
   }
   function paraNucleo(m, E, filas) {
     const humedad = filas.map((r) => [r[0], r[1]]);
@@ -9631,24 +9813,24 @@ tr.et-act td { font-weight: 650; }
   }
 
   // src/core/cuantiaMinima.js
-  function cuantiaMinima({ norma: norma2, tipo, h: h2, Ac, yg, Ix, fctm, fyk, gammaS, N = 0 }) {
+  function cuantiaMinima({ norma: norma3, tipo, h: h2, Ac, yg, Ix, fctm, fyk, gammaS, N = 0 }) {
     const fyd = fyk / gammaS;
     if (tipo === "viga") {
-      const dosMil23 = norma2 === "EC2-2023";
+      const dosMil23 = norma3 === "EC2-2023";
       const fct = dosMil23 ? fctm : fctmFlexotraccion(fctm, h2);
       const f = dosMil23 ? fyk : fyd;
       const A = (W2) => fct * W2 / (0.8 * h2 * f);
       return { tipo, fct, f, z: 0.8 * h2, inf: { W: Ix / (h2 - yg), A: A(Ix / (h2 - yg)) }, sup: { W: Ix / yg, A: A(Ix / yg) } };
     }
     const Nd = Math.max(N, 0);
-    const fycd = norma2 === "EHE-08" ? Math.min(fyd, 4e5) : fyd;
+    const fycd = norma3 === "EHE-08" ? Math.min(fyd, 4e5) : fyd;
     const mec = 0.1 * Nd / fycd;
-    const geo = (norma2 === "EHE-08" ? 4e-3 : 2e-3) * Ac;
+    const geo = (norma3 === "EHE-08" ? 4e-3 : 2e-3) * Ac;
     return { tipo, mec, geo, A: Math.max(mec, geo), fyd, Nd };
   }
-  function cuantiaMaxima({ norma: norma2, Ac, fcd, fyk, gammaS }) {
-    if (norma2 === "EHE-08") return Ac * fcd / Math.min(fyk / gammaS, 4e5);
-    if (norma2 === "EC2-2004") return 0.04 * Ac;
+  function cuantiaMaxima({ norma: norma3, Ac, fcd, fyk, gammaS }) {
+    if (norma3 === "EHE-08") return Ac * fcd / Math.min(fyk / gammaS, 4e5);
+    if (norma3 === "EC2-2004") return 0.04 * Ac;
     return null;
   }
 
@@ -12806,14 +12988,14 @@ tr.et-act td { font-weight: 650; }
     out.push(`<text class="fuerte" x="${x0 + bp + 16}" y="${(Y(0) + yx) / 2 + 4}">x = ${fmt(r.x * 1e3, 0)}</text>`);
     const e0 = Math.max(x0 + bp + 130, 400);
     const ke = 58 / Math.max(-r.epsSup, r.epsInf, 1e-3);
-    const eps2 = (y) => r.epsSup + r.kappa * y;
+    const eps3 = (y) => r.epsSup + r.kappa * y;
     const X1 = (v2) => e0 + v2 * ke;
     const xn = Math.min(Math.max(r.x, 0), d.h);
     out.push(`<text class="tit" x="${e0 - 58}" y="22">${t("tit.def")}</text>`);
     out.push(`<line class="ref" x1="${e0}" y1="${y0 - 6}" x2="${e0}" y2="${y0 + hp + 6}"/>`);
-    out.push(`<polygon class="eps-c" points="${e0},${Y(0)} ${X1(eps2(0))},${Y(0)} ${e0},${Y(xn)}"/>`);
-    out.push(`<polygon class="eps-t" points="${e0},${Y(xn)} ${X1(eps2(d.h))},${Y(d.h)} ${e0},${Y(d.h)}"/>`);
-    out.push(`<text x="${X1(eps2(0)) - 4}" y="${yTop}">\u03B5<tspan baseline-shift="sub" font-size="75%">c</tspan> = ${fmt(-r.epsSup * 1e3, 2)}</text>`);
+    out.push(`<polygon class="eps-c" points="${e0},${Y(0)} ${X1(eps3(0))},${Y(0)} ${e0},${Y(xn)}"/>`);
+    out.push(`<polygon class="eps-t" points="${e0},${Y(xn)} ${X1(eps3(d.h))},${Y(d.h)} ${e0},${Y(d.h)}"/>`);
+    out.push(`<text x="${X1(eps3(0)) - 4}" y="${yTop}">\u03B5<tspan baseline-shift="sub" font-size="75%">c</tspan> = ${fmt(-r.epsSup * 1e3, 2)}</text>`);
     const ys1 = Y(d.h - d.rinf);
     out.push(`<line class="ref" x1="${x0 + bp}" y1="${ys1}" x2="${X1(r.epsAinf)}" y2="${ys1}" stroke-dasharray="2 3"/><circle cx="${X1(r.epsAinf)}" cy="${ys1}" r="3" class="barra-ac"/>`);
     out.push(`<text class="fuerte" x="${X1(r.epsAinf) + 7}" y="${ys1 + 4}">\u03B5<tspan baseline-shift="sub" font-size="75%">s1</tspan> = ${fmt(r.epsAinf * 1e3, 2)}</text>`);
@@ -12891,9 +13073,9 @@ tr.et-act td { font-weight: 650; }
     const { Ncomp, Ntrac } = axilesLimite(sec);
     const rama = (signo) => {
       const [lo, hi] = intervaloEpsSup(sec, 0);
-      const extremo = (eps2) => {
-        const r = esfuerzos(sec, eps2, 0, yref);
-        return { N: -r.N, M: r.M, x: eps2 < 0 ? Infinity : -Infinity, epsSup: eps2, epsInf: eps2, kappa: 0 };
+      const extremo = (eps3) => {
+        const r = esfuerzos(sec, eps3, 0, yref);
+        return { N: -r.N, M: r.M, x: eps3 < 0 ? Infinity : -Infinity, epsSup: eps3, epsInf: eps3, kappa: 0 };
       };
       const pts = [extremo(lo)];
       for (let i = 1; i < n; i++) {
@@ -12997,9 +13179,9 @@ tr.et-act td { font-weight: 650; }
   var sub23 = (a, b) => `${a}<sub>${b}</sub>`;
   var ind2 = (a, b) => `${a}<tspan class="ind" dy="3">${b}</tspan>`;
   var nv = (txt) => leerNumero(txt);
-  function eMinima(norma2, s) {
+  function eMinima(norma3, s) {
     const h2 = s.forma === "circular" ? s.geo.D : s.geo.h;
-    return Math.max(h2 / (norma2 === "EHE-08" ? 20 : 30), 0.02);
+    return Math.max(h2 / (norma3 === "EHE-08" ? 20 : 30), 0.02);
   }
   var emin = 0;
   function activa(p) {
@@ -13310,7 +13492,7 @@ tr.et-act td { font-weight: 650; }
     const xn = Number.isFinite(e2.x) ? Math.min(Math.max(e2.x, 0), geo.h) : 0;
     const { svg, hp, bp } = capasSeccion(geo, s, { e: em, x0, y0, x: e2.x > 0 ? e2.x : null, id: "fcr", cotasCapas: false });
     const Y = (y) => y0 + y * em.s;
-    const eps2 = (y) => e2.epsSup + e2.kappa * y;
+    const eps3 = (y) => e2.epsSup + e2.kappa * y;
     const out = [DEFS, svg];
     out.push(`<text class="tit" x="${x0}" y="22">${t("tit.sec")}</text>`);
     if (e2.x > 0 && e2.x < geo.h) {
@@ -13319,18 +13501,18 @@ tr.et-act td { font-weight: 650; }
       out.push(`<text class="fuerte" x="${x0 + bp + 16}" y="${(Y(0) + Y(xn)) / 2 + 4}">x = ${fmt(e2.x * 1e3, 0)}</text>`);
     }
     const e0 = x0 + bp + 110;
-    const emax = Math.max(Math.abs(eps2(0)), Math.abs(eps2(geo.h)), 1e-3);
+    const emax = Math.max(Math.abs(eps3(0)), Math.abs(eps3(geo.h)), 1e-3);
     const ke = 58 / emax;
     const X1 = (v2) => e0 + v2 * ke;
     out.push(`<text class="tit" style="text-transform:none" x="${e0 - 58}" y="22">\u03B5 [\u2030]</text>`);
     out.push(`<line class="ref" x1="${e0}" y1="${y0 - 6}" x2="${e0}" y2="${y0 + hp + 6}"/>`);
-    const poli = (cl3, y1, y2) => `<polygon class="${cl3}" points="${e0},${Y(y1)} ${X1(eps2(y1))},${Y(y1)} ${X1(eps2(y2))},${Y(y2)} ${e0},${Y(y2)}"/>`;
+    const poli = (cl3, y1, y2) => `<polygon class="${cl3}" points="${e0},${Y(y1)} ${X1(eps3(y1))},${Y(y1)} ${X1(eps3(y2))},${Y(y2)} ${e0},${Y(y2)}"/>`;
     if (e2.x > 0 && e2.x < geo.h) {
-      out.push(`<polygon class="eps-c" points="${e0},${Y(0)} ${X1(eps2(0))},${Y(0)} ${e0},${Y(xn)}"/>`);
-      out.push(`<polygon class="eps-t" points="${e0},${Y(xn)} ${X1(eps2(geo.h))},${Y(geo.h)} ${e0},${Y(geo.h)}"/>`);
+      out.push(`<polygon class="eps-c" points="${e0},${Y(0)} ${X1(eps3(0))},${Y(0)} ${e0},${Y(xn)}"/>`);
+      out.push(`<polygon class="eps-t" points="${e0},${Y(xn)} ${X1(eps3(geo.h))},${Y(geo.h)} ${e0},${Y(geo.h)}"/>`);
     } else out.push(poli(e2.x >= geo.h || e2.epsSup < 0 && e2.epsInf < 0 ? "eps-c" : "eps-t", 0, geo.h));
-    out.push(`<text x="${X1(eps2(0)) - 4}" y="${y0 - 8}">\u03B5<tspan baseline-shift="sub" font-size="75%">sup</tspan> = ${fmt(-eps2(0) * 1e3, 2)}</text>`);
-    out.push(`<text x="${X1(eps2(geo.h)) - 4}" y="${y0 + hp + 18}">\u03B5<tspan baseline-shift="sub" font-size="75%">inf</tspan> = ${fmt(-eps2(geo.h) * 1e3, 2)}</text>`);
+    out.push(`<text x="${X1(eps3(0)) - 4}" y="${y0 - 8}">\u03B5<tspan baseline-shift="sub" font-size="75%">sup</tspan> = ${fmt(-eps3(0) * 1e3, 2)}</text>`);
+    out.push(`<text x="${X1(eps3(geo.h)) - 4}" y="${y0 + hp + 18}">\u03B5<tspan baseline-shift="sub" font-size="75%">inf</tspan> = ${fmt(-eps3(geo.h) * 1e3, 2)}</text>`);
     const t0 = e0 + 185;
     const fcd = Math.max(...matH.comp.map((v2) => -v2[1]), 1);
     const kc = 64 / fcd;
@@ -13341,7 +13523,7 @@ tr.et-act td { font-weight: 650; }
     const n = 40;
     for (let i = 0; i <= n; i++) {
       const y = geo.h * i / n;
-      const sg = sigma(matH, eps2(y));
+      const sg = sigma(matH, eps3(y));
       if (sg < 0) {
         pts.push(`${t0 + sg * kc},${Y(y)}`);
         ys.push(y);
@@ -13352,7 +13534,7 @@ tr.et-act td { font-weight: 650; }
     if (matA) {
       const fy = Math.max(...matA.tracc.map((v2) => v2[1]), 1);
       const ks = 46 / fy;
-      const barras = sec.barras.map((b) => ({ y: b.y, sg: sigma(matA, eps2(b.y)), A: b.A }));
+      const barras = sec.barras.map((b) => ({ y: b.y, sg: sigma(matA, eps3(b.y)), A: b.A }));
       const extremas = [barras.reduce((a, b) => b.y < a.y ? b : a), barras.reduce((a, b) => b.y > a.y ? b : a)];
       for (const b of barras) out.push(`<line class="flecha" x1="${t0}" y1="${Y(b.y)}" x2="${t0 + b.sg * ks}" y2="${Y(b.y)}" marker-end="url(#pta)"/>`);
       for (const b of extremas) out.push(`<text class="fuerte" x="${t0 + 52}" y="${Y(b.y) + (b === extremas[0] ? -4 : 14)}">\u03C3<tspan baseline-shift="sub" font-size="75%">s</tspan> = ${fmt(-b.sg / 1e3, 1)}${ESP}MPa</text>`);
@@ -13436,7 +13618,7 @@ tr.et-act td { font-weight: 650; }
   }
   function esfuerzosPlano(m, theta, eps0, kappa) {
     const g = giro(m, theta);
-    const eps2 = (t2) => eps0 + kappa * t2;
+    const eps3 = (t2) => eps0 + kappa * t2;
     let F2 = 0;
     let Fy = 0;
     let Fx = 0;
@@ -13460,7 +13642,7 @@ tr.et-act td { font-weight: 650; }
       const half = (b - a) / 2;
       for (const [xi, w] of GL2) {
         const t2 = mid + half * xi;
-        const f = -sigma(m.hormigon, eps2(t2));
+        const f = -sigma(m.hormigon, eps3(t2));
         if (f === 0) continue;
         const p0 = g.smax - t2;
         let ancho = 0;
@@ -13483,7 +13665,7 @@ tr.et-act td { font-weight: 650; }
     }
     for (const p of m.puntos) {
       const t2 = g.smax - (g.ux * p.x + g.uy * p.y);
-      const f = -sigma(m.acero, eps2(t2));
+      const f = -sigma(m.acero, eps3(t2));
       F2 += f * p.A;
       Fx += f * p.A * p.x;
       Fy += f * p.A * p.y;
@@ -13615,7 +13797,7 @@ tr.et-act td { font-weight: 650; }
   }
   function crucesNivel(S, i, fijo, M0) {
     const F2 = fijo === "Mx" ? S.Mx[i] : S.My[i];
-    const V = fijo === "Mx" ? S.My[i] : S.Mx[i];
+    const V2 = fijo === "Mx" ? S.My[i] : S.Mx[i];
     const nT = F2.length;
     const out = [];
     for (let j = 0; j < nT; j++) {
@@ -13625,7 +13807,7 @@ tr.et-act td { font-weight: 650; }
       if (!Number.isFinite(a) || !Number.isFinite(b) || a === 0 && b === 0) continue;
       if (a <= 0 && b > 0 || a >= 0 && b < 0) {
         const t2 = a / (a - b);
-        out.push({ v: V[j] + t2 * (V[k] - V[j]), j, t: t2 });
+        out.push({ v: V2[j] + t2 * (V2[k] - V2[j]), j, t: t2 });
       }
     }
     return out;
@@ -13837,8 +14019,8 @@ tr.et-act td { font-weight: 650; }
   var info = (tx2) => `<span class="info-i izq" tabindex="0" role="img" aria-label="${tx2}" data-tip="${tx2}">i</span>`;
   var sigla2 = (g) => g === Infinity ? "\u221E" : fmt(g, 2);
   var TOLCONT = 72;
-  function eMinimas(norma2, geo) {
-    const div = norma2 === "EHE-08" ? 20 : 30;
+  function eMinimas(norma3, geo) {
+    const div = norma3 === "EHE-08" ? 20 : 30;
     return { y: Math.max(geo.h / div, 0.02), x: Math.max((geo.caja.xmax - geo.caja.xmin) / div, 0.02) };
   }
   function activa2(p) {
@@ -14565,7 +14747,7 @@ tr.et-act td { font-weight: 650; }
     const mI = modeloEsviada(geo, ley.integra, ac);
     const mF = modeloEsviada(geo, ley.fisurada, ac);
     const pts = geo.contornos.flatMap((c) => c.signo > 0 ? c.pts : []);
-    return { ley, acero: ac, mI, mF, xc: mI.xc, yc: mI.yc, vertices: pts, puntos: mI.puntos, Ac: mI.Ac, armadura: { barras: geo.barras, franjas: geo.franjas ?? [] } };
+    return { mat: { hormigon: hormigonMat, acero: aceroMat }, ley, acero: ac, mI, mF, xc: mI.xc, yc: mI.yc, vertices: pts, puntos: mI.puntos, Ac: mI.Ac, armadura: { barras: geo.barras, franjas: geo.franjas ?? [] } };
   }
   function distanciaCdg(mod, bet) {
     const ux = Math.cos(bet);
@@ -14612,12 +14794,12 @@ tr.et-act td { font-weight: 650; }
       const r2 = esfuerzosDe(m, mod, aPl(q3));
       return [r2.N - N, r2.Mx - Mx, r2.My - My];
     };
-    const norma2 = (r2) => Math.hypot(r2[0], r2[1], r2[2]);
+    const norma3 = (r2) => Math.hypot(r2[0], r2[1], r2[2]);
     const tol = 1e-7 * (1 + Math.hypot(N, Mx, My));
     let q2 = [ini.e0 * 1e3, ini.kx * 1e3, ini.ky * 1e3];
     let r = R(q2);
     for (let it = 0; it < 80; it++) {
-      const nr = norma2(r);
+      const nr = norma3(r);
       if (nr < tol) return aPl(q2);
       const h2 = 1e-4;
       const J = [0, 1, 2].map((j) => {
@@ -14633,7 +14815,7 @@ tr.et-act td { font-weight: 650; }
       for (let k = 0; k < 20; k++) {
         const q22 = q2.map((a, i) => a - l * d[i]);
         const r2 = R(q22);
-        if (norma2(r2) < nr) {
+        if (norma3(r2) < nr) {
           q2 = q22;
           r = r2;
           ok = true;
@@ -14643,7 +14825,7 @@ tr.et-act td { font-weight: 650; }
       }
       if (!ok) return null;
     }
-    return norma2(r) < 1e-4 * (1 + Math.hypot(N, Mx, My)) ? aPl(q2) : null;
+    return norma3(r) < 1e-4 * (1 + Math.hypot(N, Mx, My)) ? aPl(q2) : null;
   }
   var sigmaC = (mat, e2) => -sigma(mat, -e2) / 1e3;
   function extremosHormigon(mat, eMin, eMax) {
@@ -14720,6 +14902,322 @@ tr.et-act td { font-weight: 650; }
     };
   }
 
+  // src/core/dominioTensional.js
+  var TOL2 = 1e-9;
+  function leyesNoAdmitidas(hormigonMat, aceroMat) {
+    if (hormigonMat.diag === "puntos") return "hormigon";
+    if (aceroMat.tracc?.length !== 3 || aceroMat.comp?.length !== 3) return "acero";
+    return null;
+  }
+  function primeraEn(pts, T) {
+    for (let i = 1; i < pts.length; i++) {
+      const [e0, s0] = pts[i - 1];
+      const [e1, s1] = pts[i];
+      if (s0 < T && s1 >= T) return e0 + (e1 - e0) * (T - s0) / (s1 - s0);
+    }
+    return null;
+  }
+  var abs = (pts) => pts.map(([e2, s]) => [Math.abs(e2), Math.abs(s)]);
+  function compPropia(ley) {
+    const comp = abs(ley.comp);
+    return ley.diag === "lineal" ? comp : comp.slice(0, -1);
+  }
+  function limitesDe(mod, estado4, { kc = 0.6, ks = 0.8 } = {}) {
+    const comp = compPropia(mod.ley.integra);
+    const ecu = comp[comp.length - 1][0];
+    const accT = abs(mod.acero.tracc);
+    const accC = abs(mod.acero.comp);
+    const euT = accT[accT.length - 1][0];
+    const euC = accC[accC.length - 1][0];
+    if (estado4 === "ELS") {
+      const fck = mod.mat.hormigon.fk;
+      const fyk = mod.mat.acero.fk;
+      const ec = primeraEn(comp, kc * fck) ?? ecu;
+      return {
+        estado: estado4,
+        ec,
+        ecu,
+        esT: primeraEn(accT, ks * fyk) ?? euT,
+        esC: primeraEn(accC, ks * fyk) ?? euC,
+        pivote: null,
+        alcanzaC: primeraEn(comp, kc * fck) !== null
+      };
+    }
+    const smax = Math.max(...comp.map((p) => p[1]));
+    const ec2 = comp.find((p) => p[1] >= smax * (1 - 1e-12))[0];
+    return { estado: estado4, ec: ecu, ecu, esT: euT, esC: euC, pivote: ec2 < ecu * (1 - 1e-9) ? { a: ec2 / ecu, ec2 } : null, alcanzaC: true };
+  }
+  var eps2 = (mod, pl, x, y) => pl.e0 + pl.ky * (x - mod.xc) - pl.kx * (y - mod.yc);
+  function admisible(mod, lim, pl) {
+    let holgura = Infinity;
+    let limita = null;
+    const mira = (h2, q2) => {
+      if (h2 < holgura) {
+        holgura = h2;
+        limita = q2;
+      }
+    };
+    const es = mod.vertices.map(([x, y]) => eps2(mod, pl, x, y));
+    const eSup = Math.max(...es);
+    const eInf = Math.min(...es);
+    mira(lim.ec - eSup, "hormigon");
+    if (lim.pivote) mira(lim.pivote.ec2 - (lim.pivote.a * eSup + (1 - lim.pivote.a) * eInf), "pivote");
+    const puntos = [...mod.armadura.barras.map((b) => [b.x, b.y]), ...mod.armadura.franjas.flatMap((f) => [[f.x1, f.y], [f.x2, f.y]])];
+    for (const [x, y] of puntos) {
+      const e2 = eps2(mod, pl, x, y);
+      mira(lim.esC - e2, "acero");
+      mira(lim.esT + e2, "acero");
+    }
+    return { ok: holgura >= -TOL2, holgura, limita };
+  }
+
+  // src/core/dominioGauges.js
+  var TOPE = 2;
+  var PASOS = 48;
+  var acota = (en) => (u) => u.every((x) => Math.abs(x) <= TOPE + 1e-12) && en(u);
+  function bandaEje(en, u, i) {
+    const f = acota(en);
+    const lado = (s) => {
+      let ok = u[i];
+      let mal = null;
+      for (let k = 1; k <= PASOS; k++) {
+        const x = u[i] + s * (TOPE * 2) * k / PASOS;
+        const q2 = u.slice();
+        q2[i] = x;
+        if (f(q2)) ok = x;
+        else {
+          mal = x;
+          break;
+        }
+      }
+      if (mal === null) return ok;
+      for (let k = 0; k < 40; k++) {
+        const m = (ok + mal) / 2;
+        const q2 = u.slice();
+        q2[i] = m;
+        if (f(q2)) ok = m;
+        else mal = m;
+      }
+      return ok;
+    };
+    return [lado(-1), lado(1)];
+  }
+  function radial(f, c, d) {
+    const pun = (t2) => c.map((x, k) => x + t2 * d[k]);
+    const T = TOPE * 4;
+    let ok = 0;
+    let mal = null;
+    for (let k = 1; k <= 24; k++) {
+      const t2 = T * k / 24;
+      if (f(pun(t2))) ok = t2;
+      else {
+        mal = t2;
+        break;
+      }
+    }
+    if (mal === null) return ok;
+    for (let k = 0; k < 40; k++) {
+      const m = (ok + mal) / 2;
+      if (f(pun(m))) ok = m;
+      else mal = m;
+    }
+    return ok;
+  }
+  var norma2 = (v2) => Math.hypot(...v2);
+  var unit = (v2) => {
+    const n = norma2(v2) || 1;
+    return v2.map((x) => x / n);
+  };
+  function direcciones(libres) {
+    const n = libres.length;
+    const emb = (w) => {
+      const d = [0, 0, 0];
+      libres.forEach((j, k) => {
+        d[j] = w[k];
+      });
+      return d;
+    };
+    if (n === 1) return [emb([1]), emb([-1])];
+    if (n === 2) return Array.from({ length: 360 }, (_2, k) => emb([Math.cos(2 * Math.PI * k / 360), Math.sin(2 * Math.PI * k / 360)]));
+    const N = 1200;
+    const ga = Math.PI * (3 - Math.sqrt(5));
+    return Array.from({ length: N }, (_2, k) => {
+      const z = 1 - 2 * (k + 0.5) / N;
+      const r = Math.sqrt(1 - z * z);
+      return emb([r * Math.cos(ga * k), r * Math.sin(ga * k), z]);
+    });
+  }
+  function vecinas(d, libres, ang) {
+    const n = libres.length;
+    if (n === 1) return [d];
+    const w = libres.map((j) => d[j]);
+    const emb = (v2) => {
+      const o = [0, 0, 0];
+      libres.forEach((j, k) => {
+        o[j] = v2[k];
+      });
+      return o;
+    };
+    if (n === 2) {
+      const a = Math.atan2(w[1], w[0]);
+      return [-1, 1].map((s) => emb([Math.cos(a + s * ang), Math.sin(a + s * ang)]));
+    }
+    const aux = Math.abs(w[0]) < 0.9 ? [1, 0, 0] : [0, 1, 0];
+    const e1 = unit([w[1] * aux[2] - w[2] * aux[1], w[2] * aux[0] - w[0] * aux[2], w[0] * aux[1] - w[1] * aux[0]]);
+    const e2 = [w[1] * e1[2] - w[2] * e1[1], w[2] * e1[0] - w[0] * e1[2], w[0] * e1[1] - w[1] * e1[0]];
+    const out = [];
+    for (let k = 0; k < 8; k++) {
+      const f = 2 * Math.PI * k / 8;
+      out.push(emb(unit(w.map((x, m) => x + ang * (Math.cos(f) * e1[m] + Math.sin(f) * e2[m])))));
+    }
+    return out;
+  }
+  function rangos(en, p, bloqueo) {
+    const f = acota(en);
+    const dentro2 = f(p);
+    const libres = [0, 1, 2].filter((j) => !bloqueo[j]);
+    if (!libres.length) return { total: p.map((x) => [x, x]), banda: p.map((x) => [x, x]), ext: null, dentro: dentro2 };
+    let c = p;
+    if (!dentro2) {
+      if (libres.length < 3) return { total: null, banda: null, ext: null, dentro: dentro2 };
+      c = [0, 0, 0];
+    }
+    const maxP = {};
+    const minP = {};
+    const pon = (b) => {
+      for (const j of libres) {
+        if (!maxP[j] || b[j] > maxP[j][j]) maxP[j] = b;
+        if (!minP[j] || b[j] < minP[j][j]) minP[j] = b;
+      }
+    };
+    const punto = (d) => {
+      const r = radial(f, c, d);
+      return c.map((x, k) => x + r * d[k]);
+    };
+    const dirs = direcciones(libres);
+    const pts = dirs.map((d) => ({ d, b: punto(d) }));
+    for (const q2 of pts) pon(q2.b);
+    const refina = (sentido, j) => {
+      let mejor = (sentido > 0 ? maxP : minP)[j];
+      let d = unit(mejor.map((x, k) => x - c[k]));
+      let ang = libres.length === 3 ? 0.06 : 0.015;
+      for (let ronda = 0; ronda < 7; ronda++) {
+        for (const dd of vecinas(d, libres, ang)) {
+          const b = punto(dd);
+          if (sentido * (b[j] - mejor[j]) > 1e-12) {
+            mejor = b;
+            d = dd;
+          }
+        }
+        ang *= 0.45;
+      }
+      (sentido > 0 ? maxP : minP)[j] = mejor;
+    };
+    if (libres.length > 1) for (const j of libres) {
+      refina(1, j);
+      refina(-1, j);
+    }
+    const total = [0, 1, 2].map((j) => bloqueo[j] ? [p[j], p[j]] : [minP[j][j], maxP[j][j]]);
+    const ext = { max: [0, 1, 2].map((j) => maxP[j] ?? null), min: [0, 1, 2].map((j) => minP[j] ?? null) };
+    const banda = dentro2 ? [0, 1, 2].map((j) => bloqueo[j] ? [p[j], p[j]] : bandaEje(en, p, j)) : null;
+    return { total, banda, ext, dentro: dentro2 };
+  }
+  function reajusta(en, p, i, nuevo2, bloqueo, r) {
+    if (bloqueo[i]) return null;
+    const f = acota(en);
+    const libres = [0, 1, 2].filter((j) => !bloqueo[j]);
+    const otras = libres.filter((j) => j !== i);
+    const lim = r.total?.[i];
+    const v2 = lim ? Math.min(lim[1], Math.max(lim[0], nuevo2)) : nuevo2;
+    const p1 = p.slice();
+    p1[i] = v2;
+    if (f(p1)) return p1;
+    if (!otras.length) {
+      const b = bandaEje(en, p, i);
+      const q3 = p.slice();
+      q3[i] = Math.min(b[1], Math.max(b[0], v2));
+      return q3;
+    }
+    const R = (j) => r.total ? Math.max(r.total[j][1] - r.total[j][0], 1e-9) : TOPE * 2;
+    const dist = (a) => Math.sqrt(otras.reduce((s, j) => s + ((a[j] - p[j]) / R(j)) ** 2, 0));
+    let q2 = null;
+    const eMax = r.ext?.max[i];
+    const eMin = r.ext?.min[i];
+    if (eMax && eMin && eMax[i] !== eMin[i]) {
+      const s = (v2 - eMin[i]) / (eMax[i] - eMin[i]);
+      const cand = eMin.map((x, k) => x + s * (eMax[k] - x));
+      cand[i] = v2;
+      for (const j of [0, 1, 2]) if (bloqueo[j]) cand[j] = p[j];
+      if (f(cand)) q2 = cand;
+    }
+    if (!q2) {
+      let mejor2 = Infinity;
+      const N = otras.length === 1 ? 400 : 40;
+      const val = (a) => -TOPE + 2 * TOPE * a / (N - 1);
+      for (let a = 0; a < N; a++) for (let b = 0; b < (otras.length === 1 ? 1 : N); b++) {
+        const cand = p1.slice();
+        cand[otras[0]] = val(a);
+        if (otras.length === 2) cand[otras[1]] = val(b);
+        const e2 = dist(cand);
+        if (e2 < mejor2 && f(cand)) {
+          mejor2 = e2;
+          q2 = cand;
+        }
+      }
+    }
+    if (!q2) return null;
+    if (otras.length === 1) {
+      const j = otras[0];
+      const b = bandaEje(en, q2, j);
+      const out = q2.slice();
+      out[j] = Math.min(b[1], Math.max(b[0], p[j]));
+      return out;
+    }
+    const base2 = (k) => {
+      const a = 2 * Math.PI * k / 360;
+      const d = [0, 0, 0];
+      d[otras[0]] = Math.cos(a);
+      d[otras[1]] = Math.sin(a);
+      return d;
+    };
+    const borde = (d) => {
+      const t2 = radial(f, q2, d);
+      return q2.map((x, k) => x + t2 * d[k]);
+    };
+    let mejor = null;
+    let md = Infinity;
+    let mdir = null;
+    for (let k = 0; k < 360; k++) {
+      const d = base2(k);
+      const b = borde(d);
+      const e2 = dist(b);
+      if (e2 < md) {
+        md = e2;
+        mejor = b;
+        mdir = d;
+      }
+    }
+    let ang = 0.012;
+    for (let ronda = 0; ronda < 8; ronda++) {
+      const a0 = Math.atan2(mdir[otras[1]], mdir[otras[0]]);
+      for (const s of [-1, 1]) {
+        const d = [0, 0, 0];
+        d[otras[0]] = Math.cos(a0 + s * ang);
+        d[otras[1]] = Math.sin(a0 + s * ang);
+        const b = borde(d);
+        const e2 = dist(b);
+        if (e2 < md) {
+          md = e2;
+          mejor = b;
+          mdir = d;
+        }
+      }
+      ang *= 0.5;
+    }
+    const p0 = p1.slice();
+    return f(p0) ? p0 : mejor;
+  }
+
   // src/ui/vistas/estadoTensional.js
   var FORMAS4 = ["rectangular", "pilar", "T", "circular", "generica"];
   var X_INF = 100;
@@ -14742,13 +15240,18 @@ tr.et-act td { font-weight: 650; }
     beta: 0,
     x: Infinity,
     // absoluta, grados (de la fibra neutra), m
-    gammaC: null,
-    alfaCC: null,
-    gammaS: null,
-    phi: 0,
-    lineal: false,
+    estado: "ELS",
+    lock: { e0: false, kx: false, ky: false },
+    // candados del modo ε, κ
+    // Cada estado límite guarda sus propios datos; ninguno se traduce al otro (null = el valor de la ley del material).
+    // ELS: γ = 1 y αcc = 1 (sin cansancio con σc ≤ 0,6·fck); ELU: los de la ley.
+    v: {
+      ELS: { gammaC: 1, alfaCC: 1, gammaS: 1, phi: 0, lineal: false, kc: 0.6, ks: 0.8 },
+      ELU: { gammaC: null, alfaCC: null, gammaS: null, phi: 0, lineal: false, kc: 0.6, ks: 0.8 }
+    },
     ultimo: null
   };
+  var V = () => est7.v[est7.estado];
   function reiniciar7() {
     est7.i = null;
     est7.para = null;
@@ -14766,12 +15269,23 @@ tr.et-act td { font-weight: 650; }
     const mats = materialesSeccion(p, s);
     const fck = mats.hormigon.fk / 1e3;
     const prop = propiedadesHormigon(fck, p.norma, opcionesHormigon(mats.fichaH, p.norma));
-    const gammaC = est7.gammaC ?? prop.gammaC;
-    const alfaCC = est7.alfaCC ?? prop.alfa;
-    const gammaS = est7.gammaS ?? mats.acero.gamma;
-    const clave = JSON.stringify([p.norma, s.geo, s.armado, s.hormigon, s.acero, gammaC, alfaCC, gammaS, est7.phi, est7.lineal]);
+    const no = leyesNoAdmitidas(mats.hormigon, mats.acero);
+    if (no) throw new Error(t(`est.leyNo.${no}`));
+    const u = V();
+    const gammaC = u.gammaC ?? prop.gammaC;
+    const alfaCC = u.alfaCC ?? prop.alfa;
+    const gammaS = u.gammaS ?? mats.acero.gamma;
+    const els = est7.estado === "ELS";
+    const phi = els ? u.phi : 0;
+    const lineal2 = els && u.lineal;
+    const clave = JSON.stringify([p.norma, s.geo, s.armado, s.hormigon, s.acero, est7.estado, gammaC, alfaCC, gammaS, phi, lineal2, u.kc, u.ks]);
     if (memo3.clave === clave) return memo3.c;
-    const mod = modeloTensional(geo, mats.hormigon, mats.acero, { gammaC, alfaCC, gammaS, phi: est7.phi, lineal: est7.lineal, fctm: prop.fctm });
+    const mod = modeloTensional(geo, mats.hormigon, mats.acero, { gammaC, alfaCC, gammaS, phi, lineal: lineal2, fctm: prop.fctm });
+    const lim = limitesDe(mod, est7.estado, { kc: u.kc, ks: u.ks });
+    const norm = propiedadesHormigon(fck, p.norma, {});
+    const normaGammaS = normaMat(p.norma).gammaS;
+    const mc = els ? 0.6 : 1;
+    const ms = els ? 0.8 : 1;
     const caja = geo.caja;
     const bx = caja.xmax - caja.xmin;
     const hy = caja.ymax - caja.ymin;
@@ -14789,16 +15303,19 @@ tr.et-act td { font-weight: 650; }
       fck,
       bx,
       hy,
-      // Recorrido de las regletas: del orden de lo que resiste la sección en servicio (0,6·fck; 0,8·fyk)
+      lim,
+      els,
+      esperado: els ? { gammaC: 1, alfaCC: 1, gammaS: 1 } : { gammaC: norm.gammaC, alfaCC: norm.alfa, gammaS: normaGammaS },
+      // Recorrido de las regletas: del orden de lo que resiste la sección (ELS: 0,6·fck y 0,8·fyk; ELU: fck y fyk)
       rg: {
-        N: [Math.round(-0.8 * fyk * As * 1e3 / 10) * 10 || -100, Math.round(0.6 * fck * Ac * 1e3 / 10) * 10],
-        Mx: Math.ceil(0.6 * fck * 1e3 * (Ac * hy) / 6 / 10) * 10 || 100,
-        My: Math.ceil(0.6 * fck * 1e3 * (Ac * bx) / 6 / 10) * 10 || 100,
+        N: [Math.round(-ms * fyk * As * 1e3 / 10) * 10 || -100, Math.round(mc * fck * Ac * 1e3 / 10) * 10],
+        Mx: Math.ceil(mc * fck * 1e3 * (Ac * hy) / 6 / 10) * 10 || 100,
+        My: Math.ceil(mc * fck * 1e3 * (Ac * bx) / 6 / 10) * 10 || 100,
         kx: 8e-3 / hy,
         ky: 8e-3 / bx
         // 8 ‰ de deformación a lo largo del canto, no más
       },
-      lector: leyDe(mats.hormigon, est7.lineal)
+      lector: leyDe(mats.hormigon, lineal2)
     };
     memo3 = { clave, c };
     return c;
@@ -14839,6 +15356,12 @@ tr.et-act td { font-weight: 650; }
     }
     return estadoTensional(c.mod, dato());
   }
+  function apaga(el, motivo) {
+    for (const i of el.querySelectorAll("input, select")) i.disabled = true;
+    el.title = motivo;
+    el.classList.add("no-aplica");
+    return el;
+  }
   function datos11(ctx2, form) {
     const p = ctx2.p;
     const s = activa3(p);
@@ -14858,65 +15381,72 @@ tr.et-act td { font-weight: 650; }
     } catch {
     }
     if (c) resuelve(c, s);
-    const cambio = () => ctx2.cambio();
-    const vis = (k) => k === "x" && !Number.isFinite(est7.x) ? Math.sign(est7.x) * X_INF : est7[k];
-    const redondeo = (x, mag) => {
-      const m = MAG[mag];
-      const k = 10 ** (m.d ?? 0);
-      return Math.round(x * m.f * k) / k / m.f;
+    const gamma = (id, etq, k, defecto) => {
+      const valor = V()[k] ?? defecto;
+      const dist = c && Math.abs(valor - c.esperado[k]) > 1e-9;
+      const info2 = dist ? t("est.infoDist", fmt(c.esperado[k], 2), est7.estado) : id === "gc" ? t("est.infoGamma") : id === "gs" ? t("est.infoGammaS") : void 0;
+      const e2 = campoNum({ id: `et-${id}`, etq, valor: fmt(valor, 2), mag: null, paso: 0.05, min: 0.01, max: 10, sinUd: true, nombre: etq.replace(/<[^>]+>/g, ""), info: info2, onCambio: (v2) => {
+        V()[k] = v2;
+        ctx2.pintar();
+      } });
+      e2.classList.toggle("disc", !!dist);
+      return e2;
     };
-    const num4 = (id, etq, k, mag, o = {}) => campoNum({ id: `et-${id}`, etq, valor: redondeo(vis(k), mag), mag, paso: o.paso, min: o.min ?? -1e9, max: o.max ?? 1e9, nombre: o.nombre, ref: o.ref, info: o.info, onCambio: (v2) => {
-      est7[k] = k === "x" && Math.abs(v2) >= X_INF ? Math.sign(v2) * Infinity : v2;
-      cambio();
-    } });
-    const campos = {
-      NM: [
-        num4("N", sub25("N", ""), "N", "N", { paso: 10, nombre: t("est.nombreN"), ref: t("fcr.compPos") }),
-        num4("Mx", sub25("M", "x"), "Mx", "M", { paso: 5, nombre: t("est.nombreMx"), ref: t("est.refMx") }),
-        num4("My", sub25("M", "y"), "My", "M", { paso: 5, nombre: t("est.nombreMy"), ref: t("est.refMy") })
-      ],
-      eK: [
-        num4("e0", sub25("\u03B5", "cdg"), "e0", "def", { paso: 5e-5, nombre: t("est.nombreE0") }),
-        num4("kx", sub25("\u03BA", "x"), "kx", "curv", { paso: 1e-4, nombre: t("est.nombreKx") }),
-        num4("ky", sub25("\u03BA", "y"), "ky", "curv", { paso: 1e-4, nombre: t("est.nombreKy") })
-      ],
-      sup: [
-        num4("es", sub25("\u03B5", "sup"), "eSup", "def", { paso: 5e-5, nombre: t("est.nombreESup"), info: t("est.infoSup") }),
-        num4("b", "\u03B2", "beta", "ang1", { paso: 1, min: 0, max: 360, nombre: t("est.nombreBeta") }),
-        num4("x", "x", "x", "long", { paso: 0.01, nombre: t("est.nombreX"), ref: t("est.refX") })
-      ]
-    };
-    const gamma = (id, etq, k, defecto) => campoNum({ id: `et-${id}`, etq, valor: fmt(est7[k] ?? defecto, 2), mag: null, paso: 0.05, min: 0.01, max: 10, sinUd: true, nombre: etq.replace(/<[^>]+>/g, ""), info: id === "gc" ? t("est.infoGamma") : id === "gs" ? t("est.infoGammaS") : void 0, onCambio: (v2) => {
-      est7[k] = v2;
-      ctx2.pintar();
-    } });
+    const els = est7.estado === "ELS";
+    const lim = c?.lim;
+    const limTxt = lim ? els ? `${sub25("\u03B5", "c,l\xEDm")} ${fmt(lim.ec * 1e3, 2)} \u2030 \xB7 ${sub25("\u03B5", "s,l\xEDm")} ${fmt(lim.esT * 1e3, 2)} \u2030` : `${sub25("\u03B5", "cu")} ${fmt(lim.ecu * 1e3, 2)} \u2030 \xB7 ${sub25("\u03B5", "c2")} ${fmt((lim.pivote?.ec2 ?? lim.ecu) * 1e3, 2)} \u2030 \xB7 ${sub25("\u03B5", "ud")} ${fmt(lim.esT * 1e3, 2)} \u2030` : "";
     poner(
       form,
+      segmentado({ ancho: true, capsula: true, etiqueta: t("est.estadoLimite"), opciones: [["ELS", "ELS"], ["ELU", "ELU"]], valor: est7.estado, onCambio: (m) => {
+        est7.estado = m;
+        ctx2.pintar();
+      } }),
       segmentado({ ancho: true, capsula: true, etiqueta: t("est.modo"), opciones: [["NM", t("est.m.NM")], ["eK", t("est.m.eK")], ["sup", t("est.m.sup")]], valor: est7.modo, onCambio: (m) => {
         est7.modo = m;
         ctx2.pintar();
       } }),
-      grupo(est7.modo === "NM" ? t("est.gEsfuerzos") : t("est.gPlano"), ...campos[est7.modo]),
       grupo(
         t("est.gHormigon"),
-        c ? gamma("gc", t("est.gammaC"), "gammaC", c.gammaC) : null,
-        c ? gamma("ac", t("est.alfaCC"), "alfaCC", c.alfaCC) : null,
-        campoNum({ id: "et-phi", etq: t("est.phi"), valor: fmt(est7.phi, 2), mag: null, paso: 0.1, min: 0, max: 10, sinUd: true, info: t("est.infoPhi"), onCambio: (v2) => {
-          est7.phi = v2;
+        h("div", { class: "fila-campos et-fc" }, c ? gamma("gc", t("est.gammaC"), "gammaC", c.gammaC) : null, c ? gamma("ac", t("est.alfaCC"), "alfaCC", c.alfaCC) : null),
+        h(
+          "div",
+          { class: "fila-campos et-fc" },
+          els ? campoNum({ id: "et-phi", etq: t("est.phi"), valor: fmt(V().phi, 2), mag: null, paso: 0.1, min: 0, max: 10, sinUd: true, info: t("est.infoPhi"), onCambio: (v2) => {
+            V().phi = v2;
+            ctx2.pintar();
+          } }) : apaga(campoNum({ id: "et-phi", etq: t("est.phi"), valor: "\u2014", mag: null, sinUd: true, info: t("est.noELU.phi"), onCambio: () => {
+          } }), t("est.noELU.phi")),
+          els ? campoNum({ id: "et-kc", etq: t("est.kc"), valor: fmt(V().kc, 2), mag: null, paso: 0.05, min: 0.05, max: 1, sinUd: true, info: t("est.infoKc"), onCambio: (v2) => {
+            V().kc = v2;
+            ctx2.pintar();
+          } }) : apaga(campoNum({ id: "et-kc", etq: t("est.kc"), valor: "\u2014", mag: null, sinUd: true, info: t("est.noELU.k"), onCambio: () => {
+          } }), t("est.noELU.k"))
+        ),
+        els ? h("label", { class: "tick" }, h("input", { type: "checkbox", id: "et-lineal", checked: V().lineal, onchange: (e2) => {
+          V().lineal = e2.target.checked;
           ctx2.pintar();
-        } }),
-        h("label", { class: "tick" }, h("input", { type: "checkbox", id: "et-lineal", checked: est7.lineal, onchange: (e2) => {
-          est7.lineal = e2.target.checked;
-          ctx2.pintar();
-        } }), h("span", { html: t("est.lineal") })),
+        } }), h("span", { html: t("est.lineal") })) : apaga(h("label", { class: "tick" }, h("input", { type: "checkbox", id: "et-lineal", checked: false }), h("span", { html: t("est.lineal") })), t("est.noELU.lineal")),
         c ? h(
           "div",
-          { class: "et-der" },
-          h("span", {}, "E", h("sub", {}, "c,eff"), ` ${fmt(c.mod.ley.pendiente / 1e3, 0)} MPa`),
-          h("span", {}, `n = ${fmt(c.mod.acero.E / c.mod.ley.pendiente, 1)}`)
+          { class: `et-der${els ? "" : " no-aplica"}` },
+          h("span", {}, "E", h("sub", {}, "c,eff"), els ? ` ${fmt(c.mod.ley.pendiente / 1e3, 0)} MPa` : " \u2014"),
+          h("span", {}, els ? `n = ${fmt(c.mod.acero.E / c.mod.ley.pendiente, 1)}` : "n = \u2014")
         ) : null
       ),
-      grupo(t("est.gAcero"), c ? gamma("gs", t("est.gammaS"), "gammaS", c.gammaS) : null)
+      grupo(
+        t("est.gAcero"),
+        h(
+          "div",
+          { class: "fila-campos et-fc" },
+          c ? gamma("gs", t("est.gammaS"), "gammaS", c.gammaS) : null,
+          els ? campoNum({ id: "et-ks", etq: t("est.ks"), valor: fmt(V().ks, 2), mag: null, paso: 0.05, min: 0.05, max: 1.5, sinUd: true, info: t("est.infoKs"), onCambio: (v2) => {
+            V().ks = v2;
+            ctx2.pintar();
+          } }) : apaga(campoNum({ id: "et-ks", etq: t("est.ks"), valor: "\u2014", mag: null, sinUd: true, info: t("est.noELU.k"), onCambio: () => {
+          } }), t("est.noELU.k"))
+        ),
+        c ? h("div", { class: "et-der", html: limTxt }) : null
+      )
     );
   }
   function recorta(pts, f) {
@@ -14934,7 +15464,7 @@ tr.et-act td { font-weight: 650; }
     }
     return out;
   }
-  var W = 800;
+  var W = 900;
   var H = 500;
   var pts2 = (a) => a.map((q2) => `${q2[0].toFixed(1)},${q2[1].toFixed(1)}`).join(" ");
   var svgSub = (b, s) => `${b}<tspan baseline-shift="sub" font-size="75%">${s}</tspan>`;
@@ -14947,7 +15477,7 @@ tr.et-act td { font-weight: 650; }
     const yc = mod.yc;
     const diag = Math.hypot(c.bx, c.hy);
     const S = Math.min((H - 130) / diag, SECCION_MAX / Math.max(c.bx, c.hy));
-    const cx = W * 0.36;
+    const cx = W * 0.3;
     const cy = H / 2 + 14;
     const T = (p) => {
       const dx = p[0] - xc;
@@ -14960,11 +15490,11 @@ tr.et-act td { font-weight: 650; }
     const smax = Math.max(...vs.map(prof));
     const smin = Math.min(...vs.map(prof));
     const lmax = Math.max(...vs.map(lat));
-    const eps2 = (p) => r.e0 + r.ky * (p[0] - xc) - r.kx * (p[1] - yc);
+    const eps3 = (p) => r.e0 + r.ky * (p[0] - xc) - r.kx * (p[1] - yc);
     const out = ['<defs><pattern id="rayado" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)" class="rayas"><line x1="0" y1="0" x2="0" y2="6"/></pattern><pattern id="rayado-t" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)" class="rayas-t"><line x1="0" y1="0" x2="0" y2="5"/></pattern><marker id="tic" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M2 8L8 2" class="tic"/></marker></defs>'];
     for (const k of geo.contornos.filter((q2) => q2.signo > 0)) {
       out.push(`<polygon class="hor" points="${pts2(k.pts.map(T))}"/>`);
-      const zc = r.beta === null ? r.eSup > 0 ? k.pts : [] : recorta(k.pts, eps2);
+      const zc = r.beta === null ? r.eSup > 0 ? k.pts : [] : recorta(k.pts, eps3);
       if (zc.length > 2) out.push(`<polygon class="zc" points="${pts2(zc.map(T))}"/>`);
     }
     for (const k of geo.contornos.filter((q2) => q2.signo < 0)) out.push(`<polygon class="tapa" points="${pts2(k.pts.map(T))}"/><polygon class="corte" points="${pts2(k.pts.map(T))}"/>`);
@@ -14972,16 +15502,16 @@ tr.et-act td { font-weight: 650; }
     const yBot = cy - S * smin;
     const tr = Math.max(0, -r.eInf);
     const base0 = cx + S * lmax + 50;
+    const SIG_W = 80;
     const comp = Math.max(0, r.eSup, r.eInf);
     const escE = Math.min(
-      W * 0.27 / Math.max(Math.abs(r.eSup), Math.abs(r.eInf), 5e-4),
-      (W - base0 - 130) / Math.max(tr + comp, 1e-9),
-      (W - base0 - 205) / Math.max(tr, 1e-9)
+      W * 0.2 / Math.max(Math.abs(r.eSup), Math.abs(r.eInf), 5e-4),
+      (W - 8 - SIG_W - 115 - 120 - base0) / Math.max(tr + comp, 1e-9)
     );
     const x0 = base0 + tr * escE;
+    const x1 = x0 + comp * escE + 120;
     const aT = [x0 + r.eSup * escE, yTop];
     const aB = [x0 + r.eInf * escE, yBot];
-    out.push(`<text class="tit" x="${x0}" y="${yTop - 22}" text-anchor="middle">${t("est.planoDef")}</text>`);
     out.push(`<line class="eje" x1="${x0}" y1="${yTop}" x2="${x0}" y2="${yBot}"/>`);
     const yCero = r.eSup === r.eInf ? yTop : yTop + (yBot - yTop) * r.eSup / (r.eSup - r.eInf);
     if (r.eSup > 0 && r.eInf < 0) {
@@ -14989,15 +15519,34 @@ tr.et-act td { font-weight: 650; }
     } else out.push(`<polygon class="${r.eSup >= 0 && r.eInf >= 0 ? "eps-c" : "eps-t"}" points="${pts2([[x0, yTop], aT, aB, [x0, yBot]])}"/>`);
     const etq = (q2, nombre, e2, arriba) => `<text x="${q2[0] + (e2 >= 0 ? 6 : -6)}" y="${q2[1] + (arriba ? 4 : 4)}" text-anchor="${e2 >= 0 ? "start" : "end"}">${svgSub("\u03B5", nombre)} ${fmt(e2 * 1e3, 2)} \u2030</text>`;
     out.push(etq(aT, "sup", r.eSup, true), etq(aB, "inf", r.eInf, false));
+    const ley = r.fisurada ? mod.ley.fisurada : mod.ley.integra;
+    const sH = (e2) => -sigma(ley, -e2) / 1e3;
+    const NS4 = 48;
+    const mu = Array.from({ length: NS4 + 1 }, (_2, i) => {
+      const tt = i / NS4;
+      const e2 = r.eSup + (r.eInf - r.eSup) * tt;
+      return { y: yTop + (yBot - yTop) * tt, s: sH(e2) };
+    });
+    const sTop = mu[0].s;
+    const sBot = mu[NS4].s;
+    const sEsc = SIG_W / Math.max(Math.abs(sTop), Math.abs(sBot), 1e-6);
+    out.push(`<line class="eje" x1="${x1}" y1="${yTop}" x2="${x1}" y2="${yBot}"/>`);
+    const cP = mu.filter((q2) => q2.s > 1e-9);
+    const tP = mu.filter((q2) => q2.s < -1e-9);
+    const yCeroS = cP.length && tP.length ? (cP[cP.length - 1].y + tP[0].y) / 2 : null;
+    if (cP.length) out.push(`<polygon class="eps-c" points="${pts2([[x1, cP[0].y], ...cP.map((q2) => [x1 + q2.s * sEsc, q2.y]), [x1, yCeroS ?? cP[cP.length - 1].y]])}"/>`);
+    if (tP.length) out.push(`<polygon class="eps-t" points="${pts2([[x1, yCeroS ?? tP[0].y], ...tP.map((q2) => [x1 + q2.s * sEsc, q2.y]), [x1, tP[tP.length - 1].y]])}"/>`);
+    if (sTop > 1e-9) out.push(`<text x="${(x1 + sTop * sEsc + 6).toFixed(1)}" y="${yTop + 4}">${svgSub("\u03C3", "c")} ${fmt(sTop, MAG.tension.d)} MPa</text>`);
+    if (sBot < -1e-9) out.push(`<text x="${(x1 + 6).toFixed(1)}" y="${yBot + 4}">${svgSub("\u03C3", "ct")} ${fmt(sBot, MAG.tension.d)} MPa</text>`);
     if (r.beta !== null && Number.isFinite(r.x) && r.x !== 0) {
       const yN = yTop + S * r.x;
       if (yN > yTop - 30 && yN < yBot + 30) {
-        out.push(`<line class="en" x1="${cx - S * diag / 2 - 10}" y1="${yN}" x2="${x0 + 108}" y2="${yN}"/>`);
-        out.push(`<text x="${x0 + 112}" y="${yN + 4}">${t("est.fibraNeutra")}</text>`);
-        out.push(`<line class="cota" x1="${x0 + 40}" y1="${yTop}" x2="${x0 + 40}" y2="${yN}" marker-start="url(#tic)" marker-end="url(#tic)"/><text class="fuerte" x="${x0 + 46}" y="${(yTop + yN) / 2}">x = ${fmt(r.x * 1e3, 0)} mm</text>`);
+        out.push(`<line class="en" x1="${cx - S * diag / 2 - 10}" y1="${yN}" x2="${x1 + SIG_W}" y2="${yN}"/>`);
+        const xc2 = x0 - 26;
+        out.push(`<line class="cota" x1="${xc2}" y1="${yTop}" x2="${xc2}" y2="${yN}" marker-start="url(#tic)" marker-end="url(#tic)"/><text class="fuerte" text-anchor="end" style="paint-order:stroke;stroke:var(--hoja);stroke-width:4px" x="${xc2 - 6}" y="${(yTop + yN) / 2 + 4}">x = ${fmt(r.x * 1e3, 0)} mm</text>`);
       }
     } else if (r.beta === null || !Number.isFinite(r.x)) {
-      out.push(`<text class="fuerte" x="${x0 + 40}" y="${(yTop + yBot) / 2}">x = \u221E</text>`);
+      out.push(`<text class="fuerte" x="${x0 - 30}" y="${(yTop + yBot) / 2}" text-anchor="end">x = \u221E</text>`);
     }
     const ver = visibles(filasArmadura(r));
     const etiquetas2 = [];
@@ -15013,7 +15562,7 @@ tr.et-act td { font-weight: 650; }
       const y = e2.q[1] + e2.rr + 12;
       if (puestas.some((o) => Math.abs(o.x - x) < 80 && Math.abs(o.y - y) < 16)) continue;
       puestas.push({ x, y });
-      out.push(`<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle">${fmt(e2.s, MAG.tension.d)}</text>`);
+      out.push(`<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle">${fmt(e2.s, 0)}</text>`);
     }
     for (const [jf, f] of r.franjas.entries()) {
       const th = Math.max(5, S * f.A / (f.x2 - f.x1) / 2) / S;
@@ -15022,7 +15571,7 @@ tr.et-act td { font-weight: 650; }
       for (const [ie, [xe, se, lado]] of [[f.x1, f.s1, -1], [f.x2, f.s2, 1]].entries()) {
         const q2 = T([xe, f.y]);
         const eti = ver.has(r.barras.length + 2 * jf + ie);
-        out.push(`<circle class="et-pt" data-ref="f${jf}-${ie}" cx="${q2[0].toFixed(1)}" cy="${q2[1].toFixed(1)}" r="3"/>${eti ? `<text x="${(q2[0] + lado * 8).toFixed(1)}" y="${(q2[1] + 4).toFixed(1)}" text-anchor="${lado > 0 ? "start" : "end"}">${fmt(se, MAG.tension.d)}</text>` : ""}`);
+        out.push(`<circle class="et-pt" data-ref="f${jf}-${ie}" cx="${q2[0].toFixed(1)}" cy="${q2[1].toFixed(1)}" r="3"/>${eti ? `<text x="${(q2[0] + lado * 8).toFixed(1)}" y="${(q2[1] + 4).toFixed(1)}" text-anchor="${lado > 0 ? "start" : "end"}">${fmt(se, 0)}</text>` : ""}`);
       }
     }
     const c0 = T([xc, yc]);
@@ -15040,7 +15589,7 @@ tr.et-act td { font-weight: 650; }
       out.push(`<line class="en" x1="${ix - w[0] * 50}" y1="${iy - w[1] * 50}" x2="${ix + w[0] * 50}" y2="${iy + w[1] * 50}"/>`);
       out.push(`<path class="cota" d="M${ix + 26} ${iy}A26 26 0 ${bn > Math.PI ? 1 : 0} 0 ${ix + 26 * w[0]} ${iy + 26 * w[1]}"/><text x="${ix + 30}" y="${iy - 6}">\u03B2</text>`);
     }
-    return `<svg class="dib et-svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 ${W} ${H}"${topeEscala(W, H)} role="img" aria-label="${t("est.dibujoAria")}">${out.join("")}</svg>`;
+    return `<svg class="dib et-svg" preserveAspectRatio="xMidYMin meet" viewBox="0 0 ${W} ${H}"${topeEscala(W, H)} role="img" aria-label="${t("est.dibujoAria")}">${out.join("")}</svg>`;
   }
   var mm2 = (x) => fmt(x * 1e3, 0);
   var grados = (b) => b === null ? "\u2014" : fmt(deMotor(b), 1);
@@ -15117,6 +15666,18 @@ tr.et-act td { font-weight: 650; }
     const ley = t(`est.ley.${c.lector}`);
     return veredicto(r.fisurada ? "atencion" : "neutro", sello, t("est.sigmaC"), qh(r.sigmaMax, "tension"), `${ley} \xB7 n = ${fmt(r.n, 1)}`);
   }
+  function cabeceraEsfuerzos(r) {
+    const par2 = (etq, v2, ud, clase = "") => h("span", { class: `et-esf-v ${clase}`.trim() }, h("span", { class: "et-esf-e", html: etq }), " = ", h("b", {}, v2), h("span", { class: "et-esf-u" }, ` ${ud}`));
+    return [par2("N", fmt(r.N, MAG.N.d), "kN", r.N < 0 ? "trac" : ""), par2(sub25("M", "x"), fmt(r.Mx, MAG.M.d), "kN\xB7m"), par2(sub25("M", "y"), fmt(r.My, MAG.M.d), "kN\xB7m")];
+  }
+  function notaEC2() {
+    return h(
+      "details",
+      { class: "pleg pleg-amb" },
+      h("summary", {}, t("est.ec2.titulo")),
+      h("div", { class: "cuenta" }, ...["est.ec2.c", "est.ec2.s", "est.ec2.k"].map((k) => h("p", { class: "nota", html: t(k) })))
+    );
+  }
   function resultados11(ctx2, res) {
     const p = ctx2.p;
     const s = activa3(p);
@@ -15128,11 +15689,12 @@ tr.et-act td { font-weight: 650; }
     const nombre = s.nombre;
     const ver = pastilla(c, r);
     res.append(ver);
-    if (c.mod.ley.avisos.includes("PR")) res.append(aviso(t("est.avPR")));
+    if (c.els && c.mod.ley.avisos.includes("PR")) res.append(aviso(t("est.avPR")));
     if (c.mod.ley.avisos.includes("lineal")) res.append(aviso(t("est.avLineal")));
-    if (r.avisos.includes("eps-cu")) res.append(aviso(t("est.avEpsCu")));
-    if (r.avisos.includes("acero-plast")) res.append(aviso(t("est.avPlast")));
-    if (r.avisos.includes("acero-eud")) res.append(aviso(t("est.avEud")));
+    const dom = admisible(c.mod, c.lim, r.plano);
+    if (!dom.ok) res.append(aviso(t(`est.fuera.${dom.limita}`, est7.estado, fmt(-dom.holgura * 1e3, 2)), "error"));
+    if (c.els) res.append(notaEC2());
+    const esf = h("div", { class: "et-esf", role: "status" }, ...cabeceraEsfuerzos(r));
     const lienzo = h("div", { class: "lienzo et-lienzo", html: dibujo(c, r) });
     const derecha = h("article", { class: "panel tarjeta et-der-card" });
     const llena = (rr) => derecha.replaceChildren(tablaEstado(rr), h("h3", {}, t("est.tFibras")), tablaFibras(rr), tablaBarras(ctx2, rr));
@@ -15143,16 +15705,16 @@ tr.et-act td { font-weight: 650; }
       if (!rr.ok) return;
       r = rr;
       lienzo.innerHTML = dibujo(c, rr);
+      esf.replaceChildren(...cabeceraEsfuerzos(rr));
       llena(rr);
       const nuevo2 = pastilla(c, rr);
       res.querySelector(":scope > .veredicto").replaceWith(nuevo2);
       rotulaSeccion(res, nombre);
     };
-    const sincro = (id, mag, v2) => {
-      const el = document.getElementById(`et-${id}`);
-      if (el) el.value = mag === "ang1" ? String(+v2.toFixed(1)) : String(+(v2 * MAG[mag].f).toFixed(MAG[mag].d ?? 0));
-    };
+    const ENT = { N: { ud: "kN", d: 0 }, M: { ud: "kN\xB7m", d: 0 }, def: { ud: "\u2030", d: 2 }, ang1: { ud: "\xB0", d: 1 } };
     const reg = (id, etq, k, mag, min, max, step, texto, aVar = (v2) => v2, deVar = (v2) => v2) => regleta({
+      entrada: ENT[mag],
+      clase: k === "N" && est7.N < 0 ? "trac" : "",
       etq,
       min,
       max,
@@ -15163,7 +15725,7 @@ tr.et-act td { font-weight: 650; }
       texto,
       onInput: (v2) => {
         est7[k] = aVar(v2);
-        sincro(id, mag, est7[k]);
+        if (k === "N") document.querySelector(".et-reglas .regleta")?.classList.toggle("trac", est7.N < 0);
         refresca();
       },
       onChange: (v2) => {
@@ -15178,9 +15740,7 @@ tr.et-act td { font-weight: 650; }
       regs.push(reg("Mx", sub25("M", "x"), "Mx", "M", -c.rg.Mx, c.rg.Mx, 1, unidad("M")));
       regs.push(reg("My", sub25("M", "y"), "My", "M", -c.rg.My, c.rg.My, 1, unidad("M")));
     } else if (est7.modo === "eK") {
-      regs.push(reg("e0", sub25("\u03B5", "cdg"), "e0", "def", -1.5, 2, 0.01, (v2) => `${fmt(v2, 2)} \u2030`, (v2) => v2 / 1e3, (v2) => v2 * 1e3));
-      regs.push(reg("kx", sub25("\u03BA", "x"), "kx", "curv", -c.rg.kx * 1e3, c.rg.kx * 1e3, 0.01, (v2) => `${fmt(v2, 2)} \u2030/m`, (v2) => v2 / 1e3, (v2) => v2 * 1e3));
-      regs.push(reg("ky", sub25("\u03BA", "y"), "ky", "curv", -c.rg.ky * 1e3, c.rg.ky * 1e3, 0.01, (v2) => `${fmt(v2, 2)} \u2030/m`, (v2) => v2 / 1e3, (v2) => v2 * 1e3));
+      regs.push(...gaugesEK(c, refresca, ctx2));
     } else {
       regs.push(reg("es", sub25("\u03B5", "sup"), "eSup", "def", -1.5, 3.5, 0.01, (v2) => `${fmt(v2, 2)} \u2030`, (v2) => v2 / 1e3, (v2) => v2 * 1e3));
       regs.push(reg("b", "\u03B2", "beta", "ang1", 0, 360, 0.5, (v2) => `${fmt(v2, 1)} \xB0`));
@@ -15195,6 +15755,11 @@ tr.et-act td { font-weight: 650; }
         return Math.max(0, m / (m + XM2));
       })() : 1;
       regs.push(regleta({
+        entrada: { ud: "mm", mostrar: (q2) => q2 >= 0.999 ? "\u221E" : fmt(X02 + XM2 * q2 / (1 - q2), 0), leer: (txt) => {
+          if (/^\s*(∞|inf)/i.test(txt)) return 1;
+          const m = leerNumero(txt);
+          return m <= X02 ? 0 : (m - X02) / (m - X02 + XM2);
+        } },
         etq: "x",
         min: 0,
         max: 1,
@@ -15205,7 +15770,6 @@ tr.et-act td { font-weight: 650; }
         texto: (q2) => q2 >= 0.999 ? "\u221E" : `${fmt(X02 + XM2 * q2 / (1 - q2), 0)} mm`,
         onInput: (q2) => {
           est7.x = aX(q2);
-          sincro("x", "long", Number.isFinite(est7.x) ? est7.x : X_INF);
           refresca();
         },
         onChange: (q2) => {
@@ -15215,8 +15779,73 @@ tr.et-act td { font-weight: 650; }
       }));
     }
     const reglas = h("div", { class: "et-reglas" }, ...regs);
-    res.append(h("div", { class: "cuerpo dib-ancho" }, h("article", { class: "panel tarjeta et-izq" }, lienzo, reglas), derecha));
+    res.append(h("div", { class: "cuerpo dib-ancho" }, h("article", { class: "panel tarjeta et-izq" }, esf, lienzo, reglas), derecha));
     rotulaSeccion(res, nombre);
+  }
+  var EK = ["e0", "kx", "ky"];
+  var RETARDO = 90;
+  function gaugesEK(c, refresca, ctx2) {
+    const esc2 = [5e-3, c.rg.kx, c.rg.ky];
+    const en = (u) => admisible(c.mod, c.lim, { e0: u[0] * esc2[0], kx: u[1] * esc2[1], ky: u[2] * esc2[2] }).ok;
+    const cand = () => EK.map((k) => est7.lock[k]);
+    const uDe = () => EK.map((k, j) => est7[k] / esc2[j]);
+    const aEst = (u) => EK.forEach((k, j) => {
+      est7[k] = u[j] * esc2[j];
+    });
+    const f = [{ k: "e0", mag: "def", etq: sub25("\u03B5", "cdg"), ud: "\u2030" }, { k: "kx", mag: "curv", etq: sub25("\u03BA", "x"), ud: "\u2030/m" }, { k: "ky", mag: "curv", etq: sub25("\u03BA", "y"), ud: "\u2030/m" }];
+    let R = rangos(en, uDe(), cand());
+    const regs = f.map((q2, j) => regleta({
+      entrada: { ud: q2.ud, d: 2 },
+      etq: q2.etq,
+      min: -1,
+      max: 1,
+      step: 0.01,
+      valor: est7[q2.k] * 1e3,
+      reinicio: 0,
+      etiqueta: q2.k,
+      texto: (v2) => `${fmt(v2, 2)} ${q2.ud}`,
+      gauge: { bloqueado: est7.lock[q2.k], onCandado: () => {
+        est7.lock[q2.k] = !est7.lock[q2.k];
+        ctx2.cambio();
+      } },
+      onInput: (v2) => mueve(j, v2 / 1e3),
+      onChange: () => {
+        clearTimeout(timer);
+        ctx2.cambio();
+      }
+    }));
+    const pinta = () => {
+      const u = uDe();
+      regs.forEach((rg, j) => {
+        const tot = R.total ? R.total[j].map((x) => x * esc2[j] * 1e3) : [-TOPE * esc2[j] * 1e3, TOPE * esc2[j] * 1e3];
+        const ban = R.banda ? R.banda[j].map((x) => x * esc2[j] * 1e3) : null;
+        rg.rango({ min: Math.min(tot[0], u[j] * esc2[j] * 1e3), max: Math.max(tot[1], u[j] * esc2[j] * 1e3), banda: ban, fuera: !R.dentro, bloqueado: est7.lock[f[j].k], fmtExt: (x) => fmt(x, 2) });
+        rg.poner(est7[f[j].k] * 1e3);
+      });
+    };
+    let timer = 0;
+    const mueve = (j, v2) => {
+      const u = uDe();
+      const nuevo2 = v2 / esc2[j];
+      const b = R.banda?.[j];
+      const dentroBanda = b && nuevo2 >= b[0] - 1e-9 && nuevo2 <= b[1] + 1e-9;
+      if (dentroBanda || !R.dentro) {
+        est7[f[j].k] = v2;
+      } else {
+        const q2 = reajusta(en, u, j, nuevo2, cand(), R);
+        if (q2) aEst(q2);
+        else est7[f[j].k] = Math.min(b[1], Math.max(b[0], nuevo2)) * esc2[j];
+      }
+      regs.forEach((rg, m) => rg.poner(est7[EK[m]] * 1e3));
+      refresca();
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        R = rangos(en, uDe(), cand());
+        pinta();
+      }, RETARDO);
+    };
+    pinta();
+    return regs;
   }
   function comandos8(ctx2) {
     return [{ k: "p.estadoTensional", b: "estado tensional tensiones servicio els deformaciones plano stress", f: () => ctx2.ir("estadoTensional") }];
@@ -17707,7 +18336,7 @@ tr.et-act td { font-weight: 650; }
     for (let i = 0; i < c.length; i += 2) filas.push(h("div", { class: "par2" }, ...c.slice(i, i + 2)));
     return filas;
   };
-  var apaga = (c, motivo) => {
+  var apaga2 = (c, motivo) => {
     for (const el of c.querySelectorAll("input, select")) el.disabled = true;
     c.classList.add("no-aplica");
     return conInfo(c, motivo);
@@ -17868,8 +18497,8 @@ tr.et-act td { font-weight: 650; }
           } })
         ].map((c) => {
           const id = c.dataset.c;
-          if (!comp && ["t-fi", "t-s", "t-al"].includes(id)) return apaga(c, t("tor.soloComp"));
-          if (id === "t-alfa" && tn !== "ehe") return apaga(c, t("tor.soloEHE"));
+          if (!comp && ["t-fi", "t-s", "t-al"].includes(id)) return apaga2(c, t("tor.soloComp"));
+          if (id === "t-alfa" && tn !== "ehe") return apaga2(c, t("tor.soloEHE"));
           return id === "t-alfa" ? conInfo(c, t("tor.alfaAyuda")) : c;
         })),
         gauge
@@ -18070,8 +18699,8 @@ tr.et-act td { font-weight: 650; }
       { w: 0.3, clases: ["XC2", "XC3", "XC4", "XF1", "XF2", "XF3", "XF4", "XD1", "XD2", "XD3", "XS1", "XS2", "XS3", "XA1", "XA2", "XA3"] }
     ]
   };
-  function wmaxDe(norma2, clase) {
-    const g = (CLASES3[norma2] ?? []).find((x) => x.clases.includes(clase));
+  function wmaxDe(norma3, clase) {
+    const g = (CLASES3[norma3] ?? []).find((x) => x.clases.includes(clase));
     return g ? g.w : null;
   }
 
@@ -18083,7 +18712,7 @@ tr.et-act td { font-weight: 650; }
     return { fctm, Ecm, fctfl: Math.max((1.6 - h2 / 1e3) * fctm, fctm), alfaE: ES / Ecm };
   }
   var areaBarra = (fi) => Math.PI * fi * fi / 4;
-  function wkNorma(norma2, g, e2, o) {
+  function wkNorma(norma3, g, e2, o) {
     const { b, h: h2, c, ay, fi, As1, d, s } = g;
     const { larga = true, directa = true, buenaAdh = true, fck = 30 } = o;
     const m = propsHormigon(fck, h2);
@@ -18092,20 +18721,20 @@ tr.et-act td { font-weight: 650; }
     const area = g.areaEf ?? ((hef) => hef * b);
     const kt = larga ? 0.4 : 0.6;
     const r = { x: e2.x, ss, ssr, e1: e2.e1, As1, d, s };
-    if (norma2 === "EHE08") {
+    if (norma3 === "EHE08") {
       const hef = Math.min(h2 / 2, ay + 7.5 * fi), Acef = area(hef);
       const k1 = (e2.e1 + (e2.e2 ?? 0)) / (8 * e2.e1), k2 = larga ? 0.5 : 1, beta2 = directa ? 1.7 : 1.3;
       const sm = 2 * c + 0.2 * Math.min(s, 15 * fi) + 0.4 * k1 * fi * Acef / As1;
       const esm = Math.max(ss / ES * (1 - k2 * (ssr / ss) ** 2), 0.4 * ss / ES);
       return { ...r, hef, Acef, rho: As1 / Acef, k1, sr: sm, sm, esm, beta: beta2, wk: beta2 * sm * esm };
     }
-    if (norma2 === "EC2-2004") {
+    if (norma3 === "EC2-2004") {
       const hef = Math.min(2.5 * (h2 - d), (h2 - x) / 3, h2 / 2), Acef = area(hef), rho = As1 / Acef;
       const sr = s > 5 * (c + fi / 2) ? 1.3 * (h2 - x) : 3.4 * c + 0.8 * 0.5 * 0.425 * fi / rho;
       const esm = Math.max((ss - kt * m.fctm / rho * (1 + m.alfaE * rho)) / ES, 0.6 * ss / ES);
       return { ...r, hef, Acef, rho, sr, esm, wk: sr * esm };
     }
-    if (norma2 === "EC2-2023") {
+    if (norma3 === "EC2-2023") {
       const kw = 1.7, kb = buenaAdh ? 0.9 : 1.2;
       const hef = Math.min(ay + 5 * fi, 10 * fi, 3.5 * ay, h2 - x, h2 / 2), Acef = area(hef), rho = As1 / Acef;
       const kfl = (h2 - hef) / h2;
@@ -18114,7 +18743,7 @@ tr.et-act td { font-weight: 650; }
       const k1r = (h2 - x) / (h2 - ay - x);
       return { ...r, hef, Acef, rho, sr, esm, k1r, kw, kb, wk: kw * k1r * sr * esm };
     }
-    throw new Error(`Norma desconocida: ${norma2}`);
+    throw new Error(`Norma desconocida: ${norma3}`);
   }
 
   // src/core/fisuracionSeccion.js
@@ -18240,7 +18869,7 @@ tr.et-act td { font-weight: 650; }
     const nuevas = Array.from({ length: n }, (_2, i) => ({ x: n > 1 ? ini + i * paso2 : xc, y, fi, A: areaBarra(fi) * 1e-6, grupo: -1 }));
     return { geo: { ...geo, barras: [...resto, ...nuevas] }, libre: n > 1 ? paso2 * MM - fi : Infinity };
   }
-  function dimensionaSeccion(c, o, norma2, wmax, diametros3, nMax = 12) {
+  function dimensionaSeccion(c, o, norma3, wmax, diametros3, nMax = 12) {
     const signo = o.M >= 0 ? 1 : -1;
     const base2 = fisuraSeccion(c, o);
     if (base2.sinFisurar) return diametros3.map((fi) => ({ fi, n: null, sinFisurar: true }));
@@ -18251,7 +18880,7 @@ tr.et-act td { font-weight: 650; }
         if (!cand || n > 2 && cand.libre < Math.max(fi, 20)) break;
         const r = fisuraSeccion({ ...c, geo: cand.geo, mod: void 0 }, o);
         if (r.error) continue;
-        if (r.sinFisurar || r.wk[norma2] <= wmax) return { fi, n, As: n * areaBarra(fi), wk: r.sinFisurar ? 0 : r.wk[norma2], libre: cand.libre };
+        if (r.sinFisurar || r.wk[norma3] <= wmax) return { fi, n, As: n * areaBarra(fi), wk: r.sinFisurar ? 0 : r.wk[norma3], libre: cand.libre };
       }
       return { fi, n: null };
     });
@@ -18348,7 +18977,7 @@ tr.et-act td { font-weight: 650; }
     else c.insertBefore(i, c.querySelector(".caja"));
     return c;
   };
-  var apaga2 = (c, motivo) => {
+  var apaga3 = (c, motivo) => {
     for (const el of c.querySelectorAll("input, select")) el.disabled = true;
     c.classList.add("no-aplica");
     return conInfo2(c, motivo);
@@ -18403,12 +19032,12 @@ tr.et-act td { font-weight: 650; }
         id === "EHE08" ? selector({ id: "fi-acc", linea: true, etq: t("fis.accion"), opciones: [["directa", t("fis.directa")], ["indirecta", t("fis.indirecta")]], valor: est10.directa ? "directa" : "indirecta", onCambio: (v2) => {
           est10.directa = v2 === "directa";
           cambio();
-        } }) : apaga2(selector({ id: "fi-acc", linea: true, etq: t("fis.accion"), opciones: [["directa", t("fis.directa")]], valor: "directa", onCambio: () => {
+        } }) : apaga3(selector({ id: "fi-acc", linea: true, etq: t("fis.accion"), opciones: [["directa", t("fis.directa")]], valor: "directa", onCambio: () => {
         } }), t("fis.accionSoloEHE")),
         id === "EC2-2023" ? selector({ id: "fi-adh", linea: true, etq: t("fis.adherencia"), opciones: [["buena", t("fis.buena")], ["mala", t("fis.mala")]], valor: est10.buenaAdh ? "buena" : "mala", onCambio: (v2) => {
           est10.buenaAdh = v2 === "buena";
           cambio();
-        } }) : apaga2(selector({ id: "fi-adh", linea: true, etq: t("fis.adherencia"), opciones: [["buena", t("fis.buena")]], valor: "buena", onCambio: () => {
+        } }) : apaga3(selector({ id: "fi-adh", linea: true, etq: t("fis.adherencia"), opciones: [["buena", t("fis.buena")]], valor: "buena", onCambio: () => {
         } }), t("fis.adhSolo23"))
       )
     );
@@ -18689,9 +19318,9 @@ tr.et-act td { font-weight: 650; }
     }
     return n / N * 2 * Math.PI * R;
   }
-  function perimetroCara(x, norma2, d) {
+  function perimetroCara(x, norma3, d) {
     validarPilar(x);
-    if (norma2 === "EC2-2023") {
+    if (norma3 === "EC2-2023") {
       const lim = (v2) => Math.min(v2, 3 * d);
       if (x.tipo === "rect") {
         const a = lim(x.c1);
@@ -18703,7 +19332,7 @@ tr.et-act td { font-weight: 650; }
     if (x.tipo === "rect") {
       const { c1, c2 } = x;
       if (x.pos === "interior") return 2 * (c1 + c2);
-      if (norma2 === "EHE-08") {
+      if (norma3 === "EHE-08") {
         if (x.pos === "borde") return c1 + 2 * Math.min(c2, 1.5 * d);
         return Math.min(c1, 1.5 * d) + Math.min(c2, 1.5 * d);
       }
@@ -18783,10 +19412,10 @@ tr.et-act td { font-weight: 650; }
     const res = pts.filter(dentro2);
     return res;
   }
-  function betaDe(norma2, modo2, pos, otro = 1) {
+  function betaDe(norma3, modo2, pos, otro = 1) {
     if (modo2 === "otro") return otro;
     if (modo2 === "aprox") return BETA_APROX[pos];
-    return norma2 === "EC2-2023" && pos === "interior" ? 1.05 : 1;
+    return norma3 === "EC2-2023" && pos === "interior" ? 1.05 : 1;
   }
   function validarArmadura(a) {
     if (!a) throw new ErrorClave("pun.errArm");
@@ -19283,10 +19912,10 @@ tr.et-act td { font-weight: 650; }
     const N = 2e3;
     let ant = s.VRdc;
     for (let i = 1; i <= N; i++) {
-      const V = s.VRdc + (tope - s.VRdc) * i / N;
-      if (V > VRdcs(P, s, fiW, Vw, V).VRdcs) {
+      const V2 = s.VRdc + (tope - s.VRdc) * i / N;
+      if (V2 > VRdcs(P, s, fiW, Vw, V2).VRdcs) {
         let lo = ant;
-        let hi = V;
+        let hi = V2;
         for (let k = 0; k < 60; k++) {
           const m = (lo + hi) / 2;
           if (m <= VRdcs(P, s, fiW, Vw, m).VRdcs) lo = m;
@@ -19294,7 +19923,7 @@ tr.et-act td { font-weight: 650; }
         }
         return { V: lo, manda: "cercos" };
       }
-      ant = V;
+      ant = V2;
     }
     return { V: tope, manda: "biela" };
   }
@@ -19770,7 +20399,7 @@ tr.et-act td { font-weight: 650; }
     );
     function armaduraGrupo() {
       const motivoDim = t("pun.motivoDim");
-      const apaga3 = (c, motivo) => {
+      const apaga4 = (c, motivo) => {
         for (const el of c.querySelectorAll("input, select")) el.disabled = true;
         c.title = motivo;
         c.classList.add("no-aplica");
@@ -19787,23 +20416,23 @@ tr.et-act td { font-weight: 650; }
             D.fi = Number(v2);
             cambio();
           } });
-          return comp ? c : apaga3(c, motivoDim);
+          return comp ? c : apaga4(c, motivoDim);
         })(),
         (() => {
           const c = campoNum2({ id: "p-nper", etq: t("pun.nPer"), valor: D.nPer, mag: "n", paso: 1, min: 1, max: 30, ayuda: t("pun.nPerAyuda"), onCambio: set("nPer") });
-          return comp ? c : apaga3(c, motivoDim);
+          return comp ? c : apaga4(c, motivoDim);
         })(),
         (() => {
           const c = campoNum2({ id: "p-ramas", etq: t("pun.ramas"), valor: D.ramas, mag: "n", paso: 1, min: nBrazos(D.pos), max: 200, ayuda: t("pun.ramasAyuda", nBrazos(D.pos)), onCambio: set("ramas") });
-          return comp && cruz ? c : apaga3(c, comp ? t("pun.motivoRet") : motivoDim);
+          return comp && cruz ? c : apaga4(c, comp ? t("pun.motivoRet") : motivoDim);
         })(),
         (() => {
           const c = campoNum2({ id: "p-nx", etq: sub32("n", "x"), valor: D.nx, mag: "n", paso: 1, min: 2, max: 40, ayuda: t("pun.nxAyuda"), onCambio: set("nx") });
-          return comp && !cruz ? c : apaga3(c, comp ? t("pun.motivoCruz") : motivoDim);
+          return comp && !cruz ? c : apaga4(c, comp ? t("pun.motivoCruz") : motivoDim);
         })(),
         (() => {
           const c = campoNum2({ id: "p-ny", etq: sub32("n", "y"), valor: D.ny, mag: "n", paso: 1, min: 2, max: 40, ayuda: t("pun.nyAyuda"), onCambio: set("ny") });
-          return comp && !cruz ? c : apaga3(c, comp ? t("pun.motivoCruz") : motivoDim);
+          return comp && !cruz ? c : apaga4(c, comp ? t("pun.motivoCruz") : motivoDim);
         })(),
         campoNum2({ id: "p-a1", etq: sub32("a", "1"), valor: D.a1, mag: "diam", paso: 5, min: 0, max: 2e3, ayuda: t("pun.a1Ayuda"), onCambio: set("a1") }),
         campoNum2({ id: "p-sr", etq: sub32("s", "r"), valor: D.sr, mag: "diam", paso: 5, min: 20, max: 2e3, ayuda: t("pun.srAyuda"), onCambio: set("sr") })
@@ -19820,7 +20449,7 @@ tr.et-act td { font-weight: 650; }
             D.tipoRama = v2;
             cambio();
           } });
-          return e23 ? c : apaga3(c, t("pun.motivoTipo"));
+          return e23 ? c : apaga4(c, t("pun.motivoTipo"));
         })(),
         ...campos
       );
@@ -19983,7 +20612,7 @@ tr.et-act td { font-weight: 650; }
     const ctrl = e23 ? 0.5 * d : 2 * d;
     const dl = r.deltaUltimo;
     const kd = e23 ? 0.5 * r.dvOut : 2 * d;
-    const V = D.VEd;
+    const V2 = D.VEd;
     const uCara = e23 ? r.u.b0 : r.u.u0;
     const uCtrl = e23 ? r.u.b05 : r.u.u1;
     const capCtrl = e23 ? r.VRdcs / r.beta : r.Vcs;
@@ -19991,11 +20620,11 @@ tr.et-act td { font-weight: 650; }
     const uReq = e23 ? r.b05out : r.uOutReq ?? r.unReq;
     const nombre = (a, b) => `${sub32(a, b)}`;
     const filas = [
-      [t("pun.crit.cara"), "0", fmt(uCara, 0), `${kN(V)} \u2264 ${kN(r.Vmax)} kN ${ok(V <= r.Vmax + 1e-9)}`],
-      [t("pun.crit.ctrl", e23 ? nombre("b", "0,5") : nombre("u", "1")), fmt(ctrl, 0), fmt(uCtrl, 0), `${kN(V)} \u2264 ${kN(capCtrl)} kN ${ok(V <= capCtrl + 1e-9)}`],
+      [t("pun.crit.cara"), "0", fmt(uCara, 0), `${kN(V2)} \u2264 ${kN(r.Vmax)} kN ${ok(V2 <= r.Vmax + 1e-9)}`],
+      [t("pun.crit.ctrl", e23 ? nombre("b", "0,5") : nombre("u", "1")), fmt(ctrl, 0), fmt(uCtrl, 0), `${kN(V2)} \u2264 ${kN(capCtrl)} kN ${ok(V2 <= capCtrl + 1e-9)}`],
       [t("pun.crit.ext", e23 ? nombre("b", "0,5,out") : ec ? nombre("u", "out,ef") : nombre("u", "n,ef")), fmt(dl + kd, 0), fmt(uProv, 0), `${fmt(uProv, 0)} \u2265 ${fmt(uReq, 0)} mm ${ok(uProv >= uReq - 1e-6)}`]
     ];
-    const usos = [V / r.Vmax, V / capCtrl, Number.isFinite(uReq) && uProv > 0 ? uReq / uProv : 0];
+    const usos = [V2 / r.Vmax, V2 / capCtrl, Number.isFinite(uReq) && uProv > 0 ? uReq / uProv : 0];
     const iMax = usos.indexOf(Math.max(...usos));
     const tabCrit = tabla(filas, { cabecera: [t("pun.crit.t"), t("pun.crit.dist"), t("pun.crit.long"), t("pun.crit.comp")], clase: "rejilla-res" });
     const trM = tabCrit.querySelectorAll("tbody tr")[iMax];
@@ -21155,7 +21784,7 @@ tr.et-act td { font-weight: 650; }
   }
 
   // src/norma/inestabilidad.js
-  var excentricidadMinima = (norma2, h2) => Math.max(h2 / (norma2 === "EHE-08" ? 20 : 30), 0.02);
+  var excentricidadMinima = (norma3, h2) => Math.max(h2 / (norma3 === "EHE-08" ? 20 : 30), 0.02);
   var sgn = (x) => x < 0 ? -1 : 1;
   function extremos(N, Ma, Mb, emin3) {
     const lift = (M2) => Math.abs(M2) < N * emin3 - 1e-9 ? sgn(M2) * N * emin3 : M2;
@@ -21300,7 +21929,7 @@ tr.et-act td { font-weight: 650; }
 
   // src/ui/vistas/inestabilidad.js
   var FORMAS8 = ["pilar", "circular"];
-  var TOL2 = 2e-5;
+  var TOL3 = 2e-5;
   var sub35 = (a, b) => `${a}<sub>${b}</sub>`;
   var ind4 = (a, b) => `${a}<tspan class="ind" dy="3">${b}</tspan>`;
   var sigla3 = (g) => g === Infinity ? "\u221E" : fmt(g, 2);
@@ -21382,7 +22011,7 @@ tr.et-act td { font-weight: 650; }
     const gammaDe = (k2, cs = casos[0], dado = null) => {
       const r = calcularInestabilidad(entradaCaso(k2, cs));
       if (!r.valido || !Number.isFinite(r.MEd)) return { r, g: NaN, d: dado };
-      const d = dado ?? diagramaNM(escalarArmadura(sec, k2), { n: est13.modo === "dimensionar" ? 40 : 100, simetrica: true, tol: TOL2 });
+      const d = dado ?? diagramaNM(escalarArmadura(sec, k2), { n: est13.modo === "dimensionar" ? 40 : 100, simetrica: true, tol: TOL3 });
       return { r, g: coeficienteNM(d, r.N, r.MEd), d };
     };
     let k = 1;
@@ -21415,10 +22044,10 @@ tr.et-act td { font-weight: 650; }
     }
     const kk = Number.isFinite(k) ? k : 1;
     const g = gammaDe(kk);
-    const dBase = g.d ?? diagramaNM(escalarArmadura(sec, kk), { n: 100, simetrica: true, tol: TOL2 });
+    const dBase = g.d ?? diagramaNM(escalarArmadura(sec, kk), { n: 100, simetrica: true, tol: TOL3 });
     const res = casos.map((cs, i) => ({ i, ...cs, ...gammaDe(kk, cs, dBase) }));
     const secD = escalarArmadura(sec, kk);
-    const dH = diagramaNM(soloHormigon(sec), { n: 100, simetrica: true, tol: TOL2 });
+    const dH = diagramaNM(soloHormigon(sec), { n: 100, simetrica: true, tol: TOL3 });
     const reducido = g.r.valido && g.r.segundoOrden && dBase ? contornoReducido(entradaCaso(kk, casos[0]), dBase.pos) : null;
     const c = { ...c0, As0, phi0, Amin: cm.A, k, kEstricto, phiEstricto, phiProp, gamma: g.g, r: g.r, d: dBase, dH, secD, reducido, kk, res };
     memo5 = { clave, c };
@@ -21920,27 +22549,27 @@ tr.et-act td { font-weight: 650; }
     for (const c of en) for (const p of c.tipo === "distribuida" ? [c.a, c.b] : [c.a]) xs.add(p);
     const orden = [...xs].sort((p, q2) => p - q2);
     const pts = orden.map((x) => {
-      const [V, M2, T, Y] = en_x(x);
-      return { x, V, M: M2, giro: -T / EI, flecha: -Y / EI };
+      const [V2, M2, T, Y] = en_x(x);
+      return { x, V: V2, M: M2, giro: -T / EI, flecha: -Y / EI };
     });
-    const eps2 = 1e-9 * L;
+    const eps3 = 1e-9 * L;
     const diag = [];
     for (const p of pts) {
-      const a = en_x(Math.max(0, p.x - eps2));
-      const b = en_x(Math.min(L, p.x + eps2));
+      const a = en_x(Math.max(0, p.x - eps3));
+      const b = en_x(Math.min(L, p.x + eps3));
       if (p.x > 0) diag.push({ x: p.x, V: a[0], M: a[1] });
       diag.push({ x: p.x, V: b[0], M: b[1] });
     }
     const renglon = (x, v2) => ({ x, V: v2[0], M: v2[1], giro: -v2[2] / EI, flecha: -v2[3] / EI });
     const tabla3 = [];
     for (const p of pts) {
-      const a = en_x(Math.max(0, p.x - eps2));
-      const b = en_x(Math.min(L, p.x + eps2));
+      const a = en_x(Math.max(0, p.x - eps3));
+      const b = en_x(Math.min(L, p.x + eps3));
       const salta = Math.abs(a[0] - b[0]) > 1e-6 * (1 + Math.abs(a[0])) || Math.abs(a[1] - b[1]) > 1e-6 * (1 + Math.abs(a[1]));
       if (salta && p.x > 0) tabla3.push(renglon(p.x, a));
       tabla3.push(renglon(p.x, salta || p.x === 0 ? b : en_x(p.x)));
     }
-    const fin = en_x(L - eps2);
+    const fin = en_x(L - eps3);
     const RL = -fin[0];
     const reacciones = {
       izq: { R: izq === "libre" ? 0 : R0 + cs.filter((c) => c.tipo === "puntual" && c.a === 0 && izq !== "libre").reduce((s, c) => s + c.P, 0), M: izq === "empotramiento" ? M0 : 0 },
@@ -22404,10 +23033,10 @@ tr.et-act td { font-weight: 650; }
   var VISTAS = { proyecto: proyecto_exports, materiales: materiales_exports, reologicas: reologicas_exports, secciones: vistaSecciones("seccion", true), durabilidad: durabilidad_exports5, diagramas: vistaSecciones("mk", false), vigas1vano: vigas_exports, flexion: flexion_exports, flexRecta: flexRecta_exports, flexEsviada: flexEsviada_exports, estadoTensional: estadoTensional_exports, fisuracion: fisuracion_exports, fuego: fuego_exports, anclaje: anclaje_exports, cortante: cortante_exports, torsion: torsion_exports, punzonamiento: punzonamiento_exports, rasante: rasante_exports, inestabilidad: inestabilidad_exports };
   var MENU = [
     { grupo: "materiales", vistas: ["materiales", "reologicas"] },
-    { grupo: "secciones", vistas: ["secciones", "durabilidad", "diagramas"] },
+    { grupo: "secciones", vistas: ["secciones", "durabilidad", "diagramas", "estadoTensional"] },
     { grupo: "analisis", vistas: ["vigas1vano"] },
     { grupo: "elu", siempre: true, vistas: ["flexion", "flexRecta", "flexEsviada", "|", "cortante", "torsion", "punzonamiento", "anclaje", "rasante", "|", "inestabilidad"] },
-    { grupo: "els", siempre: true, vistas: ["estadoTensional", "fisuracion", "flechas"] },
+    { grupo: "els", siempre: true, vistas: ["fisuracion", "flechas"] },
     "fuego",
     "bielas",
     "ejecucion",

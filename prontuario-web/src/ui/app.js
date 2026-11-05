@@ -47,10 +47,10 @@ const VISTAS = { proyecto, materiales, reologicas, secciones: vistaSecciones('se
 // submenú. Lo que aún no está en VISTAS sale atenuado y sin acción, y se activa solo al migrarlo.
 const MENU = [
   { grupo: 'materiales', vistas: ['materiales', 'reologicas'] },
-  { grupo: 'secciones', vistas: ['secciones', 'durabilidad', 'diagramas'] },
+  { grupo: 'secciones', vistas: ['secciones', 'durabilidad', 'diagramas', 'estadoTensional'] },
   { grupo: 'analisis', vistas: ['vigas1vano'] },
   { grupo: 'elu', siempre: true, vistas: ['flexion', 'flexRecta', 'flexEsviada', '|', 'cortante', 'torsion', 'punzonamiento', 'anclaje', 'rasante', '|', 'inestabilidad'] },
-  { grupo: 'els', siempre: true, vistas: ['estadoTensional', 'fisuracion', 'flechas'] },
+  { grupo: 'els', siempre: true, vistas: ['fisuracion', 'flechas'] },
   'fuego', 'bielas', 'ejecucion', 'ayuda',
 ];
 const ORDEN = ['proyecto', ...MENU.flatMap((m) => (typeof m === 'string' ? [m] : m.vistas))].filter((v) => v in VISTAS);

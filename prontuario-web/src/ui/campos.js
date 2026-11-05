@@ -154,14 +154,37 @@ export function casillas({ id, etq, opciones, marcadas, onCambio }) {
 /** Regleta (guía §9.4): deslizador común. Etiqueta | pista | valor; mide el 80 % del gráfico al que acompaña.
  *  Devuelve { el, input, valor(html) }. La pista se rellena con --p (se actualiza sola). */
 /** `reinicio`: si se da, un doble clic sobre la regleta la lleva a ese valor (por ejemplo 0) y avisa como un cambio normal. */
-export function regleta({ etq, min, max, step = 1, valor, texto, etiqueta, onInput, onChange, clase = '', reinicio }) {
+export function regleta({ etq, min, max, step = 1, valor, texto, etiqueta, onInput, onChange, clase = '', reinicio, gauge, entrada }) {
   const input = h('input', { type: 'range', min: String(min), max: String(max), step: String(step), value: String(valor), 'aria-label': etiqueta ?? etq ?? '' });
-  const out = h('output', { class: 'rg-v' });
+  // entrada: el valor de la derecha es una caja de datos editable ({ud, d} o {ud, mostrar(v), leer(txt)}): escribir un valor mueve el cursor
+  let caja = null;
+  let campo = null;
+  if (entrada) {
+    campo = h('input', { class: 'rg-in', inputmode: 'decimal', autocomplete: 'off', 'aria-label': `${etiqueta ?? etq ?? ''} (${entrada.ud})` });
+    caja = h('div', { class: 'caja rg-caja' }, campo, entrada.ud ? h('span', { class: 'ud' }, entrada.ud) : null);
+  }
+  const out = caja ?? h('output', { class: 'rg-v' });
+  const mostrar = entrada?.mostrar ?? ((v) => fmt(v, entrada?.d ?? 0));
+  const leer = entrada?.leer ?? ((txt) => { try { return leerNumero(txt); } catch { return NaN; } });
   const pinta = () => {
     const v = Number(input.value);
     input.style.setProperty('--p', `${((v - Number(input.min)) / (Number(input.max) - Number(input.min) || 1)) * 100}%`);
-    out.innerHTML = texto ? texto(v) : String(v);
+    if (campo) { if (document.activeElement !== campo) campo.value = mostrar(v); } else out.innerHTML = texto ? texto(v) : String(v);
   };
+  if (campo) {
+    const aplica = () => {
+      const x = leer(campo.value);
+      if (!Number.isFinite(x)) { campo.value = mostrar(Number(input.value)); return; }
+      input.value = String(x);
+      campo.blur();
+      pinta();
+      onInput?.(Number(input.value));
+      onChange?.(Number(input.value));
+    };
+    campo.addEventListener('change', aplica);
+    campo.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); campo.blur(); } });
+    campo.addEventListener('focus', () => campo.select());
+  }
   input.addEventListener('input', () => { pinta(); onInput?.(Number(input.value)); });
   if (onChange) input.addEventListener('change', () => onChange(Number(input.value)));
   if (reinicio !== undefined) {
@@ -169,9 +192,44 @@ export function regleta({ etq, min, max, step = 1, valor, texto, etiqueta, onInp
     input.addEventListener('dblclick', () => { input.value = String(reinicio); pinta(); onInput?.(Number(input.value)); onChange?.(Number(input.value)); });
   }
   pinta();
-  const el = h('div', { class: `regleta ${clase}`.trim() }, etq ? h('span', { class: 'rg-et', html: etq }) : null, input, out);
+  let riel = input;
+  let rango = null;
+  let cand = null;
+  if (gauge) {
+    // Gauge con rango total (extremos escritos), banda compatible (franja bajo la pista) y candado
+    const franja = h('span', { class: 'rg-banda' });
+    const lo = h('span', { class: 'rg-ext izq' });
+    const hi = h('span', { class: 'rg-ext der' });
+    riel = h('div', { class: 'rg-riel' }, input, franja, lo, hi);
+    cand = h('button', { type: 'button', class: 'rg-cand', 'aria-pressed': String(!!gauge.bloqueado), title: gauge.bloqueado ? t('rg.desbloquear') : t('rg.bloquear'), onclick: () => gauge.onCandado?.(),
+      html: gauge.bloqueado
+        ? '<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5 7V5a3 3 0 0 1 6 0v2"/></svg>'
+        : '<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5 7V5a3 3 0 0 1 5.6-1.5"/></svg>' });
+    rango = ({ min: a, max: b, banda, fuera, bloqueado, fmtExt }) => {
+      input.min = String(a);
+      input.max = String(b);
+      input.disabled = !!bloqueado;
+      const v = Number(input.value);
+      input.value = String(Math.min(b, Math.max(a, v)));
+      const f = (x) => (b > a ? (x - a) / (b - a) : 0);
+      franja.hidden = !banda;
+      if (banda) {
+        franja.style.setProperty('--b0', String(Math.max(0, f(banda[0]))));
+        franja.style.setProperty('--b1', String(Math.min(1, f(banda[1]))));
+        input.title = `${t('rg.banda')}: ${fmtExt(banda[0])} … ${fmtExt(banda[1])}${reinicio !== undefined ? `. ${t('rg.cero')}` : ''}`;
+      } else input.title = reinicio !== undefined ? t('rg.cero') : '';
+      lo.textContent = fmtExt(a);
+      hi.textContent = fmtExt(b);
+      el.classList.toggle('fuera', !!fuera);
+      el.classList.toggle('bloq', !!bloqueado);
+      pinta();
+    };
+  }
+  const el = h('div', { class: `regleta ${clase}${gauge ? ' rg-gauge' : ''}${entrada ? ' rg-edit' : ''}`.trim() }, cand, etq ? h('span', { class: 'rg-et', html: etq }) : null, riel, out);
   if (!etq) el.classList.add('sin-etq');
   el.refrescar = () => pinta();
+  el.poner = (v) => { input.value = String(v); pinta(); };
+  if (rango) { el.rango = rango; if (gauge.bloqueado) el.classList.add('bloq'); }
   return el;
 }
 
