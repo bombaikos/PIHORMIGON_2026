@@ -3,11 +3,11 @@
 // Estado tensional con ley lineal (src/core/fisuracionSeccion.js). Sin pretensado, sin rigidización a tracción ni armadura mínima.
 // Comprobación, Dimensionamiento (una capa de barras iguales) y Diagrama wk–M. Decisiones: analisis/fisuracion-decisiones.md.
 
-import { fisuraSeccion, curvaWk, dimensionaSeccion, modeloServicio, NORMAS_FIS } from '../../core/fisuracionSeccion.js';
+import { fisuraSeccion, curvaWk, modeloServicio, NORMAS_FIS } from '../../core/fisuracionSeccion.js';
 import { wmaxDe, CLASES } from '../../norma/fisuracion/limites.js';
 import { datosViga, geometriaDe, materialesSeccion, sepCapas } from '../../io/proyecto.js';
 import { t } from '../i18n.js';
-import { fmt, q, qh, MAG, serieDiametros, decimalAlCopiar } from '../formato.js';
+import { fmt, q, qh, MAG, decimalAlCopiar } from '../formato.js';
 import { grupoSeccion, rotulaSeccion } from './secciones.js';
 import { h, poner, campoNum, campoArmado, selector, segmentado, grupo, aviso, cifras, tabla } from '../campos.js';
 import { grafica } from '../grafica.js';
@@ -29,7 +29,6 @@ const NOMBRE = (n) => t(`fis.n.${n}`);
 const CLASE_POR_DEFECTO = { EHE08: 'IIa', 'EC2-2004': 'XC3', 'EC2-2023': 'XC3' };
 const claseDe = (id) => est.clase[id] ?? CLASE_POR_DEFECTO[id];
 const wmaxDeNorma = (id) => est.wmax ?? wmaxDe(id, claseDe(id)) ?? 0.3;
-const diametros = () => serieDiametros().filter((x) => x >= 12 && x <= 32);
 
 function activa(p) {
   if (!FORMAS.includes(p.secciones[est.i]?.forma)) est.i = p.secciones.findIndex((x) => FORMAS.includes(x.forma));
@@ -101,11 +100,11 @@ export function datos(ctx, form) {
   const cambio = () => ctx.cambio();
   const clases = (CLASES[id] ?? []).flatMap((g) => g.clases);
   poner(form,
-    segmentado({ ancho: true, capsula: true, etiqueta: t('fis.modo'), opciones: [['comprobar', t('comprobar')], ['dimensionar', t('dimensionar')], ['diagrama', t('fis.modoDiagrama')]], valor: est.modo, onCambio: (m) => { est.modo = m; ctx.pintar(); } }),
+    segmentado({ ancho: true, capsula: true, etiqueta: t('fis.modo'), opciones: [['comprobar', t('comprobar')], ['diagrama', t('fis.modoDiagrama')]], valor: est.modo, onCambio: (m) => { est.modo = m; ctx.pintar(); } }),
     grupo(t('fis.gEsfuerzo'),
-      campoNum({ id: 'fi-m', etq: t('fis.M'), ref: t('fis.refM'), valor: est.M, mag: 'M', paso: 5, min: -1e6, max: 1e6, nombre: t('fis.nombreM'), onCambio: (v) => { est.M = v; cambio(); } }),
+      campoNum({ id: 'fi-m', etq: t('fis.M'), ref: t('fis.refM'), valor: est.M, mag: 'M', paso: 5, min: -1e6, max: 1e6, nombre: t('fis.nombreM'), onCambio: (v) => { const cruza = (v >= 0) !== (est.M >= 0); est.M = v; if (cruza) ctx.pintar(); else cambio(); } }),
       campoNum({ id: 'fi-n', etq: t('fis.N'), ref: t('fis.refN'), valor: est.N, mag: 'N', paso: 10, min: -1e6, max: 1e6, nombre: t('fis.nombreN'), onCambio: (v) => { est.N = v; cambio(); } })),
-    grupo(t('fis.gArmadura'), campoArmadura(ctx, s)),
+    grupo(t('fis.gArmadura'), ...campoArmadura(ctx, s)),
     grupo(t('fis.gAccion'),
       selector({ id: 'fi-clase', linea: true, etq: t('fis.clase'), opciones: clases.map((c) => [c, c]), valor: claseDe(id), onCambio: (v) => { est.clase[id] = v; est.wmax = null; ctx.pintar(); } }),
       conInfo(campoNum({ id: 'fi-wmax', etq: t('fis.wmax'), valor: wmaxDeNorma(id), mag: 'wk', paso: 0.05, min: 0.01, max: 5, onCambio: (v) => { est.wmax = v; cambio(); } }), t('fis.infoWmax')),
@@ -120,12 +119,15 @@ export function datos(ctx, form) {
 
 function campoArmadura(ctx, s) {
   const signo = est.M >= 0 ? 1 : -1;
-  const g = grupoTrac(s, signo);
-  const key = `${s.nombre}|${caraTrac(signo)}`;
-  const c = campoArmado({ id: 'fi-arm', etq: `${sub('A', 's')}`, texto: est.arm[key] ?? g?.texto ?? '', capas: {}, onCambio: (v) => { est.arm[key] = v; ctx.cambio(); } });
-  if (!g) return apaga(c, t('fis.armPilar'));
-  if (est.modo === 'dimensionar') return apaga(c, t('fis.armDim'));
-  return conInfo(c, t('fis.armInfo'));
+  const una = (cara) => {
+    const g = s.armado.find((x) => x.tipo === 'capa' && x.cara === cara);
+    const key = `${s.nombre}|${cara}`;
+    const trac = cara === caraTrac(signo);
+    const c = campoArmado({ id: `fi-arm-${cara}`, etq: sub('A', cara === 'sup' ? 'sup' : 'inf'), texto: trac ? (est.arm[key] ?? g?.texto ?? '') : (g?.texto ?? ''), capas: {}, onCambio: (v) => { est.arm[key] = v; ctx.cambio(); } });
+    if (!g) return apaga(c, t('fis.armPilar'));
+    return trac ? conInfo(c, t('fis.armInfo')) : apaga(c, t(cara === 'sup' ? 'fis.armComp.sup' : 'fis.armComp.inf'));
+  };
+  return [una('sup'), una('inf')];
 }
 
 export function resultados(ctx, res) {
@@ -153,17 +155,7 @@ function resultadosFis(ctx, res) {
   p.calculos.fisuracion ??= {};
   p.calculos.fisuracion[s.nombre] = { modo: est.modo, norma: p.norma, fecha: new Date().toISOString().slice(0, 10), M: est.M, N: est.N, wmax, resultado: { wk: r.wk, Mfis: r.Mfis } };
   if (est.modo === 'diagrama') return diagrama(ctx, res, { s, c, r, o, id, wmax });
-  const dim = est.modo === 'dimensionar';
-  let filasDim = null;
-  if (dim) {
-    filasDim = dimensionaSeccion(c, o, id, wmax, diametros());
-    const ok = filasDim.filter((f) => f.n);
-    const mejor = ok.length ? ok.reduce((a, b) => (b.As < a.As ? b : a)) : null;
-    if (r.sinFisurar) res.append(veredicto('cumple', t('fis.ver.sinFisurar'), t('fis.armNec'), '—', t('fis.ver.ecuSin', q(r.M, 'M'), q(r.Mfis, 'M'))));
-    else if (mejor) res.append(veredicto('cumple', t('fis.ver.valida'), t('fis.armNec'), `ø${mejor.fi} × ${mejor.n}`, t('fis.ver.dim', mejor.fi, mejor.n, q(mejor.As / 1e6, 'As'))));
-    else res.append(veredicto('nocumple', t('fis.ver.aum'), t('fis.armNec'), '—', t('fis.ver.noDim')));
-    if (mejor) mejor.mejor = true;
-  } else if (r.sinFisurar) {
+  if (r.sinFisurar) {
     res.append(veredicto('cumple', t('fis.ver.sinFisurar'), 'w<sub>k</sub>', q(0, 'wk'), t('fis.ver.ecuSin', q(r.M, 'M'), q(r.Mfis, 'M'))));
   } else {
     const wk = r.wk[id];
@@ -179,10 +171,8 @@ function resultadosFis(ctx, res) {
   poner(dcha, h('h2', {}, t('fis.t.res')));
   if (!r.sinFisurar) poner(dcha, cifras([[t('fis.c.Mfis'), qh(r.Mfis, 'M')], [t('fis.c.x'), qh(r.e.x / 1000, 'long')], [t('fis.c.ss'), `${fmt(r.e.ss, 0)}<span class="u"> MPa</span>`], [t('fis.c.ssr'), `${fmt(r.e.ssr, 0)}<span class="u"> MPa</span>`]]));
   else poner(dcha, cifras([[t('fis.c.Mfis'), qh(r.Mfis, 'M')]]));
-  if (dim) poner(dcha, tablaDim(ctx, filasDim), h('p', { class: 'pista', html: t('fis.dim.una') }));
-  else poner(dcha, tablaNormas(ctx, r, id, wmax));
-  if (dim && r.sinFisurar) poner(dcha, aviso(t('fis.dim.sinFisurar'), 'info'));
-  if (!dim && !r.sinFisurar) poner(dcha, h('div', { class: 'traza' }, ...trazas(r, id).map((f) => {
+  poner(dcha, tablaNormas(ctx, r, id, wmax));
+  if (!r.sinFisurar) poner(dcha, h('div', { class: 'traza' }, ...trazas(r, id).map((f) => {
     const det = h('details', { 'data-ref': f.id, open: est.abiertos.has(f.id) },
       h('summary', {}, h('span', { class: 'nom', html: f.nom }), h('span', { class: 'val', html: f.val })),
       h('div', { class: 'cuenta', html: f.cuenta }));
@@ -225,16 +215,6 @@ function tablaNormas(ctx, r, id, wmax) {
   const f2 = fila(t('fis.tabla.ap'), ap);
   NORMAS_FIS.forEach((n, i) => { if (r.wk[n] > wmax + 1e-9) { f1[i + 1] = `<span class="no-cumple">${f1[i + 1]}</span>`; f2[i + 1] = `<span class="no-cumple">${f2[i + 1]}</span>`; } });
   return copiable(ctx, [f1, f2], cab, tabla([f1, f2], { cabecera: cab, clase: 'normas-fis' }));
-}
-
-function tablaDim(ctx, filas) {
-  const rows = filas.map((f) => {
-    const fila = f.n ? [`ø${f.fi}`, String(f.n), fmt(f.As, 0), fmt(f.wk, MAG.wk.d), fmt(f.libre, 0)] : [`ø${f.fi}`, '—', '—', '—', '—'];
-    if (f.mejor) fila.clase = 'sugerida';
-    return fila;
-  });
-  const cab = [t('fis.dim.fi'), t('fis.dim.n'), t('fis.dim.As'), t('fis.dim.wk'), t('fis.dim.libre')];
-  return copiable(ctx, rows, cab, tabla(rows, { cabecera: cab }));
 }
 
 const art = (id, a) => `<span class="art">${NOMBRE(id)} · ${a}</span>`;
@@ -297,7 +277,6 @@ function diagrama(ctx, res, { s, c, r, o, id, wmax }) {
 export function comandos(ctx) {
   return [
     { k: 'fis.cmdComprobar', b: 'fisuracion fisura abertura wk comprobar cracking', f: () => { est.modo = 'comprobar'; ctx.ir('fisuracion'); } },
-    { k: 'fis.cmdDimensionar', b: 'fisuracion fisura abertura wk dimensionar cracking design', f: () => { est.modo = 'dimensionar'; ctx.ir('fisuracion'); } },
     { k: 'fis.cmdDiagrama', b: 'fisuracion fisura abertura wk diagrama cracking diagram', f: () => { est.modo = 'diagrama'; ctx.ir('fisuracion'); } },
   ];
 }

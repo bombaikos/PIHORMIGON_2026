@@ -50,4 +50,6 @@ export default {
   'fis.armInfo': 'Reinforcement of the tension face for this calculation (342 mm², 5D16, 5D16+2D16…). It starts from Sections and can be changed here without modifying it; bars without ø (area only) do not work for cracking.',
   'fis.armPilar': 'The column uses the perimeter reinforcement from Sections: it cannot be changed here.',
   'fis.armDim': 'In Design the tension-face reinforcement is the result.',
+  'fis.armComp.sup': 'Compression-face reinforcement: taken from Sections, not editable here (with M > 0 only A inf is editable).',
+  'fis.armComp.inf': 'Compression-face reinforcement: taken from Sections, not editable here (with M < 0 only A sup is editable).',
 };

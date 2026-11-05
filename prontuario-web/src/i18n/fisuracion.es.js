@@ -71,4 +71,6 @@ export default {
   'fis.armInfo': 'Armadura de la cara traccionada para este cálculo (342 mm², 5D16, 5D16+2D16…). Parte de la de Secciones y se puede cambiar aquí sin modificarla; las barras sin ø (solo área) no sirven para fisuración.',
   'fis.armPilar': 'El pilar usa la armadura perimetral de Secciones: aquí no se cambia.',
   'fis.armDim': 'En Dimensionar la armadura de la cara traccionada es el resultado.',
+  'fis.armComp.sup': 'Armadura de la cara comprimida: la de Secciones, no se edita aquí (con M > 0 solo se edita A inf).',
+  'fis.armComp.inf': 'Armadura de la cara comprimida: la de Secciones, no se edita aquí (con M < 0 solo se edita A sup).',
 };
