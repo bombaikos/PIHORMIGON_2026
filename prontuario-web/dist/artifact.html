@@ -19170,7 +19170,6 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
   function trazas3(r, id) {
     const n = (v2, d = 2) => fmt(v2, d);
     const D = r.det;
-    const porNorma = (clave, valor, extra) => NORMAS_FIS.map((nn) => `<span class="n"><b>${t(`fis.n.c.${nn}`)}</b> \xB7 <span class="f">${t(clave.replace("{n}", nn))}</span> ${valor(nn, D[nn])}</span>`).join("") + (extra ?? "");
     const f = [];
     f.push({
       id: "mfis",
@@ -19188,25 +19187,25 @@ details.pleg.pleg-amb > .cuenta { color: var(--tinta-2); }
       id: "ac",
       nom: t("fis.r.ac"),
       val: `${n(D[id].Acef, 0)} mm\xB2`,
-      cuenta: NORMAS_FIS.map((nn) => `<span class="f"><b>${t(`fis.n.c.${nn}`)}</b> \xB7 ${t(`fis.f.ac.${nn}`)}</span><span class="n">h<sub>ef</sub> = ${n(D[nn].hef, 0)} mm \xB7 A<sub>c,ef</sub> = ${n(D[nn].Acef, 0)} mm\xB2 \xB7 \u03C1 = ${n(D[nn].rho * 100, 2)} %</span>${art4(nn, REF[nn].ac)}`).join("")
+      cuenta: [id].map((nn) => `<span class="f">${t(`fis.f.ac.${nn}`)}</span><span class="n">h<sub>ef</sub> = ${n(D[nn].hef, 0)} mm \xB7 A<sub>c,ef</sub> = ${n(D[nn].Acef, 0)} mm\xB2 \xB7 \u03C1 = ${n(D[nn].rho * 100, 2)} %</span>${art4(nn, REF[nn].ac)}`).join("")
     });
     f.push({
       id: "sep",
       nom: t("fis.r.sep"),
       val: `${n(D[id].sr, 0)} mm`,
-      cuenta: NORMAS_FIS.map((nn) => `<span class="f"><b>${t(`fis.n.c.${nn}`)}</b> \xB7 ${t(`fis.f.sep.${nn}`)}</span><span class="n">${nn === "EHE08" ? `s<sub>m</sub>` : `s<sub>r</sub>`} = ${n(D[nn].sr, 0)} mm${nn === "EHE08" ? ` \xB7 k<sub>1</sub> = ${n(D[nn].k1, 3)}` : ""}${nn === "EC2-2023" ? ` \xB7 k<sub>b</sub> = ${n(D[nn].kb, 1)}` : ""}</span>${art4(nn, REF[nn].sep)}`).join("")
+      cuenta: [id].map((nn) => `<span class="f">${t(`fis.f.sep.${nn}`)}</span><span class="n">${nn === "EHE08" ? `s<sub>m</sub>` : `s<sub>r</sub>`} = ${n(D[nn].sr, 0)} mm${nn === "EHE08" ? ` \xB7 k<sub>1</sub> = ${n(D[nn].k1, 3)}` : ""}${nn === "EC2-2023" ? ` \xB7 k<sub>b</sub> = ${n(D[nn].kb, 1)}` : ""}</span>${art4(nn, REF[nn].sep)}`).join("")
     });
     f.push({
       id: "esm",
       nom: t("fis.r.esm"),
-      val: `${n(D[id].esm * 1e3, 3)} \u2030`,
-      cuenta: NORMAS_FIS.map((nn) => `<span class="f"><b>${t(`fis.n.c.${nn}`)}</b> \xB7 ${t(nn === "EHE08" ? "fis.f.esm.EHE08" : nn === "EC2-2023" ? "fis.f.esm.EC2-2023" : "fis.f.esm.EC2")}</span><span class="n">\u03B5<sub>sm</sub>${nn === "EHE08" ? "" : " \u2212 \u03B5<sub>cm</sub>"} = ${n(D[nn].esm * 1e3, 3)} \u2030</span>${art4(nn, REF[nn].esm)}`).join("")
+      val: `${n(D[id].esm * 1e3, 2)} \u2030`,
+      cuenta: [id].map((nn) => `<span class="f">${t(nn === "EHE08" ? "fis.f.esm.EHE08" : nn === "EC2-2023" ? "fis.f.esm.EC2-2023" : "fis.f.esm.EC2")}</span><span class="n">\u03B5<sub>sm</sub>${nn === "EHE08" ? "" : " \u2212 \u03B5<sub>cm</sub>"} = ${n(D[nn].esm * 1e3, 2)} \u2030</span>${art4(nn, REF[nn].esm)}`).join("")
     });
     f.push({
       id: "wk",
       nom: t("fis.r.wk"),
       val: q(r.wk[id], "wk"),
-      cuenta: NORMAS_FIS.map((nn) => `<span class="f"><b>${t(`fis.n.c.${nn}`)}</b> \xB7 ${t(`fis.f.wk.${nn}`)}</span><span class="n">w<sub>k</sub> = ${n(r.wk[nn], 2)} mm${nn === "EHE08" ? ` \xB7 \u03B2 = ${n(D[nn].beta, 1)}` : ""}${nn === "EC2-2023" ? ` \xB7 k<sub>1/r</sub> = ${n(D[nn].k1r, 3)}` : ""}</span>${art4(nn, REF[nn].wk)}`).join("")
+      cuenta: [id].map((nn) => `<span class="f">${t(`fis.f.wk.${nn}`)}</span><span class="n">w<sub>k</sub> = ${n(r.wk[nn], 2)} mm${nn === "EHE08" ? ` \xB7 \u03B2 = ${n(D[nn].beta, 1)}` : ""}${nn === "EC2-2023" ? ` \xB7 k<sub>1/r</sub> = ${n(D[nn].k1r, 3)}` : ""}</span>${art4(nn, REF[nn].wk)}`).join("")
     });
     return f;
   }

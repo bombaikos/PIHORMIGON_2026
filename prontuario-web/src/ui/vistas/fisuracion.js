@@ -216,20 +216,19 @@ const REF = { EHE08: { ac: '49.2.4', sep: '49.2.4', esm: '49.2.4', wk: '49.2.4' 
 function trazas(r, id) {
   const n = (v, d = 2) => fmt(v, d);
   const D = r.det;
-  const porNorma = (clave, valor, extra) => NORMAS_FIS.map((nn) => `<span class="n"><b>${t(`fis.n.c.${nn}`)}</b> · <span class="f">${t(clave.replace('{n}', nn)) }</span> ${valor(nn, D[nn])}</span>`).join('') + (extra ?? '');
   const f = [];
   f.push({ id: 'mfis', nom: t('fis.r.Mfis'), val: q(r.Mfis, 'M'),
     cuenta: `<span class="f">${t('fis.f.Mfis')}</span><span class="n">f<sub>ct,m,fl</sub> = ${n(r.m.fctfl)} MPa · b·h = ${n(r.b, 0)}×${n(r.h, 0)} mm</span><span class="art">EHE-08 · 39.1 · EC-2 · (3.23)</span>` });
   f.push({ id: 'estado', nom: t('fis.r.estado'), val: `x ${n(r.e.x, 0)} mm`,
     cuenta: `<span class="f">${t('fis.f.estado')}</span><span class="n">σ<sub>s</sub> = ${n(r.e.ss, 1)} MPa · σ<sub>sr</sub> = ${n(r.e.ssr, 1)} MPa · ε<sub>1</sub> = ${n(r.e.e1 * 1000, 2)} ‰</span><span class="n">ø = ${n(r.g.fi, 1)} mm · n = ${r.g.n} · A<sub>s</sub> = ${n(r.g.As1, 0)} mm² · c = ${n(r.g.c, 0)} mm · s = ${n(r.g.s, 0)} mm</span>` });
   f.push({ id: 'ac', nom: t('fis.r.ac'), val: `${n(D[id].Acef, 0)} mm²`,
-    cuenta: NORMAS_FIS.map((nn) => `<span class="f"><b>${t(`fis.n.c.${nn}`)}</b> · ${t(`fis.f.ac.${nn}`)}</span><span class="n">h<sub>ef</sub> = ${n(D[nn].hef, 0)} mm · A<sub>c,ef</sub> = ${n(D[nn].Acef, 0)} mm² · ρ = ${n(D[nn].rho * 100, 2)} %</span>${art(nn, REF[nn].ac)}`).join('') });
+    cuenta: [id].map((nn) => `<span class="f">${t(`fis.f.ac.${nn}`)}</span><span class="n">h<sub>ef</sub> = ${n(D[nn].hef, 0)} mm · A<sub>c,ef</sub> = ${n(D[nn].Acef, 0)} mm² · ρ = ${n(D[nn].rho * 100, 2)} %</span>${art(nn, REF[nn].ac)}`).join('') });
   f.push({ id: 'sep', nom: t('fis.r.sep'), val: `${n(D[id].sr, 0)} mm`,
-    cuenta: NORMAS_FIS.map((nn) => `<span class="f"><b>${t(`fis.n.c.${nn}`)}</b> · ${t(`fis.f.sep.${nn}`)}</span><span class="n">${nn === 'EHE08' ? `s<sub>m</sub>` : `s<sub>r</sub>`} = ${n(D[nn].sr, 0)} mm${nn === 'EHE08' ? ` · k<sub>1</sub> = ${n(D[nn].k1, 3)}` : ''}${nn === 'EC2-2023' ? ` · k<sub>b</sub> = ${n(D[nn].kb, 1)}` : ''}</span>${art(nn, REF[nn].sep)}`).join('') });
-  f.push({ id: 'esm', nom: t('fis.r.esm'), val: `${n(D[id].esm * 1000, 3)} ‰`,
-    cuenta: NORMAS_FIS.map((nn) => `<span class="f"><b>${t(`fis.n.c.${nn}`)}</b> · ${t(nn === 'EHE08' ? 'fis.f.esm.EHE08' : nn === 'EC2-2023' ? 'fis.f.esm.EC2-2023' : 'fis.f.esm.EC2')}</span><span class="n">ε<sub>sm</sub>${nn === 'EHE08' ? '' : ' − ε<sub>cm</sub>'} = ${n(D[nn].esm * 1000, 3)} ‰</span>${art(nn, REF[nn].esm)}`).join('') });
+    cuenta: [id].map((nn) => `<span class="f">${t(`fis.f.sep.${nn}`)}</span><span class="n">${nn === 'EHE08' ? `s<sub>m</sub>` : `s<sub>r</sub>`} = ${n(D[nn].sr, 0)} mm${nn === 'EHE08' ? ` · k<sub>1</sub> = ${n(D[nn].k1, 3)}` : ''}${nn === 'EC2-2023' ? ` · k<sub>b</sub> = ${n(D[nn].kb, 1)}` : ''}</span>${art(nn, REF[nn].sep)}`).join('') });
+  f.push({ id: 'esm', nom: t('fis.r.esm'), val: `${n(D[id].esm * 1000, 2)} ‰`,
+    cuenta: [id].map((nn) => `<span class="f">${t(nn === 'EHE08' ? 'fis.f.esm.EHE08' : nn === 'EC2-2023' ? 'fis.f.esm.EC2-2023' : 'fis.f.esm.EC2')}</span><span class="n">ε<sub>sm</sub>${nn === 'EHE08' ? '' : ' − ε<sub>cm</sub>'} = ${n(D[nn].esm * 1000, 2)} ‰</span>${art(nn, REF[nn].esm)}`).join('') });
   f.push({ id: 'wk', nom: t('fis.r.wk'), val: q(r.wk[id], 'wk'),
-    cuenta: NORMAS_FIS.map((nn) => `<span class="f"><b>${t(`fis.n.c.${nn}`)}</b> · ${t(`fis.f.wk.${nn}`)}</span><span class="n">w<sub>k</sub> = ${n(r.wk[nn], 2)} mm${nn === 'EHE08' ? ` · β = ${n(D[nn].beta, 1)}` : ''}${nn === 'EC2-2023' ? ` · k<sub>1/r</sub> = ${n(D[nn].k1r, 3)}` : ''}</span>${art(nn, REF[nn].wk)}`).join('') });
+    cuenta: [id].map((nn) => `<span class="f">${t(`fis.f.wk.${nn}`)}</span><span class="n">w<sub>k</sub> = ${n(r.wk[nn], 2)} mm${nn === 'EHE08' ? ` · β = ${n(D[nn].beta, 1)}` : ''}${nn === 'EC2-2023' ? ` · k<sub>1/r</sub> = ${n(D[nn].k1r, 3)}` : ''}</span>${art(nn, REF[nn].wk)}`).join('') });
   return f;
 }
 
